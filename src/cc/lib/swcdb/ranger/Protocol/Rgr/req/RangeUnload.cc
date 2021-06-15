@@ -13,7 +13,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 RangeUnload::RangeUnload(const Ranger::RangePtr& range,
                          const Ranger::Callback::RangeLoad::Ptr& req,
                          uint32_t timeout)

@@ -10,7 +10,7 @@
 namespace SWC { namespace Ranger {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 BlockLoader::BlockLoader(Block::Ptr block)
                         : block(block),
                           preload(
@@ -21,25 +21,25 @@ BlockLoader::BlockLoader(Block::Ptr block)
                           m_logs(0) {
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void BlockLoader::add(const ReqScan::Ptr& req) {
   q_req.push({.req=req, .ts=Time::now_ns()});
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void BlockLoader::run() {
   block->blocks->cellstores.load_cells(this);
   load_log(false);
 }
 
 //CellStores
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
   Core::MutexSptd::scope lock(m_mutex);
   m_cs_blocks.push(blk);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void BlockLoader::loaded_blk() {
   {
     Core::MutexSptd::scope lock(m_mutex);

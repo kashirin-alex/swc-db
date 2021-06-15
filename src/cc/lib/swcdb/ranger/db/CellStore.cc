@@ -49,7 +49,7 @@ Read::Ptr Read::make(int& err, const csid_t csid,
   );
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
                          uint32_t& cell_revs,
                          uint32_t& blks_idx_count,
@@ -116,7 +116,7 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
   return loaded;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
                               DB::Cell::Key& prev_key_end,
                               DB::Cell::Key& key_end,
@@ -252,7 +252,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 
 //
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Read::Read(const csid_t csid,
            DB::Cell::Key&& prev_key_end,
            DB::Cell::Key&& key_end,
@@ -287,12 +287,12 @@ size_t Read::size_of() const {
       ;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 const std::string& Read::filepath() const {
   return smartfd->filepath();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::load_cells(BlockLoader* loader) {
   for(auto blk : blocks) {
     if(loader->block->is_consist(blk->header.interval)) {
@@ -307,18 +307,18 @@ void Read::load_cells(BlockLoader* loader) {
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::_run_queued() {
   Block::Read::Ptr blk = nullptr;
   m_queue.deactivating(&blk) ? _release_fd() : blk->load();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {
   to.insert(to.end(), blocks.begin(), blocks.end());
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Read::release(size_t bytes) {
   size_t released = 0;
   for(auto blk : blocks) {
@@ -341,7 +341,7 @@ void Read::_release_fd() {
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::close(int &err) {
   int32_t fd = smartfd->invalidate();
   if(fd != -1) {
@@ -350,12 +350,12 @@ void Read::close(int &err) {
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::remove(int &err) {
   Env::FsInterface::interface()->remove(err, smartfd->filepath());
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Read::processing() const noexcept{
   if(m_queue.is_active())
     return true;
@@ -380,7 +380,7 @@ size_t Read::size_bytes_enc(bool only_loaded) const {
   return size;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Read::blocks_count() const {
   return blocks.size();
 }
@@ -412,7 +412,7 @@ void Read::print(std::ostream& out, bool minimal) const {
 
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Write::Write(const csid_t csid, std::string&& filepath,
              const RangePtr& range, uint32_t cell_revs)
             : csid(csid),
@@ -467,7 +467,7 @@ void Write::block(int& err, DynamicBuffer& blk_buff) {
   );
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
   interval.free();
   if(m_blocks.empty())
@@ -540,7 +540,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
   } while (it != m_blocks.end());
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Write::write_trailer(int& err) {
   uint64_t blks_idx_offset = size;
   uint32_t blks_idx_count = 0;
@@ -566,7 +566,7 @@ void Write::write_trailer(int& err) {
   size += buff_write.size;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Write::close_and_validate(int& err) {
   Env::FsInterface::interface()->close(err, smartfd);
 

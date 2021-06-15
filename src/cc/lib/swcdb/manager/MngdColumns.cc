@@ -53,7 +53,7 @@ void MngdColumns::reset(bool schemas_mngr) {
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool MngdColumns::is_schemas_mngr(int& err) {
   if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) {
     Core::MutexSptd::scope lock(m_mutex_schemas);
@@ -69,7 +69,7 @@ bool MngdColumns::has_active() noexcept {
   return m_cid_active;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool MngdColumns::is_active(cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex_active);
   return m_cid_active && cid &&
@@ -171,7 +171,7 @@ void MngdColumns::require_sync() {
       ColumnMngFunc::INTERNAL_LOAD_ALL, DB::Schema::make(), Error::OK, 0);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void MngdColumns::action(const ColumnReq::Ptr& req) {
   if(m_actions.push_and_is_1st(req))
     Env::Mngr::post([this]() { run_actions(); });
@@ -639,7 +639,7 @@ void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void MngdColumns::update(ColumnMngFunc func,
                          const DB::Schema::Ptr& schema, int err,
                          uint64_t req_id) {

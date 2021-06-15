@@ -4,36 +4,12 @@
  */
 
 
-#include "swcdb/core/Serialization.h"
-#include "swcdb/core/Checksum.h"
 #include "swcdb/core/comm/HeaderBufferInfo.h"
 
 
 namespace SWC { namespace Comm {
 
 
-uint8_t BufferInfo::encoded_length() const noexcept {
-  uint8_t sz = Serialization::encoded_length_vi32(size) + 5;
-  if(encoder != Core::Encoder::Type::PLAIN)
-    sz += Serialization::encoded_length_vi32(size_plain);
-  return sz;
-}
-
-void BufferInfo::encode(uint8_t** bufp) const {
-  Serialization::encode_vi32(bufp, size);
-  Serialization::encode_i8(bufp, uint8_t(encoder));
-  if(encoder != Core::Encoder::Type::PLAIN)
-    Serialization::encode_vi32(bufp, size_plain);
-  Serialization::encode_i32(bufp, chksum);
-}
-
-void BufferInfo::decode(const uint8_t** bufp, size_t* remainp) {
-  size = Serialization::decode_vi32(bufp, remainp);
-  encoder = Core::Encoder::Type(Serialization::decode_i8(bufp, remainp));
-  if(encoder != Core::Encoder::Type::PLAIN)
-    size_plain = Serialization::decode_vi32(bufp, remainp);
-  chksum = Serialization::decode_i32(bufp, remainp);
-}
 
 void BufferInfo::encode(Core::Encoder::Type _enc, StaticBuffer& data) {
   if(_enc != Core::Encoder::Type::PLAIN &&

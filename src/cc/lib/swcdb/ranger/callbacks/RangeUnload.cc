@@ -7,7 +7,7 @@
 namespace SWC { namespace Ranger { namespace Callback {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 RangeUnload::RangeUnload(const Comm::ConnHandlerPtr& conn,
                          const Comm::Event::Ptr& ev,
                          const cid_t cid, const rid_t rid,

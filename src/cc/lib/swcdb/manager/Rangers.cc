@@ -67,7 +67,7 @@ void Rangers::stop(bool shuttingdown) {
     wait_health_check();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Rangers::empty() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return m_rangers.empty();
@@ -136,7 +136,7 @@ Ranger::Ptr Rangers::rgr_get(const rgrid_t rgrid) {
   return nullptr;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Rangers::rgr_get(const rgrid_t rgrid, Comm::EndPoints& endpoints) {
   Core::MutexSptd::scope lock(m_mutex);
   for(auto& rgr : m_rangers) {
@@ -235,7 +235,7 @@ void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Rangers::sync() {
   changes(m_rangers, true);
 }

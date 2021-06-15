@@ -62,18 +62,18 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
   SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%u", t_ms);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool MngrRole::is_active(cid_t cid) {
   auto host = active_mngr(cid);
   return host && Comm::has_endpoint(host->endpoints, m_local_endpoints);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool MngrRole::is_active_role(uint8_t role) {
   return m_local_active_role & role;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
   Core::SharedLock lock(m_mutex);
   for(auto& host : m_states) {
@@ -86,7 +86,7 @@ MngrStatus::Ptr MngrRole::active_mngr(cid_t cid) {
   return nullptr;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 MngrStatus::Ptr MngrRole::active_mngr_role(uint8_t role) {
   Core::SharedLock lock(m_mutex);
   for(auto& host : m_states) {
@@ -120,12 +120,12 @@ void MngrRole::get_states(MngrsStatus& states) {
   states.assign(m_states.begin(), m_states.end());
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Comm::EndPoint MngrRole::get_inchain_endpoint() const {
   return m_mngr_inchain->get_endpoint_remote();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void MngrRole::req_mngr_inchain(
       const Comm::client::ConnQueue::ReqBase::Ptr& req) {
   m_mngr_inchain->put(req);

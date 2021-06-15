@@ -559,6 +559,27 @@ bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp,
 }
 
 SWC_CAN_INLINE
+bool Mutable::scan_after(const DB::Cell::Key& after,
+                         const DB::Cell::Key& to, Mutable& cells) const {
+  if(!_size)
+    return false;
+
+  const Cell* cell;
+  for(auto it=ConstIterator(&buckets, _narrow(after)); it; ++it) {
+    cell = *it.item;
+    if(!to.empty()
+        && DB::KeySeq::compare(key_seq, to, cell->key) == Condition::GT)
+      return false;
+    if(cell->has_expired(ttl) || (!after.empty()
+        && DB::KeySeq::compare(key_seq, after, cell->key) != Condition::GT))
+      continue;
+
+    cells.add_raw(*cell);
+  }
+  return true;
+}
+
+SWC_CAN_INLINE
 void Mutable::expand(Interval& interval) const {
   expand_begin(interval);
   if(size() > 1)

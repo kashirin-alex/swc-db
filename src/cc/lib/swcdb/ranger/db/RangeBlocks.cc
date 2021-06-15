@@ -9,20 +9,20 @@
 namespace SWC { namespace Ranger {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Blocks::Blocks(const DB::Types::KeySeq key_seq)
               : commitlog(key_seq),
                 m_block(nullptr), m_processing(0) {
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Blocks::init(const RangePtr& for_range) {
   range = for_range;
   commitlog.init(range);
   cellstores.init(range);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Blocks::Ptr Blocks::ptr() {
   return this;
 }
@@ -35,17 +35,17 @@ void Blocks::schema_update() {
     blk->schema_update();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Blocks::processing_increment() {
   m_processing.fetch_add(1);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Blocks::processing_decrement() {
   m_processing.fetch_sub(1);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Blocks::load(int& err) {
   commitlog.load(err);
   cellstores.load(err);
@@ -78,13 +78,13 @@ void Blocks::remove(int&) {
   processing_decrement();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Blocks::expand(DB::Cells::Interval& intval) {
   cellstores.expand(intval);
   commitlog.expand(intval);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Blocks::expand_and_align(DB::Cells::Interval& intval) {
   cellstores.expand_and_align(intval);
   commitlog.expand_and_align(intval);
@@ -104,7 +104,7 @@ void Blocks::apply_new(int &err,
   commitlog.remove(err, fragments_old);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Blocks::add_logged(const DB::Cells::Cell& cell) {
 
   commitlog.add(cell);
@@ -375,7 +375,7 @@ void Blocks::print(std::ostream& out, bool minimal) {
     << ')';
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Blocks::_size() {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
@@ -383,7 +383,7 @@ size_t Blocks::_size() {
   return sz;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Blocks::_size_bytes() {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
@@ -391,7 +391,7 @@ size_t Blocks::_size_bytes() {
   return sz;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Blocks::_processing() const noexcept {
   if(m_processing)
     return true;
@@ -448,7 +448,7 @@ void Blocks::init_blocks(int& err) {
     blk->free_key_end();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Blocks::_get_block_idx(Block::Ptr blk) const {
   for(auto it=m_blocks_idx.begin(); it != m_blocks_idx.end();++it)
     if(*it == blk)
@@ -456,7 +456,7 @@ size_t Blocks::_get_block_idx(Block::Ptr blk) const {
   return 0; // eq m_block;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Blocks::_narrow(const DB::Cell::Key& key) const {
   size_t offset = 0;
   if(key.empty() || m_blocks_idx.size() <= MAX_IDX_NARROW)

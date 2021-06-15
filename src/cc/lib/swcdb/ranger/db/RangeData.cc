@@ -69,7 +69,7 @@ void RangeData::read(int& err, const uint8_t **ptr, size_t* remain,
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void RangeData::load(int& err, CellStore::Readers& cellstores) {
   StaticBuffer read_buf;
   Env::FsInterface::interface()->read(

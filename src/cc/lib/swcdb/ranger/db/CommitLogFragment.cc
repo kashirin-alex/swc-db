@@ -25,14 +25,14 @@ const char* Fragment::to_string(Fragment::State state) noexcept {
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Fragment::Ptr Fragment::make_read(int& err, std::string&& filepath,
                                   const DB::Types::KeySeq key_seq) {
   auto smartfd = FS::SmartFd::make_ptr(std::move(filepath), 0);
   return make_read(err, smartfd, key_seq);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Fragment::Ptr Fragment::make_read(int& err, FS::SmartFd::Ptr& smartfd,
                                   const DB::Types::KeySeq key_seq) {
   uint8_t                     version = 0;
@@ -61,7 +61,7 @@ Fragment::Ptr Fragment::make_read(int& err, FS::SmartFd::Ptr& smartfd,
   ));
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
                            uint8_t& version,
                            DB::Cells::Interval& interval,
@@ -133,7 +133,7 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
                                    DB::Cells::Interval&& interval,
                                    DB::Types::Encoder encoder,
@@ -174,7 +174,7 @@ Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
   return Fragment::Ptr(frag);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Fragment::write(int& err,
                      const uint8_t version,
                      const DB::Cells::Interval& interval,
@@ -220,7 +220,7 @@ void Fragment::write(int& err,
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                    const uint8_t version,
                   DB::Cells::Interval&& interval,
@@ -241,7 +241,7 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Fragment::~Fragment() {
   Env::Rgr::res().less_mem_usage(
     size_of() +
@@ -249,12 +249,12 @@ Fragment::~Fragment() {
   );
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Fragment::Ptr Fragment::ptr() {
   return shared_from_this();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Fragment::size_of() const noexcept {
   return sizeof(*this)
         + interval.size_of_internal()
@@ -262,7 +262,7 @@ size_t Fragment::size_of() const noexcept {
       ;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 const std::string& Fragment::get_filepath() const noexcept {
   return m_smartfd->filepath();
 }
@@ -345,7 +345,7 @@ void Fragment::load(Fragment::LoadCb_t&& cb) {
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
   ssize_t remain_hint(0);
   if(!marked_removed()) {
@@ -370,7 +370,7 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
     release();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
   if(!marked_removed()) {
     if(m_buffer.size) {
@@ -404,7 +404,7 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
   processing_decrement();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Fragment::split(int&, const DB::Cell::Key& key,
                      Fragments::Ptr log_left, Fragments::Ptr log_right) {
   if(!marked_removed()) {
@@ -438,13 +438,13 @@ void Fragment::split(int&, const DB::Cell::Key& key,
     release();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Fragment::processing_increment() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   m_processing.fetch_add(1);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Fragment::processing_decrement() noexcept {
   m_processing.fetch_sub(1);
 }
@@ -469,33 +469,33 @@ size_t Fragment::release() {
   return released;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Fragment::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Fragment::loaded(int& err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return !(err = m_err) && loaded();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Fragment::size_bytes() const noexcept {
   return size_plain;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Fragment::size_bytes(bool only_loaded) const noexcept {
   return only_loaded && !loaded() ? 0 : size_plain;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Fragment::size_bytes_encoded() const noexcept {
   return size_enc;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Fragment::processing() noexcept {
   bool support;
   bool busy = m_processing ||
@@ -512,7 +512,7 @@ bool Fragment::processing() noexcept {
   return busy;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Fragment::marked_removed() const noexcept {
   return m_marked_removed;
 }

@@ -12,13 +12,13 @@
 namespace SWC { namespace Ranger {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Block::Ptr Block::make(const DB::Cells::Interval& interval,
                        Blocks* blocks, State state) {
   return new Block(interval, blocks, state);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Block::Block(const DB::Cells::Interval& interval,
              Blocks* blocks, State state)
             : blocks(blocks), next(nullptr), prev(nullptr),
@@ -33,7 +33,7 @@ Block::Block(const DB::Cells::Interval& interval,
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Block::~Block() {
   Env::Rgr::res().less_mem_usage(
     size_of() +
@@ -41,12 +41,12 @@ Block::~Block() {
   );
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Block::size_of() const noexcept {
   return sizeof(*this);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Block::Ptr Block::ptr() {
   return this;
 }
@@ -60,36 +60,36 @@ void Block::schema_update() noexcept {
   );
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::set_prev_key_end(const DB::Cell::Key& key) {
   m_prev_key_end.copy(key);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Condition::Comp Block::cond_key_end(const DB::Cell::Key& key) const {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   return DB::KeySeq::compare(m_cells.key_seq, m_key_end, key);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::set_key_end(const DB::Cell::Key& key) {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   m_key_end.copy(key);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::free_key_end() {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   m_key_end.free();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::get_key_end(DB::Cell::Key& key) const {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   key.copy(m_key_end);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::is_consist(const DB::Cells::Interval& intval) const {
   return
     (intval.key_end.empty() || m_prev_key_end.empty() ||
@@ -99,20 +99,20 @@ bool Block::is_consist(const DB::Cells::Interval& intval) const {
     (intval.key_begin.empty() || is_in_end(intval.key_begin));
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::is_in_end(const DB::Cell::Key& key) const {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   return _is_in_end(key);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::_is_in_end(const DB::Cell::Key& key) const {
   return m_key_end.empty() || (!key.empty() &&
           DB::KeySeq::compare(m_cells.key_seq, m_key_end, key)
                                               != Condition::GT);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::is_next(const DB::Specs::Interval& spec) const {
   if(includes_end(spec)) {
     Core::MutexAtomic::scope lock(m_mutex_intval);
@@ -122,7 +122,7 @@ bool Block::is_next(const DB::Specs::Interval& spec) const {
   return false;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::includes(const DB::Specs::Interval& spec) const {
   if(includes_end(spec)) {
     Core::MutexAtomic::scope lock(m_mutex_intval);
@@ -131,19 +131,19 @@ bool Block::includes(const DB::Specs::Interval& spec) const {
   return false;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::_includes_begin(const DB::Specs::Interval& spec) const {
   return m_key_end.empty() ||
          spec.is_matching_begin(m_cells.key_seq, m_key_end);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::includes_end(const DB::Specs::Interval& spec) const {
   return m_prev_key_end.empty() ||
          spec.is_in_previous(m_cells.key_seq, m_prev_key_end);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::preload() {
   Env::Rgr::post([this](){
     scan(ReqScanBlockLoader::Ptr(
@@ -152,7 +152,7 @@ void Block::preload() {
   });
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::add_logged(const DB::Cells::Cell& cell) {
   if(!is_in_end(cell.key))
     return false;
@@ -167,7 +167,7 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
   return true;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   if(vec_cells.empty()) {
     Core::MutexSptd::scope lock(m_mutex_state);
@@ -193,7 +193,7 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Block::load_cells(const uint8_t* buf, size_t remain,
                          uint32_t revs, size_t avail,
                          bool& was_splitted, bool synced) {
@@ -253,7 +253,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
   return added;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::splitter() {
   return _need_split() && blocks->_split(ptr(), false);
 }
@@ -352,7 +352,7 @@ Block::Ptr Block::_split(bool loaded) {
   return blk;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::_add(Block::Ptr blk) {
   blk->prev = ptr();
   if(next) {
@@ -383,27 +383,27 @@ size_t Block::release() {
   return released;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::processing_increment() noexcept {
   m_processing.fetch_add(1);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Block::processing_decrement() noexcept {
   m_processing.fetch_sub(1);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::need_load() const noexcept {
   return m_state == State::NONE;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::processing() noexcept {
   bool busy = m_processing ||
               m_state == State::LOADING ||
@@ -424,30 +424,30 @@ bool Block::processing() noexcept {
   return busy;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Block::size() {
   Core::SharedLock lock(m_mutex);
   return _size();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Block::_size() const noexcept {
   return m_cells.size();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Block::size_bytes() {
   Core::SharedLock lock(m_mutex);
   return m_cells.size_bytes();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Block::size_of_internal() {
   Core::SharedLock lock(m_mutex);
   return m_cells.size_of_internal();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Block::_need_split() const noexcept {
   auto sz = _size();
   return sz > 1 &&

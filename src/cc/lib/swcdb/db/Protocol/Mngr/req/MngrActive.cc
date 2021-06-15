@@ -5,30 +5,12 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
-#include "swcdb/db/Protocol/Commands.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-SWC_SHOULD_INLINE
-MngrActive::MngrActive(const SWC::client::Clients::Ptr& clients,
-                       const uint8_t& role, const cid_t& cid,
-                       const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
-                      : client::ConnQueue::ReqBase(
-                          Buffers::make(
-                            Params::MngrActiveReq(role, cid),
-                            0,
-                            MNGR_ACTIVE, timeout_ms
-                          )
-                        ),
-                        clients(clients),
-                        role(role), cid(cid), hdlr(hdlr), nxt(0),
-                        timer(asio::high_resolution_timer(
-                          clients->get_mngr_io()->executor())),
-                        timeout_ms(timeout_ms) {
-}
 
 void MngrActive::run_within(uint32_t t_ms) {
   if(!hdlr->valid() ||

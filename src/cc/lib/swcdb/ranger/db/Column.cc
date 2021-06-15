@@ -10,7 +10,7 @@ namespace SWC { namespace Ranger {
 
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Column::Column(const cid_t cid, const DB::Schema& schema)
               : cfg(new ColumnCfg(cid, schema)) {
   Env::Rgr::in_process(1);
@@ -31,7 +31,7 @@ size_t Column::ranges_count() noexcept {
   return size();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Column::removing() noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return cfg->deleting;
@@ -41,7 +41,7 @@ bool Column::is_not_used() noexcept {
   return cfg.use_count() == 1 && m_q_mng.empty() && !ranges_count();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 RangePtr Column::get_range(const rid_t rid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(rid);
@@ -108,7 +108,7 @@ void Column::run_mng_queue() {
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Column::release(size_t bytes) {
   if(m_release.running())
     return 0;

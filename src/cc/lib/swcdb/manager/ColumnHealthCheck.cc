@@ -15,7 +15,7 @@
 namespace SWC { namespace Manager {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 ColumnHealthCheck::RangerCheck::RangerCheck(
                 const ColumnHealthCheck::Ptr& col_checker,
                 const Ranger::Ptr& rgr)
@@ -107,7 +107,7 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
 
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col,
                                      int64_t check_ts, uint32_t check_intval)
                                     : col(col), check_ts(check_ts),
@@ -228,7 +228,7 @@ void ColumnHealthCheck::finishing(bool finished_range) {
 
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 ColumnHealthCheck::ColumnMerger::ColumnMerger(
             const ColumnHealthCheck::Ptr& col_checker,
             std::vector<Range::Ptr>&& ranges) noexcept
@@ -350,7 +350,7 @@ void ColumnHealthCheck::ColumnMerger::completion() {
 
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 ColumnHealthCheck::ColumnMerger::RangesMerger::RangesMerger(
                 const ColumnMerger::Ptr& col_merger,
                 std::vector<Range::Ptr>&& ranges) noexcept

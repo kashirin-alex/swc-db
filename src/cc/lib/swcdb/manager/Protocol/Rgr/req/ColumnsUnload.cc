@@ -13,7 +13,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                              cid_t cid_begin, cid_t cid_end)
             : client::ConnQueue::ReqBase(

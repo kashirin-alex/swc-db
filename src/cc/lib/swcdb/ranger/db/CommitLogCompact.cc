@@ -7,7 +7,7 @@
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Compact::Group::Group(Compact* compact, uint8_t worker)
                       : worker(worker), error(Error::OK),
                         compact(compact),
@@ -21,7 +21,7 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
                         ) {
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Compact::Group::~Group() {
   if(!m_cells.empty())
     Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
@@ -261,7 +261,7 @@ void Compact::finalized() {
   m_cb ? m_cb(this) : log->finish_compact(this);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 std::string Compact::get_filepath(const int64_t frag) const {
   std::string s(log->range->get_path(Range::LOG_TMP_DIR));
   std::string tmp(std::to_string(frag));

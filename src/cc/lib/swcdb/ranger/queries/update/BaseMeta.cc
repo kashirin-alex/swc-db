@@ -10,7 +10,7 @@
 namespace SWC { namespace Ranger { namespace Query { namespace Update {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 BaseMeta::BaseMeta(const RangePtr& range)
                   : client::Query::Update::Handlers::BaseSingleColumn(
                       Env::Clients::get(),

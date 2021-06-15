@@ -10,7 +10,7 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr {namespace Req {
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 MngrState::MngrState(const ResponseCallback::Ptr& cb,
                      const Manager::MngrsStatus& states,
                      uint64_t token,

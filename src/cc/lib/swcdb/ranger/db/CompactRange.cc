@@ -156,7 +156,7 @@ CompactRange::~CompactRange() {
     delete blk;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 CompactRange::Ptr CompactRange::shared() {
   return std::dynamic_pointer_cast<CompactRange>(shared_from_this());
 }

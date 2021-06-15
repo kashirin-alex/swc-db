@@ -75,7 +75,7 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Read::Read(Header&& header) noexcept
           : header(std::move(header)), cellstore(nullptr),
             m_state(header.size_plain ? State::NONE : State::LOADED),
@@ -84,7 +84,7 @@ Read::Read(Header&& header) noexcept
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::init(CellStore::Read* _cellstore) noexcept {
   cellstore = _cellstore;
 }
@@ -100,7 +100,7 @@ size_t Read::size_of() const noexcept {
   return sizeof(*this) + header.interval.size_of_internal();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Read::load(BlockLoader* loader) {
   m_processing.fetch_add(1);
   auto at(State::NONE);
@@ -122,12 +122,12 @@ bool Read::load(BlockLoader* loader) {
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::load() {
   Env::Rgr::post([this](){ load_open(Error::OK); });
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
   bool was_splitted = false;
   ssize_t remain_hint = m_buffer.size
@@ -147,12 +147,12 @@ void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
     release();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Read::processing_decrement() noexcept {
   m_processing.fetch_sub(1);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Read::release() {
   size_t released = 0;
   bool support;
@@ -172,7 +172,7 @@ size_t Read::release() {
   return released;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Read::processing() noexcept {
   bool support;
   bool busy = m_processing ||
@@ -188,23 +188,23 @@ bool Read::processing() noexcept {
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Read::loaded() const noexcept {
   return m_state == State::LOADED;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Read::loaded(int& err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   return !(err = m_err) && loaded();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Read::size_bytes(bool only_loaded) const noexcept {
   return only_loaded && !loaded() ? 0 : header.size_plain;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 size_t Read::size_bytes_enc(bool only_loaded) const noexcept {
   return only_loaded && !loaded() ? 0 : header.size_enc;
 }
@@ -326,7 +326,7 @@ void Read::load_finish(int err) {
 
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Write::Write(Header&& header) noexcept
             : header(std::move(header)), released(false) {
   Env::Rgr::res().more_mem_usage(
@@ -343,7 +343,7 @@ Write::~Write() {
   );
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
                    Header& header) {
   header.size_plain = cells.fill();

@@ -120,13 +120,13 @@ std::string Range::get_path_cs_on(const std::string folder,
   return DB::RangeBase::get_path_cs(m_path, folder, csid);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 Common::Files::RgrData::Ptr Range::get_last_rgr(int &err) {
   return Common::Files::RgrData::get_rgr(
     err, DB::RangeBase::get_path_ranger(m_path));
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 uint24_t Range::known_interval_count() {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   return m_interval.key_end.empty()
@@ -134,7 +134,7 @@ uint24_t Range::known_interval_count() {
           : m_interval.key_end.count;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::get_interval(DB::Cells::Interval& interval) {
   Core::MutexAtomic::scope lock(m_mutex_intval);
   Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
@@ -155,29 +155,29 @@ bool Range::can_be_merged() {
         !blocks.cellstores.size_bytes(false);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::_get_interval(DB::Cells::Interval& interval) const {
   interval.copy(m_interval);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::_get_interval(DB::Cell::Key& key_begin,
                           DB::Cell::Key& key_end) const {
   key_begin.copy(m_interval.key_begin);
   key_end.copy(m_interval.key_end);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Range::_is_any_begin() const {
   return m_interval.key_begin.empty();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Range::_is_any_end() const {
   return m_interval.key_end.empty();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::schema_update(bool compact) {
   blocks.schema_update();
   if(compact)
@@ -210,20 +210,20 @@ void Range::state(int& err) const {
   }
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Range::state_unloading() const noexcept {
   return Env::Rgr::is_shuttingdown() ||
          (Env::Rgr::is_not_accepting() &&
           DB::Types::SystemColumn::is_data(cfg->cid));
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::add(Callback::RangeQueryUpdate* req) {
   m_q_add.push(req);
   run_add_queue();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::scan(const ReqScan::Ptr& req) {
   {
     Core::ScopedLock lock(m_mutex);
@@ -262,7 +262,7 @@ void Range::scan(const ReqScan::Ptr& req) {
   blocks.processing_decrement();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::scan_internal(const ReqScan::Ptr& req) {
   blocks.scan(std::move(req));
 }
@@ -391,7 +391,7 @@ void Range::wait_queue() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Range::compacting() {
   Core::SharedLock lock(m_mutex);
   return m_compacting != COMPACT_NONE;
@@ -449,12 +449,12 @@ bool Range::compact_possible(bool minor) {
   return true;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::compact_require(bool require) {
   m_require_compact.store(require);
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 bool Range::compact_required() {
   return m_require_compact;
 }
@@ -583,7 +583,7 @@ void Range::expand_and_align(bool w_chg_chk,
     : hdlr->callback();
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::internal_create_folders(int& err) {
   Env::FsInterface::interface()->mkdirs(
     err, get_path(DB::RangeBase::LOG_DIR));
@@ -868,7 +868,7 @@ bool Range::wait(uint8_t from_state, bool incr) {
   return waited;
 }
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Range::run_add_queue() {
   if(m_adding.fetch_add(1) < Env::Rgr::get()->cfg_req_add_concurrency->get())
     Env::Rgr::post([ptr=shared_from_this()](){ ptr->_run_add_queue(); });
