@@ -147,7 +147,7 @@ struct Atomic : public AtomicBase<T> {
 
   SWC_CAN_INLINE
   T operator--(int) noexcept {
-    return fetch_sub(1);;
+    return fetch_sub(1);
   }
 
 

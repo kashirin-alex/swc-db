@@ -360,7 +360,7 @@ void Committer::proceed_on_ranger(
   if(cid != rsp.cid || colp->get_cid() != cid) {
     hdlr->clients->rgr_cache_remove(cid, rid);
     SWC_LOCATOR_RSP_DEBUG("rgr_located RETRYING(cid no match)");
-    return (parent ? parent : base)->request_again();;
+    return (parent ? parent : base)->request_again();
   }
   commit_data(rsp.endpoints, base);
   return hdlr->response();

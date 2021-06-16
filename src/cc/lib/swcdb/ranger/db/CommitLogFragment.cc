@@ -559,7 +559,7 @@ void Fragment::print(std::ostream& out) {
       << " state=" << to_string(m_state)
       << " processing=" << m_processing.load();
   {
-    Core::MutexSptd::scope lock(m_mutex);;
+    Core::MutexSptd::scope lock(m_mutex);
     out << " queue=" << m_queue.size();
     m_smartfd->print(out << ' ');
     if(m_err)

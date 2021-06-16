@@ -255,7 +255,7 @@ bool Statistics::read(std::string& cmd, bool extended) {
         parser.expect_eq();
         parser.read(group->key[i], " ");
         found = ok = true;
-        break;;
+        break;
       }
     }
     if(found)
