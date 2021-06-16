@@ -61,7 +61,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   bool                                    master_rgr_next;
   bool                                    meta_next;
   uint8_t                                 retry_point;
-  bool                                    need_data_cid_ckeck;
+  bool                                    need_data_cid_check;
 
   ReqBase::Ptr                            master_rgr_req_base;
   ReqBase::Ptr                            meta_req_base;

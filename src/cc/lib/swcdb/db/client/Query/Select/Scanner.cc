@@ -50,7 +50,7 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_rgr_next(false),
               meta_next(false),
               retry_point(RETRY_POINT_NONE),
-              need_data_cid_ckeck(false) {
+              need_data_cid_check(false) {
 }
 
 Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
@@ -71,7 +71,7 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_rgr_next(false),
               meta_next(false),
               retry_point(RETRY_POINT_NONE),
-              need_data_cid_ckeck(false) {
+              need_data_cid_check(false) {
 }
 
 void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
@@ -577,7 +577,7 @@ void Scanner::rgr_located_meta(
       break;
     }
     case Error::RANGE_NOT_FOUND: {
-      if(need_data_cid_ckeck) {
+      if(need_data_cid_check) {
         selector->clients->schemas.remove(data_cid);
         int err = Error::OK;
         selector->clients->get_schema(err, data_cid);
@@ -587,9 +587,9 @@ void Scanner::rgr_located_meta(
           SWC_SCANNER_RSP_DEBUG("rgr_located_meta QUIT(no-schema)");
           break;
         }
-        need_data_cid_ckeck = false;
+        need_data_cid_check = false;
       } else {
-        need_data_cid_ckeck = true;
+        need_data_cid_check = true;
       }
       meta_next = false;
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta meta_next");
