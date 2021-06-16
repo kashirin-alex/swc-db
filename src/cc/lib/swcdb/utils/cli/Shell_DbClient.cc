@@ -323,7 +323,8 @@ bool DbClient::select(std::string& cmd) {
     clients,
     [this, &display_flags, &cells_count, &cells_bytes]
     (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-      display(hdlr, display_flags, cells_count, cells_bytes);
+      if(!hdlr->error())
+        display(hdlr, display_flags, cells_count, cells_bytes);
     },
     true, // cb on partial rsp
     nullptr,
@@ -336,8 +337,11 @@ bool DbClient::select(std::string& cmd) {
   if(!err)
     hdlr->wait();
 
-  if(err || (err = hdlr->error()))
+  if(err || (err = hdlr->error())) {
+    for(cid_t cid : hdlr->get_cids())
+      clients->schemas.remove(cid);
     return error(message);
+  }
 
   if(display_flags & DB::DisplayFlag::STATS)
     display_stats(
@@ -381,7 +385,7 @@ void DbClient::display(
         SWC_LOG_OSTREAM << std::endl;
       }
     }
-  } while(count_state != cells_count);
+  } while(!hdlr->error() && count_state != cells_count);
 }
 
 // UPDATE

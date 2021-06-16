@@ -75,6 +75,20 @@ void BrokerScanner::selected(const ReqBase::Ptr& req,
       }
       break;
     }
+    case Error::COLUMN_MARKED_REMOVED:
+    case Error::COLUMN_SCHEMA_NAME_NOT_EXISTS:
+    case Error::COLUMN_NOT_EXISTS: {
+      SWC_SCANNER_RSP_DEBUG("bkr_selected QUIT");
+      selector->clients->schemas.remove(cid);
+      selector->error(rsp.err); // rsp.err = Error::CONSIST_ERRORS;
+      selector->error(cid, rsp.err);
+      break;
+    }
+    case Error::CLIENT_STOPPING: {
+      SWC_SCANNER_RSP_DEBUG("bkr_selected STOPPED");
+      selector->error(rsp.err);
+      break;
+    }
     default: {
       if(selector->valid()) {
         SWC_SCANNER_RSP_DEBUG("bkr_selected RETRYING");

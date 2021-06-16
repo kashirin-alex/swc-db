@@ -49,7 +49,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_mngr_next(false),
               master_rgr_next(false),
               meta_next(false),
-              retry_point(RETRY_POINT_NONE) {
+              retry_point(RETRY_POINT_NONE),
+              need_data_cid_ckeck(false) {
 }
 
 Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
@@ -69,7 +70,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_mngr_next(false),
               master_rgr_next(false),
               meta_next(false),
-              retry_point(RETRY_POINT_NONE) {
+              retry_point(RETRY_POINT_NONE),
+              need_data_cid_ckeck(false) {
 }
 
 void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
@@ -575,6 +577,20 @@ void Scanner::rgr_located_meta(
       break;
     }
     case Error::RANGE_NOT_FOUND: {
+      if(need_data_cid_ckeck) {
+        selector->clients->schemas.remove(data_cid);
+        int err = Error::OK;
+        selector->clients->get_schema(err, data_cid);
+        if(err) {
+          selector->error(err); // rsp.err = Error::CONSIST_ERRORS;
+          selector->error(data_cid, err);
+          SWC_SCANNER_RSP_DEBUG("rgr_located_meta QUIT(no-schema)");
+          break;
+        }
+        need_data_cid_ckeck = false;
+      } else {
+        need_data_cid_ckeck = true;
+      }
       meta_next = false;
       SWC_SCANNER_RSP_DEBUG("rgr_located_meta meta_next");
       next_call();
@@ -652,6 +668,7 @@ bool Scanner::mngr_resolved_rgr_select(
     }
     case Error::COLUMN_NOT_EXISTS: {
       SWC_SCANNER_RSP_DEBUG("mngr_resolved_rgr_select QUIT");
+      selector->clients->schemas.remove(data_cid);
       selector->error(rsp.err); // rsp.err = Error::CONSIST_ERRORS;
       selector->error(data_cid, rsp.err);
       return true;
@@ -734,6 +751,19 @@ void Scanner::rgr_selected(
         retry_point = RETRY_POINT_DATA;
         return data_req_base->request_again();
       }
+      break;
+    }
+    case Error::COLUMN_MARKED_REMOVED:
+    case Error::COLUMN_NOT_EXISTS: {
+      SWC_SCANNER_RSP_DEBUG("rgr_selected QUIT");
+      selector->clients->schemas.remove(data_cid);
+      selector->error(rsp.err); // rsp.err = Error::CONSIST_ERRORS;
+      selector->error(data_cid, rsp.err);
+      break;
+    }
+    case Error::CLIENT_STOPPING: {
+      SWC_SCANNER_RSP_DEBUG("rgr_selected STOPPED");
+      selector->error(rsp.err);
       break;
     }
     default: {

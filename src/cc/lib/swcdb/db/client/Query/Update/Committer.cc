@@ -308,8 +308,10 @@ void Committer::located_ranger(
       break;
     case Error::COLUMN_NOT_EXISTS: {
       SWC_LOCATOR_RSP_DEBUG("rgr_located");
-      if(cid == colp->get_cid())
+      if(cid == colp->get_cid()) {
+        hdlr->clients->schemas.remove(cid);
         hdlr->error(cid, rsp.err);
+      }
       return hdlr->response(rsp.err);
     }
     case Error::CLIENT_STOPPING: {
