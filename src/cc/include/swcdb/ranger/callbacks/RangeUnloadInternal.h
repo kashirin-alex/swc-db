@@ -33,44 +33,50 @@ class RangeUnloadInternal final : public ManageBase {
 
   void send_error(int, const std::string&) override { }
 
-  void response_ok() override {
-    struct ReqData {
-      const cid_t cid;
-      const rid_t rid;
-      SWC_CAN_INLINE
-      ReqData(cid_t cid, rid_t rid) noexcept : cid(cid), rid(rid) { }
-      SWC_CAN_INLINE
-      cid_t get_cid() const noexcept {
-        return cid;
-      }
-      SWC_CAN_INLINE
-      client::Clients::Ptr& get_clients() noexcept {
-        return Env::Clients::get();
-      }
-      SWC_CAN_INLINE
-      bool valid() noexcept {
-        return !Env::Rgr::is_not_accepting();
-      }
-      SWC_CAN_INLINE
-      void callback(
-          const Comm::client::ConnQueue::ReqBase::Ptr& req,
-          const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
-        SWC_LOGF(LOG_DEBUG, "RangeUnloadInternal err=%d(%s) %lu/%lu",
-                 rsp.err, Error::get_text(rsp.err), cid, rid);
-        if(rsp.err && valid() &&
-           rsp.err != Error::CLIENT_STOPPING &&
-           rsp.err != Error::COLUMN_NOT_EXISTS &&
-           rsp.err != Error::COLUMN_MARKED_REMOVED &&
-           rsp.err != Error::COLUMN_NOT_READY) {
-           req->request_again();
-        }
-      }
-    };
+  void response_ok() override { }
+
+  void response() {
     Comm::Protocol::Mngr::Req::RangeUnloaded<ReqData>::request(
       Comm::Protocol::Mngr::Params::RangeUnloadedReq(cid, rid),
-        10000, cid, rid
+      10000, cid, rid
     );
   }
+
+  private:
+
+  struct ReqData {
+    const cid_t cid;
+    const rid_t rid;
+    SWC_CAN_INLINE
+    ReqData(cid_t cid, rid_t rid) noexcept : cid(cid), rid(rid) { }
+    SWC_CAN_INLINE
+    cid_t get_cid() const noexcept {
+      return cid;
+    }
+    SWC_CAN_INLINE
+    client::Clients::Ptr& get_clients() noexcept {
+      return Env::Clients::get();
+    }
+    SWC_CAN_INLINE
+    bool valid() noexcept {
+      return !Env::Rgr::is_not_accepting();
+    }
+    SWC_CAN_INLINE
+    void callback(
+        const Comm::client::ConnQueue::ReqBase::Ptr& req,
+        const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
+      SWC_LOGF(LOG_DEBUG, "RangeUnloadInternal err=%d(%s) %lu/%lu",
+               rsp.err, Error::get_text(rsp.err), cid, rid);
+      if(rsp.err && valid() &&
+         rsp.err != Error::CLIENT_STOPPING &&
+         rsp.err != Error::COLUMN_NOT_EXISTS &&
+         rsp.err != Error::COLUMN_MARKED_REMOVED &&
+         rsp.err != Error::COLUMN_NOT_READY) {
+         req->request_again();
+      }
+    }
+  };
+
 };
 
 

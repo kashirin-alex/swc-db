@@ -274,10 +274,12 @@ void Column::unload(const Callback::RangeUnload::Ptr& req) {
 }
 
 void Column::unload(const Callback::RangeUnloadInternal::Ptr& req) {
-  bool chk_empty = false;
-  internal_unload(req->rid, chk_empty);
-  req->response_ok();
-  Env::Rgr::columns()->erase_if_empty(cfg->cid);
+  if(req) {
+    bool chk_empty = false;
+    internal_unload(req->rid, chk_empty);
+    req->response();
+    Env::Rgr::columns()->erase_if_empty(cfg->cid);
+  }
   run_mng_queue();
 }
 
