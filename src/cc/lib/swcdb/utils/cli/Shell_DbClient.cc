@@ -336,7 +336,7 @@ bool DbClient::select(std::string& cmd) {
   if(!err)
     hdlr->wait();
 
-  if(err)
+  if(err || (err = hdlr->error()))
     return error(message);
 
   if(display_flags & DB::DisplayFlag::STATS)
@@ -360,7 +360,7 @@ void DbClient::display(
   do {
     count_state = cells_count;
     for(cid_t cid : hdlr->get_cids()) {
-      meta = !DB::Types::SystemColumn::is_data(cid);;
+      meta = !DB::Types::SystemColumn::is_data(cid);
       schema = clients->get_schema(err, cid);
       cells.free();
       hdlr->get_cells(cid, cells);

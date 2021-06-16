@@ -31,6 +31,7 @@ class BaseUnorderedMap : public Base {
 
   virtual ~BaseUnorderedMap() { }
 
+  using Base::error;
 
   virtual void error(const cid_t cid, int err) override {
     get_columnn(cid)->error(err);
