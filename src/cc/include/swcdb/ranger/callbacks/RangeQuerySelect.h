@@ -118,6 +118,9 @@ class RangeQuerySelect : public ReqScan {
       Error::print(SWC_LOG_OSTREAM, err);
       profile.print(SWC_LOG_OSTREAM << " Select-");
     );
+
+    if(err == Error::RGR_NOT_LOADED_RANGE)
+      range->issue_unload();
   }
 
   void print(std::ostream& out) const override {

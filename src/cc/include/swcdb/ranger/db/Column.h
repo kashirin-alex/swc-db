@@ -72,6 +72,8 @@ class Column final :
 
   void unload(const Callback::RangeUnload::Ptr& req);
 
+  void unload(const Callback::RangeUnloadInternal::Ptr& req);
+
   void unload_all(const Callback::ColumnsUnload::Ptr& req);
 
   void remove(const Callback::ColumnDelete::Ptr& req);

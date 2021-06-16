@@ -339,6 +339,13 @@ void Range::internal_unload(bool completely, bool& chk_empty) {
                       cfg->cid, rid, err, Error::get_text(err));
 }
 
+void Range::issue_unload() {
+  auto col = Env::Rgr::columns()->get_column(cfg->cid);
+  if(col && !col->removing())
+    col->add_managing(Callback::RangeUnloadInternal::Ptr(
+      new Callback::RangeUnloadInternal(cfg->cid, rid)));
+}
+
 void Range::remove(const Callback::ColumnDelete::Ptr& req) {
   {
     Core::ScopedLock lock(m_mutex);

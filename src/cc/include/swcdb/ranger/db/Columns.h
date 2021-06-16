@@ -19,6 +19,7 @@ typedef std::shared_ptr<Range> RangePtr;
 #include "swcdb/ranger/callbacks/ManageBase.h"
 #include "swcdb/ranger/callbacks/RangeLoad.h"
 #include "swcdb/ranger/callbacks/RangeUnload.h"
+#include "swcdb/ranger/callbacks/RangeUnloadInternal.h"
 #include "swcdb/ranger/callbacks/ColumnsUnload.h"
 #include "swcdb/ranger/callbacks/ColumnsUnloadAll.h"
 #include "swcdb/ranger/callbacks/ColumnDelete.h"

@@ -155,6 +155,9 @@ class RangeLocateScan : public ReqScan {
       Error::print(SWC_LOG_OSTREAM, err);
       profile.print(SWC_LOG_OSTREAM << " flags=" << int(flags) << " Locate-");
     );
+
+    if(err == Error::RGR_NOT_LOADED_RANGE)
+      range->issue_unload();
   }
 
   RangePtr              range;

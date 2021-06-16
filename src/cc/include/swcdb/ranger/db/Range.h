@@ -110,6 +110,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void internal_unload(bool completely, bool& chk_empty);
 
+  void issue_unload();
+
   void remove(const Callback::ColumnDelete::Ptr& req);
 
   void internal_remove(int &err);

@@ -25,6 +25,7 @@ class ManageBase : public Comm::ResponseCallback {
   enum Action {
     RANGE_LOAD,
     RANGE_UNLOAD,
+    RANGE_UNLOAD_INTERNAL,
     COLUMNS_UNLOAD,
     COLUMN_DELETE
   };
