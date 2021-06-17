@@ -6,9 +6,17 @@
 ***
 
 
-
-
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
+
+    
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.3...master)
+******
+
+
+
+
+### [SWC-DB v0.5.3](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.3) (2021-06-19)
 
     removed cases of Env::Config and Env::IoCtx in namespace Comm and client
     added Comm::IoContextPtr io_ctx storage in client::Clients class
@@ -43,8 +51,10 @@
     added bool client::Brokers::put(ReqBase::Ptr, Idx)
     added bool client::Manager::{put, put_role_schemas}(ReqBase::Ptr, ...)
     changed pref. some-defintions in header with SWC_CAN_INLINE of Performance
+    added Column Existence check & Error handling in Committer & Scanner Query
+    added Ranger option to issue Range Unload
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.2...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.2...v0.5.3)
 ******
 
 

@@ -13,7 +13,7 @@ These configuration properties are for sbin/swcdb_cluster a python script based 
 The Full-Path or Uri to the SWC-DB `tar` archive package. An archive package from [available SWC-DB releases]({{ site.baseurl }}/install/getting_swcdb/#available-for-download) is suitable for the type of archive required.
 > The source-host SWC-DB installation files are copied if the property is not set.
 
-  _default_ **```swc.install.archive=https://github.com/kashirin-alex/swc-db/releases/download/v0.5.2/swcdb-0.5.2.debug.amd64.tar.xz```**
+  _default_ **```swc.install.archive=https://github.com/kashirin-alex/swc-db/releases/download/v0.5.3/swcdb-0.5.3.debug.amd64.tar.xz```**
 
 
 * ### swc.cluster.rgr.host
