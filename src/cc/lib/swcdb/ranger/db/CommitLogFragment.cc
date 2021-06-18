@@ -32,7 +32,6 @@ Fragment::Ptr Fragment::make_read(int& err, std::string&& filepath,
   return make_read(err, smartfd, key_seq);
 }
 
-SWC_CAN_INLINE
 Fragment::Ptr Fragment::make_read(int& err, FS::SmartFd::Ptr& smartfd,
                                   const DB::Types::KeySeq key_seq) {
   uint8_t                     version = 0;
@@ -133,7 +132,6 @@ void Fragment::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 }
 
 
-SWC_CAN_INLINE
 Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
                                    DB::Cells::Interval&& interval,
                                    DB::Types::Encoder encoder,
@@ -223,7 +221,7 @@ void Fragment::write(int& err,
 SWC_CAN_INLINE
 Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                    const uint8_t version,
-                  DB::Cells::Interval&& interval,
+                   DB::Cells::Interval&& interval,
                    const DB::Types::Encoder encoder,
                    const size_t size_plain, const size_t size_enc,
                    const uint32_t cell_revs, const uint32_t cells_count,

@@ -207,7 +207,7 @@ class Cell final {
 
   void read(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
-  uint32_t encoded_length(bool no_value=false) const noexcept;
+  size_t encoded_length(bool no_value=false) const noexcept;
 
   void write(DynamicBuffer &dst_buf, bool no_value=false) const;
 
@@ -426,8 +426,8 @@ int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
 }
 
 SWC_CAN_INLINE
-uint32_t Cell::encoded_length(bool no_value) const noexcept {
-  uint32_t len = key.encoded_length();
+size_t Cell::encoded_length(bool no_value) const noexcept {
+  size_t len = key.encoded_length();
   len += 2;
   if(control & HAVE_TIMESTAMP)
     len += 8;

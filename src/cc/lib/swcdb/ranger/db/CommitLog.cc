@@ -479,8 +479,10 @@ size_t Fragments::cells_count(bool only_current) {
 SWC_CAN_INLINE
 bool Fragments::empty() {
   Core::SharedLock lock1(m_mutex);
+  if(!Vec::empty())
+    return false;
   Core::SharedLock lock2(m_mutex_cells);
-  return Vec::empty() && m_cells.empty();
+  return m_cells.empty();
 }
 
 size_t Fragments::size() noexcept {

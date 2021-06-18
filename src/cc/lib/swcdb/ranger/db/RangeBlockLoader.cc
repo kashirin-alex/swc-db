@@ -50,6 +50,7 @@ void BlockLoader::loaded_blk() {
   Env::Rgr::post([this](){ load_cellstores_cells(); });
 }
 
+SWC_CAN_INLINE
 void BlockLoader::load_cellstores_cells() {
   int err;
   bool loaded;
@@ -145,6 +146,7 @@ void BlockLoader::loaded_frag(const CommitLog::Fragment::Ptr& frag) {
   Env::Rgr::post([this](){ load_log_cells(); });
 }
 
+SWC_CAN_INLINE
 void BlockLoader::load_log_cells() {
   bool more;
   bool loaded;
@@ -182,6 +184,7 @@ void BlockLoader::load_log_cells() {
     load_log(true);
 }
 
+SWC_CAN_INLINE
 void BlockLoader::completion() {
   {
     Core::MutexSptd::scope lock(m_mutex);

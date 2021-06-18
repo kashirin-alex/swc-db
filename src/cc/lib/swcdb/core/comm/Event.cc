@@ -5,38 +5,12 @@
 
 
 
-#include "swcdb/core/Exception.h"
-#include "swcdb/core/Serialization.h"
 #include "swcdb/core/comm/Event.h"
 
 
 namespace SWC { namespace Comm {
 
 
-
-void Event::decode_buffers() {
-  int err = Error::OK;
-  int n = 1;
-  header.data.decode(err, data);
-  if(!err && header.buffers > 1) {
-    ++n;
-    header.data_ext.decode(err, data_ext);
-  }
-
-  if(err) {
-    error = Error::REQUEST_TRUNCATED_PAYLOAD;
-    data.free();
-    data_ext.free();
-    SWC_LOG_OUT(LOG_WARN,
-      SWC_LOG_OSTREAM << "decode, REQUEST ENCODER_DECODE: n(" << n << ") ";
-      print(SWC_LOG_OSTREAM);
-    );
-  }
-}
-
-bool Event::expired(int64_t within) const noexcept {
-  return expiry_ms && Time::now_ms() > (expiry_ms - within);
-}
 
 int32_t Event::response_code() const noexcept {
   if(error)

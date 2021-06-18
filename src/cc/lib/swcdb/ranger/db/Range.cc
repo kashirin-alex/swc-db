@@ -223,7 +223,6 @@ void Range::add(Callback::RangeQueryUpdate* req) {
   run_add_queue();
 }
 
-SWC_CAN_INLINE
 void Range::scan(const ReqScan::Ptr& req) {
   {
     Core::ScopedLock lock(m_mutex);
@@ -875,7 +874,6 @@ bool Range::wait(uint8_t from_state, bool incr) {
   return waited;
 }
 
-SWC_CAN_INLINE
 void Range::run_add_queue() {
   if(m_adding.fetch_add(1) < Env::Rgr::get()->cfg_req_add_concurrency->get())
     Env::Rgr::post([ptr=shared_from_this()](){ ptr->_run_add_queue(); });

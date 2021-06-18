@@ -101,6 +101,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
   }
 
 
+  SWC_CAN_INLINE
   DB::Types::Encoder block_enc() const {
     DB::Types::Encoder tmp(blk_enc);
     return tmp == DB::Types::Encoder::DEFAULT
@@ -108,46 +109,55 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
             : tmp;
   }
 
+  SWC_CAN_INLINE
   uint32_t block_size() const {
     uint32_t tmp(blk_size);
     return tmp ? tmp : Env::Rgr::get()->cfg_blk_size->get();
   }
 
+  SWC_CAN_INLINE
   uint32_t block_cells() const {
     uint32_t tmp(blk_cells);
     return tmp ? tmp : Env::Rgr::get()->cfg_blk_cells->get();
   }
 
-
+  SWC_CAN_INLINE
   uint8_t file_replication() const {
     uint8_t tmp(cs_replication);
     return tmp ? tmp : Env::Rgr::get()->cfg_cs_replication->get();
   }
 
+  SWC_CAN_INLINE
   uint32_t cellstore_size() const {
     uint32_t tmp(cs_size);
     return tmp ? tmp : Env::Rgr::get()->cfg_cs_sz->get();
   }
 
+  SWC_CAN_INLINE
   uint8_t cellstore_max() const {
     uint8_t tmp(cs_max);
     return tmp ? tmp : Env::Rgr::get()->cfg_cs_max->get();
   }
 
+  SWC_CAN_INLINE
   uint8_t log_rollout_ratio() const {
     uint8_t tmp(log_rout_ratio);
     return tmp ? tmp : Env::Rgr::get()->cfg_log_rollout_ratio->get();
   }
 
+  SWC_CAN_INLINE
   uint8_t log_compact_cointervaling() const {
     uint8_t tmp(log_compact);
     return tmp ? tmp : Env::Rgr::get()->cfg_log_compact_cointervaling->get();
   }
+
+  SWC_CAN_INLINE
   uint8_t log_fragment_preload() const {
     uint8_t tmp(log_preload);
     return tmp ? tmp : Env::Rgr::get()->cfg_log_fragment_preload->get();
   }
 
+  SWC_CAN_INLINE
   uint8_t compact_percent() const {
     uint8_t tmp(compact_perc);
     return tmp ? tmp : Env::Rgr::get()->cfg_compact_percent->get();

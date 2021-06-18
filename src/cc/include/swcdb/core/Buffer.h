@@ -216,20 +216,24 @@ struct BufferDyn : BufferT {
     ptr = BufferT::base;
   }
 
+  SWC_CAN_INLINE
   void ensure(size_t len) {
     if(!BufferT::base) {
       BufferT::own = true;
       ptr = mark = BufferT::base = BufferT::allocate(BufferT::size = len);
 
-    } else if(len > remaining()) {
-      size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
-      size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
+    } else {
+      size_t remain = remaining();
+      if(len > remain) {
+        size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
+        size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
 
-      BufferT::grow(len - remaining()); // actual size required to add
-      //BufferT::grow((fill() + len) * 3 / 2); // grow by 1.5
+        BufferT::grow(len - remain); // actual size required to add
+        //BufferT::grow((fill() + len) * 3 / 2); // grow by 1.5
 
-      mark = BufferT::base + offset_mark;
-      ptr = BufferT::base + offset_ptr;
+        mark = BufferT::base + offset_mark;
+        ptr = BufferT::base + offset_ptr;
+      }
     }
   }
 
@@ -254,14 +258,12 @@ struct BufferDyn : BufferT {
       reinterpret_cast<const value_type*>(data.c_str()), data.length());
   }
 
-  SWC_CAN_INLINE
   void add(const value_type data) {
     ensure(1);
     *ptr = data;
     ++ptr;
   }
 
-  SWC_CAN_INLINE
   void set(const value_type* data, size_t len) {
     clear();
     ensure(len);

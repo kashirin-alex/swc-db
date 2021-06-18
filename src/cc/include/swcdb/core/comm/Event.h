@@ -10,6 +10,8 @@
 
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Buffer.h"
+#include "swcdb/core/Exception.h"
+#include "swcdb/core/Serialization.h"
 #include "swcdb/core/comm/Header.h"
 
 
@@ -41,7 +43,10 @@ class Event final {
 
   void decode_buffers();
 
-  bool expired(int64_t within=0) const noexcept;
+  SWC_CAN_INLINE
+  bool expired(int64_t within=0) const noexcept {
+    return expiry_ms && Time::now_ms() > (expiry_ms - within);
+  }
 
   int32_t response_code() const noexcept;
 
@@ -54,6 +59,32 @@ class Event final {
   int                 error;
 
 };
+
+
+
+SWC_CAN_INLINE
+void Event::decode_buffers() {
+  int err = Error::OK;
+  uint8_t n = 1;
+  header.data.decode(err, data);
+  if(!err && header.buffers > 1) {
+    ++n;
+    header.data_ext.decode(err, data_ext);
+  }
+
+  if(err) {
+    error = Error::REQUEST_TRUNCATED_PAYLOAD;
+    data.free();
+    data_ext.free();
+    SWC_LOG_OUT(LOG_WARN,
+      SWC_LOG_OSTREAM
+        << "decode, REQUEST ENCODER_DECODE: n(" << int(n) << ") ";
+      print(SWC_LOG_OSTREAM);
+    );
+  }
+}
+
+
 
 }} // namespace SWC::Comm
 

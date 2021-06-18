@@ -749,7 +749,6 @@ void CompactRange::finalize() {
 
 }
 
-SWC_CAN_INLINE
 void CompactRange::mngr_create_range(uint32_t split_at) {
   struct ReqData {
     CompactRange::Ptr ptr;

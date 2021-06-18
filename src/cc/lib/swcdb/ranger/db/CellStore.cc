@@ -366,6 +366,7 @@ bool Read::processing() const noexcept{
   return false;
 }
 
+SWC_CAN_INLINE
 size_t Read::size_bytes(bool only_loaded) const {
   size_t size = 0;
   for(auto blk : blocks)
@@ -373,6 +374,7 @@ size_t Read::size_bytes(bool only_loaded) const {
   return size;
 }
 
+SWC_CAN_INLINE
 size_t Read::size_bytes_enc(bool only_loaded) const {
   size_t size = 0;
   for(auto blk : blocks)

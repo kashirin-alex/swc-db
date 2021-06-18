@@ -106,10 +106,12 @@ class Clients : public std::enable_shared_from_this<Clients> {
     return !running;
   }
 
+  SWC_CAN_INLINE
   void set_flags(uint8_t _flags) noexcept {
     flags.store(_flags);
   }
 
+  SWC_CAN_INLINE
   void set_flags__schemas_via_default() noexcept {
     set_flags(Flag::DEFAULT | Flag::BROKER);
   }
@@ -119,6 +121,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
     return io_ctx;
   }
 
+  SWC_CAN_INLINE
   bool has_brokers() noexcept {
     return bool(brokers.queues);
   }
