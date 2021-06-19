@@ -614,7 +614,9 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
 
 void Rangers::health_check_columns() {
   bool support;
-  if(!m_run || !m_mutex_columns_check.try_full_lock(support))
+  if(!m_run ||
+     !Env::Mngr::mngd_columns()->expected_ready() ||
+     !m_mutex_columns_check.try_full_lock(support))
     return;
   int64_t ts = Time::now_ms();
   uint32_t intval = cfg_column_health_chk->get();

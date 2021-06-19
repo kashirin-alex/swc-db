@@ -526,26 +526,28 @@ bool MngdColumns::columns_load() {
 
     make_batch:
       it_batch = it;
+      columns.reserve(1000);
       for(;it != entries.end() && columns.size() < 1000 &&
            (!g->cid_begin || g->cid_begin <= (*it)->cid) &&
            (!g->cid_end || g->cid_end >= (*it)->cid); ++it) {
         columns.push_back((*it)->cid);
       }
-    if(++g_batches > 1 && columns.empty())
-      continue;
+      if(++g_batches > 1 && columns.empty())
+        continue;
 
-    auto sz = columns.size();
-    SWC_LOGF(LOG_DEBUG,
-      "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%lu",
-      g->cid_begin, g->cid_end, g_batches, sz);
-    set_expect(g->cid_begin, g->cid_end, std::move(columns), true);
+      auto sz = columns.size();
+      SWC_LOGF(LOG_DEBUG,
+        "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%lu",
+        g->cid_begin, g->cid_end, g_batches, sz);
+      set_expect(g->cid_begin, g->cid_end, std::move(columns), true);
+      columns.clear();
 
-    for(; it_batch != it; ++it_batch) {
-      update_status(
-        ColumnMngFunc::INTERNAL_LOAD, *it_batch, Error::OK, 0, true);
-    }
-    if(it != entries.end() && sz == 1000)
-      goto make_batch;
+      for(; it_batch != it; ++it_batch) {
+        update_status(
+          ColumnMngFunc::INTERNAL_LOAD, *it_batch, Error::OK, 0, true);
+      }
+      if(it != entries.end() && sz == 1000)
+        goto make_batch;
   }
 
   m_columns_load.stop();
