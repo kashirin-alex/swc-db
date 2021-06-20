@@ -118,7 +118,8 @@
   );
 
 #define SWC_FS_READALL_FINISH(_error, _name, _amount, _tracker) \
-  _SWC_FS_ERR(_error, "readall", _tracker, \
+  _SWC_FS_ERR(_error == Error::FS_PATH_NOT_FOUND ? Error::OK : _error, \
+    "readall", _tracker, \
     SWC_LOG_OSTREAM << " file='" << _name << "' amt=" << _amount; \
   );
 

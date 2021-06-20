@@ -77,7 +77,7 @@ void RangeData::load(int& err, CellStore::Readers& cellstores) {
     cellstores.range->get_path(DB::RangeBase::RANGE_FILE),
     &read_buf
   );
-  if(!err) {
+  if(!err) try {
     const uint8_t *ptr = read_buf.base;
     size_t remain = read_buf.size;
 
@@ -94,6 +94,10 @@ void RangeData::load(int& err, CellStore::Readers& cellstores) {
     } else {
       read(err, &ptr, &sz, cellstores);
     }
+  } catch(...) {
+    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+    err = e.code();
+    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
   }
 
   if(err || cellstores.empty()) {

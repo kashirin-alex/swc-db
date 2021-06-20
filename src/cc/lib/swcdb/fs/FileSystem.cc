@@ -190,7 +190,8 @@ void FileSystem::rename(Callback::RmdirCb_t&& cb,
 void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
                                uint8_t replication, int64_t blksz,
                                StaticBuffer& buffer) {
-  SWC_LOG_OUT(LOG_DEBUG, smartfd->print(SWC_LOG_OSTREAM << "write "); );
+  auto tracker = statistics.tracker(Statistics::WRITE_SYNC);
+  SWC_FS_WRITE_START(smartfd, replication, blksz, buffer.size);
 
   create(err, smartfd, 0, replication, blksz);
   if(!smartfd->valid() || err) {
@@ -212,11 +213,7 @@ void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
     err = Error::FS_EOF;
   }
 
-  if(err)
-    SWC_LOG_OUT(LOG_ERROR,
-      Error::print(SWC_LOG_OSTREAM <<  "write failed: ", err);
-      smartfd->print(SWC_LOG_OSTREAM << " ");
-    );
+  SWC_FS_WRITE_FINISH(err, smartfd, tracker);
 }
 
 void FileSystem::write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
@@ -229,7 +226,8 @@ void FileSystem::write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
 
 void FileSystem::default_read(int& err, const std::string& name,
                               StaticBuffer* buffer) {
-  SWC_LOGF(LOG_DEBUG, "read-all %s", name.c_str());
+  auto tracker = statistics.tracker(Statistics::READ_ALL_SYNC);
+  SWC_FS_READALL_START(name);
 
   size_t len;
   FS::SmartFd::Ptr smartfd;
@@ -259,9 +257,7 @@ void FileSystem::default_read(int& err, const std::string& name,
   }
 
   finish:
-  if(err)
-    SWC_LOGF(LOG_ERROR, "read-all failed: %d(%s), %s",
-              err, Error::get_text(err), name.c_str());
+  SWC_FS_READALL_FINISH(err, name, len, tracker);
 }
 
 void FileSystem::read(Callback::ReadAllCb_t&& cb,
@@ -271,12 +267,12 @@ void FileSystem::read(Callback::ReadAllCb_t&& cb,
   read(err, name, dst.get());
   cb(err, name, dst);
 }
-
+ 
 void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
                                      uint64_t offset, uint32_t amount,
                                      StaticBuffer* buffer) {
-  SWC_LOGF(LOG_DEBUG, "combi-pread %s offset=%lu amount=%u",
-           smartfd->filepath().c_str(), offset, amount);
+  auto tracker = statistics.tracker(Statistics::COMBI_PREAD_SYNC);
+  SWC_FS_COMBI_PREAD_START(smartfd, offset, amount);
 
   open(err, smartfd);
   if(!smartfd->valid()) {
@@ -295,9 +291,7 @@ void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
     if(smartfd->valid())
       close(err ? errtmp : err, smartfd);
 
-  if(err)
-    SWC_LOGF(LOG_ERROR, "combi-pread failed: %d(%s), %s",
-              err, Error::get_text(err), smartfd->filepath().c_str());
+  SWC_FS_COMBI_PREAD_FINISH(err, smartfd, amount, tracker);
 }
 
 void FileSystem::combi_pread(Callback::CombiPreadCb_t&& cb,

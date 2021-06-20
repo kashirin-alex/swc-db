@@ -38,7 +38,7 @@ class RgrData final {
     Ptr data(new RgrData());
     try{
       data->read(err, filepath);
-    } catch(...){
+    } catch(...) {
       data.reset(new RgrData());
     }
     return data;
