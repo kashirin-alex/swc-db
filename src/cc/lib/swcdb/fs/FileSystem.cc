@@ -235,6 +235,7 @@ void FileSystem::default_read(int& err, const std::string& name,
   if(!exists(err, name)) {
     if(!err)
       err = Error::FS_PATH_NOT_FOUND;
+    len = 0;
     goto finish;
   }
   len = length(err, name);
@@ -248,8 +249,10 @@ void FileSystem::default_read(int& err, const std::string& name,
     err = EBADR;
   if(!err) {
     buffer->free();
-    if(read(err, smartfd, buffer, len) != len)
+    if(read(err, smartfd, buffer, len) != len) {
       err = Error::FS_EOF;
+      buffer->free();
+    }
   }
   if(smartfd->valid()) {
     int errtmp;
@@ -283,9 +286,10 @@ void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
     goto finish;
 
   buffer->free();
-  if(pread(err, smartfd, offset, buffer, amount) != amount)
+  if(pread(err, smartfd, offset, buffer, amount) != amount) {
     err = Error::FS_EOF;
-
+    buffer->free();
+  }
   finish:
     int errtmp;
     if(smartfd->valid())
