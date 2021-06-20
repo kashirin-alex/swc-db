@@ -999,27 +999,32 @@ void Range::_run_add_queue() {
 
       blocks.add_logged(cell);
 
-      if(cfg->range_type == DB::Types::Range::DATA) {
-        if(DB::KeySeq::align(cfg->key_seq, cell.key, align_min, align_max))
-          aligned_chg = true;
-      } else {
-        /* MASTER/META need aligned interval
-             over cells value +plus (cs+logs) at compact
-        if(cell.flag == DB::Cells::INSERT) {
-          size_t remain = cell.vlen;
-          const uint8_t * ptr = cell.value;
-          DB::Cell::Key key_end;
-          key_end.decode(&ptr, &remain);
-          Serialization::decode_vi64(&ptr, &remain);//rid
-          DB::Cell::Key aligned_min;
-          aligned_min.decode(&ptr, &remain);
-          DB::Cell::Key aligned_max;
-          aligned_max.decode(&ptr, &remain);
-          aligned_chg = align(aligned_min);
-          if(align(aligned_max))
+      switch(cfg->range_type) {
+        case DB::Types::Range::DATA: {
+          if(DB::KeySeq::align(cfg->key_seq, cell.key, align_min, align_max))
             aligned_chg = true;
+          break;
         }
-        */
+        default: {
+          /* MASTER/META need aligned interval
+               over cells value +plus (cs+logs) at compact
+          if(cell.flag == DB::Cells::INSERT) {
+            size_t remain = cell.vlen;
+            const uint8_t * ptr = cell.value;
+            DB::Cell::Key key_end;
+            key_end.decode(&ptr, &remain);
+            Serialization::decode_vi64(&ptr, &remain);//rid
+            DB::Cell::Key aligned_min;
+            aligned_min.decode(&ptr, &remain);
+            DB::Cell::Key aligned_max;
+            aligned_max.decode(&ptr, &remain);
+            aligned_chg = align(aligned_min);
+            if(align(aligned_max))
+              aligned_chg = true;
+          }
+          */
+          break;
+        }
       }
     } } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
