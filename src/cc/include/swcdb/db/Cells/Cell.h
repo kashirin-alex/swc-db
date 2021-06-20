@@ -389,15 +389,16 @@ void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
   }
 
   vlen = 1 + Serialization::encoded_length_vi64(v);
-  if(op & OP_EQUAL && rev != TIMESTAMP_NULL) {
+  bool has_rev = op & OP_EQUAL && rev != TIMESTAMP_NULL;
+  if(has_rev) {
     op |= HAVE_REVISION;
     vlen += Serialization::encoded_length_vi64(rev);
   }
 
   uint8_t* ptr = (value = new uint8_t[vlen]);
-  Serialization::encode_vi64(&ptr, v);
+  Serialization::encode_vi64(&ptr, v); 
   *ptr++ = op;
-  if(op & HAVE_REVISION)
+  if(has_rev)
     Serialization::encode_vi64(&ptr, rev);
   // +? i64's storing epochs
 }
