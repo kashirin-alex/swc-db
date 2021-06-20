@@ -2,9 +2,9 @@ name: SWC-DB
 
 on:
   push:
-    branches: [ master, CI-test ]
+    branches: [ c-whole-archive ]
   pull_request:
-    branches: [ master, CI-test ]
+    branches: [ c-whole-archive ]
     # paths:
     #  - 'src/*'
   # schedule:
