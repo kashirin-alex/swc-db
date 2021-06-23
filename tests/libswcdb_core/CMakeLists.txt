@@ -44,3 +44,9 @@ ADD_TEST_TARGET(
   TARGETS   swcdb_core 
 )
 
+ADD_TEST_TARGET(
+  NAME      vector
+  SRCS      vector.cc
+  TARGETS   swcdb_core 
+)
+
