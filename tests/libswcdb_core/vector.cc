@@ -353,6 +353,9 @@ struct Type1 {
   bool operator==(const Type1& other) const noexcept {
     return sz == other.sz && n.compare(other.n) == 0;
   }
+  bool operator!=(const Type1& other) const noexcept {
+    return !operator==(other);
+  }
 
   bool operator==( size_t other) const noexcept {
     return sz == other;
@@ -373,7 +376,7 @@ struct Type1 {
     return n.c_str();
   }
 
-  operator bool() noexcept {
+  operator bool() const noexcept {
     return bool(sz);
   }
 

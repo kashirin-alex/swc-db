@@ -96,6 +96,12 @@ class Vector {
     return *this;
   }
 
+  SWC_CAN_INLINE
+  void swap(Vector& other) noexcept {
+    std::swap(_data, other._data);
+    std::swap(_cap, other._cap);
+    std::swap(_size, other._size);
+  }
 
   SWC_CAN_INLINE
   bool empty() const noexcept {
@@ -274,12 +280,13 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  void assign(iterator first, iterator last) {
+  void assign(const_iterator first, const_iterator last) {
     clear();
-    reserve(last - first);
-    _size = last - first;
-    for(pointer ptr = _data; first != last; ++first, ++ptr)
-      _construct(ptr, *first);
+    size_type sz = last - first;
+    reserve(sz);
+    _size = sz;
+    for(size_type i = 0; i < sz; ++i)
+      _construct(_data + i, first[i]);
   }
 
 
