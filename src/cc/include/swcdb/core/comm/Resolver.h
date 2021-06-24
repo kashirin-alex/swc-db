@@ -64,11 +64,21 @@ void encode(uint8_t** bufp, const Comm::EndPoints& endpoints);
 void decode(const uint8_t** bufp, size_t* remainp,
             Comm::EndPoints& endpoints);
 
+SWC_CAN_INLINE
+Comm::EndPoints decode_endpoints(const uint8_t** bufp, size_t* remainp) {
+  Comm::EndPoints endpoints;
+  Serialization::decode(bufp, remainp, endpoints);
+  return endpoints;
+}
+
 } //namespace Serialization
 
 
 
 namespace Comm {
+
+
+void print(std::ostream& out, const EndPoints& endpoints);
 
 bool has_endpoint(const EndPoint& e1,
                   const EndPoints& endpoints_in) noexcept;

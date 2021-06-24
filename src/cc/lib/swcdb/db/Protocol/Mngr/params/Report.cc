@@ -78,13 +78,15 @@ void RspColumnStatus::internal_encode(uint8_t** bufp) const {
 void RspColumnStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
   state = DB::Types::MngrColumn::State(
     Serialization::decode_i8(bufp, remainp));
-  ranges.resize(Serialization::decode_vi64(bufp, remainp));
-  for(auto& r : ranges)
-    r.decode(bufp, remainp);
-  std::sort(
-    ranges.begin(), ranges.end(),
-    [](const RangeStatus& l, const RangeStatus& r) { return l.rid < r.rid; }
-  );
+  if(size_t sz = Serialization::decode_vi64(bufp, remainp)) {
+    ranges.reserve(sz);
+    for(size_t i = 0; i < sz; ++i)
+      ranges.emplace_back(bufp, remainp);
+    std::sort(
+      ranges.begin(), ranges.end(),
+      [](const RangeStatus& l, const RangeStatus& r) { return l.rid < r.rid; }
+    );
+  }
 }
 
 void RspColumnStatus::display(std::ostream& out,
@@ -105,7 +107,7 @@ size_t RspRangersStatus::Ranger::encoded_length() const {
         + Serialization::encoded_length_vi32(failures)
         + Serialization::encoded_length_vi64(interm_ranges)
         + 3
-        + Common::Params::HostEndPoints::internal_encoded_length();
+        + Serialization::encoded_length(endpoints);
 }
 
 void RspRangersStatus::Ranger::encode(uint8_t** bufp) const {
@@ -115,7 +117,7 @@ void RspRangersStatus::Ranger::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, interm_ranges);
   Serialization::encode_i16(bufp, load_scale);
   Serialization::encode_i8(bufp, rebalance);
-  Common::Params::HostEndPoints::internal_encode(bufp);
+  Serialization::encode(bufp, endpoints);
 }
 
 void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
@@ -125,7 +127,7 @@ void RspRangersStatus::Ranger::decode(const uint8_t** bufp, size_t* remainp) {
   interm_ranges = Serialization::decode_vi64(bufp, remainp);
   load_scale = Serialization::decode_i16(bufp, remainp);
   rebalance = Serialization::decode_i8(bufp, remainp);
-  Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+  Serialization::decode(bufp, remainp, endpoints);
 }
 
 void RspRangersStatus::Ranger::display(std::ostream& out,
@@ -136,7 +138,7 @@ void RspRangersStatus::Ranger::display(std::ostream& out,
                 << " interm_ranges=" << interm_ranges
                 << " load_scale=" << load_scale
                 << " rebalance=" << int(rebalance);
-  Common::Params::HostEndPoints::print(out << ' ');
+  Comm::print(out << ' ', endpoints);
 }
 
 
@@ -155,14 +157,17 @@ void RspRangersStatus::internal_encode(uint8_t** bufp) const {
     r.encode(bufp);
 }
 
-void RspRangersStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  rangers.resize(Serialization::decode_vi64(bufp, remainp));
-  for(auto& r : rangers)
-    r.decode(bufp, remainp);
-  std::sort(
-    rangers.begin(), rangers.end(),
-    [](const Ranger& l, const Ranger& r) { return l.rgr_id < r.rgr_id; }
-  );
+void RspRangersStatus::internal_decode(const uint8_t** bufp,
+                                       size_t* remainp) {
+  if(size_t sz = Serialization::decode_vi64(bufp, remainp)) {
+    rangers.reserve(sz);
+    for(size_t i = 0; i < sz; ++i)
+      rangers.emplace_back(bufp, remainp);
+    std::sort(
+      rangers.begin(), rangers.end(),
+      [](const Ranger& l, const Ranger& r) { return l.rgr_id < r.rgr_id; }
+    );
+  }
 }
 
 void RspRangersStatus::display(std::ostream& out,
@@ -182,7 +187,7 @@ size_t RspManagersStatus::Manager::encoded_length() const {
         + Serialization::encoded_length_vi64(cid_begin)
         + Serialization::encoded_length_vi64(cid_end)
         + Serialization::encoded_length_vi32(failures)
-        + Common::Params::HostEndPoints::internal_encoded_length();
+        + Serialization::encoded_length(endpoints);
 }
 
 void RspManagersStatus::Manager::encode(uint8_t** bufp) const {
@@ -192,7 +197,7 @@ void RspManagersStatus::Manager::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid_begin);
   Serialization::encode_vi64(bufp, cid_end);
   Serialization::encode_vi32(bufp, failures);
-  Common::Params::HostEndPoints::internal_encode(bufp);
+  Serialization::encode(bufp, endpoints);
 }
 
 void RspManagersStatus::Manager::decode(const uint8_t** bufp,
@@ -203,7 +208,7 @@ void RspManagersStatus::Manager::decode(const uint8_t** bufp,
   cid_begin = Serialization::decode_vi64(bufp, remainp);
   cid_end = Serialization::decode_vi64(bufp, remainp);
   failures = Serialization::decode_vi32(bufp, remainp);
-  Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+  Serialization::decode(bufp, remainp, endpoints);
 }
 
 void RspManagersStatus::Manager::display(std::ostream& out,
@@ -215,7 +220,7 @@ void RspManagersStatus::Manager::display(std::ostream& out,
                << (cid_end ? std::to_string(cid_end) : "any");
   out  << " priority=" << priority
         << " state=" << DB::Types::to_string(state);
-  Common::Params::HostEndPoints::print(out << ' ');
+  Comm::print(out << ' ', endpoints);
 }
 
 
@@ -236,18 +241,21 @@ void RspManagersStatus::internal_encode(uint8_t** bufp) const {
   Serialization::encode(bufp, inchain);
 }
 
-void RspManagersStatus::internal_decode(const uint8_t** bufp, size_t* remainp) {
-  managers.resize(Serialization::decode_vi64(bufp, remainp));
-  for(auto& m : managers)
-    m.decode(bufp, remainp);
-  std::sort(
-    managers.begin(), managers.end(),
-    [](const Manager& l, const Manager& r) {
-      return l.role == r.role && l.cid_begin == r.cid_begin
-              ? l.priority < r.priority
-              : l.role > r.role && l.cid_begin < r.cid_begin;
-    }
-  );
+void RspManagersStatus::internal_decode(const uint8_t** bufp,
+                                        size_t* remainp) {
+  if(size_t sz = Serialization::decode_vi64(bufp, remainp)) {
+    managers.reserve(sz);
+    for(size_t i = 0; i < sz; ++i)
+      managers.emplace_back(bufp, remainp);
+    std::sort(
+      managers.begin(), managers.end(),
+      [](const Manager& l, const Manager& r) {
+        return l.role == r.role && l.cid_begin == r.cid_begin
+                ? l.priority < r.priority
+                : l.role > r.role && l.cid_begin < r.cid_begin;
+      }
+    );
+  }
   inchain = Serialization::decode(bufp, remainp);
 }
 

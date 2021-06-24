@@ -51,10 +51,10 @@ class RgrUpdate final : public Serializable {
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     sync_all = Serialization::decode_bool(bufp, remainp);
     hosts.clear();
-    hosts.resize(Serialization::decode_vi32(bufp, remainp));
-    for(auto& h : hosts) {
-      h.reset(new Manager::Ranger());
-      h->decode(bufp, remainp);
+    if(size_t sz = Serialization::decode_vi32(bufp, remainp)) {
+      hosts.reserve(sz);
+      for(size_t i=0; i<sz; ++i)
+        hosts.emplace_back(new Manager::Ranger(bufp, remainp));
     }
   }
 

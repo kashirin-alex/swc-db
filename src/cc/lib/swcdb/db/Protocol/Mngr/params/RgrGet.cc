@@ -56,7 +56,7 @@ void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 RgrGetRsp::RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept
-                    : err(err) { 
+                    : err(err) {
   if(!err) try {
     decode(&ptr, &remain);
   } catch(...) {
@@ -71,7 +71,7 @@ void RgrGetRsp::print(std::ostream& out) const {
   Error::print(out, err);
   if(!err) {
     out << " cid=" << cid << " rid=" << rid;
-    Common::Params::HostEndPoints::print(out << ' ');
+    Comm::print(out << ' ', endpoints);
     if(cid == 1) {
       range_begin.print(out << " RangeBegin");
       range_end.print(out << " RangeEnd");
@@ -85,7 +85,7 @@ size_t RgrGetRsp::internal_encoded_length() const {
   + (err ? 0 :
       (Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
-      + Common::Params::HostEndPoints::internal_encoded_length()
+      + Serialization::encoded_length(endpoints)
       + (cid == 1
         ? (range_end.encoded_length() + range_begin.encoded_length())
         : 0)
@@ -98,7 +98,7 @@ void RgrGetRsp::internal_encode(uint8_t** bufp) const {
   if(!err) {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
-    Common::Params::HostEndPoints::internal_encode(bufp);
+    Serialization::encode(bufp, endpoints);
     if(cid == 1) {
       range_end.encode(bufp);
       range_begin.encode(bufp);
@@ -111,7 +111,7 @@ void RgrGetRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
   if(!err) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    Common::Params::HostEndPoints::internal_decode(bufp, remainp);
+    Serialization::decode(bufp, remainp, endpoints);
     if(cid == 1) {
       range_end.decode(bufp, remainp, false);
       range_begin.decode(bufp, remainp, false);

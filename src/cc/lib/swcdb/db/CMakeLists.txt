@@ -44,7 +44,6 @@ set(swcdb_sources
   Types/MngrState.cc
 
   Protocol/Commands.cc
-  Protocol/Common/params/HostEndPoints.cc
 
   Protocol/Rgr/params/Report.cc
   Protocol/Rgr/req/Report.cc

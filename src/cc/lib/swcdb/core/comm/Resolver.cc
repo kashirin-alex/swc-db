@@ -46,24 +46,26 @@ Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp) {
 
 
 uint32_t encoded_length(const Comm::EndPoints& endpoints) noexcept {
-  uint32_t len = 4;
+  uint32_t len = Serialization::encoded_length_vi32(endpoints.size());
   for(auto& endpoint : endpoints)
     len += Serialization::encoded_length(endpoint);
   return len;
 }
 
 void encode(uint8_t** bufp, const Comm::EndPoints& endpoints) {
-  Serialization::encode_i32(bufp, endpoints.size());
+  Serialization::encode_vi32(bufp, endpoints.size());
   for(auto& endpoint : endpoints)
     Serialization::encode(bufp, endpoint);
 }
 
 void decode(const uint8_t** bufp, size_t* remainp,
             Comm::EndPoints& endpoints) {
-  endpoints.clear();
-  endpoints.resize(Serialization::decode_i32(bufp, remainp));
-  for(auto& endpoint : endpoints)
-    endpoint = Serialization::decode(bufp, remainp);
+  endpoints.free();
+  if(uint32_t sz = Serialization::decode_vi32(bufp, remainp)) {
+    endpoints.reserve(sz);
+    for(uint32_t i=0; i<sz; ++i)
+      endpoints.emplace_back(std::move(Serialization::decode(bufp, remainp)));
+  }
 }
 
 } // namespace Serialization
@@ -71,6 +73,14 @@ void decode(const uint8_t** bufp, size_t* remainp,
 
 
 namespace Comm {
+
+
+void print(std::ostream& out, const EndPoints& endpoints) {
+  out << "endpoints=[";
+  for(auto& endpoint : endpoints)
+    out << endpoint << ',';
+  out << ']';
+}
 
 
 bool has_endpoint(const EndPoint& e1,

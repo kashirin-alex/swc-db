@@ -6,31 +6,44 @@
 #ifndef swcdb_manager_Ranger_h
 #define swcdb_manager_Ranger_h
 
+
 #include "swcdb/db/Types/MngrRangerState.h"
-#include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
 
 namespace SWC { namespace Manager {
 
 namespace RangerState = DB::Types::MngrRangerState;
 
-class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
+class Ranger final {
 
   public:
 
   typedef std::shared_ptr<Ranger> Ptr;
 
+  /*
   SWC_CAN_INLINE
   Ranger() noexcept
-          : rgrid(0), state(RangerState::NONE),
-            failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
+          : rgrid(0),
+            interm_ranges(0), failures(0), load_scale(0),
+            state(RangerState::NONE), m_rebalance(0) {
   }
+  */
 
   SWC_CAN_INLINE
   Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
-        : Comm::Protocol::Common::Params::HostEndPoints(endpoints),
-          rgrid(rgrid), state(RangerState::NONE),
-          failures(0), interm_ranges(0), load_scale(0), m_rebalance(0) {
+        : rgrid(rgrid), endpoints(endpoints),
+          interm_ranges(0), failures(0), load_scale(0),
+          state(RangerState::NONE), m_rebalance(0) {
+  }
+
+  SWC_CAN_INLINE
+  Ranger(const uint8_t** bufp, size_t* remainp)
+        : rgrid(Serialization::decode_vi64(bufp, remainp)),
+          endpoints(Serialization::decode_endpoints(bufp, remainp)),
+          interm_ranges(0), failures(0),
+          load_scale(Serialization::decode_i16(bufp, remainp)),
+          state(Serialization::decode_i8(bufp, remainp)),
+          m_rebalance(Serialization::decode_i8(bufp, remainp)) {
   }
 
   //~Ranger() { }
@@ -42,33 +55,30 @@ class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
         << " load_scale="     << load_scale.load()
         << " rebalance="      << int(rebalance())
         << " interm_ranges="  << interm_ranges.load();
-    Comm::Protocol::Common::Params::HostEndPoints::print(out << ' ');
+    Comm::print(out << ' ', endpoints);
     if(m_queue)
       m_queue->print(out << ' ');
     out << ']';
   }
 
-  size_t internal_encoded_length() const override {
+  SWC_CAN_INLINE
+  void set(const Comm::EndPoints& _endpoints) {
+    endpoints = _endpoints;
+  }
+
+  size_t encoded_length() const noexcept {
     size_t len = 4
       + Serialization::encoded_length_vi64(rgrid.load())
-      + Comm::Protocol::Common::Params::HostEndPoints::internal_encoded_length();
+      + Serialization::encoded_length(endpoints);
     return len;
   }
 
-  void internal_encode(uint8_t** bufp) const override {
-    Serialization::encode_i8(bufp, state.load());
+  void encode(uint8_t** bufp) const {
     Serialization::encode_vi64(bufp, rgrid.load());
+    Serialization::encode(bufp, endpoints);
     Serialization::encode_i16(bufp, load_scale.load());
+    Serialization::encode_i8(bufp, state.load());
     Serialization::encode_i8(bufp, rebalance());
-    Comm::Protocol::Common::Params::HostEndPoints::internal_encode(bufp);
-  }
-
-  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-    state.store(Serialization::decode_i8(bufp, remainp));
-    rgrid.store(Serialization::decode_vi64(bufp, remainp));
-    load_scale.store(Serialization::decode_i16(bufp, remainp));
-    rebalance(Serialization::decode_i8(bufp, remainp));
-    Comm::Protocol::Common::Params::HostEndPoints::internal_decode(bufp, remainp);
   }
 
   SWC_CAN_INLINE
@@ -109,17 +119,18 @@ class Ranger final : public Comm::Protocol::Common::Params::HostEndPoints {
 
 
   Core::Atomic<rgrid_t>     rgrid;
+  Comm::EndPoints           endpoints;
+  Core::Atomic<size_t>      interm_ranges;
+  Core::Atomic<int32_t>     failures;
+  Core::Atomic<uint16_t>    load_scale;
   Core::Atomic<uint8_t>     state;
 
-  Core::Atomic<int32_t>     failures;
-  Core::Atomic<size_t>      interm_ranges;
-  Core::Atomic<uint16_t>    load_scale;
 
   private:
 
-  Comm::client::Host::Ptr   m_queue = nullptr;
   mutable Core::MutexAtomic m_mutex;
   uint8_t                   m_rebalance;
+  Comm::client::Host::Ptr   m_queue = nullptr;
 
 };
 

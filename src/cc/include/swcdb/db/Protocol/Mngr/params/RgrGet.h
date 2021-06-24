@@ -7,8 +7,9 @@
 #define swcdb_db_protocol_mngr_params_RgrGet_h
 
 
+#include "swcdb/core/comm/Serializable.h"
+#include "swcdb/core/comm/Resolver.h"
 #include "swcdb/db/Types/Identifiers.h"
-#include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 #include "swcdb/db/Cells/CellKey.h"
 
 
@@ -46,7 +47,7 @@ class RgrGetReq final : public Serializable {
 
 
 
-class RgrGetRsp final : public Common::Params::HostEndPoints {
+class RgrGetRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
@@ -58,11 +59,12 @@ class RgrGetRsp final : public Common::Params::HostEndPoints {
   RgrGetRsp(cid_t cid, rid_t rid) noexcept
             : err(Error::OK), cid(cid), rid(rid) {
   }
-  
+
   RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
 
   //~RgrGetRsp() { }
 
+  EndPoints       endpoints;
   int             err;
   cid_t           cid;
   rid_t           rid;

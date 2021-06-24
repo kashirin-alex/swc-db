@@ -7,7 +7,7 @@
 #define swcdb_protocol_mngr_params_MngrActive_h
 
 
-#include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
+#include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/client/service/mngr/Groups.h"
 
 
@@ -40,7 +40,7 @@ class MngrActiveReq final : public Serializable {
 
 
 
-class MngrActiveRsp final : public Common::Params::HostEndPoints {
+class MngrActiveRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
@@ -48,10 +48,12 @@ class MngrActiveRsp final : public Common::Params::HostEndPoints {
 
   SWC_CAN_INLINE
   MngrActiveRsp(const EndPoints& endpoints)
-                : Common::Params::HostEndPoints(endpoints) {
+                : endpoints(endpoints) {
   }
 
   //~MngrActiveRsp() { }
+
+  EndPoints endpoints;
 
   private:
 

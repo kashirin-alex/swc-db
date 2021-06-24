@@ -19,7 +19,7 @@ class MngrState final : public Serializable {
   MngrState() noexcept { }
 
   SWC_CAN_INLINE
-  MngrState(Manager::MngrsStatus states,
+  MngrState(const Manager::MngrsStatus& states,
             uint64_t token, const EndPoint& mngr_host)
             : states(states), token(token), mngr_host(mngr_host) {
   }

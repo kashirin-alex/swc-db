@@ -7,13 +7,13 @@
 #define swcdb_db_protocol_mngr_params_Report_h
 
 #include "swcdb/core/comm/Serializable.h"
+#include "swcdb/core/comm/Resolver.h"
 #include "swcdb/db/Columns/Schema.h"
 #include "swcdb/db/Types/MngrColumnState.h"
 #include "swcdb/db/Types/MngrRangeState.h"
 #include "swcdb/db/Types/MngrRangerState.h"
 #include "swcdb/db/Types/MngrState.h"
 #include "swcdb/db/Types/MngrRole.h"
-#include "swcdb/db/Protocol/Common/params/HostEndPoints.h"
 
 
 
@@ -69,8 +69,16 @@ class RspColumnStatus final : public Serializable {
   struct RangeStatus {
 
     DB::Types::MngrRange::State state;
-    rid_t                   rid;
-    rgrid_t                 rgr_id;
+    rid_t                       rid;
+    rgrid_t                     rgr_id;
+
+    SWC_CAN_INLINE
+    RangeStatus() noexcept { }
+
+    SWC_CAN_INLINE
+    RangeStatus(const uint8_t** bufp, size_t* remainp) {
+      decode(bufp, remainp);
+    }
 
     size_t encoded_length() const;
 
@@ -107,14 +115,23 @@ class RspRangersStatus final : public Serializable {
 
   //~RspRangersStatus() { }
 
-  struct Ranger final : public Common::Params::HostEndPoints {
+  struct Ranger final {
 
+    EndPoints   endpoints;
     uint8_t     state;
     rgrid_t     rgr_id;
     int32_t     failures;
     uint64_t    interm_ranges;
     uint16_t    load_scale;
     uint8_t     rebalance;
+
+    SWC_CAN_INLINE
+    Ranger() noexcept { }
+
+    SWC_CAN_INLINE
+    Ranger(const uint8_t** bufp, size_t* remainp) {
+      decode(bufp, remainp);
+    }
 
     size_t encoded_length() const;
 
@@ -150,14 +167,23 @@ class RspManagersStatus final : public Serializable {
 
   //~RspManagersStatus() { }
 
-  struct Manager final : public Common::Params::HostEndPoints {
+  struct Manager final {
 
-    uint32_t            priority;
-    DB::Types::MngrState    state;
-    uint8_t             role;
-    cid_t               cid_begin;
-    cid_t               cid_end;
-    int                 failures;
+    EndPoints             endpoints;
+    uint32_t              priority;
+    DB::Types::MngrState  state;
+    uint8_t               role;
+    cid_t                 cid_begin;
+    cid_t                 cid_end;
+    int                   failures;
+
+    SWC_CAN_INLINE
+    Manager() noexcept { }
+
+    SWC_CAN_INLINE
+    Manager(const uint8_t** bufp, size_t* remainp) {
+      decode(bufp, remainp);
+    }
 
     size_t encoded_length() const;
 
