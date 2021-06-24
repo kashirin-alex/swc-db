@@ -112,7 +112,8 @@ class Groups final : private std::vector<Group::Ptr>,
 
   Core::MutexSptd                   m_mutex;
   std::vector<GroupHost>            m_active_g_host;
-  std::vector<Comm::Network>        m_nets;
+  Comm::Networks                    m_nets;
+
 };
 
 }}}

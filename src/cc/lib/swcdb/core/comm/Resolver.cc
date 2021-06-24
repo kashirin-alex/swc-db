@@ -246,8 +246,8 @@ void Resolver::get_networks(const Config::Strings& networks,
 }
 
 void Resolver::get_networks(const Config::Strings& networks,
-                            std::vector<asio::ip::network_v4>& nets_v4,
-                            std::vector<asio::ip::network_v6>& nets_v6,
+                            Networks_v4& nets_v4,
+                            Networks_v6& nets_v6,
                             asio::error_code& ec) {
   for(auto& net : networks) {
     if(net.find_first_of(":") == std::string::npos)
@@ -258,9 +258,8 @@ void Resolver::get_networks(const Config::Strings& networks,
 }
 
 void Resolver::get_local_networks(int& err,
-                                  std::vector<asio::ip::network_v4>& nets_v4,
-                                  std::vector<asio::ip::network_v6>& nets_v6)
-                                  {
+                                  Networks_v4& nets_v4,
+                                  Networks_v6& nets_v6) {
   char hostname[256];
   if(gethostname(hostname, sizeof(hostname)) == -1) {
     err = errno;
@@ -326,9 +325,8 @@ void Resolver::get_local_networks(int& err,
 }
 
 bool Resolver::is_network(const EndPoint& endpoint,
-                          const std::vector<asio::ip::network_v4>& nets_v4,
-                          const std::vector<asio::ip::network_v6>& nets_v6)
-                          noexcept {
+                          const Networks_v4& nets_v4,
+                          const Networks_v6& nets_v6) noexcept {
   if(endpoint.address().is_v4()) {
     for(auto& net : nets_v4)
       if(is_network(endpoint, net))

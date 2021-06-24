@@ -348,12 +348,10 @@ void MngrRole::print(std::ostream& out) {
 
 void MngrRole::_apply_cfg() {
   auto groups = Env::Clients::get()->managers.groups->get_groups();
-  std::vector<Comm::EndPoint> tmp;
   for(auto& g : groups) {
     // SWC_LOG(LOG_DEBUG,  g->to_string().c_str());
     uint32_t pr = 0;
     for(auto& endpoints : g->get_hosts()) {
-      tmp.insert(tmp.end(), endpoints.begin(), endpoints.end());
       ++pr;
       bool found = false;
       for(auto& host : m_states) {
@@ -371,7 +369,18 @@ void MngrRole::_apply_cfg() {
     }
   }
   for(auto it=m_states.begin(); it != m_states.end(); ) {
-    if(Comm::has_endpoint((*it)->endpoints, tmp))
+    bool found = false;
+    for(auto& g : groups) {
+      for(auto& endpoints : g->get_hosts()) {
+        if(Comm::has_endpoint((*it)->endpoints, endpoints)) {
+          found = true;
+          break;
+        }
+      }
+      if(found)
+        break;
+    }
+    if(found)
       ++it;
     else
       m_states.erase(it);

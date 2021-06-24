@@ -31,6 +31,7 @@ class Vector {
   static constexpr size_type max_size() noexcept {
     return size_type(0) - size_type(1);
   }
+  static_assert(max_size() > 0, "SWC-DB Vector supports only unsigned size!");
 
 
   SWC_CAN_INLINE

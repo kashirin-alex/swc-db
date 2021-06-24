@@ -110,7 +110,7 @@ FileSystemBroker::get_endpoints(const Config::Settings::Ptr& settings) {
     host.append(hostname);
   }
 
-  std::vector<Comm::Network> nets;
+  Comm::Networks nets;
   asio::error_code ec;
   Comm::Resolver::get_networks(
     settings->get_strs("swc.comm.network.priority"), nets, ec);

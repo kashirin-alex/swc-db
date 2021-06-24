@@ -10,14 +10,15 @@
 
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/comm/asio_wrap.h"
+#include "swcdb/core/Vector.h"
 
 
 namespace SWC {
 
 namespace Comm {
 
-typedef asio::ip::tcp::endpoint EndPoint;
-typedef std::vector<EndPoint>   EndPoints;
+typedef asio::ip::tcp::endpoint         EndPoint;
+typedef Core::Vector<EndPoint, uint8_t> EndPoints;
 
 struct Network {
   bool                        is_v4;
@@ -36,7 +37,9 @@ struct Network {
   }
 };
 
-typedef std::vector<Network> Networks;
+typedef Core::Vector<Network>                        Networks;
+typedef Core::Vector<asio::ip::network_v4, uint32_t> Networks_v4;
+typedef Core::Vector<asio::ip::network_v6, uint32_t> Networks_v6;
 
 } //namespace Comm
 
@@ -101,17 +104,17 @@ void get_networks(const Config::Strings& networks,
                   Networks& nets, asio::error_code& ec);
 
 void get_networks(const Config::Strings& networks,
-                  std::vector<asio::ip::network_v4>& nets_v4,
-                  std::vector<asio::ip::network_v6>& nets_v6,
+                  Networks_v4& nets_v4,
+                  Networks_v6& nets_v6,
                   asio::error_code& ec);
 
 void get_local_networks(int& err,
-                        std::vector<asio::ip::network_v4>& nets_v4,
-                        std::vector<asio::ip::network_v6>& nets_v6);
+                        Networks_v4& nets_v4,
+                        Networks_v6& nets_v6);
 
 bool is_network(const EndPoint& endpoint,
-                const std::vector<asio::ip::network_v4>& nets_v4,
-                const std::vector<asio::ip::network_v6>& nets_v6) noexcept;
+                const Networks_v4& nets_v4,
+                const Networks_v6& nets_v6) noexcept;
 
 bool is_network(const EndPoint& endpoint,
                 const asio::ip::network_v4& net) noexcept;

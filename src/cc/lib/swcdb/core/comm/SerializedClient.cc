@@ -222,15 +222,15 @@ void Serialized::_get_connection(
       uint32_t probes, uint32_t tries,
       size_t next, bool preserve) {
 
-  if(!m_run || !m_ioctx->running) {
+  if(!m_run || !m_ioctx->running || endpoints.empty()) {
     cb(nullptr);
     return;
   }
 
-  if(next == endpoints.size())
+  if(next >= endpoints.size())
     next = 0;
 
-  auto srv = get_srv(endpoints.at(next));
+  auto srv = get_srv(endpoints[next]);
   ConnHandlerPtr conn = nullptr;
   srv->reusable(conn, preserve);
   if(conn || (probes && !tries)) {

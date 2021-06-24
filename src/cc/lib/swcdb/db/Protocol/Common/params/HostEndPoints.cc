@@ -13,8 +13,7 @@ namespace Common { namespace Params {
 
 
 void HostEndPoints::set(const EndPoints& points) {
-  endpoints.clear();
-  endpoints.assign(points.begin(), points.end());
+  endpoints.assign(points.cbegin(), points.cend());
 }
 
 size_t HostEndPoints::internal_encoded_length() const {
@@ -34,7 +33,7 @@ void HostEndPoints::internal_decode(const uint8_t** bufp, size_t* remainp) {
   endpoints.clear();
   endpoints.resize(Serialization::decode_vi32(bufp, remainp));
   for(auto& endpoint : endpoints)
-    endpoint = Serialization::decode(bufp, remainp);
+    endpoint = std::move(Serialization::decode(bufp, remainp));
 }
 
 void HostEndPoints::print(std::ostream& out) const {

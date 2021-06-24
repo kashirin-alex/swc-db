@@ -82,8 +82,11 @@ int run() {
 
 
   AppContext::Ptr app_ctx(new AppContext());
-  app_ctx->init(host, {endpoints.front()}); //missing socket->getLocalAddr
-
+  {
+  Comm::EndPoints tmp;
+  tmp.push_back(std::cref(endpoints.front()));
+  app_ctx->init(host, tmp); //missing socket->getLocalAddr
+  }
   std::vector<std::unique_ptr<std::thread>> threads;
   std::vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;
 
