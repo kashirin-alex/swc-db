@@ -38,6 +38,8 @@ const char* Value::to_string(Type type) noexcept {
       return "G_BOOL";
     case G_UINT8:
       return "G_UINT8";
+    case G_UINT16:
+      return "G_UINT16";
     case G_INT32:
       return "G_INT32";
     case G_ENUM:
@@ -738,6 +740,64 @@ void V_GUINT8::on_change() const {
 }
 
 void V_GUINT8::set_cb_on_chg(V_GUINT8::OnChg_t&& cb) {
+  on_chg_cb = std::move(cb);
+}
+
+
+
+V_GUINT16::V_GUINT16(const uint16_t& v,
+                      V_GUINT16::OnChg_t&& cb, uint8_t flags)
+                    : Value(flags | Value::GUARDED),
+                      value(v), on_chg_cb(std::move(cb)) {
+}
+
+V_GUINT16::V_GUINT16(V_GUINT16* ptr)
+                    : Value(ptr),
+                      value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
+}
+
+Value::Ptr V_GUINT16::make_new(const Strings& values) {
+  auto ptr = new V_GUINT16(this);
+  if(!values.empty())
+    ptr->set_from(values);
+  return ptr;
+}
+
+void V_GUINT16::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<V_GUINT16>(ptr);
+  flags.store(from->flags);
+  bool chg = value != from->value;
+  value.store(from->value.load());
+  if(!on_chg_cb)
+    on_chg_cb = from->on_chg_cb;
+  if(chg)
+    on_change();
+}
+
+void V_GUINT16::set_from(const Strings& values) {
+  uint16_t v;
+  from_string(values.back(), &v);
+  value.store(v);
+}
+
+Value::Type V_GUINT16::type() const noexcept {
+  return value_type;
+}
+
+std::string V_GUINT16::to_string() const {
+  return std::to_string(value);
+}
+
+uint16_t V_GUINT16::get() const noexcept {
+  return value;
+}
+
+void V_GUINT16::on_change() const {
+  if(on_chg_cb)
+    on_chg_cb(get());
+}
+
+void V_GUINT16::set_cb_on_chg(V_GUINT16::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 

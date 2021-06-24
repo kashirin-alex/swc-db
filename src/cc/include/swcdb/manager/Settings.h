@@ -65,7 +65,7 @@ void Settings::init_app_options(){
     ("swc.mngr.role.check.delay.updated", g_i32(200),
      "Delay in milliseconds on Mngr-Hosts-Status changes")
 
-    ("swc.mngr.ranges.assign.Rgr.remove.failures", g_i32(255),
+    ("swc.mngr.ranges.assign.Rgr.remove.failures", g_i16(255),
      "Number of failures(establishing conn.x probes) after which the Ranger is removed")
 
     ("swc.mngr.ranges.assign.delay.onRangerChange", g_i32(30000),

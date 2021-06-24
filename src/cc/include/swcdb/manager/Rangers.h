@@ -18,13 +18,13 @@ namespace SWC { namespace Manager {
 class Rangers final {
   public:
 
-  const Config::Property::V_GINT32::Ptr cfg_rgr_failures;
-  const Config::Property::V_GINT32::Ptr cfg_delay_rgr_chg;
-  const Config::Property::V_GINT32::Ptr cfg_chk_assign;
-  const Config::Property::V_GINT32::Ptr cfg_assign_due;
+  const Config::Property::V_GUINT16::Ptr  cfg_rgr_failures;
+  const Config::Property::V_GINT32::Ptr   cfg_delay_rgr_chg;
+  const Config::Property::V_GINT32::Ptr   cfg_chk_assign;
+  const Config::Property::V_GINT32::Ptr   cfg_assign_due;
 
-  const Config::Property::V_GINT32::Ptr cfg_column_health_chk;
-  const Config::Property::V_GINT32::Ptr cfg_column_health_chkers;
+  const Config::Property::V_GINT32::Ptr   cfg_column_health_chk;
+  const Config::Property::V_GINT32::Ptr   cfg_column_health_chkers;
 
   Rangers(const Comm::IoContextPtr& app_io);
 

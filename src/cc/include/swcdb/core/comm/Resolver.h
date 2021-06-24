@@ -17,8 +17,8 @@ namespace SWC {
 
 namespace Comm {
 
-typedef asio::ip::tcp::endpoint         EndPoint;
-typedef Core::Vector<EndPoint, uint8_t> EndPoints;
+typedef asio::ip::tcp::endpoint          EndPoint;
+typedef Core::Vector<EndPoint, uint32_t> EndPoints;
 
 struct Network {
   bool                        is_v4;

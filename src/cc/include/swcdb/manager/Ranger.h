@@ -121,7 +121,7 @@ class Ranger final {
   Core::Atomic<rgrid_t>     rgrid;
   Comm::EndPoints           endpoints;
   Core::Atomic<size_t>      interm_ranges;
-  Core::Atomic<int32_t>     failures;
+  Core::Atomic<int16_t>     failures;
   Core::Atomic<uint16_t>    load_scale;
   Core::Atomic<uint8_t>     state;
 

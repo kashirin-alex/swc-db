@@ -52,6 +52,7 @@ class Value {
 
     G_BOOL,
     G_UINT8,
+    G_UINT16,
     G_INT32,
     G_ENUM,
     G_STRINGS
@@ -462,6 +463,40 @@ class V_GUINT8 final : public Value {
 
   Core::Atomic<uint8_t> value;
   OnChg_t               on_chg_cb;
+};
+
+
+class V_GUINT16 final : public Value {
+  public:
+  static const Type value_type = G_UINT16;
+
+  typedef V_GUINT16*                     Ptr;
+  typedef std::function<void(uint16_t)>  OnChg_t;
+
+  V_GUINT16(const uint16_t& v, OnChg_t&& cb, uint8_t flags=0);
+
+  V_GUINT16(V_GUINT16* ptr);
+
+
+  Value::Ptr make_new(const Strings& values = Strings()) override;
+
+  void set_from(Value::Ptr ptr) override;
+
+  void set_from(const Strings& values) override;
+
+  Type type() const noexcept override;
+
+  std::string to_string() const override;
+
+  uint16_t get() const noexcept;
+
+  void on_change() const;
+
+  void set_cb_on_chg(OnChg_t&& cb);
+
+  Core::Atomic<uint16_t> value;
+  OnChg_t                on_chg_cb;
+
 };
 
 

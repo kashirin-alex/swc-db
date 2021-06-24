@@ -34,6 +34,7 @@ Property::V_DOUBLES::Ptr f64s(Doubles&& v);
 */
 Property::V_GBOOL::Ptr g_boo(const bool& v);
 Property::V_GUINT8::Ptr g_i8(const uint8_t& v);
+Property::V_GUINT16::Ptr g_i16(const uint16_t& v);
 Property::V_GINT32::Ptr g_i32(const int32_t& v);
 Property::V_GSTRINGS::Ptr g_strs(Strings&& v);
 Property::V_GENUM::Ptr g_enum(const int32_t& v,

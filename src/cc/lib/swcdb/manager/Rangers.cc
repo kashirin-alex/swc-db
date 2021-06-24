@@ -24,7 +24,7 @@ namespace SWC { namespace Manager {
 
 Rangers::Rangers(const Comm::IoContextPtr& app_io)
     : cfg_rgr_failures(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GUINT16>(
           "swc.mngr.ranges.assign.Rgr.remove.failures")),
       cfg_delay_rgr_chg(
         Env::Config::settings()->get<Config::Property::V_GINT32>(

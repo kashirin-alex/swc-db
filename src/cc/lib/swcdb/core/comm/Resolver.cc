@@ -64,7 +64,7 @@ void decode(const uint8_t** bufp, size_t* remainp,
   if(uint32_t sz = Serialization::decode_vi32(bufp, remainp)) {
     endpoints.reserve(sz);
     for(uint32_t i=0; i<sz; ++i)
-      endpoints.emplace_back(std::move(Serialization::decode(bufp, remainp)));
+      endpoints.emplace_back(Serialization::decode(bufp, remainp));
   }
 }
 

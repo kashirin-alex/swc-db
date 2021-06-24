@@ -98,7 +98,7 @@ _default_ **```swc.mngr.role.check.delay.updated=200```**
 
 
 * ### swc.mngr.ranges.assign.Rgr.remove.failures
-```G_INT32```
+```G_UINT16```
 The number of failures(establishing connection X probes) after which a Ranger is removed \
 _default_ **```swc.mngr.ranges.assign.Rgr.remove.failures=255```**
 

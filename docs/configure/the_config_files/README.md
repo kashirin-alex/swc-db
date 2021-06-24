@@ -54,6 +54,7 @@ The value of a property defaults to type String, the available specialized value
   * guarded-value/s [
   G_BOOL,
   G_UINT8,
+  G_UINT16,
   G_INT32,
   G_ENUM,
   G_STRINGS

@@ -69,6 +69,10 @@ Config::Property::V_GUINT8::Ptr
 Config::g_i8(const uint8_t& v) {
   return new Config::Property::V_GUINT8(v, nullptr);
 }
+Config::Property::V_GUINT16::Ptr
+Config::g_i16(const uint16_t& v) {
+  return new Config::Property::V_GUINT16(v, nullptr);
+}
 Config::Property::V_GINT32::Ptr
 Config::g_i32(const int32_t& v) {
   return new Config::Property::V_GINT32(v, nullptr);
