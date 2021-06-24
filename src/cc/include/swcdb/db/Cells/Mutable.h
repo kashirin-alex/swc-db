@@ -15,49 +15,48 @@ namespace SWC { namespace DB { namespace Cells {
 
 class Mutable final {
 
-  public:
-
-  typedef std::shared_ptr<Mutable> Ptr;
-  typedef std::vector<Cell*>       Bucket;
-  typedef std::vector<Bucket*>     Buckets;
+  typedef std::vector<Cell*>  Bucket;
+  typedef std::vector<Bucket> Buckets;
 
   static const uint16_t bucket_size   = 4096;
   static const uint16_t bucket_max    = 6144;
   static const uint16_t bucket_split  = 2048;
   static const uint8_t  narrow_size   = 20;
 
+  public:
+
+  typedef std::shared_ptr<Mutable> Ptr;
+
   const Types::KeySeq key_seq;
   Types::Column       type;
   uint32_t            max_revs;
   uint64_t            ttl;
 
-  SWC_CAN_INLINE
-  static Bucket* make_bucket(uint16_t reserve = bucket_size) {
-    auto bucket = new Bucket;
-    if(reserve)
-      bucket->reserve(reserve);
-    return bucket;
-  }
-
 
   struct ConstIterator final {
-    const Buckets*            buckets;
+    const Buckets&            buckets;
     Buckets::const_iterator   bucket;
     Bucket::const_iterator    item;
 
     SWC_CAN_INLINE
-    ConstIterator(const Buckets* buckets, size_t offset = 0) noexcept
-                  : buckets(buckets), bucket(buckets->cbegin()) {
+    ConstIterator(const Buckets& buckets) noexcept
+                  : buckets(buckets), bucket(buckets.cbegin()),
+                    item(bucket->cbegin()) {
+    }
+
+    SWC_CAN_INLINE
+    ConstIterator(const Buckets& buckets, size_t offset) noexcept
+                  : buckets(buckets), bucket(buckets.cbegin()) {
       if(offset) {
-        for(; bucket != buckets->cend(); ++bucket) {
-          if(offset < (*bucket)->size()) {
-            item = (*bucket)->cbegin() + offset;
+        for(; bucket != buckets.cend(); ++bucket) {
+          if(offset < bucket->size()) {
+            item = bucket->cbegin() + offset;
             break;
           }
-          offset -= (*bucket)->size();
+          offset -= bucket->size();
         }
-      } else if(bucket != buckets->cend()) {
-        item = (*bucket)->cbegin();
+      } else {
+        item = bucket->cbegin();
       }
     }
 
@@ -69,7 +68,6 @@ class Mutable final {
 
     SWC_CAN_INLINE
     ConstIterator& operator=(const ConstIterator& other) noexcept {
-      buckets = other.buckets;
       bucket = other.bucket;
       item = other.item;
       return *this;
@@ -77,39 +75,42 @@ class Mutable final {
 
     SWC_CAN_INLINE
     operator bool() const noexcept {
-      return bucket != buckets->cend() && item != (*bucket)->cend();
+      return bucket != buckets.cend() && item != bucket->cend();
     }
 
     SWC_CAN_INLINE
     void operator++() noexcept {
-      if(++item == (*bucket)->cend() && ++bucket != buckets->cend())
-        item = (*bucket)->cbegin();
+      if(++item == bucket->cend() && ++bucket != buckets.cend())
+        item = bucket->cbegin();
     }
 
   };
 
 
   struct Iterator final {
-    Buckets*            buckets;
+    Buckets&            buckets;
     Buckets::iterator   bucket;
     Bucket::iterator    item;
 
     SWC_CAN_INLINE
-    Iterator() noexcept : buckets(nullptr) { }
+    Iterator(Buckets& buckets) noexcept
+            : buckets(buckets), bucket(buckets.begin()),
+              item(bucket->begin()) {
+    }
 
     SWC_CAN_INLINE
-    Iterator(Buckets* buckets, size_t offset = 0) noexcept
-             : buckets(buckets), bucket(buckets->begin()) {
+    Iterator(Buckets& buckets, size_t offset) noexcept
+            : buckets(buckets), bucket(buckets.begin()) {
       if(offset) {
-        for(; bucket != buckets->end(); ++bucket) {
-          if(offset < (*bucket)->size()) {
-            item = (*bucket)->begin() + offset;
+        for(; bucket != buckets.end(); ++bucket) {
+          if(offset < bucket->size()) {
+            item = bucket->begin() + offset;
             break;
           }
-          offset -= (*bucket)->size();
+          offset -= bucket->size();
         }
-      } else if(bucket != buckets->end()) {
-        item = (*bucket)->begin();
+      } else {
+        item = bucket->begin();
       }
     }
 
@@ -120,7 +121,6 @@ class Mutable final {
 
     SWC_CAN_INLINE
     Iterator& operator=(const Iterator& other) noexcept {
-      buckets = other.buckets;
       bucket = other.bucket;
       item = other.item;
       return *this;
@@ -128,73 +128,72 @@ class Mutable final {
 
     SWC_CAN_INLINE
     operator bool() const noexcept {
-      return bucket != buckets->end() && item != (*bucket)->end();
+      return bucket != buckets.end() && item != bucket->end();
     }
 
     SWC_CAN_INLINE
     void operator++() noexcept {
-      if(++item == (*bucket)->end() && ++bucket != buckets->end())
-        item = (*bucket)->begin();
+      if(++item == bucket->end() && ++bucket != buckets.end())
+        item = bucket->begin();
     }
 
     SWC_CAN_INLINE
     void insert(Cell* value) {
-      item = (*bucket)->insert(item, value);
+      item = bucket->insert(item, value);
 
-      if((*bucket)->size() >= bucket_max) {
-        auto offset = item - (*bucket)->begin();
+      if(bucket->size() >= bucket_max) {
+        auto offset = item - bucket->begin();
 
-        auto nbucket = buckets->insert(++bucket, make_bucket());
+        auto nbucket = buckets.insert(++bucket, Bucket());
+        //nbucket->reserve(bucket_size);
 
-        auto it_b = (*(bucket = nbucket-1))->begin() + bucket_split;
-        auto it_e = (*bucket)->end();
-        (*nbucket)->assign(it_b, it_e);
-        (*bucket)->erase  (it_b, it_e);
+        auto it_b = (bucket = nbucket-1)->begin() + bucket_split;
+        auto it_e = bucket->end();
+        nbucket->assign(it_b, it_e);
+        bucket->erase  (it_b, it_e);
 
         if(offset >= bucket_split)
-          item = (*(bucket = nbucket))->begin() + offset - bucket_split;
+          item = (bucket = nbucket)->begin() + offset - bucket_split;
       }
     }
 
     SWC_CAN_INLINE
     void remove() noexcept {
-      item = (*bucket)->erase(item);
-      if((*bucket)->empty() && buckets->size() > 1) {
-        delete *bucket;
-        if((bucket = buckets->erase(bucket)) != buckets->end())
-          item = (*bucket)->begin();
-      } else if(item == (*bucket)->end() && ++bucket != buckets->end()) {
-        item = (*bucket)->begin();
+      item = bucket->erase(item);
+      if(bucket->empty() && buckets.size() > 1) {
+        if((bucket = buckets.erase(bucket)) != buckets.end())
+          item = bucket->begin();
+      } else if(item == bucket->end() && ++bucket != buckets.end()) {
+        item = bucket->begin();
       }
     }
 
     SWC_CAN_INLINE
     void remove(size_t number) noexcept {
       while(number) {
-        if(item == (*bucket)->begin() && number >= (*bucket)->size()) {
-          if(buckets->size() == 1) {
-            (*bucket)->clear();
-            item = (*bucket)->end();
+        if(item == bucket->begin() && number >= bucket->size()) {
+          if(buckets.size() == 1) {
+            bucket->clear();
+            item = bucket->end();
             return;
           }
-          number -= (*bucket)->size();
-          delete *bucket;
-          bucket = buckets->erase(bucket);
+          number -= bucket->size();
+          bucket = buckets.erase(bucket);
 
         } else {
-          size_t avail = (*bucket)->end() - item;
+          size_t avail = bucket->end() - item;
           if(avail > number) {
-            item = (*bucket)->erase(item, item + number);
+            item = bucket->erase(item, item + number);
             return;
           }
           number -= avail;
-          (*bucket)->erase(item, (*bucket)->end());
+          bucket->erase(item, bucket->end());
           ++bucket;
         }
 
-        if(bucket == buckets->end())
+        if(bucket == buckets.end())
           return;
-        item = (*bucket)->begin();
+        item = bucket->begin();
       }
     }
 
@@ -403,7 +402,7 @@ Mutable::Mutable(const Types::KeySeq key_seq,
                 : key_seq(key_seq),
                   type(type), max_revs(max_revs), ttl(ttl_ns),
                   _bytes(0), _size(0) {
-  buckets.emplace_back(make_bucket(0));
+  buckets.emplace_back();
 }
 
 SWC_CAN_INLINE
@@ -414,7 +413,7 @@ Mutable::Mutable(const Types::KeySeq key_seq,
                 : key_seq(key_seq),
                   type(type), max_revs(max_revs), ttl(ttl_ns),
                   _bytes(0), _size(0) {
-  buckets.emplace_back(make_bucket(0));
+  buckets.emplace_back();
   add_sorted(buffer.base, buffer.size);
 }
 
@@ -429,10 +428,9 @@ Mutable::Mutable(Mutable&& other)
 
 SWC_CAN_INLINE
 Mutable::~Mutable() {
-  for(auto bucket : buckets) {
-    for(auto cell : *bucket)
+  for(auto& bucket : buckets) {
+    for(auto cell : bucket)
       delete cell;
-    delete bucket;
   }
 }
 
@@ -446,44 +444,44 @@ void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns,
 
 SWC_CAN_INLINE
 Mutable::ConstIterator Mutable::ConstIt(size_t offset) const noexcept {
-  return ConstIterator(&buckets, offset);
+  return ConstIterator(buckets, offset);
 }
 
 SWC_CAN_INLINE
 Mutable::Iterator Mutable::It(size_t offset) noexcept {
-  return Iterator(&buckets, offset);
+  return Iterator(buckets, offset);
 }
 
 SWC_CAN_INLINE
 size_t Mutable::size_of_internal() const noexcept {
   return  _bytes
         + _size * (sizeof(Cell*) + sizeof(Cell))
-        + buckets.size() * (sizeof(Bucket*) + sizeof(Bucket));
+        + buckets.size() * sizeof(Bucket);
 }
 
 SWC_CAN_INLINE
 Cell& Mutable::front() noexcept {
-  return *buckets.front()->front();
+  return *buckets.front().front();
 }
 
 SWC_CAN_INLINE
 Cell& Mutable::back() noexcept {
-  return *buckets.back()->back();
+  return *buckets.back().back();
 }
 
 SWC_CAN_INLINE
 Cell& Mutable::front() const noexcept {
-  return *buckets.front()->front();
+  return *buckets.front().front();
 }
 
 SWC_CAN_INLINE
 Cell& Mutable::back() const noexcept {
-  return *buckets.back()->back();
+  return *buckets.back().back();
 }
 
 SWC_CAN_INLINE
 Cell* Mutable::operator[](size_t idx) noexcept {
-  auto it = Iterator(&buckets, idx);
+  auto it = Iterator(buckets, idx);
   return it ? *it.item : nullptr;
 }
 
@@ -541,7 +539,7 @@ SWC_CAN_INLINE
 void Mutable::get(int32_t idx, DB::Cell::Key& key) const {
   if((idx < 0 && size() < size_t(-idx)) || size_t(idx) >= size())
     return;
-  auto it = ConstIterator(&buckets, idx < 0 ? size() + idx : idx);
+  auto it = ConstIterator(buckets, idx < 0 ? size() + idx : idx);
   if(it)
     key.copy((*it.item)->key);
 }
@@ -550,7 +548,7 @@ SWC_CAN_INLINE
 bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp,
                   DB::Cell::Key& res) const {
   Condition::Comp chk;
-  for(auto it = ConstIterator(&buckets, _narrow(key)); it; ++it) {
+  for(auto it = ConstIterator(buckets, _narrow(key)); it; ++it) {
     if((chk = DB::KeySeq::compare(key_seq, key, (*it.item)->key))
                 == Condition::GT
       || (comp == Condition::GE && chk == Condition::EQ)){
@@ -568,7 +566,7 @@ bool Mutable::scan_after(const DB::Cell::Key& after,
     return false;
 
   const Cell* cell;
-  for(auto it=ConstIterator(&buckets, _narrow(after)); it; ++it) {
+  for(auto it=ConstIterator(buckets, _narrow(after)); it; ++it) {
     cell = *it.item;
     if(!to.empty()
         && DB::KeySeq::compare(key_seq, to, cell->key) == Condition::GT)
@@ -622,9 +620,9 @@ void Mutable::_remove(Cell* cell) noexcept {
 
 SWC_CAN_INLINE
 void Mutable::_push_back(Cell* cell) {
-  if(buckets.back()->size() >= bucket_size)
-    buckets.push_back(make_bucket());
-  buckets.back()->push_back(cell);
+  if(buckets.back().size() >= bucket_size)
+    buckets.emplace_back().reserve(bucket_size);
+  buckets.back().push_back(cell);
 }
 
 SWC_CAN_INLINE

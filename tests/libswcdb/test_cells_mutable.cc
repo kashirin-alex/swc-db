@@ -280,6 +280,8 @@ int main() {
   };
 
 
+  SWC::Time::Measure_ns tracker_all;
+
   for(auto column_type : column_types) {
     for(auto cell_number : cell_numbers) {
       for(auto version : versions) {
@@ -289,12 +291,24 @@ int main() {
           else if(version < max_version)
             continue;
           for(auto seq : sequences) {
+            SWC::Time::Measure_ns tracker;
+
             check(seq, column_type, cell_number, version, max_version);
+
+            std::cout << "\n # check with seq=" << SWC::DB::Types::to_string(seq)
+                      << " type=" << SWC::DB::Types::to_string(column_type)
+                      << " cells=" << cell_number
+                      << " revs=" << version
+                      << " max_version=" << max_version
+                      << " took=" << tracker.elapsed()
+                      << "\n";
           }
         }
       }
     }
   }
+
+  std::cout << "\n ###  took=" << tracker_all.elapsed() << "\n";
 
   // ++ bool reverse=false, bool time_order_desc=false, bool gen_historic=false)
   /*
