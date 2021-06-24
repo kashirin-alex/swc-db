@@ -218,10 +218,6 @@ std::string V_BOOL::to_string() const {
   return value ? "true" : "false";
 }
 
-bool V_BOOL::get() const noexcept {
-  return value;
-}
-
 
 
 V_UINT8::V_UINT8(const uint8_t& v, uint8_t flags) noexcept
@@ -253,10 +249,6 @@ Value::Type V_UINT8::type() const noexcept {
 
 std::string V_UINT8::to_string() const {
   return std::to_string(int16_t(value));
-}
-
-uint8_t V_UINT8::get() const noexcept {
-  return value;
 }
 
 
@@ -291,10 +283,6 @@ std::string V_UINT16::to_string() const {
   return std::to_string(value);
 }
 
-uint16_t V_UINT16::get() const noexcept {
-  return value;
-}
-
 
 
 V_INT32::V_INT32(const int32_t& v, uint8_t flags) noexcept
@@ -325,10 +313,6 @@ Value::Type V_INT32::type() const noexcept {
 
 std::string V_INT32::to_string() const {
   return std::to_string(value);
-}
-
-int32_t V_INT32::get() const noexcept {
-  return value;
 }
 
 
@@ -363,10 +347,6 @@ std::string V_INT64::to_string() const {
   return std::to_string(value);
 }
 
-int64_t V_INT64::get() const noexcept {
-  return value;
-}
-
 
 
 V_DOUBLE::V_DOUBLE(const double& v, uint8_t flags) noexcept
@@ -399,10 +379,6 @@ std::string V_DOUBLE::to_string() const {
   return format("%g", value);
 }
 
-double V_DOUBLE::get() const noexcept {
-  return value;
-}
-
 
 
 V_STRING::V_STRING(std::string&& v, uint8_t flags) noexcept
@@ -433,10 +409,6 @@ Value::Type V_STRING::type() const noexcept {
 }
 
 std::string V_STRING::to_string() const {
-  return value;
-}
-
-std::string V_STRING::get() const {
   return value;
 }
 
@@ -496,9 +468,6 @@ std::string V_ENUM::to_string() const {
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
 }
 
-int32_t V_ENUM::get() const noexcept {
-  return value;
-}
 
 
 // lists
@@ -531,10 +500,6 @@ Value::Type V_STRINGS::type() const noexcept {
 
 std::string V_STRINGS::to_string() const {
   return format_list(value);
-}
-
-Strings V_STRINGS::get() const {
-  return value;
 }
 
 
@@ -575,10 +540,6 @@ std::string V_INT64S::to_string() const {
   return format_list(value);
 }
 
-Int64s V_INT64S::get() const {
-  return value;
-}
-
 
 
 V_DOUBLES::V_DOUBLES(Doubles&& v, uint8_t flags) noexcept
@@ -615,10 +576,6 @@ Value::Type V_DOUBLES::type() const noexcept {
 
 std::string V_DOUBLES::to_string() const {
   return format_list(value);
-}
-
-Doubles V_DOUBLES::get() const {
-  return value;
 }
 
 
@@ -666,10 +623,6 @@ Value::Type V_GBOOL::type() const noexcept {
 
 std::string V_GBOOL::to_string() const {
   return value ? "true" : "false";
-}
-
-bool V_GBOOL::get() const noexcept {
-  return value;
 }
 
 void V_GBOOL::set(bool v) noexcept {
@@ -730,10 +683,6 @@ std::string V_GUINT8::to_string() const {
   return std::to_string(int16_t(value));
 }
 
-uint8_t V_GUINT8::get() const noexcept {
-  return value;
-}
-
 void V_GUINT8::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
@@ -788,10 +737,6 @@ std::string V_GUINT16::to_string() const {
   return std::to_string(value);
 }
 
-uint16_t V_GUINT16::get() const noexcept {
-  return value;
-}
-
 void V_GUINT16::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
@@ -843,10 +788,6 @@ Value::Type V_GINT32::type() const noexcept {
 
 std::string V_GINT32::to_string() const {
   return std::to_string(value);
-}
-
-int32_t V_GINT32::get() const noexcept {
-  return value;
 }
 
 void V_GINT32::on_change() const {
@@ -920,10 +861,6 @@ std::string V_GENUM::to_string() const {
   return format(
     "%s  # (%d)",
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
-}
-
-int32_t V_GENUM::get() const noexcept {
-  return value;
 }
 
 void V_GENUM::set(int32_t nv) {

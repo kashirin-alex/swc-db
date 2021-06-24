@@ -144,7 +144,10 @@ class V_BOOL final : public Value {
 
   std::string to_string() const override;
 
-  bool get() const noexcept;
+  SWC_CAN_INLINE
+  bool get() const noexcept {
+    return value;
+  }
 
   bool value;
 };
@@ -168,7 +171,10 @@ class V_UINT8 final : public Value {
 
   std::string to_string() const override;
 
-  uint8_t get() const noexcept;
+  SWC_CAN_INLINE
+  uint8_t get() const noexcept {
+    return value;
+  }
 
   uint8_t value;
 };
@@ -192,7 +198,10 @@ class V_UINT16 final : public Value {
 
   std::string to_string() const override;
 
-  uint16_t get() const noexcept;
+  SWC_CAN_INLINE
+  uint16_t get() const noexcept {
+    return value;
+  }
 
   uint16_t value;
 };
@@ -216,7 +225,10 @@ class V_INT32 final : public Value {
 
   std::string to_string() const override;
 
-  int32_t get() const noexcept;
+  SWC_CAN_INLINE
+  int32_t get() const noexcept {
+    return value;
+  }
 
   int32_t value;
 };
@@ -240,7 +252,10 @@ class V_INT64 final : public Value {
 
   std::string to_string() const override;
 
-  int64_t get() const noexcept;
+  SWC_CAN_INLINE
+  int64_t get() const noexcept {
+    return value;
+  }
 
   int64_t value;
 };
@@ -264,7 +279,10 @@ class V_DOUBLE final : public Value {
 
   std::string to_string() const override;
 
-  double get() const noexcept;
+  SWC_CAN_INLINE
+  double get() const noexcept {
+    return value;
+  }
 
   double value;
 };
@@ -288,7 +306,10 @@ class V_STRING final : public Value {
 
   std::string to_string() const override;
 
-  std::string get() const;
+  SWC_CAN_INLINE
+  std::string get() const {
+    return value;
+  }
 
   std::string value;
 };
@@ -318,7 +339,10 @@ class V_ENUM final : public Value {
 
   std::string to_string() const override;
 
-  int32_t get() const noexcept;
+  SWC_CAN_INLINE
+  int32_t get() const noexcept {
+    return value;
+  }
 
   int32_t       value;
   FromString_t  call_from_string = nullptr;
@@ -344,7 +368,10 @@ class V_STRINGS final : public Value {
 
   std::string to_string() const override;
 
-  Strings get() const;
+  SWC_CAN_INLINE
+  Strings get() const {
+    return value;
+  }
 
   Strings value;
 };
@@ -368,7 +395,10 @@ class V_INT64S final : public Value {
 
   std::string to_string() const override;
 
-  Int64s get() const;
+  SWC_CAN_INLINE
+  Int64s get() const {
+    return value;
+  }
 
   Int64s value;
 };
@@ -392,7 +422,10 @@ class V_DOUBLES final : public Value {
 
   std::string to_string() const override;
 
-  Doubles get() const;
+  SWC_CAN_INLINE
+  Doubles get() const {
+    return value;
+  }
 
   Doubles value;
 };
@@ -421,7 +454,10 @@ class V_GBOOL final : public Value {
 
   std::string to_string() const override;
 
-  bool get() const noexcept;
+  SWC_CAN_INLINE
+  bool get() const noexcept {
+    return value;
+  }
 
   void set(bool v) noexcept;
 
@@ -455,7 +491,10 @@ class V_GUINT8 final : public Value {
 
   std::string to_string() const override;
 
-  uint8_t get() const noexcept;
+  SWC_CAN_INLINE
+  uint8_t get() const noexcept {
+    return value;
+  }
 
   void on_change() const;
 
@@ -488,7 +527,10 @@ class V_GUINT16 final : public Value {
 
   std::string to_string() const override;
 
-  uint16_t get() const noexcept;
+  SWC_CAN_INLINE
+  uint16_t get() const noexcept {
+    return value;
+  }
 
   void on_change() const;
 
@@ -522,7 +564,10 @@ class V_GINT32 final : public Value {
 
   std::string to_string() const override;
 
-  int32_t get() const noexcept;
+  SWC_CAN_INLINE
+  int32_t get() const noexcept {
+    return value;
+  }
 
   void on_change() const;
 
@@ -561,7 +606,10 @@ class V_GENUM final : public Value {
 
   std::string to_string() const override;
 
-  int32_t get() const noexcept;
+  SWC_CAN_INLINE
+  int32_t get() const noexcept {
+    return value;
+  }
 
   void set(int32_t nv);
 
