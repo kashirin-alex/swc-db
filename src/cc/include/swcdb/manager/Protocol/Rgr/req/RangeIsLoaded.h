@@ -25,7 +25,7 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
                 const Manager::Range::Ptr& range, uint32_t timeout=60000)
                 : client::ConnQueue::ReqBase(
                     Buffers::make(
-                      Params::RangeIsLoaded(range->cfg->cid, range->rid),
+                      Params::RangeIsLoadedReq(range->cfg->cid, range->rid),
                       0,
                       RANGE_IS_LOADED, timeout
                     )

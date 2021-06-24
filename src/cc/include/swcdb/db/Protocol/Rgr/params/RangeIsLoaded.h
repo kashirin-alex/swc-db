@@ -6,21 +6,45 @@
 #ifndef swcdb_db_protocol_rgr_params_RangeIsLoaded_h
 #define swcdb_db_protocol_rgr_params_RangeIsLoaded_h
 
-#include "swcdb/db/Protocol/Common/params/ColRangeId.h"
+
+#include "swcdb/core/comm/Serializable.h"
+
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
-class RangeIsLoaded final : public Common::Params::ColRangeId {
+class RangeIsLoadedReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeIsLoaded() noexcept { }
+  RangeIsLoadedReq() noexcept : cid(0), rid(0) { }
 
   SWC_CAN_INLINE
-  RangeIsLoaded(cid_t cid, rid_t rid) noexcept
-                : Common::Params::ColRangeId(cid, rid) { }
-  //~RangeIsLoaded() { }
+  RangeIsLoadedReq(cid_t cid, rid_t rid) noexcept
+                : cid(cid), rid(rid) {
+  }
+
+  //~RangeIsLoadedReq() { }
+
+  cid_t   cid;
+  rid_t   rid;
+
+  private:
+
+  size_t internal_encoded_length() const override {
+    return  Serialization::encoded_length_vi64(cid)
+          + Serialization::encoded_length_vi64(rid);
+  }
+
+  void internal_encode(uint8_t** bufp) const override {
+    Serialization::encode_vi64(bufp, cid);
+    Serialization::encode_vi64(bufp, rid);
+  }
+
+  void internal_decode(const uint8_t** bufp, size_t* remainp) override {
+    cid = Serialization::decode_vi64(bufp, remainp);
+    rid = Serialization::decode_vi64(bufp, remainp);
+  }
 
 };
 

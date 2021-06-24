@@ -3,25 +3,26 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_db_protocol_common_params_ColumnId_h
-#define swcdb_db_protocol_common_params_ColumnId_h
+#ifndef swcdb_db_protocol_rgr_params_ColumnDelete_h
+#define swcdb_db_protocol_rgr_params_ColumnDelete_h
+
 
 #include "swcdb/core/comm/Serializable.h"
 
+
 namespace SWC { namespace Comm { namespace Protocol {
-namespace Common { namespace Params {
+namespace Rgr { namespace Params {
 
 
-class ColumnId : public Serializable {
+class ColumnDelete : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnId(cid_t cid = DB::Schema::NO_CID) noexcept : cid(cid) { }
+  ColumnDelete(cid_t cid = DB::Schema::NO_CID) noexcept : cid(cid) { }
 
-  //~ColumnId() { }
+  //~ColumnDelete() { }
 
   cid_t  cid;
-
 
   protected:
 
@@ -43,4 +44,4 @@ class ColumnId : public Serializable {
 
 }}}}}
 
-#endif // swcdb_db_protocol_common_params_ColumnId_h
+#endif // swcdb_db_protocol_rgr_params_ColumnDelete_h

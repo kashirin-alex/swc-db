@@ -4,7 +4,6 @@
  */
 
 
-#include "swcdb/db/Protocol/Common/params/ColumnsInterval.h"
 #include "swcdb/db/Protocol/Rgr/params/ColumnsUnload.h"
 #include "swcdb/manager/Protocol/Rgr/req/ColumnsUnload.h"
 #include "swcdb/manager/Protocol/Rgr/req/RangeUnload.h"
@@ -18,7 +17,7 @@ ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                              cid_t cid_begin, cid_t cid_end)
             : client::ConnQueue::ReqBase(
                 Buffers::make(
-                  Common::Params::ColumnsInterval(cid_begin, cid_end),
+                  Params::ColumnsUnloadReq(cid_begin, cid_end),
                   0,
                   COLUMNS_UNLOAD, 60000
                 )

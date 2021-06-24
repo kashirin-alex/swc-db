@@ -5,7 +5,7 @@
 
 
 #include "swcdb/manager/Protocol/Rgr/req/ColumnDelete.h"
-#include "swcdb/db/Protocol/Common/params/ColumnId.h"
+#include "swcdb/db/Protocol/Rgr/params/ColumnDelete.h"
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Req {
@@ -17,7 +17,7 @@ ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr,
                            uint64_t req_id)
           : client::ConnQueue::ReqBase(
               Buffers::make(
-                Common::Params::ColumnId(schema->cid),
+                Params::ColumnDelete(schema->cid),
                 0,
                 COLUMN_DELETE, 3600000)
             ),

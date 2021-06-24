@@ -37,7 +37,7 @@ class MngrStatus final {
         role(Serialization::decode_i8(bufp, remainp)),
         cid_begin(Serialization::decode_vi64(bufp, remainp)),
         cid_end(Serialization::decode_vi64(bufp, remainp)),
-        endpoints(std::move(Serialization::decode_endpoints(bufp, remainp))),
+        endpoints(Serialization::decode_endpoints(bufp, remainp)),
         conn(nullptr), failures(0) {
   }
 

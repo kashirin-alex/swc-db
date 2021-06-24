@@ -389,7 +389,7 @@ void Mutable::split(Mutable& cells) {
 
   auto it = buckets.begin() + split_at;
   cells.buckets.reserve(split_at + 1);
-  for(; it < buckets.end(); ++it) {
+  for(; it != buckets.end(); ++it) {
     for(auto cell : *it)
       cells._add(cell);
     cells.buckets.emplace_back(std::move(*it));

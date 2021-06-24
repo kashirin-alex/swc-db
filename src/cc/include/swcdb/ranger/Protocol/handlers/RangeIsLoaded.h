@@ -20,7 +20,7 @@ void range_is_loaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    Params::RangeIsLoaded params;
+    Params::RangeIsLoadedReq params;
     params.decode(&ptr, &remain);
 
     auto range = Env::Rgr::columns()->get_range(

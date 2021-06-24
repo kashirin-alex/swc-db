@@ -6,44 +6,54 @@
 #ifndef swcdb_db_protocol_rgr_params_RangeLoad_h
 #define swcdb_db_protocol_rgr_params_RangeLoad_h
 
-#include "swcdb/db/Protocol/Common/params/ColRangeId.h"
+
+#include "swcdb/core/comm/Serializable.h"
+
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-class RangeLoad final : public Common::Params::ColRangeId {
+class RangeLoad final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeLoad() noexcept { }
+  RangeLoad() noexcept : cid(0), rid(0) { }
 
   SWC_CAN_INLINE
   RangeLoad(cid_t cid, rid_t rid, const DB::Schema::Ptr& schema) noexcept
-            : Common::Params::ColRangeId(cid, rid), schema(schema) {
+            : cid(cid), rid(rid), schema(schema) {
   }
 
   //~RangeLoad() { }
 
+  cid_t           cid;
+  rid_t           rid;
   DB::Schema::Ptr schema;
 
   private:
 
   size_t internal_encoded_length() const override {
-    return ColRangeId::internal_encoded_length() + schema->encoded_length();
+    return  Serialization::encoded_length_vi64(cid)
+          + Serialization::encoded_length_vi64(rid)
+          + schema->encoded_length();
   }
 
   void internal_encode(uint8_t** bufp) const override {
-    ColRangeId::internal_encode(bufp);
+    Serialization::encode_vi64(bufp, cid);
+    Serialization::encode_vi64(bufp, rid);
     schema->encode(bufp);
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-    ColRangeId::internal_decode(bufp, remainp);
+    cid = Serialization::decode_vi64(bufp, remainp);
+    rid = Serialization::decode_vi64(bufp, remainp);
     schema.reset(new DB::Schema(bufp, remainp));
   }
 
 };
+
+
 
 class RangeLoaded final : public Serializable {
   public:

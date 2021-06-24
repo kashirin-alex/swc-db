@@ -7,14 +7,14 @@
 #define swcdb_db_protocol_rgr_params_RangeUnoad_h
 
 
-#include "swcdb/db/Protocol/Common/params/ColRangeId.h"
+#include "swcdb/core/comm/Serializable.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Params {
 
 
-class RangeUnload final : public Common::Params::ColRangeId {
+class RangeUnload final : public Serializable {
   public:
 
   enum Flag : uint8_t {
@@ -23,30 +23,36 @@ class RangeUnload final : public Common::Params::ColRangeId {
   };
 
   SWC_CAN_INLINE
-  RangeUnload() noexcept : flags(NONE) { }
+  RangeUnload() noexcept : cid(0), rid(0), flags(NONE) { }
 
   SWC_CAN_INLINE
   RangeUnload(cid_t cid, rid_t rid, uint8_t flags=NONE) noexcept
-             : Common::Params::ColRangeId(cid, rid), flags(flags) {
+             : cid(cid), rid(rid), flags(flags) {
   }
 
   //~RangeUnload() { }
 
-  uint8_t  flags;
+  cid_t   cid;
+  rid_t   rid;
+  uint8_t flags;
 
   private:
 
   size_t internal_encoded_length() const override {
-    return Common::Params::ColRangeId::internal_encoded_length() + 1;
+    return  Serialization::encoded_length_vi64(cid)
+          + Serialization::encoded_length_vi64(rid)
+          + 1;
   }
 
   void internal_encode(uint8_t** bufp) const override {
-    Common::Params::ColRangeId::internal_encode(bufp);
+    Serialization::encode_vi64(bufp, cid);
+    Serialization::encode_vi64(bufp, rid);
     Serialization::encode_i8(bufp, flags);
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-    Common::Params::ColRangeId::internal_decode(bufp, remainp);
+    cid = Serialization::decode_vi64(bufp, remainp);
+    rid = Serialization::decode_vi64(bufp, remainp);
     flags = Serialization::decode_i8(bufp, remainp);
   }
 

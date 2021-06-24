@@ -7,7 +7,7 @@
 #ifndef swcdb_ranger_Protocol_handlers_ColumnDelete_h
 #define swcdb_ranger_Protocol_handlers_ColumnDelete_h
 
-#include "swcdb/db/Protocol/Common/params/ColumnId.h"
+#include "swcdb/db/Protocol/Rgr/params/ColumnDelete.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -19,7 +19,7 @@ void column_delete(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    Common::Params::ColumnId params;
+    Params::ColumnDelete params;
     params.decode(&ptr, &remain);
 
     auto col = Env::Rgr::columns()->get_column(params.cid);
@@ -36,7 +36,7 @@ void column_delete(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   }
 
 }
-  
+
 
 }}}}}
 

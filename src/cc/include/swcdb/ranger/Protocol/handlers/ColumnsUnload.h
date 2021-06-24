@@ -7,7 +7,7 @@
 #ifndef swcdb_ranger_Protocol_handlers_ColumnsUnload_h
 #define swcdb_ranger_Protocol_handlers_ColumnsUnload_h
 
-#include "swcdb/db/Protocol/Common/params/ColumnsInterval.h"
+#include "swcdb/db/Protocol/Rgr/params/ColumnsUnload.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -19,7 +19,7 @@ void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
 
-    Common::Params::ColumnsInterval params;
+    Params::ColumnsUnloadReq params;
     params.decode(&ptr, &remain);
 
     Env::Rgr::columns()->unload(
