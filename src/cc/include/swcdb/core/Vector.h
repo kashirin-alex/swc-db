@@ -18,13 +18,13 @@ class Vector {
   using size_type           = SizeT;
 
   typedef value_type*       pointer;
-  typedef const pointer     const_pointer;
+  typedef const value_type* const_pointer;
 
   typedef value_type*       iterator;
-  typedef const iterator    const_iterator;
+  typedef const value_type* const_iterator;
 
   typedef value_type&       reference;
-  typedef const reference   const_reference;
+  typedef const value_type& const_reference;
 
 
   SWC_CAN_INLINE
@@ -119,7 +119,7 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  pointer data() const noexcept {
+  const_pointer data() const noexcept {
     return _data;
   }
 
@@ -130,12 +130,12 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  iterator cbegin() const noexcept {
+  const_iterator cbegin() const noexcept {
     return _data;
   }
 
   SWC_CAN_INLINE
-  iterator begin() const noexcept {
+  const_iterator begin() const noexcept {
     return cbegin();
   }
 
@@ -146,12 +146,12 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  iterator cend() const noexcept {
+  const_iterator cend() const noexcept {
     return _data + _size;
   }
 
   SWC_CAN_INLINE
-  iterator end() const noexcept {
+  const_iterator end() const noexcept {
     return cend();
   }
 
@@ -268,7 +268,7 @@ class Vector {
 
     pointer data_offset = _alter(_data + offset, _size - offset, amt);
     _size += amt;
-    for(pointer ptr=data_offset; first < last; ++first, ++ptr)
+    for(pointer ptr=data_offset; first != last; ++first, ++ptr)
       _construct(ptr, *first);
     return data_offset;
   }
@@ -278,7 +278,7 @@ class Vector {
     clear();
     reserve(last - first);
     _size = last - first;
-    for(pointer ptr = _data; first < last; ++first, ++ptr)
+    for(pointer ptr = _data; first != last; ++first, ++ptr)
       _construct(ptr, *first);
   }
 

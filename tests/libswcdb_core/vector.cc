@@ -91,7 +91,7 @@ void test_vector_huge(size_t sz) {
 }
 */
 
-template<typename VecT, typename T = VecT::value_type>
+template<typename VecT, typename T = typename  VecT::value_type>
 void test_check_eq(const VecT& vec, size_t sz) {
   auto it = vec.cbegin();
   for(T n=sz; n; --n, ++it) {
@@ -102,10 +102,8 @@ void test_check_eq(const VecT& vec, size_t sz) {
   }
 }
 
-template<typename VecT>
+template<typename VecT, typename T = typename  VecT::value_type>
 void test_vector(const size_t sz) {
-
-  using T = VecT::value_type;
 
   // push_back
   {
