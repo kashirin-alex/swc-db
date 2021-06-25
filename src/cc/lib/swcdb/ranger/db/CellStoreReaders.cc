@@ -109,7 +109,8 @@ void Readers::load_cells(BlockLoader* loader) {
 }
 
 SWC_CAN_INLINE
-void Readers::get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const {
+void Readers::get_blocks(int& err, Read::Blocks& to) const {
+  to.reserve(blocks_count());
   for(auto cs : *this) {
     cs->get_blocks(err, to);
     if(err)
@@ -161,6 +162,7 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
   _free();
   csid_t csid;
   uint32_t len = Serialization::decode_vi32(ptr, remain);
+  Vec::reserve(len);
   for(size_t i=0; i<len; ++i) {
     csid = Serialization::decode_vi32(ptr, remain);
     push_back(
@@ -191,6 +193,7 @@ void Readers::load_from_path(int &err) {
   _free();
 
   std::sort(entries.begin(), entries.end());
+  Vec::reserve(entries.size());
   for(csid_t csid : entries) {
     push_back(
       Read::make(err, csid, range, DB::Cells::Interval(range->cfg->key_seq))
@@ -219,6 +222,7 @@ void Readers::replace(int &err, Writers& w_cellstores) {
 
   if(!err) {
     Vec cellstores;
+    cellstores.reserve(w_cellstores.size());
     for(auto cs : w_cellstores) {
       cellstores.push_back(
         Read::make(err, cs->csid, range, cs->interval, true)
@@ -231,7 +235,7 @@ void Readers::replace(int &err, Writers& w_cellstores) {
         delete cs;
     } else {
       _free();
-      assign(cellstores.begin(), cellstores.end());
+      Vec::operator=(std::move(cellstores));
     }
   }
 
@@ -255,6 +259,7 @@ void Readers::move_from(int &err, Readers::Vec& mv_css) {
   const auto& fs = Env::FsInterface::interface();
 
   Vec moved;
+  moved.reserve(mv_css.size());
   int tmperr;
   for(auto cs : mv_css) {
     cs->close(tmperr = Error::OK);
@@ -269,6 +274,7 @@ void Readers::move_from(int &err, Readers::Vec& mv_css) {
   }
 
   Vec cellstores;
+  cellstores.reserve(moved.size());
   if(!err) {
     for(auto cs : moved) {
       cellstores.push_back(
@@ -292,7 +298,7 @@ void Readers::move_from(int &err, Readers::Vec& mv_css) {
     }
     mv_css.clear();
   } else {
-    assign(cellstores.begin(), cellstores.end());
+    Vec::operator=(std::move(cellstores));
   }
 }
 
@@ -314,6 +320,7 @@ void Readers::_free() {
     delete cs;
   }
   Vec::clear();
+  Vec::shrink_to_fit();
 }
 
 void Readers::_close() {

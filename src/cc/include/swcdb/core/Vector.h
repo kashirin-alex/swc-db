@@ -64,16 +64,21 @@ class Vector {
 
   SWC_CAN_INLINE
   ~Vector() {
-    if(_data)
+    if(_data) {
+      for(auto& it : *this)
+        it.~value_type();
       _deallocate(_data, _cap);
+    }
   }
 
   SWC_CAN_INLINE
   void free() noexcept {
     if(_data) {
+      for(pointer ptr = _data; _size; --_size, ++ptr)
+        ptr->~value_type();
       _deallocate(_data, _cap);
       _data = nullptr;
-      _size = _cap = 0;
+      _cap = 0;
     }
   }
 
@@ -263,20 +268,23 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  iterator insert(const_iterator it, iterator first, iterator last) {
-    if(!_size) {
-      assign(first, last);
-      return _data;
-    }
-
+  iterator insert(const_iterator it,
+                  const_iterator first, const_iterator last) {
     size_type offset = it - _data;
-    size_type amt = last - first;
-    reserve(_size + amt);
+    if(first == last)
+      return _data + offset;
 
-    pointer data_offset = _alter(_data + offset, _size - offset, amt);
-    _size += amt;
-    for(pointer ptr=data_offset; first != last; ++first, ++ptr)
-      _construct(ptr, *first);
+    size_type sz = last - first;
+    reserve(_size + sz);
+    pointer data_offset = _size
+      ? (_size > offset 
+          ? _alter(_data + offset, _size - offset, sz) 
+          : _data + offset)
+      : _data;
+    _size += sz;
+    pointer ptr = data_offset;
+    for(size_type i=0; i<sz; ++ptr, ++i)
+      _construct(ptr, first[i]);
     return data_offset;
   }
 
@@ -404,6 +412,7 @@ class Vector {
     pointer prev = data + remain - 1;
     for(pointer ptr = prev + amount; remain; --remain, --ptr, --prev) {
       _construct(ptr, std::move(*prev));
+      prev->~value_type();
     }
     //std::uninitialized_move_n(prev, size, data);
     return data;

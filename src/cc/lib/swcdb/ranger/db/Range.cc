@@ -606,6 +606,7 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
     return;
 
   const auto& fs_if = Env::FsInterface::interface();
+  blocks.cellstores.reserve(w_cellstores.size());
   for(auto& cs : w_cellstores) {
     fs_if->rename(
       err,

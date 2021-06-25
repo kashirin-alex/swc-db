@@ -417,7 +417,7 @@ void Blocks::_clear() {
 }
 
 void Blocks::init_blocks(int& err) {
-  std::vector<CellStore::Block::Read::Ptr> blocks;
+  CellStore::Read::Blocks blocks;
   cellstores.get_blocks(err, blocks);
   if(err) {
     _clear();
@@ -425,6 +425,7 @@ void Blocks::init_blocks(int& err) {
   }
 
   Block::Ptr blk = nullptr;
+  m_blocks_idx.reserve(blocks.size());
   for(auto cs_blk : blocks) {
     if(!blk) {
       m_block = blk = Block::make(cs_blk->header.interval, ptr());

@@ -621,7 +621,8 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
   if(err)
     return;
 
-  if(cs_writer->size >= cs_size) {
+  if(cs_writer->size >= cs_size ||
+     cs_writer->blocks_count() == CellStore::Read::MAX_BLOCKS - 1) {
     add_cs(err);
     if(err)
       return;

@@ -40,6 +40,7 @@ ColumnPtr Columns::get_next(size_t& idx) {
 
 void Columns::get_cids(std::vector<cid_t>& cids) {
   Core::MutexSptd::scope lock(m_mutex);
+  cids.reserve(size());
   for(auto it = begin(); it != end(); ++it)
     cids.push_back(it->first);
 }

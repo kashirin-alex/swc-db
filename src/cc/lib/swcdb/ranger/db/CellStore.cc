@@ -17,12 +17,13 @@ Read::Ptr Read::make(int& err, const csid_t csid,
   DB::Cell::Key prev_key_end;
   DB::Cell::Key key_end;
   DB::Cells::Interval interval_by_blks(range->cfg->key_seq);
-  std::vector<Block::Read::Ptr> blocks;
+  Blocks blocks;
   uint32_t cell_revs = 0;
   try {
     load_blocks_index(
       err, smartfd, prev_key_end, key_end, interval_by_blks,
       blocks, cell_revs, chk_base);
+    blocks.shrink_to_fit();
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
@@ -121,7 +122,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
                               DB::Cell::Key& prev_key_end,
                               DB::Cell::Key& key_end,
                               DB::Cells::Interval& interval,
-                              std::vector<Block::Read::Ptr>& blocks,
+                              Blocks& blocks,
                               uint32_t& cell_revs,
                               bool chk_base) {
   uint32_t blks_idx_count = 0;
@@ -223,6 +224,7 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
       if(!i)
         prev_key_end.decode(&ptr, &remain, true);
       blks_count = Serialization::decode_vi32(&ptr, &remain);
+      blocks.reserve(blocks.size() + blks_count);
 
       for(uint32_t blk_i = 0; blk_i < blks_count; ) {
         header.decode_idx(&ptr, &remain);
@@ -257,7 +259,7 @@ Read::Read(const csid_t csid,
            DB::Cell::Key&& prev_key_end,
            DB::Cell::Key&& key_end,
            DB::Cells::Interval&& interval,
-           std::vector<Block::Read::Ptr>&& blks,
+           Blocks&& blks,
            const uint32_t cell_revs,
            const FS::SmartFd::Ptr& smartfd) noexcept
           : csid(csid),
@@ -314,8 +316,8 @@ void Read::_run_queued() {
 }
 
 SWC_CAN_INLINE
-void Read::get_blocks(int&, std::vector<Block::Read::Ptr>& to) const {
-  to.insert(to.end(), blocks.begin(), blocks.end());
+void Read::get_blocks(int&, Blocks& to) const {
+  to.insert(to.end(), blocks.cbegin(), blocks.cend());
 }
 
 SWC_CAN_INLINE

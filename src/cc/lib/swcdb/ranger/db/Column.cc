@@ -63,6 +63,7 @@ RangePtr Column::get_next(size_t &idx) {
 
 void Column::get_rids(std::vector<rid_t>& rids) {
   Core::MutexSptd::scope lock(m_mutex);
+  rids.reserve(size());
   for(auto it = begin(); it != end(); ++it)
     rids.push_back(it->first);
 }
@@ -314,6 +315,7 @@ void Column::remove(const Callback::ColumnDelete::Ptr& req) {
   std::vector<RangePtr> ranges;
   {
     Core::MutexSptd::scope lock(m_mutex);
+    ranges.reserve(size());
     for(auto it=begin(); it != end(); ++it) {
       req->add(it->second);
       ranges.push_back(it->second);

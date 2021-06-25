@@ -179,6 +179,9 @@ Compact::Compact(Fragments* log, uint32_t repetition,
   if(!blks)
     blks = log->range->cfg->log_rollout_ratio();
 
+  size_t g_sz = Env::Rgr::res().concurrency() / 2;
+  m_groups.reserve(g_sz + 1);
+
   for(auto frags : groups) {
     if(frags.empty())
       continue;
@@ -193,7 +196,7 @@ Compact::Compact(Fragments* log, uint32_t repetition,
       }
       --blks;
     }
-    if(!blks || m_groups.size() >= Env::Rgr::res().concurrency()/2 )
+    if(!blks || m_groups.size() >= g_sz)
       break;
   }
 

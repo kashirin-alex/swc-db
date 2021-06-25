@@ -40,7 +40,10 @@ static const uint8_t  IDX_BLKS_HEADER_SIZE = 17;
 
 class Read final {
   public:
-  typedef Read*  Ptr;
+
+  typedef Read*                         Ptr;
+  typedef std::vector<Block::Read::Ptr> Blocks;
+  static constexpr uint32_t MAX_BLOCKS = UINT32_MAX;
 
   inline static Ptr make(int& err, const csid_t csid,
                          const RangePtr& range,
@@ -57,7 +60,7 @@ class Read final {
                                 DB::Cell::Key& prev_key_end,
                                 DB::Cell::Key& key_end,
                                 DB::Cells::Interval& interval,
-                                std::vector<Block::Read::Ptr>& blocks,
+                                Blocks& blocks,
                                 uint32_t& cell_revs,
                                 bool chk_base=false);
 
@@ -67,7 +70,7 @@ class Read final {
   const DB::Cell::Key                 prev_key_end;
   const DB::Cell::Key                 key_end;
   const DB::Cells::Interval           interval;
-  const std::vector<Block::Read::Ptr> blocks;
+  const Blocks                        blocks;
   const uint32_t                      cell_revs;
   FS::SmartFd::Ptr                    smartfd;
 
@@ -75,7 +78,7 @@ class Read final {
                 DB::Cell::Key&& prev_key_end,
                 DB::Cell::Key&& key_end,
                 DB::Cells::Interval&& interval,
-                std::vector<Block::Read::Ptr>&& blocks,
+                Blocks&& blocks,
                 const uint32_t cell_revs,
                 const FS::SmartFd::Ptr& smartfd) noexcept;
 
@@ -95,7 +98,7 @@ class Read final {
 
   void _run_queued();
 
-  void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const;
+  void get_blocks(int& err, Blocks& to) const;
 
   size_t release(size_t bytes);
 
@@ -157,6 +160,10 @@ class Write final {
   void remove(int &err);
 
   void print(std::ostream& out) const;
+
+  size_t blocks_count() const noexcept {
+    return m_blocks.size();
+  }
 
   private:
 

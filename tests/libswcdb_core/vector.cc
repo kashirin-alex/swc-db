@@ -156,7 +156,7 @@ void test_vector(const size_t sz) {
   Time::Measure_ns track;
   VecT vec;
   for(T n=0; n < sz; )
-    vec.insert(vec.begin(), ++n);
+    vec.insert(vec.cbegin(), ++n);
   SWC_ASSERT(sz == vec.size());
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " cp insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
@@ -169,7 +169,7 @@ void test_vector(const size_t sz) {
   VecT vec;
   for(T n=0; n < sz; ) {
     ++n;
-    vec.insert(vec.begin(), std::move(n));
+    vec.insert(vec.cbegin(), std::move(n));
   }
   SWC_ASSERT(sz == vec.size());
   uint64_t took = track.elapsed();
@@ -186,13 +186,43 @@ void test_vector(const size_t sz) {
   SWC_ASSERT(sz == vec1.size());
 
   Time::Measure_ns track;
+  {
+  std::cout << typeid(VecT).name() << " range insert it(all) " << std::endl;
+  VecT vec;
+  vec.insert(vec.begin(), vec1.cbegin(), vec1.cend());
+  SWC_ASSERT(sz == vec.size());
+  test_check_eq(vec, sz);
+  }
+  {
+  std::cout << typeid(VecT).name() << " range insert it(end()+1) " << std::endl;
+  VecT vec(sz-1);
+  auto it = vec.begin();
+  for(T n=sz; n > T(1); --n, ++it)
+    *it = n;
+  SWC_ASSERT(sz - 1 == vec.size());
+  vec.insert(vec.end(), vec1.cbegin() + sz - 1, vec1.cend());
+  SWC_ASSERT(sz == vec.size());
+  test_check_eq(vec, sz);
+  }
+  {
+  std::cout << typeid(VecT).name() << " range insert it(offset=1) " << std::endl;
   VecT vec(1);
   *vec.begin() = sz;
-  vec.insert(vec.begin() + 1, vec1.begin() + 1, vec1.end());
+  vec.insert(vec.begin() + 1, vec1.cbegin() + 1, vec1.cend());
   SWC_ASSERT(sz == vec.size());
+  test_check_eq(vec, sz);
+  }
+  {
+  std::cout << typeid(VecT).name() << " range insert it(offset=1,end()-1) " << std::endl;
+  VecT vec(2);
+  *vec.begin() = sz;
+  *(vec.begin() + 1) = 1;
+  vec.insert(vec.begin() + 1, vec1.cbegin() + 1, vec1.cend() - 1);
+  SWC_ASSERT(sz == vec.size());
+  test_check_eq(vec, sz);
+  }
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " range insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-  test_check_eq(vec, sz);
   }
 
   // reserve & push_back
@@ -296,6 +326,7 @@ void test_vector(const size_t sz) {
   std::cout << typeid(VecT).name() << " range erase: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   }
 
+
 }
 
 
@@ -365,6 +396,13 @@ struct Type1 {
   }
   bool operator>( size_t other) const noexcept {
     return sz > other;
+  }
+  
+  bool operator>(const Type1& other) const noexcept {
+    return sz > other.sz;
+  }
+  bool operator<(const Type1& other) const noexcept {
+    return sz < other.sz;
   }
 
   std::ostream& operator<<(std::ostream& out) const {

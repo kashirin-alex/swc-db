@@ -575,13 +575,19 @@ size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
     return need;
 
   Fragments::Vec fragments;
-  for(auto& frag : *this) {
-    if(without.empty() ||
-       std::find(without.begin(), without.end(), frag) == without.end())
-      fragments.push_back(frag);
+  if(without.empty()) {
+    fragments.assign(Vec::cbegin(), Vec::cend());
+  } else {
+    if(Vec::size() < without.size() + vol)
+      return need;
+    fragments.reserve(Vec::size() - without.size());
+    for(auto& frag : *this) {
+      if(std::find(without.begin(), without.end(), frag) == without.end())
+        fragments.push_back(frag);
+    }
+    if(fragments.size() < vol)
+      return need;
   }
-  if(fragments.size() < vol)
-    return need;
 
   auto it = fragments.begin();
   groups.push_back({*it});

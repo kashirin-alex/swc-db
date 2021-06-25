@@ -25,6 +25,7 @@ class Readers final : private std::vector<Read::Ptr> {
   using Vec::front;
   using Vec::back;
   using Vec::erase;
+  using Vec::reserve;
 
   RangePtr range;
 
@@ -72,7 +73,7 @@ class Readers final : private std::vector<Read::Ptr> {
 
   void load_cells(BlockLoader* loader);
 
-  void get_blocks(int& err, std::vector<Block::Read::Ptr>& to) const;
+  void get_blocks(int& err, Read::Blocks& to) const;
 
   void get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const;
 
