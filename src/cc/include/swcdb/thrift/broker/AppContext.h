@@ -102,7 +102,7 @@ class AppContext final : virtual public BrokerIfFactory,
     if(m_metrics)
       m_metrics->net->connected();
     Core::MutexSptd::scope lock(m_mutex_handlers);
-    m_handlers.emplace_back(handler);
+    m_handlers.emplace(handler);
     return handler;
   }
 
@@ -130,12 +130,9 @@ class AppContext final : virtual public BrokerIfFactory,
     if(m_metrics)
       m_metrics->net->disconnected();
     Core::MutexSptd::scope lock(m_mutex_handlers);
-    for(auto it = m_handlers.begin(); it != m_handlers.end(); ++it) {
-      if(it->get() == hdlr) {
-        m_handlers.erase(it);
-        break;
-      }
-    }
+    auto it = m_handlers.find(handler);
+    if(it != m_handlers.end())
+      m_handlers.erase(it);
   }
 
   void shutting_down(const std::error_code& ec, const int& sig) {
@@ -200,7 +197,9 @@ class AppContext final : virtual public BrokerIfFactory,
           Core::MutexSptd::scope lock(m_mutex_handlers);
           if(idx >= m_handlers.size())
             break;
-          handler = *(m_handlers.begin() + idx);
+          auto it = m_handlers.begin();
+          for(size_t i = idx; i; --i, ++it);
+          handler = *it;
         }
         size_t sz = handler->updaters_commit(bytes);
         if(bytes) {
@@ -221,9 +220,25 @@ class AppContext final : virtual public BrokerIfFactory,
   Core::CompletionCounter<size_t>               m_connections;
 
   Core::MutexSptd                               m_mutex_handlers;
-  std::vector<std::shared_ptr<AppHandler>>      m_handlers;
 
   Metric::Reporting::Ptr                        m_metrics = nullptr;
+
+  struct HandlerLess {
+    using is_transparent = void;
+    bool operator()(const std::shared_ptr<AppHandler>& lhs,
+                    const std::shared_ptr<AppHandler>& rhs) const noexcept {
+      return lhs.get() < rhs.get();
+    }
+    bool operator()(const std::shared_ptr<AppHandler>& lhs,
+                    const AppHandler* rhs) const noexcept {
+      return lhs.get() < rhs;
+    }
+    bool operator()(const AppHandler* lhs,
+                    const std::shared_ptr<AppHandler>& rhs) const noexcept {
+      return lhs < rhs.get();
+    }
+  };
+  std::set<std::shared_ptr<AppHandler>, HandlerLess>  m_handlers;
 
 };
 
