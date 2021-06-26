@@ -71,11 +71,10 @@ Schema::Ptr Schemas::_get(const std::string& name) const noexcept {
 }
 
 void Schemas::all(std::vector<Schema::Ptr>& entries) {
-  size_t i = entries.size();
   Core::MutexSptd::scope lock(m_mutex);
-  entries.resize(i + size());
+  entries.reserve(entries.size() + size());
   for(const auto& it : *this)
-    entries[i++] = it.second;
+    entries.push_back(it.second);
 }
 
 void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,

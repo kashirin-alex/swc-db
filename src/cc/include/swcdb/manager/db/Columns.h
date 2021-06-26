@@ -122,6 +122,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       chk = nullptr;
       {
         Core::MutexSptd::scope lock(m_mutex);
+        chked.reserve(size());
         for(auto it = begin(); it != end(); ++it) {
           if(std::find(chked.begin(),chked.end(),it->first) == chked.end()) {
             chk = it->second;

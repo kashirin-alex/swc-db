@@ -211,8 +211,8 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
         m_expected_load.push_back(cid);
     }
     if(!(need = m_expected_load.size())) {
+      m_expected_load.shrink_to_fit();
       m_expected_ready = true;
-      m_expected_load = {};
     }
   }
   if(need)
@@ -279,7 +279,7 @@ void MngdColumns::update_status(ColumnMngFunc func,
             if(it != m_expected_load.end()) {
               m_expected_load.erase(it);
               if(m_expected_load.empty()) {
-                m_expected_load = {};
+                m_expected_load.shrink_to_fit();
                 m_expected_ready = true;
               }
               init = true;

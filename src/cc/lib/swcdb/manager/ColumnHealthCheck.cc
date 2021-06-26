@@ -237,6 +237,7 @@ ColumnHealthCheck::ColumnMerger::ColumnMerger(
 
 void ColumnHealthCheck::ColumnMerger::run_master() {
   std::vector<Range::Ptr> sorted;
+  sorted.reserve(m_ranges.size());
   for(auto& range : m_ranges) {
     bool added = false;
     for(auto it=sorted.begin(); it != sorted.end(); ++it) {

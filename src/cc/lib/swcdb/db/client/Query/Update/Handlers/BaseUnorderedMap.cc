@@ -47,6 +47,7 @@ size_t BaseUnorderedMap::size_bytes() noexcept {
 void BaseUnorderedMap::next(std::vector<Base::Column*>& cols) noexcept {
   cols.clear();
   Core::MutexSptd::scope lock(m_mutex);
+  cols.reserve(Map::size());
   for(auto it = cbegin(); it != cend(); ++it) {
     if(!it->second->error() && !it->second->empty())
       cols.push_back(it->second.get());

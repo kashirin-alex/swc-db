@@ -52,23 +52,23 @@ std::vector<asio::const_buffer> Buffers::get_buffers() {
     nchunks += (buf_ext_chunks += buf_ext.size / BUFFER_CHUNK_SZ)
             + (buf_ext_not_aligned = buf_ext.size % BUFFER_CHUNK_SZ);
 
-  std::vector<asio::const_buffer> buffers(nchunks);
-  auto it = buffers.begin();
-  *it = asio::const_buffer(buf_header, buf_header_len);
+  std::vector<asio::const_buffer> buffers;
+  buffers.reserve(nchunks);
+  buffers.emplace_back(buf_header, buf_header_len);
 
   if(buf_data.size) {
     auto p = buf_data.base;
     for(size_t i = 0; i<buf_data_chunks; ++i, p+=BUFFER_CHUNK_SZ)
-      *++it = asio::const_buffer(p, BUFFER_CHUNK_SZ);
+      buffers.emplace_back(p, BUFFER_CHUNK_SZ);
     if(buf_data_not_aligned)
-      *++it = asio::const_buffer(p, (buf_data.base + buf_data.size) - p);
+      buffers.emplace_back(p, (buf_data.base + buf_data.size) - p);
   }
   if(buf_ext.size) {
     auto p = buf_ext.base;
     for(size_t i = 0; i<buf_ext_chunks; ++i, p+=BUFFER_CHUNK_SZ)
-      *++it = asio::const_buffer(p, BUFFER_CHUNK_SZ);
+     buffers.emplace_back(p, BUFFER_CHUNK_SZ);
     if(buf_ext_not_aligned)
-      *++it = asio::const_buffer(p, (buf_ext.base + buf_ext.size) - p);
+      buffers.emplace_back(p, (buf_ext.base + buf_ext.size) - p);
   }
   return buffers;
 }
