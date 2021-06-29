@@ -105,6 +105,18 @@ void test_check_eq(const VecT& vec, size_t sz) {
 template<typename VecT, typename T = typename  VecT::value_type>
 void test_vector(const size_t sz) {
 
+  // ctor arg
+  {
+  Time::Measure_ns track;
+  VecT vec(sz, sz);
+  uint64_t took = track.elapsed();
+  SWC_ASSERT(sz == vec.size());
+  for(auto& v : vec)
+    SWC_ASSERT(v == sz);
+  std::cout << typeid(VecT).name() << " arg ctor: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
+  }
+
+
   // push_back
   {
   Time::Measure_ns track;
@@ -120,13 +132,16 @@ void test_vector(const size_t sz) {
   {
   Time::Measure_ns track;
   VecT vec;
-  for(T n=sz; n; --n)
-    vec.push_back(std::move(n));
+  for(T n=sz; n; --n) {
+    T v(n);
+    vec.push_back(std::move(v));
+  }
   SWC_ASSERT(sz == vec.size());
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " mv push_back: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_check_eq(vec, sz);
   }
+
 
   // emplace_back
   {
@@ -143,13 +158,16 @@ void test_vector(const size_t sz) {
   {
   Time::Measure_ns track;
   VecT vec;
-  for(T n=sz; n; --n)
-    vec.emplace_back(std::move(n));
+  for(T n=sz; n; --n) {
+    T v(n);
+    vec.emplace_back(std::move(v));
+  }
   SWC_ASSERT(sz == vec.size());
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " mv emplace_back: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_check_eq(vec, sz);
   }
+
 
   // cp insert at it
   {
@@ -168,14 +186,16 @@ void test_vector(const size_t sz) {
   Time::Measure_ns track;
   VecT vec;
   for(T n=0; n < sz; ) {
-    ++n;
-    vec.insert(vec.cbegin(), std::move(n));
+    T v(++n);
+    vec.insert(vec.cbegin(), std::move(v));
+    //std::cout << n << " ?= " << vec.front() << std::endl;
   }
   SWC_ASSERT(sz == vec.size());
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " mv insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_check_eq(vec, sz);
   }
+
 
   // insert range at it
   {
@@ -197,10 +217,11 @@ void test_vector(const size_t sz) {
   std::cout << typeid(VecT).name() << " range insert it(end()+1) " << std::endl;
   VecT vec(sz-1);
   auto it = vec.begin();
-  for(T n=sz; n > T(1); --n, ++it)
+  T end(1);
+  for(T n=sz; n > end; --n, ++it)
     *it = n;
   SWC_ASSERT(sz - 1 == vec.size());
-  vec.insert(vec.end(), vec1.cbegin() + sz - 1, vec1.cend());
+  vec.insert(vec.end(), vec1.cend() - 1, vec1.cend());
   SWC_ASSERT(sz == vec.size());
   test_check_eq(vec, sz);
   }
@@ -224,6 +245,7 @@ void test_vector(const size_t sz) {
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " range insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   }
+
 
   // reserve & push_back
   {
@@ -254,6 +276,7 @@ void test_vector(const size_t sz) {
   test_check_eq(vec, sz);
   }
 
+
   // assign
   {
   VecT vec1(sz);
@@ -270,6 +293,7 @@ void test_vector(const size_t sz) {
   std::cout << typeid(VecT).name() << " assign: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_check_eq(vec, sz);
   }
+
 
   // erase it
   {
@@ -297,6 +321,7 @@ void test_vector(const size_t sz) {
   }
   std::cout << typeid(VecT).name() << " it erase: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   }
+
 
   // erase range
   {
@@ -350,7 +375,9 @@ void test_vector(size_t sz, uint8_t probes) {
 
 struct Type1 {
   Type1() noexcept { }
-  Type1(size_t sz) noexcept : sz(sz), n(std::to_string(sz)) { }
+  Type1(size_t sz) : sz(sz), n(std::to_string(sz)) {
+    n.reserve(32);
+  }
   Type1(const Type1& other) : sz(other.sz), n(other.n) { }
   Type1(Type1&& other) noexcept : sz(other.sz), n(std::move(other.n)) { }
 
@@ -368,16 +395,19 @@ struct Type1 {
   Type1& operator=(size_t _sz) {
     sz = _sz;
     n = std::to_string(sz);
+    n.reserve(32);
     return *this;
   }
 
   Type1& operator--() {
     n = std::to_string(--sz);
+    n.reserve(32);
     return *this;
   }
 
   Type1& operator++() {
     n = std::to_string(++sz);
+    n.reserve(32);
     return *this;
   }
 
@@ -386,6 +416,12 @@ struct Type1 {
   }
   bool operator!=(const Type1& other) const noexcept {
     return !operator==(other);
+  }
+  bool operator>(const Type1& other) const noexcept {
+    return sz > other.sz;
+  }
+  bool operator<(const Type1& other) const noexcept {
+    return sz < other.sz;
   }
 
   bool operator==( size_t other) const noexcept {
@@ -396,13 +432,6 @@ struct Type1 {
   }
   bool operator>( size_t other) const noexcept {
     return sz > other;
-  }
-  
-  bool operator>(const Type1& other) const noexcept {
-    return sz > other.sz;
-  }
-  bool operator<(const Type1& other) const noexcept {
-    return sz < other.sz;
   }
 
   std::ostream& operator<<(std::ostream& out) const {
@@ -427,28 +456,108 @@ std::ostream& operator<<(std::ostream& out, const Type1& v) {
 }
 
 
+
+struct Type2 {
+
+  Type2() noexcept { }
+  Type2(size_t sz) : ptr(new Type1(sz)) { }
+  Type2(const Type2& other) : ptr(new Type1(*other.ptr.get())) { }
+  Type2(Type2&& other) noexcept : ptr(std::move(other.ptr)) { }
+
+  Type2& operator=(const Type2& other) {
+    ptr.reset(new Type1(*other.ptr.get()));
+    return *this;
+  }
+  Type2& operator=(Type2&& other) {
+    ptr = std::move(other.ptr);
+    return *this;
+  }
+
+  Type2& operator=(size_t _sz) {
+    ptr.reset(new Type1(_sz));
+    return *this;
+  }
+
+  Type2& operator--() {
+    --(*ptr.get());
+    return *this;
+  }
+
+  Type2& operator++() {
+    ++(*ptr.get());
+    return *this;
+  }
+
+
+
+  bool operator==(const Type2& other) const noexcept {
+    return *ptr.get() == *other.ptr.get();
+  }
+  bool operator!=(const Type2& other) const noexcept {
+    return !operator==(other);
+  }
+  bool operator>(const Type2& other) const noexcept {
+    return *ptr.get() > *other.ptr.get();
+  }
+  bool operator<(const Type2& other) const noexcept {
+    return *ptr.get() < *other.ptr.get();
+  }
+
+  bool operator==( size_t other) const noexcept {
+    return *ptr.get() == other;
+  }
+  bool operator<( size_t other) const noexcept {
+    return *ptr.get() < other;
+  }
+  bool operator>( size_t other) const noexcept {
+    return *ptr.get() > other;
+  }
+
+  std::ostream& operator<<(std::ostream& out) const {
+    return out << *ptr.get();
+  }
+
+  const char* to_str() const noexcept {
+    return ptr->to_str();
+  }
+
+  operator bool() const noexcept {
+    return bool(*ptr.get());
+  }
+
+  std::unique_ptr<Type1> ptr;
+};
+
+
 int main() {
   uint8_t probes = 3;
 
 
   // uint64_t vector
-  SWC::test_vector< std::vector<uint64_t>                 >(UINT8_MAX, probes);
-  SWC::test_vector< SWC::Core::Vector<uint64_t, uint8_t>  >(UINT8_MAX, probes);
+  SWC::test_vector< std::vector<uint64_t>                       >(UINT8_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<uint64_t, uint8_t, 127>   >(UINT8_MAX, probes);
 
-  SWC::test_vector< std::vector<uint64_t>                 >(UINT16_MAX, probes);
-  SWC::test_vector< SWC::Core::Vector<uint64_t, uint16_t> >(UINT16_MAX, probes);
+  SWC::test_vector< std::vector<uint64_t>                       >(UINT16_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<uint64_t, uint16_t, 4096> >(UINT16_MAX, probes);
 
   //SWC::test_vector< std::vector<uint64_t>                 >(SWC::UINT24_MAX, probes);
   //SWC::test_vector< SWC::Core::Vector<uint64_t, uint32_t> >(SWC::UINT24_MAX, probes);
 
 
   // Type1 vector
-  SWC::test_vector< std::vector<Type1>                    >(UINT8_MAX, probes);
-  SWC::test_vector< SWC::Core::Vector<Type1, uint8_t>     >(UINT8_MAX, probes);
+  SWC::test_vector< std::vector<Type1>                          >(UINT8_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<Type1, uint8_t, 127>      >(UINT8_MAX, probes);
 
-  SWC::test_vector< std::vector<Type1>                    >(UINT16_MAX/4, probes);
-  SWC::test_vector< SWC::Core::Vector<Type1, uint16_t>    >(UINT16_MAX/4, probes);
+  SWC::test_vector< std::vector<Type1>                          >(UINT16_MAX/4, probes);
+  SWC::test_vector< SWC::Core::Vector<Type1, uint16_t, 4096>    >(UINT16_MAX/4, probes);
 
+
+  // Type2 vector
+  SWC::test_vector< std::vector<Type2>                          >(UINT8_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<Type2, uint8_t, 127>      >(UINT8_MAX, probes);
+
+  SWC::test_vector< std::vector<Type2>                          >(UINT16_MAX/4, probes);
+  SWC::test_vector< SWC::Core::Vector<Type2, uint16_t, 4096>    >(UINT16_MAX/4, probes);
 
 
   std::cout << " OK! \n";
