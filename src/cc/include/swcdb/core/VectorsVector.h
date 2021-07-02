@@ -21,7 +21,7 @@ class VectorsVector : public std::vector<VectorT> {
 
   public:
 
-  using value_type = VectorT::value_type;
+  using value_type = typename VectorT::value_type;
 
 
   SWC_CAN_INLINE
@@ -36,9 +36,9 @@ class VectorsVector : public std::vector<VectorT> {
 
 
   class ConstIterator final {
-    const VectorsT&            _vectors;
-    VectorsT::const_iterator   _vector;
-    VectorT::const_iterator    _item;
+    const VectorsT&                   _vectors;
+    typename VectorsT::const_iterator _vector;
+    typename VectorT::const_iterator  _item;
     public:
 
     SWC_CAN_INLINE
@@ -93,9 +93,9 @@ class VectorsVector : public std::vector<VectorT> {
 
 
   class Iterator final {
-    VectorsT&            _vectors;
-    VectorsT::iterator   _vector;
-    VectorT::iterator    _item;
+    VectorsT&                   _vectors;
+    typename VectorsT::iterator _vector;
+    typename VectorT::iterator  _item;
     public:
 
     SWC_CAN_INLINE
@@ -167,8 +167,9 @@ class VectorsVector : public std::vector<VectorT> {
         _vector = n_vector - 1;
         n_vector->assign(it_b, _vector->cend());
         _vector->erase  (it_b, _vector->cend());
-        if(_item >= it_b)
-          _item = (++_vector)->begin() + (_item - it_b);
+        size_t offset = _item - _vector->cbegin();
+        if(offset >= SPLIT)
+          _item = (++_vector)->begin() + (offset - SPLIT);
 
       } else if(size_t sz = need_reserve(*_vector)) {
         size_t offset = _item - _vector->cbegin();
