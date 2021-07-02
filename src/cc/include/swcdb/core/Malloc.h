@@ -27,14 +27,27 @@
 
 
 
-extern SWC_MALLOC_ATTRIBS void* operator new(size_t sz) SWC_MALLOC_NEW_ATTRIBS;
-extern SWC_MALLOC_ATTRIBS void* operator new[](size_t sz) SWC_MALLOC_NEW_ATTRIBS;
+extern SWC_MALLOC_ATTRIBS
+  void* operator new(size_t sz)
+  SWC_MALLOC_NEW_ATTRIBS;
+extern SWC_MALLOC_ATTRIBS
+  void* operator new[](size_t sz)
+  SWC_MALLOC_NEW_ATTRIBS;
+extern SWC_MALLOC_ATTRIBS
+  void* operator new(size_t sz, const std::nothrow_t&)
+  SWC_MALLOC_NEW_ATTRIBS;
+extern SWC_MALLOC_ATTRIBS
+  void* operator new[](size_t sz, const std::nothrow_t&)
+  SWC_MALLOC_NEW_ATTRIBS;
 
-extern SWC_MALLOC_ATTRIBS void operator delete(void* ptr) noexcept;
-extern SWC_MALLOC_ATTRIBS void operator delete[](void* ptr) noexcept;
-
-extern SWC_MALLOC_ATTRIBS void operator delete(void* ptr, size_t sz) noexcept;
-extern SWC_MALLOC_ATTRIBS void operator delete[](void* ptr, size_t sz) noexcept;
+extern SWC_MALLOC_ATTRIBS
+  void operator delete(void* ptr) noexcept;
+extern SWC_MALLOC_ATTRIBS
+  void operator delete[](void* ptr) noexcept;
+extern SWC_MALLOC_ATTRIBS
+  void operator delete(void* ptr, size_t sz) noexcept;
+extern SWC_MALLOC_ATTRIBS
+  void operator delete[](void* ptr, size_t sz) noexcept;
 
 
 SWC_MALLOC_ATTRIBS
@@ -51,7 +64,18 @@ void* operator new(size_t sz) {
 }
 
 SWC_MALLOC_ATTRIBS
+void* operator new(size_t sz, const std::nothrow_t&) {
+  return ::operator new(sz);
+}
+
+SWC_MALLOC_ATTRIBS
 void* operator new[](size_t sz) {
+  //printf("Malloc using new[] size=%lu\n", sz);
+  return ::operator new(sz);
+}
+
+SWC_MALLOC_ATTRIBS
+void* operator new[](size_t sz, const std::nothrow_t&) {
   //printf("Malloc using new[] size=%lu\n", sz);
   return ::operator new(sz);
 }
