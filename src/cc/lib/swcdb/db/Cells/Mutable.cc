@@ -11,72 +11,6 @@ namespace SWC { namespace DB { namespace Cells {
 
 
 
-void Mutable::take_sorted(Mutable& other) {
-  if(!other.empty()) {
-    _bytes += other._bytes;
-    _size += other._size;
-    other._bytes = 0;
-    other._size = 0;
-    if(empty()) {
-      _container = std::move(other._container);
-    } else {
-      _container.add(std::move(other._container));
-    }
-  }
-}
-
-size_t Mutable::add_sorted(const uint8_t* ptr, size_t remain) {
-  size_t count = 0;
-  _bytes += remain;
-  while(remain) {
-    _container.push_back(new Cell(&ptr, &remain, true));
-    ++count;
-  }
-  _size += count;
-  return count;
-}
-
-
-void Mutable::add_raw(const DynamicBuffer& cells) {
-  const uint8_t* ptr = cells.base;
-  size_t remain = cells.fill();
-  while(remain) {
-    add_raw(Cell(&ptr, &remain));
-  }
-}
-
-void Mutable::add_raw(const DynamicBuffer& cells,
-                      const DB::Cell::Key& upto_key,
-                      const DB::Cell::Key& from_key,
-                      uint32_t skip, bool malformed) {
-  const uint8_t* ptr = cells.base;
-  size_t remain = cells.fill();
-  while(remain) {
-    Cell cell(&ptr, &remain);
-    if(malformed && !skip) {
-      add_raw(cell);
-    } else if(
-        (!upto_key.empty() &&
-         DB::KeySeq::compare(key_seq, upto_key, cell.key) != Condition::GT) ||
-        DB::KeySeq::compare(key_seq, from_key, cell.key) == Condition::GT) {
-      add_raw(cell);
-    } else {
-      --skip;
-    }
-  }
-}
-
-Cell* Mutable::takeout(size_t idx) {
-  auto it = GetIterator(idx);
-  if(!it)
-    return nullptr;
-  Cell* cell = it.item();
-  _remove(cell);
-  it.remove();
-  return cell;
-}
-
-
 void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                              Interval& intval, uint32_t threshold,
                              uint32_t max_cells) {
@@ -88,9 +22,9 @@ void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
   Cell* last = nullptr;
   Cell* cell;
   size_t count = 0;
-  Iterator it_start = GetIterator();
-  for(auto it = it_start; it && (!threshold || threshold > cells.fill()) &&
-                                (!max_cells || max_cells > cell_count); ++it) {
+  Iterator it_start = get<Iterator>();
+  for(auto it=it_start; it && (!threshold || threshold > cells.fill()) &&
+                              (!max_cells || max_cells > cell_count); ++it) {
     ++count;
     if((cell=it.item())->has_expired(ttl))
       continue;
@@ -123,9 +57,9 @@ bool Mutable::write_and_free(const DB::Cell::Key& key_start,
   cells.ensure(_bytes < threshold? _bytes: threshold);
 
   size_t count = 0;
-  Iterator it_start = GetIterator();
+  Iterator it_start = get<Iterator>();
   {
-  Iterator it = GetIterator(_narrow(key_start));
+  Iterator it = get<Iterator>(key_start);
   for(Cell* cell; it && (!threshold || threshold > cells.fill()); ++it) {
     cell = it.item();
 
@@ -166,7 +100,7 @@ bool Mutable::write_and_free(DynamicBuffer& cells, uint32_t threshold) {
   cells.ensure(_bytes < threshold? _bytes: threshold);
 
   size_t count = 0;
-  Iterator it_start = GetIterator();
+  Iterator it_start = get<Iterator>();
   for(auto it=it_start; it && (!threshold || threshold>cells.fill()); ++it) {
     ++count;
     if(!it.item()->has_expired(ttl))
@@ -193,7 +127,7 @@ void Mutable::print(std::ostream& out, bool with_cells) const {
   if(with_cells) {
     size_t count = 0;
     out << " [\n";
-    for(auto it = GetConstIterator(); it; ++it) {
+    for(auto it = get<ConstIterator>(); it; ++it) {
       it.item()->print(out << '\n', type);
       ++count;
     }
@@ -205,21 +139,11 @@ void Mutable::print(std::ostream& out, bool with_cells) const {
 }
 
 
-void Mutable::write(DynamicBuffer& cells) const {
-  cells.ensure(_bytes);
-  for(auto it = GetConstIterator(); it; ++it) {
-    if(!it.item()->has_expired(ttl))
-      it.item()->write(cells);
-  }
-}
-
-
 void Mutable::scan_version_single(ReqScan* req) const {
   bool stop = false;
   const bool only_deletes = req->spec.flags.is_only_deletes();
   const Cell* cell;
-  for(auto it = GetConstIterator(_narrow(req->spec));
-      !stop && it; ++it) {
+  for(auto it = get<ConstIterator>(req->spec); !stop && it; ++it) {
     cell = it.item();
 
     if((only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ||
@@ -242,8 +166,7 @@ void Mutable::scan_version_multi(ReqScan* req) const {
   uint32_t rev = chk_align ? req->spec.flags.max_versions : 0;
   const DB::Cell::Key* last_key = nullptr;
   const Cell* cell;
-  for(auto it = GetConstIterator(_narrow(req->spec));
-      !stop && it; ++it) {
+  for(auto it = get<ConstIterator>(req->spec); !stop && it; ++it) {
     cell = it.item();
 
     if((only_deletes ? cell->flag == INSERT : cell->flag != INSERT) ||
@@ -304,7 +227,7 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
   uint32_t cell_offset = specs.flags.offset;
   const bool only_deletes = specs.flags.is_only_deletes();
   const Cell* cell;
-  for(auto it = GetConstIterator(); !stop && it; ++it) {
+  for(auto it = get<ConstIterator>(); !stop && it; ++it) {
     cell = it.item();
     //cell->print(std::cout << "\n scan_test_use ", DB::Types::Column::PLAIN);
 
@@ -330,15 +253,15 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
 
 
 bool Mutable::split(Mutable& cells, bool loaded) {
-  auto it = GetConstIterator(_size / 2);
+  auto it = get<ConstIterator>(_size / 2);
   if(!it)
     return false;
   const Cell* from_cell = it.item();
   size_t count = _size;
   bool from_set = false;
-  Iterator it_start = GetIterator();
+  Iterator it_start = get<Iterator>();
   Cell* cell;
-  for(auto it = GetIterator(_narrow(from_cell->key)); it; ++it) {
+  for(auto it = get<Iterator>(from_cell->key); it; ++it) {
     cell = it.item();
 
     if(!from_set) {
@@ -364,29 +287,14 @@ bool Mutable::split(Mutable& cells, bool loaded) {
   return true;
 }
 
-void Mutable::split(Mutable& cells) {
-  size_t split_at = _container.size() / 2;
-  if(!split_at)
-    return;
-  cells.free();
-  _container.split(split_at, cells._container);
-  for(auto it = cells.GetConstIterator(); it; ++it) {
-    cells._add(it.item());
-  }
-  _size -= cells._size;
-  _bytes -= cells._bytes;
-}
-
-
-void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
+void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
+                          size_t& offset) {
   int64_t ts = e_cell.get_timestamp();
-  int64_t rev;
-  bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
+  int64_t rev = e_cell.get_revision();
+  bool chk_rev = rev != AUTO_ASSIGN;
   Condition::Comp cond;
   int64_t e_ts;
-  Cell* cell;
-
-  for(auto it = GetIterator(*offsetp); it; ) {
+  for(Cell* cell; it; ) {
 
     if((cell=it.item())->has_expired(ttl)) {
       _remove(it);
@@ -396,7 +304,7 @@ void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
     if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
                 == Condition::GT) {
       ++it;
-      ++*offsetp;
+      ++offset;
       continue;
     }
 
@@ -406,7 +314,9 @@ void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
     }
 
     if(cell->is_removing(ts) ||
-      (chk_rev && (e_ts = cell->get_revision()) != AUTO_ASSIGN && e_ts >= rev))
+       (chk_rev &&
+        (e_ts = cell->get_revision()) != AUTO_ASSIGN &&
+        e_ts >= rev))
       return;
 
     if(e_cell.is_removing(cell->get_timestamp()))
@@ -418,16 +328,16 @@ void Mutable::_add_remove(const Cell& e_cell, size_t* offsetp) {
   add_sorted(e_cell);
 }
 
-void Mutable::_add_plain(const Cell& e_cell, size_t* offsetp) {
-  int64_t ts;
-  bool chk_ts = (ts = e_cell.get_timestamp()) != AUTO_ASSIGN;
-  int64_t rev;
-  bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
+void Mutable::_add_plain(const Cell& e_cell, Mutable::Iterator& it,
+                         size_t& offset) {
+  int64_t ts = e_cell.get_timestamp();
+  int64_t rev = e_cell.get_revision();
+  bool chk_ts = ts != AUTO_ASSIGN;
+  bool chk_rev = rev != AUTO_ASSIGN;
 
   uint32_t revs = 0;
   Condition::Comp cond;
-  Cell* cell;
-  for(auto it = GetIterator(*offsetp); it;) {
+  for(Cell* cell; it; ) {
 
     if((cell=it.item())->has_expired(ttl)) {
       _remove(it);
@@ -437,7 +347,7 @@ void Mutable::_add_plain(const Cell& e_cell, size_t* offsetp) {
     if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
                == Condition::GT) {
       ++it;
-      ++*offsetp;
+      ++offset;
       continue;
     }
 
@@ -486,16 +396,14 @@ void Mutable::_add_plain(const Cell& e_cell, size_t* offsetp) {
   add_sorted(e_cell);
 }
 
-void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
-  Condition::Comp cond;
-
+void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
+                           size_t& offset) {
   int64_t ts = e_cell.get_timestamp();
-  int64_t rev;
-  bool chk_rev = (rev = e_cell.get_revision()) != AUTO_ASSIGN;
+  int64_t rev = e_cell.get_revision();
+  bool chk_rev = rev != AUTO_ASSIGN;
 
-  Cell* cell;
-  auto it = GetIterator(*offsetp);
-  while(it) {
+  Condition::Comp cond;
+  for(Cell* cell; it; ) {
 
     if((cell=it.item())->has_expired(ttl)) {
       _remove(it);
@@ -505,7 +413,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
     if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
                 == Condition::GT) {
       ++it;
-      ++*offsetp;
+      ++offset;
       continue;
     }
 
@@ -544,7 +452,7 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
   }
 
   add_counter:
-    cell = _insert(it, e_cell);
+    Cell* cell = _insert(it, e_cell);
     if(type != Types::Column::COUNTER_I64) {
       uint8_t op_1;
       int64_t eq_rev_1;
@@ -554,37 +462,6 @@ void Mutable::_add_counter(const Cell& e_cell, size_t* offsetp) {
 }
 
 
-size_t Mutable::_narrow(const DB::Cell::Key& key, size_t offset) const {
-  if(key.empty() || _size <= NARROW_SIZE)
-    return 0;
-  size_t step = _size;
-  if(1 < offset && offset < _size) {
-    if((step -= offset) <= NARROW_SIZE)
-      step = NARROW_SIZE;
-  } else {
-    offset = step >>= 1;
-  }
-
-  try_narrow:
-    auto it = GetConstIterator(offset);
-    if(!it)
-      return 0;
-    if(DB::KeySeq::compare(key_seq, it.item()->key, key) == Condition::GT) {
-      if(step < NARROW_SIZE + max_revs)
-        return offset;
-      if(offset + (step >>= 1) >= _size)
-        offset = _size - (step >>= 1);
-      else
-        offset += step;
-      goto try_narrow;
-    }
-    if((step >>= 1) <= NARROW_SIZE)
-      step += max_revs;
-    if(offset < step)
-      return 0;
-    offset -= step;
-  goto try_narrow;
-}
 
 
 

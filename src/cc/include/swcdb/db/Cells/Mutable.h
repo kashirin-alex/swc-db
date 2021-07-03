@@ -18,7 +18,8 @@ namespace SWC { namespace DB { namespace Cells {
 
 class Mutable final {
 
-  typedef Core::VectorsVector<std::vector<Cell*>, 4096> Container;
+  typedef Core::VectorsVector<std::vector<Cell*>, 6144> Container;
+  //typedef Core::VectorsVector<Core::Vector<Cell*, uint32_t, 256>, 6144> Container;
 
   /*
   typedef Core::ArraysArraysVector<
@@ -37,8 +38,11 @@ class Mutable final {
    ArraysArraysVector<ArraysArray*>  (N    x 8 bytes + 16 bytes)  = 16 + 8xN
   */
 
-
+  Container _container;
+  size_t    _bytes;
+  size_t    _size;
   constexpr static const uint8_t  NARROW_SIZE = 20;
+
 
   public:
 
@@ -61,28 +65,88 @@ class Mutable final {
   }
 
 
-  explicit Mutable(const Types::KeySeq key_seq,
-                   const uint32_t max_revs=1, const uint64_t ttl_ns=0,
-                   const Types::Column type=Types::Column::PLAIN);
+  SWC_CAN_INLINE
+  Mutable(const Types::KeySeq key_seq,
+          const uint32_t max_revs=1, const uint64_t ttl_ns=0,
+          const Types::Column type=Types::Column::PLAIN)
+          : _bytes(0), _size(0),
+            key_seq(key_seq), type(type), max_revs(max_revs), ttl(ttl_ns) {
+  }
 
-  explicit Mutable(const Types::KeySeq key_seq,
-                   const uint32_t max_revs, const uint64_t ttl_ns,
-                   const Types::Column type,
-                   const StaticBuffer& buffer);
+  SWC_CAN_INLINE
+  Mutable(const Types::KeySeq key_seq,
+          const uint32_t max_revs, const uint64_t ttl_ns,
+          const Types::Column type,
+          const StaticBuffer& buffer)
+          : _bytes(0), _size(0),
+            key_seq(key_seq), type(type), max_revs(max_revs), ttl(ttl_ns) {
+    add_sorted(buffer.base, buffer.size);
+  }
 
-  explicit Mutable(Mutable&& other) noexcept;
+  SWC_CAN_INLINE
+  Mutable(Mutable&& other) noexcept
+          : _container(std::move(other._container)),
+            _bytes(other._bytes), _size(other._size),
+            key_seq(other.key_seq),
+            type(other.type), max_revs(other.max_revs), ttl(other.ttl) {
+    other._bytes = 0;
+    other._size = 0;
+  }
 
-  Mutable(const Mutable&) = delete;
+  Mutable(const Mutable&)                   = delete;
+  Mutable& operator=(const Mutable& other)  = delete;
 
-  Mutable& operator=(const Mutable& other) = delete;
+  SWC_CAN_INLINE
+  Mutable& operator=(Mutable&& other) noexcept {
+    _container = std::move(other._container);
+    _bytes = other._bytes;
+    _size = other._size;
+    other._bytes = 0;
+    other._size = 0;
+    type = other.type;
+    max_revs = other.max_revs;
+    ttl = other.ttl;
+    return *this;
+  }
 
-  Mutable& operator=(Mutable&& other) noexcept;
+  SWC_CAN_INLINE
+  void take_sorted(Mutable& other) {
+    if(!other.empty()) {
+      if(empty()) {
+        _container = std::move(other._container);
+      } else {
+        _container.add(std::move(other._container));
+      }
+      _bytes += other._bytes;
+      _size += other._size;
+      other._bytes = 0;
+      other._size = 0;
+    }
+  }
 
-  void take_sorted(Mutable& other);
+  SWC_CAN_INLINE
+  void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
+                 const Types::Column typ=Types::Column::PLAIN) noexcept {
+    type = typ;
+    max_revs = revs;
+    ttl = ttl_ns;
+  }
 
-  ~Mutable();
+  SWC_CAN_INLINE
+  ~Mutable() {
+    for(auto it = get<ConstIterator>(); it; ++it)
+      delete it.item();
+  }
 
-  void free();
+  SWC_CAN_INLINE
+  void free() {
+    for(auto it = get<ConstIterator>(); it; ++it)
+      delete it.item();
+    _container.clear();
+    _container.shrink_to_fit();
+    _bytes = 0;
+    _size = 0;
+  }
 
   SWC_CAN_INLINE
   void reset(const uint32_t revs=1, const uint64_t ttl_ns=0,
@@ -91,8 +155,54 @@ class Mutable final {
     configure(revs, ttl_ns, typ);
   }
 
-  void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
-                 const Types::Column typ=Types::Column::PLAIN) noexcept;
+
+  SWC_CAN_INLINE
+  size_t size() const noexcept {
+    return _size;
+  }
+
+  SWC_CAN_INLINE
+  size_t size_bytes() const noexcept {
+    return _bytes;
+  }
+
+  SWC_CAN_INLINE
+  bool empty() const noexcept {
+    return !_size;
+  }
+
+  SWC_CAN_INLINE
+  size_t size_of_internal() const noexcept {
+    return  _bytes
+          + _size * sizeof(Cell)
+          + _container.size_of_internal();
+  }
+
+
+  SWC_CAN_INLINE
+  Cell& front() noexcept {
+    return *_container.front();
+  }
+
+  SWC_CAN_INLINE
+  Cell& back() noexcept {
+    return *_container.back();
+  }
+
+  SWC_CAN_INLINE
+  Cell& front() const noexcept {
+    return *_container.front();
+  }
+
+  SWC_CAN_INLINE
+  Cell& back() const noexcept {
+    return *_container.back();
+  }
+
+  SWC_CAN_INLINE
+  bool has_one_key() const noexcept {
+    return front().key.equal(back().key);
+  }
 
 
   template<typename T>
@@ -119,55 +229,179 @@ class Mutable final {
     return _container.get<T>(offset);
   }
 
+  template<typename T>
+  SWC_CAN_INLINE
+  T get(const Specs::Interval& specs) const {
+    return specs.offset_key.empty()
+      ? (specs.range_begin.empty() ? get<T>() : get<T>(specs.range_begin))
+      : get<T>(specs.offset_key);
+  }
 
+  template<typename T>
+  SWC_CAN_INLINE
+  T get(const DB::Cell::Key& key) {
+    size_t offset = 0;
+    return get<T>(key, offset);
+  }
+
+  template<typename T>
+  SWC_CAN_INLINE
+  T get(const DB::Cell::Key& key, size_t& offset) {
+    T it = get<T>();
+    if(key.empty() || _size <= NARROW_SIZE) {
+      offset = 0;
+      return it;
+    }
+    size_t step = _size;
+    if(1 < offset && offset < _size) {
+      if((step -= offset) <= NARROW_SIZE)
+        step = NARROW_SIZE;
+    } else {
+      offset = step >>= 1;
+    }
+    try_get:
+      if(!(it.at(offset)))
+        return it.at(offset = 0);
+      if(DB::KeySeq::compare(key_seq, it.item()->key, key) == Condition::GT) {
+        if(step < NARROW_SIZE + max_revs)
+          return it;
+        if(offset + (step >>= 1) >= _size)
+          offset = _size - (step >>= 1);
+        else
+          offset += step;
+        goto try_get;
+      }
+      if((step >>= 1) <= NARROW_SIZE)
+        step += max_revs;
+      if(offset < step)
+        return it.at(offset = 0);
+      offset -= step;
+    goto try_get;
+  }
+
+  template<typename T>
+  SWC_CAN_INLINE
+  T get(const DB::Cell::Key& key) const {
+    size_t offset = 0;
+    return get<T>(key, offset);
+  }
+
+  template<typename T>
+  SWC_CAN_INLINE
+  T get(const DB::Cell::Key& key, size_t& offset) const {
+    T it = get<T>();
+    if(key.empty() || _size <= NARROW_SIZE) {
+      offset = 0;
+      return it;
+    }
+    size_t step = _size;
+    if(1 < offset && offset < _size) {
+      if((step -= offset) <= NARROW_SIZE)
+        step = NARROW_SIZE;
+    } else {
+      offset = step >>= 1;
+    }
+    try_get:
+      if(!(it.at(offset)))
+        return it.at(offset = 0);
+      if(DB::KeySeq::compare(key_seq, it.item()->key, key) == Condition::GT) {
+        if(step < NARROW_SIZE + max_revs)
+          return it;
+        if(offset + (step >>= 1) >= _size)
+          offset = _size - (step >>= 1);
+        else
+          offset += step;
+        goto try_get;
+      }
+      if((step >>= 1) <= NARROW_SIZE)
+        step += max_revs;
+      if(offset < step)
+        return it.at(offset = 0);
+      offset -= step;
+    goto try_get;
+  }
+
+
+  SWC_CAN_INLINE
   Iterator GetIterator() noexcept {
     return get<Iterator>();
   }
 
+  SWC_CAN_INLINE
   Iterator GetIterator(size_t offset) noexcept {
     return get<Iterator>(offset);
   }
 
+  SWC_CAN_INLINE
   ConstIterator GetConstIterator() const noexcept {
     return get<ConstIterator>();
   }
 
+  SWC_CAN_INLINE
   ConstIterator GetConstIterator(size_t offset) const noexcept {
     return get<ConstIterator>(offset);
   }
 
 
   SWC_CAN_INLINE
-  size_t size() const noexcept {
-    return _size;
+  Cell* operator[](size_t pos) noexcept {
+    auto it = get<Iterator>(pos);
+    return it ? it.item() : nullptr;
   }
 
   SWC_CAN_INLINE
-  size_t size_bytes() const noexcept {
-    return _bytes;
+  void get(int32_t pos, DB::Cell::Key& key) const {
+    if((pos < 0 && _size < size_t(-pos)) || size_t(pos) >= _size)
+      return;
+    auto it = get<ConstIterator>(pos < 0 ? _size + pos : pos);
+    if(it)
+      key.copy(it.item()->key);
   }
 
   SWC_CAN_INLINE
-  bool empty() const noexcept {
-    return !_size;
+  bool get(const DB::Cell::Key& key, Condition::Comp comp,
+           DB::Cell::Key& res) const {
+    Condition::Comp chk;
+    for(auto it = get<ConstIterator>(key); it; ++it) {
+      if((chk = DB::KeySeq::compare(key_seq, key, it.item()->key))
+                  == Condition::GT
+        || (comp == Condition::GE && chk == Condition::EQ)){
+        res.copy(it.item()->key);
+        return true;
+      }
+    }
+    return false;
   }
 
-  size_t size_of_internal() const noexcept;
 
-  Cell& front() noexcept;
+  SWC_CAN_INLINE
+  Cell* takeout(size_t pos) {
+    auto it = get<Iterator>(pos);
+    if(!it)
+      return nullptr;
+    Cell* cell = it.item();
+    _remove(cell);
+    it.remove();
+    return cell;
+  }
 
-  Cell& back() noexcept;
+  SWC_CAN_INLINE
+  Cell* takeout_begin(size_t pos) {
+    return takeout(pos);
+  }
 
-  Cell& front() const noexcept;
-
-  Cell& back() const noexcept;
-
-  Cell* operator[](size_t idx) noexcept;
-
-  bool has_one_key() const noexcept;
+  SWC_CAN_INLINE
+  Cell* takeout_end(size_t pos) {
+    return takeout(_size - pos);
+  }
 
 
-  void add_sorted(const Cell& cell, bool no_value=false);
+  SWC_CAN_INLINE
+  void add_sorted(const Cell& cell, bool no_value=false) {
+    Cell* add = new Cell(cell, no_value);
+    _add(add);
+    _container.push_back(add);
+  }
 
   SWC_CAN_INLINE
   void add_sorted_no_cpy(Cell* cell) {
@@ -175,29 +409,67 @@ class Mutable final {
     _container.push_back(cell);
   }
 
-  size_t add_sorted(const uint8_t* ptr, size_t remain);
-
-
-  void add_raw(const DynamicBuffer& cells);
-
-  void add_raw(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
-                                           const DB::Cell::Key& from_key,
-                                           uint32_t skip, bool malformed);
-
-  void add_raw(const Cell& e_cell);
-
-  void add_raw(const Cell& e_cell, size_t* offsetp);
-
-  Cell* takeout(size_t idx);
-
   SWC_CAN_INLINE
-  Cell* takeout_begin(size_t idx) {
-    return takeout(idx);
+  size_t add_sorted(const uint8_t* ptr, size_t remain) {
+    size_t count = 0;
+    _bytes += remain;
+    while(remain) {
+      _container.push_back(new Cell(&ptr, &remain, true));
+      ++count;
+    }
+    _size += count;
+    return count;
   }
 
   SWC_CAN_INLINE
-  Cell* takeout_end(size_t idx) {
-    return takeout(_size - idx);
+  void add_raw(const DynamicBuffer& cells) {
+    size_t offset_hint = 0;
+    const uint8_t* ptr = cells.base;
+    size_t remain = cells.fill();
+    for(Cell cell; remain; ) {
+      cell.read(&ptr, &remain);
+      add_raw(cell, &offset_hint);
+    }
+  }
+
+  SWC_CAN_INLINE
+  void add_raw(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
+                                           const DB::Cell::Key& from_key,
+                                           uint32_t skip, bool malformed) {
+    size_t offset_hint = 0;
+    const uint8_t* ptr = cells.base;
+    size_t remain = cells.fill();
+    for(Cell cell; remain; ) {
+      cell.read(&ptr, &remain);
+      if((malformed && !skip) || (
+         (!upto_key.empty() &&
+          DB::KeySeq::compare(key_seq, upto_key, cell.key)!=Condition::GT) ||
+         DB::KeySeq::compare(key_seq, from_key, cell.key)==Condition::GT) ) {
+        add_raw(cell, &offset_hint);
+      } else {
+        --skip;
+      }
+    }
+  }
+
+  SWC_CAN_INLINE
+  void add_raw(const Cell& e_cell) {
+    size_t offset = 0;
+    add_raw(e_cell, &offset);
+  }
+
+  SWC_CAN_INLINE
+  void add_raw(const Cell& e_cell, size_t* offsetp) {
+    Iterator it = get<Iterator>(e_cell.key, *offsetp);
+
+    if(e_cell.removal())
+      _add_remove(e_cell, it, *offsetp);
+
+    else if(Types::is_counter(type))
+      _add_counter(e_cell, it, *offsetp);
+
+    else
+      _add_plain(e_cell, it, *offsetp);
   }
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
@@ -211,18 +483,24 @@ class Mutable final {
   bool write_and_free(DynamicBuffer& cells, uint32_t threshold);
 
 
-  void print(std::ostream& out, bool with_cells=false) const;
+  SWC_CAN_INLINE
+  void write(DynamicBuffer& cells) const {
+    cells.ensure(_bytes);
+    for(auto it = get<ConstIterator>(); it; ++it) {
+      if(!it.item()->has_expired(ttl))
+        it.item()->write(cells);
+    }
+  }
 
 
-  void get(int32_t idx, DB::Cell::Key& key) const;
-
-  bool get(const DB::Cell::Key& key, Condition::Comp comp,
-           DB::Cell::Key& res) const;
-
-  void write(DynamicBuffer& cells) const;
-
-
-  void scan(ReqScan* req) const;
+  SWC_CAN_INLINE
+  void scan(ReqScan* req) const {
+    if(_size) {
+      max_revs == 1
+        ? scan_version_single(req)
+        : scan_version_multi(req);
+    }
+  }
 
   void scan_version_single(ReqScan* req) const;
 
@@ -231,342 +509,131 @@ class Mutable final {
   void scan_test_use(const Specs::Interval& specs, DynamicBuffer& result,
                      size_t& count, size_t& skips) const;
 
+  SWC_CAN_INLINE
   bool scan_after(const DB::Cell::Key& after, const DB::Cell::Key& to,
-                  Mutable& cells) const;
+                  Mutable& cells) const {
+    if(!_size)
+      return false;
 
-  void expand(Interval& interval) const;
+    const Cell* cell;
+    for(auto it=get<ConstIterator>(after); it; ++it) {
+      cell = it.item();
+      if(!to.empty() &&
+         DB::KeySeq::compare(key_seq, to, cell->key) == Condition::GT)
+        return false;
+      if(cell->has_expired(ttl) ||
+         (!after.empty() &&
+          DB::KeySeq::compare(key_seq, after, cell->key) != Condition::GT))
+        continue;
 
-  void expand_begin(Interval& interval) const;
+      cells.add_raw(*cell);
+    }
+    return true;
+  }
 
-  void expand_end(Interval& interval) const;
-
-
-  bool split(Mutable& cells, bool loaded);
 
   SWC_CAN_INLINE
   bool can_split() const noexcept {
     return _container.size() > 1;
   }
 
-  void split(Mutable& cells);
+  bool split(Mutable& cells, bool loaded);
+
+
+  void split(Mutable& cells) {
+    size_t split_at = _container.size() / 2;
+    if(!split_at)
+      return;
+    cells.free();
+    _container.split(split_at, cells._container);
+    for(auto it = cells.get<ConstIterator>(); it; ++it) {
+      cells._add(it.item());
+    }
+    _size -= cells._size;
+    _bytes -= cells._bytes;
+  }
+
+
+  SWC_CAN_INLINE
+  void expand(Interval& interval) const {
+    expand_begin(interval);
+    if(_size > 1)
+      expand_end(interval);
+  }
+
+  SWC_CAN_INLINE
+  void expand_begin(Interval& interval) const {
+    interval.expand_begin(front());
+  }
+
+  SWC_CAN_INLINE
+  void expand_end(Interval& interval) const {
+    interval.expand_end(back());
+  }
+
+  void print(std::ostream& out, bool with_cells=false) const;
+
 
   private:
 
-  void _add_remove(const Cell& e_cell, size_t* offsetp);
+  void _add_remove(const Cell& e_cell, Iterator& it, size_t& offset);
 
-  void _add_plain(const Cell& e_cell, size_t* offsetp);
+  void _add_plain(const Cell& e_cell, Iterator& it, size_t& offset);
 
-  void _add_counter(const Cell& e_cell, size_t* offsetp);
+  void _add_counter(const Cell& e_cell, Iterator& it, size_t& offset);
 
+  SWC_CAN_INLINE
+  void _add(Cell* cell) noexcept {
+    _bytes += cell->encoded_length();
+    ++_size;
+  }
 
-  size_t _narrow(const DB::Cell::Key& key, size_t offset_hint = 0) const;
+  SWC_CAN_INLINE
+  void _remove(Cell* cell) noexcept {
+    _bytes -= cell->encoded_length();
+    --_size;
+  }
 
-  size_t _narrow(const Specs::Interval& specs) const;
+  SWC_CAN_INLINE
+  Cell* _insert(Iterator& it, const Cell& cell) {
+    Cell* add = new Cell(cell);
+    _add(add);
+    it ? it.insert(add) : _container.push_back(add);
+    return add;
+  }
 
+  SWC_CAN_INLINE
+  void _remove(Iterator& it) {
+    _remove(it.item());
+    delete it.item();
+    it.remove();
+  }
 
-  void _add(Cell* cell) noexcept;
+  SWC_CAN_INLINE
+  void _remove(Iterator& it, size_t number, bool wdel = true) {
+    if(wdel) {
+      Iterator it_del(it);
+      for(auto c = number; c && it_del; ++it_del,--c) {
+        _remove(it_del.item());
+        delete it_del.item();
+      }
+    }
+    it.remove(number);
+  }
 
-  void _remove(Cell* cell) noexcept;
-
-  Cell* _insert(Iterator& it, const Cell& cell);
-
-  void _remove(Iterator& it);
-
-  void _remove(Iterator& it, size_t number, bool wdel = true);
-
+  SWC_CAN_INLINE
   void _remove_overhead(Iterator& it, const DB::Cell::Key& key,
-                        uint32_t revs);
+                        uint32_t revs) {
+    while(it && key.equal(it.item()->key)) {
+      if(it.item()->flag == INSERT && ++revs > max_revs)
+        _remove(it);
+      else
+        ++it;
+    }
+  }
 
-
-  Container             _container;
-  size_t                _bytes;
-  size_t                _size;
 
 };
-
-
-
-SWC_CAN_INLINE
-Mutable::Mutable(const Types::KeySeq key_seq,
-                 const uint32_t max_revs, const uint64_t ttl_ns,
-                 const Types::Column type)
-                : key_seq(key_seq),
-                  type(type), max_revs(max_revs), ttl(ttl_ns),
-                  _bytes(0), _size(0) {
-}
-
-SWC_CAN_INLINE
-Mutable::Mutable(const Types::KeySeq key_seq,
-                 const uint32_t max_revs, const uint64_t ttl_ns,
-                 const Types::Column type,
-                 const StaticBuffer& buffer)
-                : key_seq(key_seq),
-                  type(type), max_revs(max_revs), ttl(ttl_ns),
-                  _bytes(0), _size(0) {
-  add_sorted(buffer.base, buffer.size);
-}
-
-SWC_CAN_INLINE
-Mutable::Mutable(Mutable&& other) noexcept
-                : key_seq(other.key_seq), type(other.type),
-                  max_revs(other.max_revs), ttl(other.ttl),
-                  _container(std::move(other._container)),
-                  _bytes(other._bytes), _size(other._size) {
-  other._bytes = 0;
-  other._size = 0;
-}
-
-SWC_CAN_INLINE
-Mutable& Mutable::operator=(Mutable&& other) noexcept {
-  type = other.type;
-  max_revs = other.max_revs;
-  ttl = other.ttl;
-  _container = std::move(other._container);
-  _bytes = other._bytes;
-  _size = other._size;
-  other._bytes = 0;
-  other._size = 0;
-  return *this;
-}
-
-SWC_CAN_INLINE
-Mutable::~Mutable() {
-  for(auto it = GetConstIterator(); it; ++it)
-    delete it.item();
-}
-
-SWC_CAN_INLINE
-void Mutable::free() {
-  for(auto it = GetConstIterator(); it; ++it)
-    delete it.item();
-  _container.clear();
-  _container.shrink_to_fit();
-  _bytes = 0;
-  _size = 0;
-}
-
-SWC_CAN_INLINE
-void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns,
-                        const Types::Column typ) noexcept {
-  type = typ;
-  max_revs = revs;
-  ttl = ttl_ns;
-}
-
-SWC_CAN_INLINE
-size_t Mutable::size_of_internal() const noexcept {
-  return  _bytes
-        + _size * sizeof(Cell)
-        + _container.size_of_internal();
-}
-
-SWC_CAN_INLINE
-Cell& Mutable::front() noexcept {
-  return *_container.front();
-}
-
-SWC_CAN_INLINE
-Cell& Mutable::back() noexcept {
-  return *_container.back();
-}
-
-SWC_CAN_INLINE
-Cell& Mutable::front() const noexcept {
-  return *_container.front();
-}
-
-SWC_CAN_INLINE
-Cell& Mutable::back() const noexcept {
-  return *_container.back();
-}
-
-SWC_CAN_INLINE
-Cell* Mutable::operator[](size_t pos) noexcept {
-  auto it = get<Iterator>(pos);
-  return it ? it.item() : nullptr;
-}
-
-SWC_CAN_INLINE
-bool Mutable::has_one_key() const noexcept {
-  return front().key.equal(back().key);
-}
-
-
-SWC_CAN_INLINE
-void Mutable::add_raw(const Cell& e_cell) {
-  size_t offset = _narrow(e_cell.key);
-
-  if(e_cell.removal())
-    _add_remove(e_cell, &offset);
-
-  else if(Types::is_counter(type))
-    _add_counter(e_cell, &offset);
-
-  else
-    _add_plain(e_cell, &offset);
-}
-
-SWC_CAN_INLINE
-void Mutable::add_raw(const Cell& e_cell, size_t* offsetp) {
-  *offsetp = _narrow(e_cell.key, *offsetp);
-
-  if(e_cell.removal())
-    _add_remove(e_cell, offsetp);
-
-  else if(Types::is_counter(type))
-    _add_counter(e_cell, offsetp);
-
-  else
-    _add_plain(e_cell, offsetp);
-}
-
-SWC_CAN_INLINE
-void Mutable::add_sorted(const Cell& cell, bool no_value) {
-  Cell* add = new Cell(cell, no_value);
-  _add(add);
-  _container.push_back(add);
-}
-
-SWC_CAN_INLINE
-void Mutable::scan(ReqScan* req) const {
-  if(_size) {
-    max_revs == 1
-     ? scan_version_single(req)
-     : scan_version_multi(req);
-  }
-}
-
-SWC_CAN_INLINE
-void Mutable::get(int32_t idx, DB::Cell::Key& key) const {
-  if((idx < 0 && _size < size_t(-idx)) || size_t(idx) >= _size)
-    return;
-  auto it = GetConstIterator(idx < 0 ? _size + idx : idx);
-  if(it)
-    key.copy(it.item()->key);
-}
-
-SWC_CAN_INLINE
-bool Mutable::get(const DB::Cell::Key& key, Condition::Comp comp,
-                  DB::Cell::Key& res) const {
-  Condition::Comp chk;
-  for(auto it = GetConstIterator(_narrow(key)); it; ++it) {
-    if((chk = DB::KeySeq::compare(key_seq, key, it.item()->key))
-                == Condition::GT
-      || (comp == Condition::GE && chk == Condition::EQ)){
-      res.copy(it.item()->key);
-      return true;
-    }
-  }
-  return false;
-}
-
-SWC_CAN_INLINE
-bool Mutable::scan_after(const DB::Cell::Key& after,
-                         const DB::Cell::Key& to, Mutable& cells) const {
-  if(!_size)
-    return false;
-
-  const Cell* cell;
-  for(auto it=GetConstIterator(_narrow(after)); it; ++it) {
-    cell = it.item();
-    if(!to.empty()
-        && DB::KeySeq::compare(key_seq, to, cell->key) == Condition::GT)
-      return false;
-    if(cell->has_expired(ttl) || (!after.empty()
-        && DB::KeySeq::compare(key_seq, after, cell->key) != Condition::GT))
-      continue;
-
-    cells.add_raw(*cell);
-  }
-  return true;
-}
-
-SWC_CAN_INLINE
-void Mutable::expand(Interval& interval) const {
-  expand_begin(interval);
-  if(_size > 1)
-    expand_end(interval);
-}
-
-SWC_CAN_INLINE
-void Mutable::expand_begin(Interval& interval) const {
-  interval.expand_begin(front());
-}
-
-SWC_CAN_INLINE
-void Mutable::expand_end(Interval& interval) const {
-  interval.expand_end(back());
-}
-
-SWC_CAN_INLINE
-size_t Mutable::_narrow(const Specs::Interval& specs) const {
-  return specs.offset_key.empty()
-    ? (specs.range_begin.empty() ? 0 : _narrow(specs.range_begin))
-    : _narrow(specs.offset_key);
-}
-
-/*
-template<typename IteratorT>
-SWC_CAN_INLINE
-size_t Mutable::narrow(const Specs::Interval& specs) const {
-  return specs.offset_key.empty()
-    ? (specs.range_begin.empty() ? 0 : narrow<IteratorT>(specs.range_begin))
-    : narrow<IteratorT>(specs.offset_key);
-}
-*/
-
-
-SWC_CAN_INLINE
-void Mutable::_add(Cell* cell) noexcept {
-  _bytes += cell->encoded_length();
-  ++_size;
-}
-
-SWC_CAN_INLINE
-void Mutable::_remove(Cell* cell) noexcept {
-  _bytes -= cell->encoded_length();
-  --_size;
-}
-
-
-SWC_CAN_INLINE
-Cell* Mutable::_insert(Mutable::Iterator& it, const Cell& cell) {
-  Cell* add = new Cell(cell);
-  _add(add);
-  it ? it.insert(add) : _container.push_back(add);
-  return add;
-}
-
-SWC_CAN_INLINE
-void Mutable::_remove(Mutable::Iterator& it) {
-  _remove(it.item());
-  delete it.item();
-  it.remove();
-}
-
-SWC_CAN_INLINE
-void Mutable::_remove(Mutable::Iterator& it, size_t number, bool wdel) {
-  if(wdel) {
-    Iterator it_del(it);
-    for(auto c = number; c && it_del; ++it_del,--c) {
-      _remove(it_del.item());
-      delete it_del.item();
-    }
-  }
-  it.remove(number);
-}
-
-SWC_CAN_INLINE
-void Mutable::_remove_overhead(Mutable::Iterator& it,
-                               const DB::Cell::Key& key,
-                               uint32_t revs) {
-  while(it && key.equal(it.item()->key)) {
-    if(it.item()->flag == INSERT && ++revs > max_revs)
-      _remove(it);
-    else
-      ++it;
-  }
-}
 
 
 
