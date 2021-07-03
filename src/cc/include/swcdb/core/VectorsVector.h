@@ -26,7 +26,7 @@ class VectorsVector : public std::vector<VectorT> {
 
   SWC_CAN_INLINE
   static size_t need_reserve(VectorT& vec) {
-    if(vec.capacity() == vec.size()) {
+    if(vec.capacity() == vec.size() && vec.capacity() >= GROW) {
       size_t sz = vec.size() + GROW;
       if((sz > SIZE ? (sz = SIZE) : sz) > vec.capacity())
         return sz;
@@ -70,6 +70,18 @@ class VectorsVector : public std::vector<VectorT> {
     ConstIterator& operator=(const ConstIterator& other) noexcept {
       _vector = other._vector;
       _item = other._item;
+      return *this;
+    }
+
+    SWC_CAN_INLINE
+    ConstIterator& at(size_t offset) noexcept {
+      for(_vector=_vectors.cbegin(); _vector != _vectors.cend(); ++_vector) {
+        if(!offset || offset < _vector->size()) {
+          _item = _vector->cbegin() + offset;
+          return *this;
+        }
+        offset -= _vector->size();
+      }
       return *this;
     }
 
@@ -127,6 +139,18 @@ class VectorsVector : public std::vector<VectorT> {
     Iterator& operator=(const Iterator& other) noexcept {
       _vector = other._vector;
       _item = other._item;
+      return *this;
+    }
+
+    SWC_CAN_INLINE
+    Iterator& at(size_t offset) noexcept {
+      for(_vector=_vectors.begin(); _vector != _vectors.cend(); ++_vector) {
+        if(!offset || offset < _vector->size()) {
+          _item = _vector->begin() + offset;
+          return *this;
+        }
+        offset -= _vector->size();
+      }
       return *this;
     }
 
@@ -315,15 +339,11 @@ class VectorsVector : public std::vector<VectorT> {
 
   SWC_CAN_INLINE
   void ensure() {
-    size_t sz;
     if(VectorsT::empty() || VectorsT::back().size() >= SIZE) {
-      sz = GROW;
       VectorsT::emplace_back();
-    } else {
-      sz = need_reserve(VectorsT::back());
-    }
-    if(sz)
+    } else if(size_t sz = need_reserve(VectorsT::back())) {
       VectorsT::back().reserve(sz);
+    }
   }
 
 
