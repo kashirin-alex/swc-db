@@ -6,8 +6,12 @@
 #ifndef swcdb_core_VectorsVector_h
 #define swcdb_core_VectorsVector_h
 
-#include <vector>
 
+#include <vector>
+/*
+#include "swcdb/core/Vector.h"
+using VectorsT = Core::Vector<VectorT>;
+*/
 
 
 namespace SWC { namespace Core {
@@ -78,7 +82,7 @@ class VectorsVector : public std::vector<VectorT> {
       for(_vector=_vectors.cbegin(); _vector != _vectors.cend(); ++_vector) {
         if(!offset || offset < _vector->size()) {
           _item = _vector->cbegin() + offset;
-          return *this;
+          break;
         }
         offset -= _vector->size();
       }
@@ -147,7 +151,7 @@ class VectorsVector : public std::vector<VectorT> {
       for(_vector=_vectors.begin(); _vector != _vectors.cend(); ++_vector) {
         if(!offset || offset < _vector->size()) {
           _item = _vector->begin() + offset;
-          return *this;
+          break;
         }
         offset -= _vector->size();
       }
@@ -362,7 +366,7 @@ class VectorsVector : public std::vector<VectorT> {
 
   SWC_CAN_INLINE
   void add(VectorsVector&& other) {
-    VectorsT::insert(VectorsT::end(), other.cbegin(), other.cend());
+    VectorsT::insert(VectorsT::cend(), other.cbegin(), other.cend());
     other.clear();
     other.shrink_to_fit();
   }
@@ -371,7 +375,7 @@ class VectorsVector : public std::vector<VectorT> {
   SWC_CAN_INLINE
   void split(size_t split_at, VectorsVector& to) {
     auto it = VectorsT::cbegin() + split_at;
-    to.insert(to.end(), it, VectorsT::cend());
+    to.insert(to.cend(), it, VectorsT::cend());
     VectorsT::erase(it, VectorsT::cend());
   }
 

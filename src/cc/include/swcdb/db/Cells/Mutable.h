@@ -10,7 +10,6 @@
 
 #include "swcdb/db/Cells/ReqScan.h"
 #include "swcdb/core/VectorsVector.h"
-//#include "swcdb/core/ArraysArraysVector.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
@@ -19,15 +18,20 @@ namespace SWC { namespace DB { namespace Cells {
 class Mutable final {
 
   typedef Core::VectorsVector<std::vector<Cell*>, 6144> Container;
-  //typedef Core::VectorsVector<Core::Vector<Cell*, uint32_t, 256>, 6144> Container;
 
   /*
+  typedef Core::VectorsVector<
+    Core::Vector<Cell*, uint32_t, 512>, 6144
+  > Container;
+  */
+
+  /*
+  #include "swcdb/core/ArraysArraysVector.h"
   typedef Core::ArraysArraysVector<
     Core::ArraysArray < Core::Array<Cell*, uint8_t, 127>, uint8_t, 127 >
   > Container;
   */
   /*
-  "swcdb/core/ArraysArraysVector.h"
   > Vector: (no ptr Cell)
    Array<Cell, uint8_t, 83>           (83 x 48 bytes + 8 bytes)  = 3992 bytes
    ArraysArray<Array*, uint8_t, 100> (100 x 8 bytes + 8 bytes)   = 808 bytes
