@@ -537,9 +537,11 @@ int main() {
 
   // uint64_t vector
   SWC::test_vector< std::vector<uint64_t>                       >(UINT8_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<uint64_t, uint8_t>        >(UINT8_MAX, probes);
   SWC::test_vector< SWC::Core::Vector<uint64_t, uint8_t, 127>   >(UINT8_MAX, probes);
 
   SWC::test_vector< std::vector<uint64_t>                       >(UINT16_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<uint64_t, uint16_t>       >(UINT16_MAX, probes);
   SWC::test_vector< SWC::Core::Vector<uint64_t, uint16_t, 4096> >(UINT16_MAX, probes);
 
   //SWC::test_vector< std::vector<uint64_t>                 >(SWC::UINT24_MAX, probes);
@@ -548,17 +550,21 @@ int main() {
 
   // Type1 vector
   SWC::test_vector< std::vector<Type1>                          >(UINT8_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<Type1, uint8_t>           >(UINT8_MAX, probes);
   SWC::test_vector< SWC::Core::Vector<Type1, uint8_t, 127>      >(UINT8_MAX, probes);
 
   SWC::test_vector< std::vector<Type1>                          >(UINT16_MAX/4, probes);
+  SWC::test_vector< SWC::Core::Vector<Type1, uint16_t>          >(UINT16_MAX/4, probes);
   SWC::test_vector< SWC::Core::Vector<Type1, uint16_t, 4096>    >(UINT16_MAX/4, probes);
 
 
   // Type2 vector
   SWC::test_vector< std::vector<Type2>                          >(UINT8_MAX, probes);
+  SWC::test_vector< SWC::Core::Vector<Type2, uint8_t>           >(UINT8_MAX, probes);
   SWC::test_vector< SWC::Core::Vector<Type2, uint8_t, 127>      >(UINT8_MAX, probes);
 
   SWC::test_vector< std::vector<Type2>                          >(UINT16_MAX/4, probes);
+  SWC::test_vector< SWC::Core::Vector<Type2, uint16_t>          >(UINT16_MAX/4, probes);
   SWC::test_vector< SWC::Core::Vector<Type2, uint16_t, 4096>    >(UINT16_MAX/4, probes);
 
 

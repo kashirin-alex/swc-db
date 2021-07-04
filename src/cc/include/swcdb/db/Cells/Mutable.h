@@ -20,9 +20,7 @@ class Mutable final {
   typedef Core::VectorsVector<std::vector<Cell*>, 6144> Container;
 
   /*
-  typedef Core::VectorsVector<
-    Core::Vector<Cell*, uint32_t, 512>, 6144
-  > Container;
+  typedef Core::VectorsVector<Core::Vector<Cell*, uint32_t>, 6144> Container;
   */
 
   /*

@@ -10,7 +10,7 @@
 
 namespace SWC { namespace Core {
 
-template<typename T, typename SizeT=uint32_t, SizeT GROW_SZ=1>
+template<typename T, typename SizeT=uint32_t, SizeT GROW_SZ=0>
 class Vector {
   constexpr static bool simple_type = std::is_pointer_v<T> ||
                                       std::is_integral_v<T> ||
@@ -237,8 +237,15 @@ class Vector {
 
   SWC_CAN_INLINE
   void reserve() {
-    if(_cap == _size)
-      _grow(GROW_SZ + (GROW_SZ == 1 ? 0 : bool(!_cap)));
+    if(_cap == _size) {
+      if(_size) {
+        size_type remain = max_size() - _cap;
+        _grow(GROW_SZ ? (GROW_SZ < remain ? GROW_SZ : remain)
+                      : (_size < remain ? _size : remain));
+      } else {
+        _grow(1);
+      }
+    }
   }
 
   template<typename... ArgsT>
@@ -262,8 +269,8 @@ class Vector {
   template<typename... ArgsT>
   SWC_CAN_INLINE
   void push_back(ArgsT&&... args) {
-    //if(_cap == _size && !(max_size() - _cap))
-    //  throw std::out_of_range("Reached size_type limit!");
+    if(max_size() == _size)
+      throw std::out_of_range("Reached size_type limit!");
     reserve();
     push_back_unsafe(std::forward<ArgsT>(args)...);
   }
@@ -278,8 +285,8 @@ class Vector {
   template<typename... ArgsT>
   SWC_CAN_INLINE
   reference emplace_back(ArgsT&&... args) {
-    //if(_cap == _size && !(max_size() - _cap))
-    //  throw std::out_of_range("Reached size_type limit!");
+    if(max_size() == _size)
+      throw std::out_of_range("Reached size_type limit!");
     reserve();
     return emplace_back_unsafe(std::forward<ArgsT>(args)...);
   }
@@ -296,21 +303,24 @@ class Vector {
   SWC_CAN_INLINE
   iterator insert(const_iterator it, ArgsT&&... args) {
     size_type offset;
-    if(!_size || (offset = it - _data) == _size)
+    if(!_size || (offset = it - _data) >= _size)
       return &emplace_back(std::forward<ArgsT>(args)...);
 
     if(_cap == _size) {
+      if(max_size() == _size)
+        throw std::out_of_range("Reached size_type limit!");
       size_type remain = max_size() - _cap;
-      _cap += remain > GROW_SZ ? GROW_SZ : remain;
+      _cap += GROW_SZ ? (GROW_SZ < remain ? GROW_SZ : remain)
+                      : (_size < remain ? _size : remain);
       _data = _allocate_insert(
         _data, _size, offset, _cap, std::forward<ArgsT>(args)...);
-      ++_size;
-      return _data + offset;
+    } else {
+      _construct(
+        _alter(_data + offset, _size - offset, 1),
+        std::forward<ArgsT>(args)...);
     }
-    reserve();
-    return _construct(
-      _alter(_data + offset, (_size++) - offset, 1),
-      std::forward<ArgsT>(args)...);
+    ++_size;
+    return _data + offset;
   }
 
   template<typename... ArgsT>
@@ -335,12 +345,11 @@ class Vector {
 
     size_type sz = last - first;
     size_type remain = _cap - _size;
-    if(remain < sz) {
+    if(sz > remain) {
+      if(max_size() - _size < sz)
+        throw std::out_of_range("Reached size_type limit!");
       if(_size) {
-        size_type remain_ = max_size() - _cap;
-        _cap += GROW_SZ > sz
-          ? (remain_ > GROW_SZ ? GROW_SZ : remain_)
-          : (remain_ > sz ? sz : remain_);
+        _cap += sz - remain;
         _data = _allocate_insert(_data, _size, offset, _cap, first, last);
         _size += sz;
         return _data + offset;
@@ -411,12 +420,7 @@ class Vector {
 
   SWC_CAN_INLINE
   void _grow(size_type sz) {
-    if(size_type remain = max_size() - _cap) {
-      _data = _allocate_uinitialized(
-        _data, _size,
-        _cap += remain > sz ? sz : remain
-      );
-    }
+    _data = _allocate_uinitialized(_data, _size, _cap += sz);
   }
 
   SWC_CAN_INLINE
