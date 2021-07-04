@@ -378,7 +378,9 @@ struct Type1 {
   Type1(size_t sz) : sz(sz), n(std::to_string(sz)) {
     n.reserve(32);
   }
-  Type1(const Type1& other) : sz(other.sz), n(other.n) { }
+  Type1(const Type1& other) : sz(other.sz), n(other.n) {
+    n.reserve(32);
+  }
   Type1(Type1&& other) noexcept : sz(other.sz), n(std::move(other.n)) { }
 
   Type1& operator=(const Type1& other) {

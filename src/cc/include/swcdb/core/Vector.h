@@ -262,6 +262,8 @@ class Vector {
   template<typename... ArgsT>
   SWC_CAN_INLINE
   void push_back(ArgsT&&... args) {
+    //if(_cap == _size && !(max_size() - _cap))
+    //  throw std::out_of_range("Reached size_type limit!");
     reserve();
     push_back_unsafe(std::forward<ArgsT>(args)...);
   }
@@ -276,6 +278,8 @@ class Vector {
   template<typename... ArgsT>
   SWC_CAN_INLINE
   reference emplace_back(ArgsT&&... args) {
+    //if(_cap == _size && !(max_size() - _cap))
+    //  throw std::out_of_range("Reached size_type limit!");
     reserve();
     return emplace_back_unsafe(std::forward<ArgsT>(args)...);
   }
@@ -296,15 +300,13 @@ class Vector {
       return &emplace_back(std::forward<ArgsT>(args)...);
 
     if(_cap == _size) {
-      if(size_type remain = max_size() - _cap) {
-        _cap += remain > GROW_SZ ? GROW_SZ : remain;
-        _data = _allocate_insert(
-          _data, _size, offset, _cap, std::forward<ArgsT>(args)...);
-        ++_size;
-        return _data + offset;
-      }
+      size_type remain = max_size() - _cap;
+      _cap += remain > GROW_SZ ? GROW_SZ : remain;
+      _data = _allocate_insert(
+        _data, _size, offset, _cap, std::forward<ArgsT>(args)...);
+      ++_size;
+      return _data + offset;
     }
-
     reserve();
     return _construct(
       _alter(_data + offset, (_size++) - offset, 1),
@@ -333,22 +335,21 @@ class Vector {
 
     size_type sz = last - first;
     size_type remain = _cap - _size;
-    if(_size && remain < sz) {
-      if(size_type remain = max_size() - _cap) {
-        _cap += GROW_SZ > sz 
-          ? (remain > GROW_SZ ? GROW_SZ : remain)
-          : (remain > sz ? sz : remain);
+    if(remain < sz) {
+      if(_size) {
+        size_type remain_ = max_size() - _cap;
+        _cap += GROW_SZ > sz
+          ? (remain_ > GROW_SZ ? GROW_SZ : remain_)
+          : (remain_ > sz ? sz : remain_);
         _data = _allocate_insert(_data, _size, offset, _cap, first, last);
         _size += sz;
         return _data + offset;
       }
-    }
-
-    if(remain < sz)
       _grow(sz - remain);
+    }
     pointer data_offset = _size
-      ? (_size > offset 
-          ? _alter(_data + offset, _size - offset, sz) 
+      ? (_size > offset
+          ? _alter(_data + offset, _size - offset, sz)
           : _data + offset)
       : _data;
     _size += sz;
@@ -450,23 +451,26 @@ class Vector {
     //_deallocate(data_prev, size_prev);
     //return data;
   }
-  
+
   template<typename... ArgsT>
   SWC_CAN_INLINE
   static pointer _allocate_insert(pointer data_prev, size_type size_prev,
                                   size_type offset, size_type size,
                                   ArgsT&&... args) {
+    if(offset == size)
+      throw std::out_of_range("Offset above size_type limit!");
     pointer data = _allocate_uinitialized(size);
     pointer ptr = data;
     pointer ptr_prev = data_prev;
-    for(size_type i=0; i<offset; ++ptr, ++ptr_prev, ++i) {
+    size_type i = 0;
+    for(; i < offset; ++ptr, ++ptr_prev, ++i) {
       _construct(ptr, std::move(*ptr_prev));
       if(!simple_type)
         ptr_prev->~value_type();
     }
     _construct(ptr++, std::forward<ArgsT>(args)...);
 
-    for(size_type i = size_prev-offset; i; --i, ++ptr, ++ptr_prev) {
+    for(; i < size_prev; ++i, ++ptr, ++ptr_prev) {
       _construct(ptr, std::move(*ptr_prev));
       if(!simple_type)
         ptr_prev->~value_type();
@@ -474,15 +478,18 @@ class Vector {
     _deallocate(data_prev, size_prev);
     return data;
   }
-  
+
   SWC_CAN_INLINE
   static pointer _allocate_insert(pointer data_prev, size_type size_prev,
                                   size_type offset, size_type size,
                                   const_iterator first, const_iterator last) {
+    //if(offset >= size)
+    //  throw std::out_of_range("Reached size_type limit!");
     pointer data = _allocate_uinitialized(size);
     pointer ptr = data;
     pointer ptr_prev = data_prev;
-    for(size_type i=0; i<offset; ++ptr, ++ptr_prev, ++i) {
+    size_type i = 0;
+    for(; i < offset; ++ptr, ++ptr_prev, ++i) {
       _construct(ptr, std::move(*ptr_prev));
       if(!simple_type)
         ptr_prev->~value_type();
@@ -490,7 +497,7 @@ class Vector {
     for(iterator it=const_cast<iterator>(first); it != last; ++ptr, ++it) {
       _construct(ptr, *it);
     }
-    for(size_type i = size_prev-offset; i; --i, ++ptr, ++ptr_prev) {
+    for(; i < size_prev; ++i, ++ptr, ++ptr_prev) {
       _construct(ptr, std::move(*ptr_prev));
       if(!simple_type)
         ptr_prev->~value_type();
