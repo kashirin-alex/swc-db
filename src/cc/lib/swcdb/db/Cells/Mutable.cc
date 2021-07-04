@@ -253,19 +253,19 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
 
 
 bool Mutable::split(Mutable& cells, bool loaded) {
-  auto it = get<ConstIterator>(_size / 2);
-  if(!it)
+  auto it_chk = get<ConstIterator>(_size / 2);
+  if(!it_chk)
     return false;
-  const Cell* from_cell = it.item();
+  const DB::Cell::Key& from_key = it_chk.item()->key;
   size_t count = _size;
   bool from_set = false;
   Iterator it_start = get<Iterator>();
   Cell* cell;
-  for(auto it = get<Iterator>(from_cell->key); it; ++it) {
+  for(auto it = get<Iterator>(from_key); it; ++it) {
     cell = it.item();
 
     if(!from_set) {
-      if(DB::KeySeq::compare(key_seq, cell->key, from_cell->key)
+      if(DB::KeySeq::compare(key_seq, cell->key, from_key)
            == Condition::GT) {
        --count;
         continue;
@@ -276,11 +276,11 @@ bool Mutable::split(Mutable& cells, bool loaded) {
         break;
       from_set = true;
     }
-    _remove(cell);
+    _remove(*cell);
     if(cell->has_expired(ttl))
       delete cell;
     else
-      cells.add_sorted_no_cpy(cell);
+      cells.add_sorted(cell);
   }
 
   _remove(it_start, count, !loaded);
@@ -452,13 +452,15 @@ void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
   }
 
   add_counter:
-    Cell* cell = _insert(it, e_cell);
+    Cell* cell = new Cell(e_cell);
     if(type != Types::Column::COUNTER_I64) {
       uint8_t op_1;
       int64_t eq_rev_1;
-      int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
+      int64_t value_1 = e_cell.get_counter(op_1, eq_rev_1);
       cell->set_counter(op_1, value_1, type, eq_rev_1);
     }
+    _add(*cell);
+    it ? it.insert(cell) : _container.push_back(cell);
 }
 
 

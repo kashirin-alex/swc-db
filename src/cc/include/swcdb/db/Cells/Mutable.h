@@ -249,7 +249,7 @@ class Mutable final {
   }
 
   template<typename T>
-  SWC_CAN_INLINE
+  //SWC_CAN_INLINE
   T get(const DB::Cell::Key& key, size_t& offset) {
     T it = get<T>();
     if(key.empty() || _size <= NARROW_SIZE) {
@@ -291,7 +291,7 @@ class Mutable final {
   }
 
   template<typename T>
-  SWC_CAN_INLINE
+  //SWC_CAN_INLINE
   T get(const DB::Cell::Key& key, size_t& offset) const {
     T it = get<T>();
     if(key.empty() || _size <= NARROW_SIZE) {
@@ -379,37 +379,33 @@ class Mutable final {
 
 
   SWC_CAN_INLINE
-  Cell* takeout(size_t pos) {
-    auto it = get<Iterator>(pos);
-    if(!it)
-      return nullptr;
-    Cell* cell = it.item();
-    _remove(cell);
-    it.remove();
-    return cell;
+  void takeout(size_t pos, Cell*& cell) {
+    if(Iterator it = get<Iterator>(pos)) {
+      _remove(*it.item());
+      cell = std::move(it.item());
+      it.remove();
+    }
   }
 
   SWC_CAN_INLINE
-  Cell* takeout_begin(size_t pos) {
-    return takeout(pos);
+  void takeout_begin(size_t pos, Cell*& cell) {
+    takeout(pos, cell);
   }
 
   SWC_CAN_INLINE
-  Cell* takeout_end(size_t pos) {
-    return takeout(_size - pos);
+  void takeout_end(size_t pos, Cell*& cell) {
+    takeout(_size - pos, cell);
   }
 
 
   SWC_CAN_INLINE
   void add_sorted(const Cell& cell, bool no_value=false) {
-    Cell* add = new Cell(cell, no_value);
-    _add(add);
-    _container.push_back(add);
+    add_sorted(new Cell(cell, no_value));
   }
 
   SWC_CAN_INLINE
-  void add_sorted_no_cpy(Cell* cell) {
-    _add(cell);
+  void add_sorted(Cell* cell) {
+    _add(*cell);
     _container.push_back(cell);
   }
 
@@ -551,7 +547,7 @@ class Mutable final {
     cells.free();
     _container.split(split_at, cells._container);
     for(auto it = cells.get<ConstIterator>(); it; ++it) {
-      cells._add(it.item());
+      cells._add(*it.item());
     }
     _size -= cells._size;
     _bytes -= cells._bytes;
@@ -587,28 +583,27 @@ class Mutable final {
   void _add_counter(const Cell& e_cell, Iterator& it, size_t& offset);
 
   SWC_CAN_INLINE
-  void _add(Cell* cell) noexcept {
-    _bytes += cell->encoded_length();
+  void _add(const Cell& cell) noexcept {
+    _bytes += cell.encoded_length();
     ++_size;
   }
 
   SWC_CAN_INLINE
-  void _remove(Cell* cell) noexcept {
-    _bytes -= cell->encoded_length();
+  void _remove(const Cell& cell) noexcept {
+    _bytes -= cell.encoded_length();
     --_size;
   }
 
   SWC_CAN_INLINE
-  Cell* _insert(Iterator& it, const Cell& cell) {
+  void _insert(Iterator& it, const Cell& cell) {
     Cell* add = new Cell(cell);
-    _add(add);
-    it ? it.insert(add) : _container.push_back(add);
-    return add;
+    _add(*add);
+    it.insert(add);
   }
 
   SWC_CAN_INLINE
   void _remove(Iterator& it) {
-    _remove(it.item());
+    _remove(*it.item());
     delete it.item();
     it.remove();
   }
@@ -618,7 +613,7 @@ class Mutable final {
     if(wdel) {
       Iterator it_del(it);
       for(auto c = number; c && it_del; ++it_del,--c) {
-        _remove(it_del.item());
+        _remove(*it_del.item());
         delete it_del.item();
       }
     }
