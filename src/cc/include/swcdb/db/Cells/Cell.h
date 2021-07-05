@@ -91,7 +91,7 @@ class Cell final {
   public:
   typedef std::shared_ptr<Cell> Ptr;
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   explicit Cell() noexcept
                 : own(false), flag(Flag::NONE), control(0),
                   vlen(0), value(nullptr) {
