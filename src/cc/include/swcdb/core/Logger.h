@@ -67,21 +67,22 @@ class LogWriter final {
 
   void daemon(const std::string& logs_path);
 
+  constexpr SWC_CAN_INLINE
   void set_level(uint8_t level) noexcept {
     m_priority.store(level);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   uint8_t get_level() const noexcept {
     return m_priority;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool is_enabled(uint8_t level) const noexcept {
     return level <= m_priority;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool show_line_numbers() const noexcept {
     return m_show_line_numbers;
   }

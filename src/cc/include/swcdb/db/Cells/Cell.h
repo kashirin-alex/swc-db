@@ -69,21 +69,21 @@ const char* to_string(Flag flag) noexcept;
 Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept;
 
 
-static const int64_t TIMESTAMP_MIN  = INT64_MIN;
-static const int64_t TIMESTAMP_MAX  = INT64_MAX;
-static const int64_t TIMESTAMP_NULL = INT64_MIN + 1;
-static const int64_t TIMESTAMP_AUTO = INT64_MIN + 2;
-static const int64_t AUTO_ASSIGN    = TIMESTAMP_AUTO;
+constexpr const int64_t TIMESTAMP_MIN  = INT64_MIN;
+constexpr const int64_t TIMESTAMP_MAX  = INT64_MAX;
+constexpr const int64_t TIMESTAMP_NULL = INT64_MIN + 1;
+constexpr const int64_t TIMESTAMP_AUTO = INT64_MIN + 2;
+constexpr const int64_t AUTO_ASSIGN    = TIMESTAMP_AUTO;
 
-static const uint8_t HAVE_REVISION      =  0x80;
-static const uint8_t HAVE_TIMESTAMP     =  0x40;
-static const uint8_t AUTO_TIMESTAMP     =  0x20;
-static const uint8_t REV_IS_TS          =  0x10;
-static const uint8_t HAVE_ENCODER       =  0x2;
-static const uint8_t HAVE_ENCODER_MASK  =  0xff - HAVE_ENCODER;
-static const uint8_t TS_DESC            =  0x1;
+constexpr const uint8_t HAVE_REVISION      =  0x80;
+constexpr const uint8_t HAVE_TIMESTAMP     =  0x40;
+constexpr const uint8_t AUTO_TIMESTAMP     =  0x20;
+constexpr const uint8_t REV_IS_TS          =  0x10;
+constexpr const uint8_t HAVE_ENCODER       =  0x2;
+constexpr const uint8_t HAVE_ENCODER_MASK  =  0xff - HAVE_ENCODER;
+constexpr const uint8_t TS_DESC            =  0x1;
 
-static const uint8_t OP_EQUAL  = 0x1;
+constexpr const uint8_t OP_EQUAL  = 0x1;
 
 
 
@@ -91,19 +91,22 @@ class Cell final {
   public:
   typedef std::shared_ptr<Cell> Ptr;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Cell() noexcept
                 : own(false), flag(Flag::NONE), control(0),
                   vlen(0), value(nullptr) {
   }
 
+  constexpr
   explicit Cell(const Cell& other);
 
+  constexpr
   explicit Cell(const Cell& other, bool no_value);
 
+  constexpr
   explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false);
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Cell(Cell&& other) noexcept
       : key(std::move(other.key)),
         own(other.own),
@@ -119,35 +122,37 @@ class Cell final {
 
   Cell& operator=(const Cell&) = delete;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Cell& operator=(Cell&& other) noexcept {
     move(other);
     return *this;
   }
 
+  constexpr
   void move(Cell& other) noexcept;
 
+  constexpr
   void copy(const Cell& other, bool no_value=false);
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   ~Cell() {
     _free();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void _free() noexcept {
     if(own && value)
       delete [] value;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void free() noexcept {
     _free();
     vlen = 0;
     value = nullptr;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_time_order_desc(bool desc) noexcept {
     if(desc)
       control |= TS_DESC;
@@ -155,19 +160,24 @@ class Cell final {
       control -= TS_DESC;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_timestamp(int64_t ts) noexcept {
     timestamp = ts;
     control |= HAVE_TIMESTAMP;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_revision(int64_t ts) noexcept {
     revision = ts;
     control |= HAVE_REVISION;
   }
 
-  void set_value(uint8_t* v, uint32_t len, bool owner);
+  constexpr SWC_CAN_INLINE
+  void set_value(uint8_t* v, uint32_t len, bool owner) {
+    _free();
+    vlen = len;
+    value = (own = owner) ? _value(v) : v;
+  }
 
   SWC_CAN_INLINE
   void set_value(const char* v, uint32_t len, bool owner) {
@@ -195,37 +205,45 @@ class Cell final {
 
   void get_value(std::string& v) const;
 
+  constexpr
   void set_counter(uint8_t op, int64_t v,
                   Types::Column typ = Types::Column::COUNTER_I64,
                   int64_t rev = TIMESTAMP_NULL);
 
+  constexpr
   uint8_t get_counter_op() const;
 
+  constexpr
   int64_t get_counter() const;
 
+  constexpr
   int64_t get_counter(uint8_t& op, int64_t& rev) const;
 
+  constexpr
   void read(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
+  constexpr
   size_t encoded_length(bool no_value=false) const noexcept;
 
+  constexpr
   void write(DynamicBuffer &dst_buf, bool no_value=false) const;
 
   bool equal(const Cell& other) const noexcept;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool removal() const noexcept {
     return flag != Flag::INSERT;
   }
 
+  constexpr
   bool is_removing(const int64_t& rev) const noexcept;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   int64_t get_timestamp() const noexcept {
     return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   int64_t get_revision() const noexcept {
     return control & HAVE_REVISION ? revision
           : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
@@ -238,7 +256,7 @@ class Cell final {
            (Time::now_ns() > timestamp + ttl);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool have_encoder() const noexcept {
     return control & HAVE_ENCODER;
   }
@@ -261,7 +279,7 @@ class Cell final {
 
   private:
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   uint8_t* _value(const uint8_t* v) {
     return vlen
       ? static_cast<uint8_t*>(memcpy(new uint8_t[vlen], v, vlen))
@@ -272,7 +290,7 @@ class Cell final {
 
 
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 Cell::Cell(const Cell& other)
   : key(other.key), own(other.vlen), flag(other.flag),
     control(other.control),
@@ -282,7 +300,7 @@ Cell::Cell(const Cell& other)
     value(_value(other.value)) {
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 Cell::Cell(const Cell& other, bool no_value)
   : key(other.key), own(!no_value && other.vlen), flag(other.flag),
     control(no_value ? other.control & HAVE_ENCODER_MASK : other.control),
@@ -292,7 +310,7 @@ Cell::Cell(const Cell& other, bool no_value)
     value(_value(other.value)) {
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
           : own(own),
             flag(Serialization::decode_i8(bufp, remainp)) {
@@ -321,7 +339,7 @@ Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
   }
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Cell::move(Cell& other) noexcept {
   _free();
   own       = other.own;
@@ -336,7 +354,7 @@ void Cell::move(Cell& other) noexcept {
   other.vlen = 0;
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Cell::copy(const Cell& other, bool no_value) {
   key.copy(other.key);
   flag      = other.flag;
@@ -353,13 +371,6 @@ void Cell::copy(const Cell& other, bool no_value) {
 }
 
 SWC_CAN_INLINE
-void Cell::set_value(uint8_t* v, uint32_t len, bool owner) {
-  _free();
-  vlen = len;
-  value = (own = owner) ? _value(v) : v;
-}
-
-SWC_CAN_INLINE
 void Cell::get_value(std::string& v) const {
   v.clear();
   if(vlen) {
@@ -369,7 +380,7 @@ void Cell::get_value(std::string& v) const {
   }
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
   _free();
   own = true;
@@ -396,27 +407,27 @@ void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
   }
 
   uint8_t* ptr = (value = new uint8_t[vlen]);
-  Serialization::encode_vi64(&ptr, v); 
+  Serialization::encode_vi64(&ptr, v);
   *ptr++ = op;
   if(has_rev)
     Serialization::encode_vi64(&ptr, rev);
   // +? i64's storing epochs
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 uint8_t Cell::get_counter_op() const {
   const uint8_t* ptr = value;
   Serialization::decode_vi64(&ptr);
   return *ptr;
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 int64_t Cell::get_counter() const {
   const uint8_t *ptr = value;
   return Serialization::decode_vi64(&ptr);
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   const uint8_t *ptr = value;
   int64_t v = Serialization::decode_vi64(&ptr);
@@ -426,7 +437,7 @@ int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
   return v;
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 size_t Cell::encoded_length(bool no_value) const noexcept {
   size_t len = key.encoded_length();
   len += 2;
@@ -440,7 +451,7 @@ size_t Cell::encoded_length(bool no_value) const noexcept {
   return len += vlen;
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
 
   flag = Serialization::decode_i8(bufp, remainp);
@@ -471,7 +482,7 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
   }
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
   dst_buf.ensure(encoded_length( no_value || (no_value = !vlen) ));
 
@@ -496,7 +507,7 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
   }
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 bool Cell::is_removing(const int64_t& rev) const noexcept {
   return rev != AUTO_ASSIGN && removal() && (
     (flag == DELETE  && get_timestamp() >= rev )

@@ -26,16 +26,18 @@ class Key final {
 
   typedef std::shared_ptr<Key> Ptr;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Key(bool own = true) noexcept
               : own(own), count(0), size(0), data(nullptr) {
   }
 
+  constexpr
   explicit Key(const Key& other);
 
+  constexpr
   explicit Key(const Key& other, bool own);
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Key(Key&& other) noexcept
         : own(other.own), count(other.count), size(other.size),
           data(other.data) {
@@ -46,30 +48,32 @@ class Key final {
 
   Key& operator=(const Key&) = delete;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Key& operator=(Key&& other) noexcept {
     move(other);
     return *this;
   }
 
+  constexpr
   void move(Key& other) noexcept;
 
+  constexpr
   void copy(const Key& other);
 
   void copy(uint24_t after_idx, const Key& other);
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   ~Key() {
     _free();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void _free() {
     if(own && data)
       delete [] data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void free() {
     _free();
     data = nullptr;
@@ -77,7 +81,7 @@ class Key final {
     count = 0;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool sane() const noexcept {
     return (count && size && data) || (!count && !size && !data);
   }
@@ -140,22 +144,25 @@ class Key final {
 
   void get(uint32_t idx, const char** fraction, uint32_t* length) const;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool equal(const Key& other) const noexcept {
     return count == other.count &&
           ((!data && !other.data) ||
            Condition::eq(data, size, other.data, other.size));
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool empty() const noexcept {
     return !count;
   }
 
+  constexpr
   uint32_t encoded_length() const noexcept;
 
+  constexpr
   void encode(uint8_t** bufp) const;
 
+  constexpr
   void decode(const uint8_t** bufp, size_t* remainp, bool owner);
 
   void convert_to(std::vector<std::string>& key) const;
@@ -187,7 +194,7 @@ class Key final {
 
   private:
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   uint8_t* _data(const uint8_t* ptr) {
     return size
       ? static_cast<uint8_t*>(memcpy(new uint8_t[size], ptr, size))
@@ -198,19 +205,19 @@ class Key final {
 
 
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 Key::Key(const Key& other)
         : own(other.size), count(other.count), size(other.size),
           data(_data(other.data)) {
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 Key::Key(const Key& other, bool own)
         : own(own), count(other.count), size(other.size),
           data(own ? _data(other.data): other.data) {
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Key::move(Key& other) noexcept {
   _free();
   own =  other.own;
@@ -222,7 +229,7 @@ void Key::move(Key& other) noexcept {
   other.count = 0;
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Key::copy(const Key& other) {
   _free();
   own = true;
@@ -231,12 +238,12 @@ void Key::copy(const Key& other) {
   data = _data(other.data);
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 uint32_t Key::encoded_length() const noexcept {
   return Serialization::encoded_length_vi24(count) + size;
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Key::encode(uint8_t** bufp) const {
   Serialization::encode_vi24(bufp, count);
   if(size) {
@@ -245,7 +252,7 @@ void Key::encode(uint8_t** bufp) const {
   }
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void Key::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
   _free();
   if((count = Serialization::decode_vi24(bufp, remainp))) {

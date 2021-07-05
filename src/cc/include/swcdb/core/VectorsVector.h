@@ -28,7 +28,7 @@ class VectorsVector : public std::vector<VectorT> {
   using value_type = typename VectorT::value_type;
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static size_t need_reserve(VectorT& vec) {
     if(vec.capacity() == vec.size() && vec.capacity() >= GROW) {
       size_t sz = vec.size() + GROW;
@@ -45,14 +45,14 @@ class VectorsVector : public std::vector<VectorT> {
     typename VectorT::const_iterator  _item;
     public:
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     ConstIterator(const VectorsT& _vectors) noexcept
                   : _vectors(_vectors), _vector(_vectors.cbegin()),
                     _item(_vector == _vectors.cend()
                             ? typename VectorT::const_iterator() : _vector->cbegin()) {
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     ConstIterator(const VectorsT& _vectors, size_t offset) noexcept
                   : _vectors(_vectors), _vector(_vectors.cbegin()) {
       for(; _vector != _vectors.cend(); ++_vector) {
@@ -64,20 +64,20 @@ class VectorsVector : public std::vector<VectorT> {
       }
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     ConstIterator(const ConstIterator& other) noexcept
                   : _vectors(other._vectors),
                     _vector(other._vector), _item(other._item) {
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     ConstIterator& operator=(const ConstIterator& other) noexcept {
       _vector = other._vector;
       _item = other._item;
       return *this;
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     ConstIterator& at(size_t offset) noexcept {
       for(_vector=_vectors.cbegin(); _vector != _vectors.cend(); ++_vector) {
         if(!offset || offset < _vector->size()) {
@@ -89,18 +89,18 @@ class VectorsVector : public std::vector<VectorT> {
       return *this;
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     operator bool() const noexcept {
       return _vector != _vectors.cend() && _item != _vector->cend();
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     void operator++() noexcept {
       if(++_item == _vector->cend() && ++_vector != _vectors.cend())
         _item = _vector->cbegin();
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     const value_type& item() const noexcept {
       return *_item;
     }
@@ -114,14 +114,14 @@ class VectorsVector : public std::vector<VectorT> {
     typename VectorT::iterator  _item;
     public:
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     Iterator(VectorsT& _vectors) noexcept
             : _vectors(_vectors), _vector(_vectors.begin()),
               _item(_vector == _vectors.cend()
                       ? typename VectorT::iterator() : _vector->begin()) {
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     Iterator(VectorsT& _vectors, size_t offset) noexcept
             : _vectors(_vectors), _vector(_vectors.begin()) {
       for(; _vector != _vectors.cend(); ++_vector) {
@@ -133,20 +133,20 @@ class VectorsVector : public std::vector<VectorT> {
       }
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     Iterator(const Iterator& other) noexcept
             : _vectors(other._vectors),
               _vector(other._vector), _item(other._item) {
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     Iterator& operator=(const Iterator& other) noexcept {
       _vector = other._vector;
       _item = other._item;
       return *this;
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     Iterator& at(size_t offset) noexcept {
       for(_vector=_vectors.begin(); _vector != _vectors.cend(); ++_vector) {
         if(!offset || offset < _vector->size()) {
@@ -158,35 +158,35 @@ class VectorsVector : public std::vector<VectorT> {
       return *this;
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     operator bool() const noexcept {
       return _vector != _vectors.cend() && _item != _vector->cend();
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     void operator++() noexcept {
       if(++_item == _vector->cend() && ++_vector != _vectors.cend())
         _item = _vector->begin();
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     value_type& item() noexcept {
       return *_item;
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     void insert(const value_type& value) {
        ensure();
       _item = _vector->insert(_item, value);
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     void insert(value_type&& value) {
        ensure();
       _item = _vector->insert(_item, std::move(value));
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     void ensure() {
       if(_vector->size() >= SIZE) {
         auto it_b = _vector->cbegin() + SPLIT;
@@ -206,7 +206,7 @@ class VectorsVector : public std::vector<VectorT> {
       }
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     void remove() noexcept {
       _item = _vector->erase(_item);
       if(_vector->empty() && _vectors.size() > 1) {
@@ -217,7 +217,7 @@ class VectorsVector : public std::vector<VectorT> {
       }
     }
 
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     void remove(size_t number) noexcept {
       while(number) {
         if(_item == _vector->begin() && number >= _vector->size()) {
@@ -252,52 +252,52 @@ class VectorsVector : public std::vector<VectorT> {
 
 
   template<typename T>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   T get() noexcept {
     return T(*this);
   }
 
   template<typename T>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   T get() const noexcept {
     return T(*this);
   }
 
   template<typename T>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   T get(size_t offset) noexcept {
     return T(*this, offset);
   }
 
   template<typename T>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   T get(size_t offset) const noexcept {
     return T(*this, offset);
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Iterator GetIterator() noexcept {
     return get<Iterator>();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Iterator GetIterator(size_t offset) noexcept {
     return get<Iterator>(offset);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   ConstIterator GetConstIterator() const noexcept {
     return get<ConstIterator>();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   ConstIterator GetConstIterator(size_t offset) const noexcept {
     return get<ConstIterator>(offset);
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   size_t size_of_internal() const noexcept {
     size_t sz = VectorsT::capacity() * sizeof(VectorT);
     for(auto& vector : *this)
@@ -305,7 +305,7 @@ class VectorsVector : public std::vector<VectorT> {
     return sz;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   size_t count() const noexcept {
     size_t sz = 0;
     for(auto& vector : *this)
@@ -314,34 +314,34 @@ class VectorsVector : public std::vector<VectorT> {
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   value_type& front() noexcept {
     return VectorsT::front().front();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   value_type& back() noexcept {
     return VectorsT::back().back();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const value_type& front() const noexcept {
     return VectorsT::front().front();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const value_type& back() const noexcept {
     return VectorsT::back().back();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   value_type* operator[](size_t pos) noexcept {
     auto it = get<Iterator>(pos);
     return it ? &it.item() : nullptr;
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void ensure() {
     if(VectorsT::empty() || VectorsT::back().size() >= SIZE) {
       VectorsT::emplace_back();
@@ -351,20 +351,20 @@ class VectorsVector : public std::vector<VectorT> {
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void push_back(const value_type& value) {
     ensure();
     VectorsT::back().push_back(value);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void push_back(value_type&& value) {
     ensure();
     VectorsT::back().push_back(std::move(value));
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void add(VectorsVector&& other) {
     VectorsT::insert(VectorsT::cend(), other.cbegin(), other.cend());
     other.clear();
@@ -372,7 +372,7 @@ class VectorsVector : public std::vector<VectorT> {
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void split(size_t split_at, VectorsVector& to) {
     auto it = VectorsT::cbegin() + split_at;
     to.insert(to.cend(), it, VectorsT::cend());

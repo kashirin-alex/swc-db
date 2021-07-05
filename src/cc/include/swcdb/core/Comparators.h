@@ -525,61 +525,61 @@ bool is_matching_extended(uint8_t comp,
 // const T
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool gt(const T p1, const T p2) noexcept {
   return p1 < p2;
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool ge(const T p1, const T p2) noexcept {
   return p1 <= p2;
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool eq(const T p1, const T p2) noexcept {
   return p1 == p2;
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool le(const T p1, const T p2) noexcept {
   return p1 >= p2;
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool lt(const T p1, const T p2) noexcept {
   return p1 > p2;
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool ne(const T p1, const T p2) noexcept {
   return p1 != p2;
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool sbs(const T p1, const T p2) noexcept {
   return (p2 % p1) == 0;
 }
 
 template<>
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 bool sbs(const long double p1, const long double p2) noexcept {
   return fmod(p2, p1) == 0;
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool fo_sbs(const T p1, const T p2) noexcept {
   return (p2 | p1) == p2;
 }
 
 template<>
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 bool fo_sbs(const long double, const long double) noexcept {
   /* Not Implemented ?
   if(((uint64_t)p2 | (uint64_t)p1) != (uint64_t)p2)
@@ -595,7 +595,7 @@ bool fo_sbs(const long double, const long double) noexcept {
 }
 
 template<typename T>
-extern SWC_CAN_INLINE
+extern constexpr SWC_CAN_INLINE
 bool is_matching(uint8_t comp, const T p1, const T p2) noexcept {
   switch (comp) {
 

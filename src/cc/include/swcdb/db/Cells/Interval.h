@@ -69,25 +69,25 @@ class Interval final {
            aligned_min.size_of_internal();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_key_begin(const DB::Cell::Key& key) {
     key_begin.copy(key);
     was_set = true;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_key_end(const DB::Cell::Key& key) {
     key_end.copy(key);
     was_set = true;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_ts_earliest(const Specs::Timestamp& ts) {
     ts_earliest.copy(ts);
     was_set = true;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_ts_latest(const Specs::Timestamp& ts) {
     ts_latest.copy(ts);
     was_set = true;
@@ -109,21 +109,21 @@ class Interval final {
 
   void expand(const Cell& cell);
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void expand_begin(const Cell& cell) {
     if(key_begin.empty() || !is_in_begin(cell.key))
       key_begin.copy(cell.key);
     was_set = true;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void expand_end(const Cell& cell) {
     if(key_end.empty() || !is_in_end(cell.key))
       key_end.copy(cell.key);
     was_set = true;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void expand(const int64_t& ts) {
     if(ts_earliest.empty() || !ts_earliest.is_matching(ts))
       ts_earliest.set(ts, Condition::GE);

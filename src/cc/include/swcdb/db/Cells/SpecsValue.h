@@ -17,7 +17,7 @@ namespace SWC { namespace DB { namespace Specs {
 class Value {
   public:
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Value(bool own=true,
                  Condition::Comp comp=Condition::NONE) noexcept
                 : own(own), comp(comp),
@@ -38,43 +38,43 @@ class Value {
     set(data_n, size_n, comp_n, owner);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Value(const uint8_t* data_n, const uint32_t size_n,
                  Condition::Comp comp_n, bool owner=false)
                 : own(false), matcher(nullptr) {
     set(data_n, size_n, comp_n, owner);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Value(int64_t count, Condition::Comp comp_n)
                 : own(false), matcher(nullptr) {
     set_counter(count, comp_n);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Value(const Value &other)
                 : own(false), matcher(nullptr) {
     copy(other);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Value& operator=(const Value& other) {
     copy(other);
     return *this;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Value& operator=(Value&& other) noexcept {
     move(other);
     return *this;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void copy(const Value &other) {
     set(other.data, other.size, other.comp, true);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Value(Value&& other) noexcept
                 : own(other.own), comp(other.comp),
                   size(other.size), data(other.data),
@@ -101,19 +101,22 @@ class Value {
     set(reinterpret_cast<const uint8_t*>(data_n), size_n, comp_n, owner);
   }
 
+  constexpr
   void move(Value &other) noexcept;
 
+  constexpr
   void set_counter(int64_t count, Condition::Comp comp_n);
 
+  constexpr
   void set(const uint8_t* data_n, const uint32_t size_n,
            Condition::Comp comp_n, bool owner=false);
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   ~Value() {
     _free();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void _free() {
     if(own && data)
       delete [] data;
@@ -121,7 +124,7 @@ class Value {
       delete matcher;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void free() {
     _free();
     data = nullptr;
@@ -129,14 +132,15 @@ class Value {
     matcher = nullptr;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool empty() const noexcept {
     return comp == Condition::NONE;
   }
 
+  constexpr
   bool equal(const Value &other) const noexcept;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   size_t encoded_length() const noexcept {
     size_t sz = 1;
     if(comp != Condition::NONE) {
@@ -146,7 +150,7 @@ class Value {
     return sz;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     Serialization::encode_i8(bufp, comp);
     if(comp != Condition::NONE) {
@@ -156,7 +160,7 @@ class Value {
     }
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void decode(const uint8_t** bufp, size_t* remainp, bool owner=false) {
     free();
     own = owner;
@@ -214,6 +218,51 @@ class Value {
   private:
   mutable TypeMatcher*  matcher;
 };
+
+
+
+constexpr SWC_CAN_INLINE
+void Value::move(Value &other) noexcept {
+  own = other.own;
+  comp = other.comp;
+  data = other.data;
+  size = other.size;
+  matcher = other.matcher;
+  other.comp = Condition::NONE;
+  other.data = nullptr;
+  other.matcher = nullptr;
+  other.size = 0;
+}
+
+constexpr SWC_CAN_INLINE
+void Value::set_counter(int64_t count, Condition::Comp comp_n) {
+  uint32_t len = Serialization::encoded_length_vi64(count);
+  uint8_t data_n[10];
+  uint8_t* ptr = data_n;
+  Serialization::encode_vi64(&ptr, count);
+  set(data_n, len, comp_n, true);
+}
+
+constexpr SWC_CAN_INLINE
+void Value::set(const uint8_t* data_n, const uint32_t size_n,
+                Condition::Comp comp_n, bool owner) {
+  free();
+  own   = owner;
+  comp = comp_n;
+  if((size = size_n))
+    data = own
+      ? static_cast<uint8_t*>(memcpy(new uint8_t[size], data_n, size))
+      : const_cast<uint8_t*>(data_n);
+}
+
+constexpr SWC_CAN_INLINE
+bool Value::equal(const Value &other) const noexcept {
+  return
+    size == other.size &&
+    ((!data && !other.data) ||
+     (data && other.data && Condition::mem_eq(data, other.data, size)));
+}
+
 
 
 }}}

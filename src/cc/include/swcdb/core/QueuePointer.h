@@ -18,12 +18,12 @@ class QueuePointer : private MutexAtomic {
   typedef PtrT  value_type;
 
   struct Pointer {
-    SWC_CAN_INLINE
+    constexpr SWC_CAN_INLINE
     Pointer() noexcept : _other(nullptr) { }
     PtrT _other;
   };
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit QueuePointer() noexcept : _back(nullptr), _front(nullptr) { }
 
   QueuePointer(const QueuePointer&) = delete;
@@ -100,7 +100,7 @@ class QueuePointer : private MutexAtomic {
 
   private:
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void _push(PtrT& ptr) noexcept {
     (_back ? _back->_other : _front) = ptr;
     _back = ptr;

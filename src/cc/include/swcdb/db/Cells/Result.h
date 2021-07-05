@@ -53,7 +53,7 @@ class Result final : private std::vector<Cell*> {
 
   void free();
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   size_t size_bytes() const noexcept {
     return bytes;
   }

@@ -18,20 +18,20 @@ namespace SWC { namespace DB { namespace Specs {
 class Flags {
   public:
 
-  static const uint8_t NONE               = 0x00;
-  static const uint8_t LIMIT_BY_KEYS      = 0x01;
-  static const uint8_t OFFSET_BY_KEYS     = 0x04;
-  static const uint8_t ONLY_KEYS          = 0x08;
-  static const uint8_t ONLY_DELETES       = 0x10;
+  constexpr static const uint8_t NONE               = 0x00;
+  constexpr static const uint8_t LIMIT_BY_KEYS      = 0x01;
+  constexpr static const uint8_t OFFSET_BY_KEYS     = 0x04;
+  constexpr static const uint8_t ONLY_KEYS          = 0x08;
+  constexpr static const uint8_t ONLY_DELETES       = 0x10;
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit Flags() noexcept
                 : limit(0), offset(0),
                   max_versions(0), max_buffer(0),
                   options(0), was_set(false) {
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void copy(const Flags &other) noexcept {
     limit           = other.limit;
     offset          = other.offset;
@@ -43,27 +43,27 @@ class Flags {
 
   //~Flags() { }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool is_only_keys() const noexcept {
     return options & ONLY_KEYS;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool is_only_deletes() const noexcept {
     return options & ONLY_DELETES;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_only_keys() noexcept {
     options |= ONLY_KEYS;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_only_deletes() noexcept {
     options |= ONLY_DELETES;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool equal(const Flags &other) const noexcept {
     return  limit == other.limit &&
             offset == other.offset  &&
@@ -74,7 +74,7 @@ class Flags {
             ;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   size_t encoded_length() const noexcept {
     return  Serialization::encoded_length_vi64(limit)
           + Serialization::encoded_length_vi64(offset)
@@ -83,7 +83,7 @@ class Flags {
           + 1;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     Serialization::encode_vi64(bufp, limit);
     Serialization::encode_vi64(bufp, offset);
@@ -92,7 +92,7 @@ class Flags {
     Serialization::encode_i8(bufp, options);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void decode(const uint8_t** bufp, size_t* remainp) {
     limit = Serialization::decode_vi64(bufp, remainp);
     offset = Serialization::decode_vi64(bufp, remainp);

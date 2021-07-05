@@ -30,31 +30,31 @@ class Vector {
   typedef const value_type& const_reference;
 
 
-  SWC_CAN_INLINE
-  static constexpr size_type max_size() noexcept {
+  constexpr SWC_CAN_INLINE
+  static size_type max_size() noexcept {
     return size_type(0) - size_type(1);
   }
   static_assert(max_size() > 0, "SWC-DB Vector supports only unsigned size!");
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Vector() noexcept : _data(nullptr), _cap(0), _size(0) { }
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Vector(size_type sz, ArgsT&&... args)
           : _data(sz ? _allocate(sz, std::forward<ArgsT>(args)...) : nullptr),
             _cap(sz), _size(sz) {
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Vector(Vector&& other) noexcept
         : _data(other._data), _cap(other._cap), _size(other._size) {
     other._data = nullptr;
     other._cap = other._size = 0;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Vector(const Vector& other)
         : _data(
             other._size
@@ -67,7 +67,7 @@ class Vector {
           _cap(other._size), _size(other._size) {
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   ~Vector() {
     if(_data) {
       if(!simple_type) {
@@ -78,7 +78,7 @@ class Vector {
     }
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void clear() noexcept {
     if(simple_type) {
       _size = 0;
@@ -88,7 +88,7 @@ class Vector {
     }
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void free() noexcept {
     if(_data) {
       clear();
@@ -99,7 +99,7 @@ class Vector {
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Vector& operator=(Vector&& other) noexcept {
     _data = other._data;
     _cap = other._cap;
@@ -109,7 +109,7 @@ class Vector {
     return *this;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Vector& operator=(const Vector& other) {
     free();
     if((_cap = _size = other._size)) {
@@ -118,106 +118,106 @@ class Vector {
     return *this;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void swap(Vector& other) noexcept {
     std::swap(_data, other._data);
     std::swap(_cap, other._cap);
     std::swap(_size, other._size);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool empty() const noexcept {
     return !_size;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   size_type size() const noexcept {
     return _size;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   size_type capacity() const noexcept {
     return _cap;
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   pointer data() noexcept {
     return _data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_pointer data() const noexcept {
     return _data;
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   iterator begin() noexcept {
     return _data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_iterator cbegin() const noexcept {
     return _data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_iterator begin() const noexcept {
     return cbegin();
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   iterator end() noexcept {
     return _data + _size;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_iterator cend() const noexcept {
     return _data + _size;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_iterator end() const noexcept {
     return cend();
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   reference front() noexcept {
     return *_data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_reference front() const noexcept {
     return *_data;
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   reference back() noexcept {
     return _data[_size - 1];
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_reference back() const noexcept {
     return _data[_size - 1];
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   reference operator[](size_type pos) noexcept {
     return _data[pos];
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const_reference operator[](size_type pos) const noexcept {
     return _data[pos];
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void shrink_to_fit(size_type sz=0) {
     if(_cap > sz || _cap > _size) {
       if(_size) {
@@ -229,13 +229,13 @@ class Vector {
     }
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void reserve(size_type cap) {
     if(_cap < cap)
       _grow(cap - _cap);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void reserve() {
     if(_cap == _size) {
       if(_size) {
@@ -249,7 +249,7 @@ class Vector {
   }
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void resize(size_type sz, ArgsT&&... args) {
     if(sz > _size) {
       reserve(sz);
@@ -267,7 +267,7 @@ class Vector {
 
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void push_back(ArgsT&&... args) {
     if(max_size() == _size)
       throw std::out_of_range("Reached size_type limit!");
@@ -275,7 +275,7 @@ class Vector {
     push_back_unsafe(std::forward<ArgsT>(args)...);
   }
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void push_back_unsafe(ArgsT&&... args) noexcept(simple_type) {
     _construct(_data + _size, std::forward<ArgsT>(args)...);
     ++_size;
@@ -283,7 +283,7 @@ class Vector {
 
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   reference emplace_back(ArgsT&&... args) {
     if(max_size() == _size)
       throw std::out_of_range("Reached size_type limit!");
@@ -291,7 +291,7 @@ class Vector {
     return emplace_back_unsafe(std::forward<ArgsT>(args)...);
   }
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   reference emplace_back_unsafe(ArgsT&&... args) noexcept(simple_type) {
     reference ref = *_construct(_data + _size, std::forward<ArgsT>(args)...);
     ++_size;
@@ -300,7 +300,7 @@ class Vector {
 
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   iterator insert(const_iterator it, ArgsT&&... args) {
     size_type offset;
     if(!_size || (offset = it - _data) >= _size)
@@ -324,7 +324,7 @@ class Vector {
   }
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   iterator insert_unsafe(const_iterator it,
                          ArgsT&&... args) noexcept(simple_type) {
     size_type offset;
@@ -336,7 +336,7 @@ class Vector {
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   iterator insert(const_iterator it,
                   const_iterator first, const_iterator last) {
     size_type offset = it - _data;
@@ -368,7 +368,7 @@ class Vector {
     return data_offset;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void assign(const_iterator first, const_iterator last) {
     clear();
     if(size_type sz = last - first) {
@@ -380,7 +380,7 @@ class Vector {
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   iterator erase(const_iterator it) noexcept(simple_type) {
     size_type offset = it - _data;
     if(offset >= _size)
@@ -396,7 +396,7 @@ class Vector {
     return _data + offset;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   iterator erase(const_iterator first,
                  const_iterator last) noexcept(simple_type) {
     size_type offset = first - _data;
@@ -418,12 +418,12 @@ class Vector {
 
   private:
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void _grow(size_type sz) {
     _data = _allocate_uinitialized(_data, _size, _cap += sz);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _allocate_uinitialized(size_type size) {
     return static_cast<pointer>(::operator new(sizeof(value_type) * size));
     //return static_cast<pointer>(
@@ -431,7 +431,7 @@ class Vector {
   }
 
   /* IF can grow in-place
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _allocate_uinitialized(pointer data_prev, size_t data_prev,
                                         size_type size) {
     pointer data = _allocate_uinitialized(size, data_prev);
@@ -442,7 +442,7 @@ class Vector {
     return data;
   */
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _allocate_uinitialized(pointer data_prev, size_t size_prev,
                                         size_type sz) {
     pointer data = _move(_allocate_uinitialized(sz), data_prev, size_prev);
@@ -457,7 +457,7 @@ class Vector {
   }
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _allocate_insert(pointer data_prev, size_type size_prev,
                                   size_type offset, size_type size,
                                   ArgsT&&... args) {
@@ -483,7 +483,7 @@ class Vector {
     return data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _allocate_insert(pointer data_prev, size_type size_prev,
                                   size_type offset, size_type size,
                                   const_iterator first, const_iterator last) {
@@ -510,7 +510,7 @@ class Vector {
     return data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static void _deallocate(pointer data, size_t) {
     ::operator delete(data);
     //std::free(data);
@@ -520,7 +520,7 @@ class Vector {
 
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _allocate(size_type sz, ArgsT&&... args) {
     pointer data = _allocate_uinitialized(sz);
     if(!simple_type || sizeof...(args) > 0) {
@@ -533,7 +533,7 @@ class Vector {
 
 
   template<typename... ArgsT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _construct(pointer ptr,
                             ArgsT&&... args) noexcept(simple_type) {
     new (ptr) value_type(std::forward<ArgsT>(args)...);
@@ -541,7 +541,7 @@ class Vector {
   }
 
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _copy(pointer data,
                        const_pointer data_prev,
                        size_type size_prev) noexcept(simple_type) {
@@ -551,7 +551,7 @@ class Vector {
     return data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _move(pointer data,
                        pointer data_prev,
                        size_type size_prev) noexcept(simple_type) {
@@ -567,7 +567,7 @@ class Vector {
     return data;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   static pointer _alter(pointer data, size_type remain,
                         size_type amount) noexcept(simple_type) {
     pointer prev = data + remain - 1;
@@ -587,7 +587,7 @@ class Vector {
 
   /*
   template<typename vT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   T* find(const vT& value) {
     for(auto it=Get<Iterator>(value); it; ++it) {
       if(value == *it.item)
@@ -597,7 +597,7 @@ class Vector {
   }
 
   template<typename vT>
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const T* cfind(const vT& value) {
     for(auto it=Get<ConstIterator>(value); it; ++it) {
       if(value == *it.item)

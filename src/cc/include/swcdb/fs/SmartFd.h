@@ -63,53 +63,53 @@ class SmartFd {
 
   virtual ~SmartFd() { }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const std::string& filepath() const noexcept {
     return m_filepath;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void flags(uint32_t flags) noexcept {
     m_flags.store(flags);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   uint32_t flags() const noexcept {
     return m_flags;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void fd(int32_t fd) noexcept {
     m_fd.store(fd);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   int32_t fd() const noexcept {
     return m_fd;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool valid() const noexcept {
     return m_fd != -1;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   int32_t invalidate() noexcept {
     m_pos.store(0);
     return m_fd.exchange(-1);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void pos(uint64_t pos) noexcept {
     m_pos.store(pos);
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   uint64_t pos() const noexcept {
     return m_pos;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void forward(uint64_t nbytes) noexcept {
     m_pos.fetch_add(nbytes);
   }

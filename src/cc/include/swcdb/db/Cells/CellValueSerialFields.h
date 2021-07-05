@@ -47,24 +47,17 @@ enum Type : uint8_t {
 
 const char* to_string(Type typ) noexcept;
 
-Type read_type(const uint8_t** bufp, size_t* remainp);
-
-uint24_t read_field_id(const uint8_t** bufp, size_t* remainp);
-
-void skip_type_and_id(const uint8_t** bufp, size_t* remainp);
-
-
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 Type read_type(const uint8_t** bufp, size_t* remainp) {
   return Type(Serialization::decode_i8(bufp, remainp));
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 uint24_t read_field_id(const uint8_t** bufp, size_t* remainp) {
   return Serialization::decode_vi24(bufp, remainp);
 }
 
-SWC_CAN_INLINE
+constexpr SWC_CAN_INLINE
 void skip_type_and_id(const uint8_t** bufp, size_t* remainp) {
   read_type(bufp, remainp);
   read_field_id(bufp, remainp);
@@ -78,48 +71,41 @@ struct Field {
 
   uint24_t fid;
 
+  constexpr SWC_CAN_INLINE
   Field() noexcept { }
 
+  constexpr SWC_CAN_INLINE
   Field(uint24_t fid) noexcept : fid(fid) { }
 
-  Field(const uint8_t** bufp, size_t* remainp);
+  constexpr SWC_CAN_INLINE
+  Field(const uint8_t** bufp, size_t* remainp)
+        : fid(Serialization::decode_vi24(bufp, remainp)) {
+  }
 
   virtual ~Field() { }
 
   virtual Type type() const noexcept = 0;
 
-  virtual size_t encoded_length() const noexcept;
+  virtual size_t encoded_length() const noexcept {
+    return 1 + Serialization::encoded_length_vi24(fid);
+  }
 
   virtual void encode(uint8_t** bufp) const = 0;
 
-  virtual void encode(uint8_t** bufp, Type type) const;
+  constexpr SWC_CAN_INLINE
+  void encode(uint8_t** bufp, Type type) const {
+    Serialization::encode_i8(bufp, type);
+    Serialization::encode_vi24(bufp, fid);
+  }
 
-  void decode(const uint8_t** bufp, size_t* remainp);
+  constexpr SWC_CAN_INLINE
+  void decode(const uint8_t** bufp, size_t* remainp) {
+    fid = Serialization::decode_vi24(bufp, remainp);
+  }
 
   virtual void print(std::ostream& out) const = 0;
 
 };
-
-SWC_CAN_INLINE
-Field::Field(const uint8_t** bufp, size_t* remainp)
-            : fid(Serialization::decode_vi24(bufp, remainp)) {
-}
-
-SWC_CAN_INLINE
-size_t Field::encoded_length() const noexcept {
-  return 1 + Serialization::encoded_length_vi24(fid);
-}
-
-SWC_CAN_INLINE
-void Field::encode(uint8_t** bufp, Type type) const {
-  Serialization::encode_i8(bufp, type);
-  Serialization::encode_vi24(bufp, fid);
-}
-
-SWC_CAN_INLINE
-void Field::decode(const uint8_t** bufp, size_t* remainp) {
-  fid = Serialization::decode_vi24(bufp, remainp);
-}
 //
 
 
@@ -129,8 +115,10 @@ struct Field_INT64 : Field {
 
   int64_t value;
 
+  constexpr SWC_CAN_INLINE
   Field_INT64() noexcept { }
 
+  constexpr SWC_CAN_INLINE
   Field_INT64(uint24_t fid, int64_t value) noexcept
               : Field(fid), value(value) { }
 
@@ -156,8 +144,10 @@ struct Field_DOUBLE : Field {
 
   long double value;
 
+  constexpr SWC_CAN_INLINE
   Field_DOUBLE() noexcept { }
 
+  constexpr SWC_CAN_INLINE
   Field_DOUBLE(uint24_t fid, const long double& value) noexcept
               : Field(fid), value(value) { }
 
@@ -181,6 +171,7 @@ struct Field_DOUBLE : Field {
 // Field BYTES
 struct Field_BYTES : Field, StaticBuffer {
 
+  constexpr SWC_CAN_INLINE
   Field_BYTES() noexcept { }
 
   Field_BYTES(uint24_t fid, const uint8_t* data, uint32_t len,
@@ -209,6 +200,7 @@ struct Field_BYTES : Field, StaticBuffer {
 // Field KEY
 struct Field_KEY : Field {
 
+  constexpr SWC_CAN_INLINE
   Field_KEY() noexcept { }
 
   Field_KEY(uint24_t fid, const Key& key, bool take_ownership=false);
@@ -238,6 +230,7 @@ struct Field_KEY : Field {
 // Field LIST_INT64
 struct Field_LIST_INT64 : Field, StaticBuffer {
 
+  constexpr SWC_CAN_INLINE
   Field_LIST_INT64() noexcept { }
 
   Field_LIST_INT64(uint24_t fid, const std::vector<int64_t>& items);
@@ -265,6 +258,7 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
 // Field LIST_BYTES
 struct Field_LIST_BYTES : Field, StaticBuffer {
 
+  constexpr SWC_CAN_INLINE
   Field_LIST_BYTES() noexcept { }
 
   Field_LIST_BYTES(uint24_t fid, const std::vector<std::string>& items);
@@ -299,12 +293,12 @@ cell.set_value(encoder, wfields.base, wfields.fill());
 */
 struct FieldsWriter final : DynamicBuffer {
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   FieldsWriter() noexcept : index_count(0) { }
 
   //~FieldsWriter() { }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void add(Field* field) {
     ensure(field->encoded_length());
     field->encode(&ptr);

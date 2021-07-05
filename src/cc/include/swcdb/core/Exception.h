@@ -49,7 +49,7 @@ class Exception final : public std::exception {
 
   ~Exception();
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   int code() const noexcept {
     return _code;
   }
@@ -59,17 +59,17 @@ class Exception final : public std::exception {
     return _msg.c_str();
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   int line() const noexcept {
     return _line;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const char* func() const noexcept {
     return _func;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   const char* file() const noexcept {
     return _file;
   }

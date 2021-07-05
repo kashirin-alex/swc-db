@@ -101,7 +101,7 @@ class Interval {
     }
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool is_matching(int64_t timestamp, bool desc) const noexcept {
     return desc ? offset_rev > timestamp : offset_rev < timestamp;
   }
@@ -141,22 +141,22 @@ class Interval {
 
   void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_opt__key_equal() noexcept {
     options |= OPT_KEY_EQUAL;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   void set_opt__range_end_rest() noexcept {
     options |= OPT_RANGE_END_REST;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool has_opt__key_equal() const noexcept {
     return options & OPT_KEY_EQUAL;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool has_opt__range_end_rest() const noexcept {
     return options & OPT_RANGE_END_REST;
   }

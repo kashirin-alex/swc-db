@@ -13,45 +13,6 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 
-void Value::move(Value &other) noexcept {
-  own = other.own;
-  comp = other.comp;
-  data = other.data;
-  size = other.size;
-  matcher = other.matcher;
-  other.comp = Condition::NONE;
-  other.data = nullptr;
-  other.matcher = nullptr;
-  other.size = 0;
-}
-
-void Value::set_counter(int64_t count, Condition::Comp comp_n) {
-  uint32_t len = Serialization::encoded_length_vi64(count);
-  uint8_t data_n[10];
-  uint8_t* ptr = data_n;
-  Serialization::encode_vi64(&ptr, count);
-  set(data_n, len, comp_n, true);
-}
-
-void Value::set(const uint8_t* data_n, const uint32_t size_n,
-                Condition::Comp comp_n, bool owner) {
-  free();
-  own   = owner;
-  comp = comp_n;
-  if((size = size_n))
-    data = own
-      ? static_cast<uint8_t*>(memcpy(new uint8_t[size], data_n, size))
-      : const_cast<uint8_t*>(data_n);
-}
-
-bool Value::equal(const Value &other) const noexcept {
-  return
-    size == other.size &&
-    ((!data && !other.data) ||
-     (data && other.data && Condition::mem_eq(data, other.data, size)));
-}
-
-
 struct MatcherPlainRE : Value::TypeMatcher {
   SWC_CAN_INLINE
   MatcherPlainRE(const uint8_t* data, uint32_t size)
@@ -159,5 +120,7 @@ void Value::display(Types::Column col_type, std::ostream& out,
     }
   }
 }
+
+
 
 }}}

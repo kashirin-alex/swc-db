@@ -17,7 +17,7 @@ namespace SWC { namespace Core {
 class MutexAtomic {
   public:
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   explicit MutexAtomic() noexcept : want(0) { }
 
   MutexAtomic(const MutexAtomic&)             = delete;

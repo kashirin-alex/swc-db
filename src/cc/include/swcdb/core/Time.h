@@ -61,7 +61,7 @@ struct Measure : std::chrono::time_point<ClockT> {
           : std::chrono::time_point<ClockT>(ClockT::now()) {
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   Measure(typename std::chrono::time_point<ClockT>::duration&& v) noexcept
           : std::chrono::time_point<ClockT>(v) {
   }

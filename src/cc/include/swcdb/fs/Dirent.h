@@ -8,6 +8,7 @@
 
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/Serialization.h"
 
 
 namespace SWC { namespace FS {
@@ -34,11 +35,30 @@ struct Dirent final  {
 
   std::string to_string() const;
 
-  size_t encoded_length() const noexcept;
+  SWC_CAN_INLINE
+  size_t encoded_length() const noexcept {
+    return Serialization::encoded_length_bytes(name.size())
+         + Serialization::encoded_length_vi64(last_modification_time)
+         + 1
+         + (is_dir ? 0 : Serialization::encoded_length_vi64(length));
+  }
 
-  void encode(uint8_t** bufp) const;
+  SWC_CAN_INLINE
+  void encode(uint8_t** bufp) const {
+    Serialization::encode_bytes(bufp, name.c_str(), name.size());
+    Serialization::encode_vi64(bufp, last_modification_time);
+    Serialization::encode_bool(bufp, is_dir);
+    if(!is_dir)
+      Serialization::encode_vi64(bufp, length);
+  }
 
-  void decode(const uint8_t** bufp, size_t* remainp);
+  SWC_CAN_INLINE
+  void decode(const uint8_t** bufp, size_t* remainp) {
+    name = Serialization::decode_bytes_string(bufp, remainp);
+    last_modification_time = Serialization::decode_vi64(bufp, remainp);
+    is_dir = Serialization::decode_bool(bufp, remainp);
+    length = is_dir ? 0 : Serialization::decode_vi64(bufp, remainp);
+  }
 
 };
 

@@ -67,7 +67,7 @@ struct Statistics {
   struct Metric : Core::MutexAtomic {
 
     struct Tracker : Time::Measure_ns {
-      SWC_CAN_INLINE
+      constexpr SWC_CAN_INLINE
       Tracker() noexcept
               : Time::Measure_ns(Time::Measure_ns::duration::zero()),
                 m(nullptr) {
@@ -80,6 +80,7 @@ struct Statistics {
       Metric* m;
     };
 
+    constexpr
     Metric() noexcept
       : m_error(0), m_count(0),
         m_min(0), m_max(0), m_total(0) {
@@ -107,6 +108,7 @@ struct Statistics {
     uint64_t m_total;
   };
 
+  constexpr
   Statistics(bool enabled) noexcept : enabled(enabled), fds_count(0) { }
   Statistics(const Statistics&)            = delete;
   Statistics(Statistics&&)                 = delete;

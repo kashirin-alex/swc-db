@@ -13,7 +13,7 @@ template<class T>
 class NotMovableSharedPtr : public std::shared_ptr<T> {
   public:
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   NotMovableSharedPtr() noexcept { }
 
   SWC_CAN_INLINE
