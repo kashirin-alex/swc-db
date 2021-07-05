@@ -67,14 +67,14 @@ class Timestamp {
     return sz;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     Serialization::encode_i8(bufp, comp);
     if(comp != Condition::NONE)
       Serialization::encode_i64(bufp, value);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void decode(const uint8_t** bufp, size_t* remainp) {
     comp = Condition::Comp(Serialization::decode_i8(bufp, remainp));
     if(comp != Condition::NONE)

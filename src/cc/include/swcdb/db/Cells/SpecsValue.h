@@ -38,38 +38,38 @@ class Value {
     set(data_n, size_n, comp_n, owner);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   explicit Value(const uint8_t* data_n, const uint32_t size_n,
                  Condition::Comp comp_n, bool owner=false)
                 : own(false), matcher(nullptr) {
     set(data_n, size_n, comp_n, owner);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   explicit Value(int64_t count, Condition::Comp comp_n)
                 : own(false), matcher(nullptr) {
     set_counter(count, comp_n);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   explicit Value(const Value &other)
                 : own(false), matcher(nullptr) {
     copy(other);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   Value& operator=(const Value& other) {
     copy(other);
     return *this;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   Value& operator=(Value&& other) noexcept {
     move(other);
     return *this;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void copy(const Value &other) {
     set(other.data, other.size, other.comp, true);
   }
@@ -101,22 +101,19 @@ class Value {
     set(reinterpret_cast<const uint8_t*>(data_n), size_n, comp_n, owner);
   }
 
-  constexpr
   void move(Value &other) noexcept;
 
-  constexpr
   void set_counter(int64_t count, Condition::Comp comp_n);
 
-  constexpr
   void set(const uint8_t* data_n, const uint32_t size_n,
            Condition::Comp comp_n, bool owner=false);
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   ~Value() {
     _free();
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void _free() {
     if(own && data)
       delete [] data;
@@ -124,7 +121,7 @@ class Value {
       delete matcher;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void free() {
     _free();
     data = nullptr;
@@ -150,7 +147,7 @@ class Value {
     return sz;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     Serialization::encode_i8(bufp, comp);
     if(comp != Condition::NONE) {
@@ -160,7 +157,7 @@ class Value {
     }
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void decode(const uint8_t** bufp, size_t* remainp, bool owner=false) {
     free();
     own = owner;
@@ -221,8 +218,9 @@ class Value {
 
 
 
-constexpr SWC_CAN_INLINE
+SWC_CAN_INLINE
 void Value::move(Value &other) noexcept {
+  free();
   own = other.own;
   comp = other.comp;
   data = other.data;
@@ -234,7 +232,7 @@ void Value::move(Value &other) noexcept {
   other.size = 0;
 }
 
-constexpr SWC_CAN_INLINE
+SWC_CAN_INLINE
 void Value::set_counter(int64_t count, Condition::Comp comp_n) {
   uint32_t len = Serialization::encoded_length_vi64(count);
   uint8_t data_n[10];
@@ -243,7 +241,7 @@ void Value::set_counter(int64_t count, Condition::Comp comp_n) {
   set(data_n, len, comp_n, true);
 }
 
-constexpr SWC_CAN_INLINE
+SWC_CAN_INLINE
 void Value::set(const uint8_t* data_n, const uint32_t size_n,
                 Condition::Comp comp_n, bool owner) {
   free();

@@ -351,7 +351,7 @@ class Mutable final {
     return it ? it.item() : nullptr;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void get(int32_t pos, DB::Cell::Key& key) const {
     if((pos < 0 && _size < size_t(-pos)) || size_t(pos) >= _size)
       return;
@@ -376,7 +376,7 @@ class Mutable final {
   }
 
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void takeout(size_t pos, Cell*& cell) {
     if(Iterator it = get<Iterator>(pos)) {
       _remove(*it.item());
@@ -385,29 +385,29 @@ class Mutable final {
     }
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void takeout_begin(size_t pos, Cell*& cell) {
     takeout(pos, cell);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void takeout_end(size_t pos, Cell*& cell) {
     takeout(_size - pos, cell);
   }
 
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void add_sorted(const Cell& cell, bool no_value=false) {
     add_sorted(new Cell(cell, no_value));
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void add_sorted(Cell* cell) {
     _add(*cell);
     _container.push_back(cell);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   size_t add_sorted(const uint8_t* ptr, size_t remain) {
     size_t count = 0;
     _bytes += remain;
@@ -481,7 +481,7 @@ class Mutable final {
   bool write_and_free(DynamicBuffer& cells, uint32_t threshold);
 
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void write(DynamicBuffer& cells) const {
     cells.ensure(_bytes);
     for(auto it = get<ConstIterator>(); it; ++it) {
@@ -592,21 +592,21 @@ class Mutable final {
     --_size;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void _insert(Iterator& it, const Cell& cell) {
     Cell* add = new Cell(cell);
     _add(*add);
     it.insert(add);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void _remove(Iterator& it) {
     _remove(*it.item());
     delete it.item();
     it.remove();
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void _remove(Iterator& it, size_t number, bool wdel = true) {
     if(wdel) {
       Iterator it_del(it);
@@ -618,7 +618,7 @@ class Mutable final {
     it.remove(number);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void _remove_overhead(Iterator& it, const DB::Cell::Key& key,
                         uint32_t revs) {
     while(it && key.equal(it.item()->key)) {

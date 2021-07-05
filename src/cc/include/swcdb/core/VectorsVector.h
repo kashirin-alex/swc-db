@@ -174,19 +174,19 @@ class VectorsVector : public std::vector<VectorT> {
       return *_item;
     }
 
-    constexpr SWC_CAN_INLINE
+    SWC_CAN_INLINE
     void insert(const value_type& value) {
        ensure();
       _item = _vector->insert(_item, value);
     }
 
-    constexpr SWC_CAN_INLINE
+    SWC_CAN_INLINE
     void insert(value_type&& value) {
        ensure();
       _item = _vector->insert(_item, std::move(value));
     }
 
-    constexpr SWC_CAN_INLINE
+    SWC_CAN_INLINE
     void ensure() {
       if(_vector->size() >= SIZE) {
         auto it_b = _vector->cbegin() + SPLIT;
@@ -206,7 +206,7 @@ class VectorsVector : public std::vector<VectorT> {
       }
     }
 
-    constexpr SWC_CAN_INLINE
+    SWC_CAN_INLINE
     void remove() noexcept {
       _item = _vector->erase(_item);
       if(_vector->empty() && _vectors.size() > 1) {
@@ -217,7 +217,7 @@ class VectorsVector : public std::vector<VectorT> {
       }
     }
 
-    constexpr SWC_CAN_INLINE
+    SWC_CAN_INLINE
     void remove(size_t number) noexcept {
       while(number) {
         if(_item == _vector->begin() && number >= _vector->size()) {
@@ -341,7 +341,7 @@ class VectorsVector : public std::vector<VectorT> {
   }
 
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void ensure() {
     if(VectorsT::empty() || VectorsT::back().size() >= SIZE) {
       VectorsT::emplace_back();
@@ -351,20 +351,20 @@ class VectorsVector : public std::vector<VectorT> {
   }
 
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void push_back(const value_type& value) {
     ensure();
     VectorsT::back().push_back(value);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void push_back(value_type&& value) {
     ensure();
     VectorsT::back().push_back(std::move(value));
   }
 
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void add(VectorsVector&& other) {
     VectorsT::insert(VectorsT::cend(), other.cbegin(), other.cend());
     other.clear();
@@ -372,7 +372,7 @@ class VectorsVector : public std::vector<VectorT> {
   }
 
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void split(size_t split_at, VectorsVector& to) {
     auto it = VectorsT::cbegin() + split_at;
     to.insert(to.cend(), it, VectorsT::cend());

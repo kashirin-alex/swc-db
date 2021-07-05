@@ -83,7 +83,7 @@ class Flags {
           + 1;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     Serialization::encode_vi64(bufp, limit);
     Serialization::encode_vi64(bufp, offset);
@@ -92,7 +92,7 @@ class Flags {
     Serialization::encode_i8(bufp, options);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void decode(const uint8_t** bufp, size_t* remainp) {
     limit = Serialization::decode_vi64(bufp, remainp);
     offset = Serialization::decode_vi64(bufp, remainp);

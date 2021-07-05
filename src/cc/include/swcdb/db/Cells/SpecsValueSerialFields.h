@@ -44,7 +44,7 @@ struct Field {
   constexpr SWC_CAN_INLINE
   Field(uint24_t fid) noexcept : fid(fid) { }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   Field(const uint8_t** bufp, size_t* remainp)
         : fid(Serialization::decode_vi24(bufp, remainp)) {
   }
@@ -59,7 +59,7 @@ struct Field {
 
   virtual void encode(uint8_t** bufp) const = 0;
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void encode(uint8_t** bufp, Type type) const {
     Serialization::encode_i8(bufp, type);
     Serialization::encode_vi24(bufp, fid);
@@ -226,7 +226,7 @@ struct Field_LIST_INT64 : Field {
   struct Item {
     Condition::Comp comp;
     int64_t         value;
-    constexpr SWC_CAN_INLINE
+    SWC_CAN_INLINE
     Item() noexcept { }
     constexpr SWC_CAN_INLINE
     Item(Condition::Comp comp, int64_t value) noexcept
