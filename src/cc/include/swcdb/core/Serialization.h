@@ -215,7 +215,7 @@ void encode_vi24(uint8_t** bufp, uint24_t val) {
 extern constexpr SWC_CAN_INLINE
 uint24_t decode_vi24(const uint8_t** bufp, size_t* remainp) {
   //SWC_DECODE_VI(uint24_t, bufp, remainp, 21, "vint24");
-  uint24_t n = 0; uint24_t tmp;
+  uint24_t n = 0; uint24_t tmp = 0;
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 14);
@@ -252,7 +252,7 @@ void encode_vi32(uint8_t** bufp, uint32_t val) {
 extern constexpr SWC_CAN_INLINE
 uint32_t decode_vi32(const uint8_t** bufp, size_t* remainp) {
   //SWC_DECODE_VI(uint32_t, bufp, remainp, 28, "vint32");
-  uint32_t n = 0; uint32_t tmp;
+  uint32_t n = 0; uint32_t tmp = 0;
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 14);
@@ -300,7 +300,7 @@ void encode_vi64(uint8_t** bufp, uint64_t val) {
 extern constexpr SWC_CAN_INLINE
 uint64_t decode_vi64(const uint8_t** bufp, size_t* remainp) {
   //SWC_DECODE_VI(uint64_t, bufp, remainp, 63, "vint64");
-  uint64_t n = 0; uint64_t tmp;
+  uint64_t n = 0; uint64_t tmp = 0;
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 0);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 7);
   SWC_DECODE_VI_1(n, tmp, bufp, remainp, 14);

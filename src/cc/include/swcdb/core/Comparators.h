@@ -567,7 +567,7 @@ bool sbs(const T p1, const T p2) noexcept {
 }
 
 template<>
-constexpr SWC_CAN_INLINE
+SWC_CAN_INLINE
 bool sbs(const long double p1, const long double p2) noexcept {
   return fmod(p2, p1) == 0;
 }
@@ -595,7 +595,7 @@ bool fo_sbs(const long double, const long double) noexcept {
 }
 
 template<typename T>
-extern constexpr SWC_CAN_INLINE
+extern SWC_CAN_INLINE
 bool is_matching(uint8_t comp, const T p1, const T p2) noexcept {
   switch (comp) {
 

@@ -123,7 +123,7 @@ class Interval final {
     was_set = true;
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   void expand(const int64_t& ts) {
     if(ts_earliest.empty() || !ts_earliest.is_matching(ts))
       ts_earliest.set(ts, Condition::GE);

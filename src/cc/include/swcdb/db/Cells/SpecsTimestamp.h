@@ -81,7 +81,7 @@ class Timestamp {
       value = Serialization::decode_i64(bufp, remainp);
   }
 
-  constexpr SWC_CAN_INLINE
+  SWC_CAN_INLINE
   bool is_matching(int64_t other) const noexcept {
     return Condition::is_matching(comp, value, other);
   }
