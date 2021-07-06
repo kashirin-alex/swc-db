@@ -270,8 +270,8 @@ class Vector {
   template<typename... ArgsT>
   SWC_CAN_INLINE
   void push_back(ArgsT&&... args) {
-    if(max_size() == _size)
-      throw std::out_of_range("Reached size_type limit!");
+    //if(max_size() == _size)
+    //  throw std::out_of_range("Reached size_type limit!");
     reserve();
     push_back_unsafe(std::forward<ArgsT>(args)...);
   }
@@ -286,8 +286,8 @@ class Vector {
   template<typename... ArgsT>
   SWC_CAN_INLINE
   reference emplace_back(ArgsT&&... args) {
-    if(max_size() == _size)
-      throw std::out_of_range("Reached size_type limit!");
+    //if(max_size() == _size)
+    //  throw std::out_of_range("Reached size_type limit!");
     reserve();
     return emplace_back_unsafe(std::forward<ArgsT>(args)...);
   }
@@ -302,15 +302,14 @@ class Vector {
 
   template<typename... ArgsT>
   SWC_CAN_INLINE
-  iterator insert(const_iterator it, ArgsT&&... args) {
-    size_type offset;
-    if(!_size || (offset = it - _data) >= _size)
+  iterator insert(size_type offset, ArgsT&&... args) {
+    if(offset >= _size)
       return &emplace_back(std::forward<ArgsT>(args)...);
 
     if(_cap == _size) {
-      if(max_size() == _size)
-        throw std::out_of_range("Reached size_type limit!");
       size_type remain = max_size() - _cap;
+      //if(!remain)
+      //  throw std::out_of_range("Reached size_type limit!");
       _cap += GROW_SZ ? (GROW_SZ < remain ? GROW_SZ : remain)
                       : (_size < remain ? _size : remain);
       _data = _allocate_insert(
@@ -326,10 +325,16 @@ class Vector {
 
   template<typename... ArgsT>
   SWC_CAN_INLINE
+  iterator insert(const_iterator it, ArgsT&&... args) {
+    return insert(it - _data, std::forward<ArgsT>(args)...);
+  }
+
+  template<typename... ArgsT>
+  SWC_CAN_INLINE
   iterator insert_unsafe(const_iterator it,
                          ArgsT&&... args) noexcept(simple_type) {
-    size_type offset;
-    return (!_size || (offset = it - _data) == _size)
+    size_type offset = it - _data;
+    return offset >= _size
       ? &emplace_back_unsafe(std::forward<ArgsT>(args)...)
       : _construct(
           _alter(_data + offset, (_size++) - offset, 1),
@@ -338,9 +343,8 @@ class Vector {
 
 
   SWC_CAN_INLINE
-  iterator insert(const_iterator it,
+  iterator insert(size_type offset,
                   const_iterator first, const_iterator last) {
-    size_type offset = it - _data;
     if(first == last)
       return _data + offset;
 
@@ -370,6 +374,13 @@ class Vector {
   }
 
   SWC_CAN_INLINE
+  iterator insert(const_iterator it,
+                  const_iterator first, const_iterator last) {
+    return insert(it - _data, first, last);
+  }
+
+
+  SWC_CAN_INLINE
   void assign(const_iterator first, const_iterator last) {
     clear();
     if(size_type sz = last - first) {
@@ -382,8 +393,7 @@ class Vector {
 
 
   SWC_CAN_INLINE
-  iterator erase(const_iterator it) noexcept(simple_type) {
-    size_type offset = it - _data;
+  iterator erase(size_type offset) noexcept(simple_type) {
     if(offset >= _size)
       return end();
 
@@ -395,6 +405,11 @@ class Vector {
     if(!simple_type)
       ptr->~value_type();
     return _data + offset;
+  }
+
+  SWC_CAN_INLINE
+  iterator erase(const_iterator it) noexcept(simple_type) {
+    return erase(it - _data);
   }
 
   SWC_CAN_INLINE

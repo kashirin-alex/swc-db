@@ -7,21 +7,16 @@
 #define swcdb_core_VectorsVector_h
 
 
-#include <vector>
-/*
-#include "swcdb/core/Vector.h"
-using VectorsT = Core::Vector<VectorT>;
-*/
-
 
 namespace SWC { namespace Core {
 
 
 
-template<typename VectorT, size_t SIZE, size_t GROW=SIZE/4, size_t SPLIT=SIZE/2>
-class VectorsVector : public std::vector<VectorT> {
-
-  using VectorsT = std::vector<VectorT>;
+template<typename VectorsT, typename VectorT,
+         typename VectorT::size_type SIZE,
+         typename VectorT::size_type GROW = SIZE/4,
+         typename VectorT::size_type SPLIT = SIZE/2>
+class VectorsVector : public VectorsT {
 
   public:
 
@@ -40,74 +35,234 @@ class VectorsVector : public std::vector<VectorT> {
 
 
   class ConstIterator final {
-    const VectorsT&                   _vectors;
-    typename VectorsT::const_iterator _vector;
-    typename VectorT::const_iterator  _item;
+    const VectorsT&               _vectors;
+    typename VectorsT::size_type  _pos_vec;
+    typename VectorT::size_type   _pos_item;
     public:
 
     constexpr SWC_CAN_INLINE
     ConstIterator(const VectorsT& _vectors) noexcept
-                  : _vectors(_vectors), _vector(_vectors.cbegin()),
-                    _item(_vector == _vectors.cend()
-                            ? typename VectorT::const_iterator() : _vector->cbegin()) {
+                  : _vectors(_vectors), _pos_vec(0), _pos_item(0) {
     }
 
     constexpr SWC_CAN_INLINE
     ConstIterator(const VectorsT& _vectors, size_t offset) noexcept
-                  : _vectors(_vectors), _vector(_vectors.cbegin()) {
-      for(; _vector != _vectors.cend(); ++_vector) {
-        if(!offset || offset < _vector->size()) {
-          _item = _vector->cbegin() + offset;
+                  : _vectors(_vectors), _pos_vec(0) {
+      for(; _pos_vec < _vectors.size(); ++_pos_vec) {
+        if(offset >= _vectors[_pos_vec].size()) {
+          offset -= _vectors[_pos_vec].size();
+        } else {
+          _pos_item = offset;
           break;
         }
-        offset -= _vector->size();
       }
     }
 
     constexpr SWC_CAN_INLINE
     ConstIterator(const ConstIterator& other) noexcept
                   : _vectors(other._vectors),
-                    _vector(other._vector), _item(other._item) {
+                    _pos_vec(other._pos_vec), _pos_item(other._pos_item) {
     }
 
     constexpr SWC_CAN_INLINE
     ConstIterator& operator=(const ConstIterator& other) noexcept {
-      _vector = other._vector;
-      _item = other._item;
+      _pos_vec = other._pos_vec;
+      _pos_item = other._pos_item;
       return *this;
     }
 
     constexpr SWC_CAN_INLINE
     ConstIterator& at(size_t offset) noexcept {
-      for(_vector=_vectors.cbegin(); _vector != _vectors.cend(); ++_vector) {
-        if(!offset || offset < _vector->size()) {
-          _item = _vector->cbegin() + offset;
+      for(_pos_vec = 0; _pos_vec < _vectors.size(); ++_pos_vec) {
+        if(offset >= _vectors[_pos_vec].size()) {
+          offset -= _vectors[_pos_vec].size();
+        } else {
+          _pos_item = offset;
           break;
         }
-        offset -= _vector->size();
       }
       return *this;
     }
 
     constexpr SWC_CAN_INLINE
     operator bool() const noexcept {
-      return _vector != _vectors.cend() && _item != _vector->cend();
+      return _pos_vec != _vectors.size() &&
+             _pos_item != _vectors[_pos_vec].size();
     }
 
     constexpr SWC_CAN_INLINE
     void operator++() noexcept {
-      if(++_item == _vector->cend() && ++_vector != _vectors.cend())
-        _item = _vector->cbegin();
+      if(++_pos_item == _vectors[_pos_vec].size() &&
+         ++_pos_vec != _vectors.size())
+        _pos_item = 0;
     }
 
     constexpr SWC_CAN_INLINE
     const value_type& item() const noexcept {
-      return *_item;
+      return _vectors[_pos_vec][_pos_item];
     }
 
   };
 
 
+  /* Position by vector index */
+  class Iterator final {
+    VectorsT&                     _vectors;
+    typename VectorsT::size_type  _pos_vec;
+    typename VectorT::size_type   _pos_item;
+    public:
+
+    constexpr SWC_CAN_INLINE
+    Iterator(VectorsT& _vectors) noexcept
+            : _vectors(_vectors), _pos_vec(0), _pos_item(0) {
+    }
+
+    constexpr SWC_CAN_INLINE
+    Iterator(VectorsT& _vectors, size_t offset) noexcept
+            : _vectors(_vectors), _pos_vec(0) {
+      for(; _pos_vec < _vectors.size(); ++_pos_vec) {
+        if(offset >= _vectors[_pos_vec].size()) {
+          offset -= _vectors[_pos_vec].size();
+        } else {
+          _pos_item = offset;
+          break;
+        }
+      }
+    }
+
+    constexpr SWC_CAN_INLINE
+    Iterator(const Iterator& other) noexcept
+            : _vectors(other._vectors),
+              _pos_vec(other._pos_vec), _pos_item(other._pos_item) {
+    }
+
+    constexpr SWC_CAN_INLINE
+    Iterator& operator=(const Iterator& other) noexcept {
+      _pos_vec = other._pos_vec;
+      _pos_item = other._pos_item;
+      return *this;
+    }
+
+    constexpr SWC_CAN_INLINE
+    Iterator& at(size_t offset) noexcept {
+      for(_pos_vec = 0; _pos_vec < _vectors.size(); ++_pos_vec) {
+        if(offset >= _vectors[_pos_vec].size()) {
+          offset -= _vectors[_pos_vec].size();
+        } else {
+          _pos_item = offset;
+          break;
+        }
+      }
+      return *this;
+    }
+
+    constexpr SWC_CAN_INLINE
+    operator bool() const noexcept {
+      return _pos_vec != _vectors.size() &&
+             _pos_item != _vectors[_pos_vec].size();
+    }
+
+    constexpr SWC_CAN_INLINE
+    void operator++() noexcept {
+      if(++_pos_item == _vectors[_pos_vec].size() &&
+         ++_pos_vec != _vectors.size())
+        _pos_item = 0;
+    }
+
+    constexpr SWC_CAN_INLINE
+    value_type& item() noexcept {
+      return _vectors[_pos_vec][_pos_item];
+    }
+
+    SWC_CAN_INLINE
+    void insert(const value_type& value) {
+       ensure();
+      _vectors[_pos_vec].insert(
+        _vectors[_pos_vec].cbegin() + _pos_item, value);
+      //_vectors[_pos_vec].insert(_pos_item, value);
+    }
+
+    SWC_CAN_INLINE
+    void insert(value_type&& value) {
+       ensure();
+      _vectors[_pos_vec].insert(
+        _vectors[_pos_vec].cbegin() + _pos_item, std::move(value));
+      //_vectors[_pos_vec].insert(_pos_item, std::move(value));
+    }
+
+    SWC_CAN_INLINE
+    void ensure() {
+      if(_vectors[_pos_vec].size() >= SIZE) {
+        auto n_vector = _vectors.insert(
+          _vectors.cbegin() + _pos_vec + 1, VectorT());
+        //auto n_vector = _vectors.insert(_pos_vec + 1, VectorT());
+        n_vector->reserve(SPLIT + 1);
+        auto it_b = _vectors[_pos_vec].cbegin() + SPLIT;
+        n_vector->assign         (it_b, _vectors[_pos_vec].cend());
+        _vectors[_pos_vec].erase (it_b, _vectors[_pos_vec].cend());
+        if(_pos_item >= SPLIT) {
+          ++_pos_vec;
+          _pos_item -= SPLIT;
+        }
+
+      } else if(size_t sz = need_reserve(_vectors[_pos_vec])) {
+        _vectors[_pos_vec].reserve(sz);
+      }
+    }
+
+    SWC_CAN_INLINE
+    void remove() noexcept {
+      _vectors[_pos_vec].erase(_vectors[_pos_vec].cbegin() + _pos_item);
+      //_vectors[_pos_vec].erase(_pos_item);
+      if(_vectors[_pos_vec].empty() && _vectors.size() > 1) {
+        _vectors.erase(_vectors.cbegin() + _pos_vec);
+        //_vectors.erase(_pos_vec);
+        if(_pos_vec != _vectors.size())
+          _pos_item = 0;
+      } else if(_pos_item == _vectors[_pos_vec].size() &&
+                ++_pos_vec != _vectors.size()) {
+        _pos_item = 0;
+      }
+    }
+
+    SWC_CAN_INLINE
+    void remove(size_t number) noexcept {
+      while(number) {
+        if(_pos_item == 0 && number >= _vectors[_pos_vec].size()) {
+          if(_vectors.size() == 1) {
+            _vectors[_pos_vec].clear();
+            _pos_item = 0;
+            return;
+          }
+          number -= _vectors[_pos_vec].size();
+          _vectors.erase(_vectors.cbegin() + _pos_vec);
+          //_vectors.erase(_pos_vec);
+
+        } else {
+          size_t avail = _vectors[_pos_vec].size() - _pos_item;
+          if(avail > number) {
+            _vectors[_pos_vec].erase(
+              _vectors[_pos_vec].cbegin() + _pos_item,
+              _vectors[_pos_vec].cbegin() + _pos_item + number);
+            return;
+          }
+          number -= avail;
+          _vectors[_pos_vec].erase(
+              _vectors[_pos_vec].cbegin() + _pos_item,
+              _vectors[_pos_vec].cend());
+          ++_pos_vec;
+        }
+
+        if(_pos_vec == _vectors.size())
+          return;
+        _pos_item = 0;
+      }
+    }
+
+  };
+  /**/
+
+  /* Position by vector iterator
   class Iterator final {
     VectorsT&                   _vectors;
     typename VectorsT::iterator _vector;
@@ -125,11 +280,12 @@ class VectorsVector : public std::vector<VectorT> {
     Iterator(VectorsT& _vectors, size_t offset) noexcept
             : _vectors(_vectors), _vector(_vectors.begin()) {
       for(; _vector != _vectors.cend(); ++_vector) {
-        if(!offset || offset < _vector->size()) {
+        if(offset >= _vector->size()) {
+          offset -= _vector->size();
+        } else {
           _item = _vector->begin() + offset;
           break;
         }
-        offset -= _vector->size();
       }
     }
 
@@ -149,11 +305,12 @@ class VectorsVector : public std::vector<VectorT> {
     constexpr SWC_CAN_INLINE
     Iterator& at(size_t offset) noexcept {
       for(_vector=_vectors.begin(); _vector != _vectors.cend(); ++_vector) {
-        if(!offset || offset < _vector->size()) {
+        if(offset >= _vector->size()) {
+          offset -= _vector->size();
+        } else {
           _item = _vector->begin() + offset;
           break;
         }
-        offset -= _vector->size();
       }
       return *this;
     }
@@ -247,7 +404,7 @@ class VectorsVector : public std::vector<VectorT> {
     }
 
   };
-
+  */
 
 
 
@@ -300,16 +457,16 @@ class VectorsVector : public std::vector<VectorT> {
   constexpr SWC_CAN_INLINE
   size_t size_of_internal() const noexcept {
     size_t sz = VectorsT::capacity() * sizeof(VectorT);
-    for(auto& vector : *this)
-      sz += vector.capacity() * sizeof(value_type);
+    for(auto& vec : *this)
+      sz += vec.capacity() * sizeof(value_type);
     return sz;
   }
 
   constexpr SWC_CAN_INLINE
   size_t count() const noexcept {
     size_t sz = 0;
-    for(auto& vector : *this)
-      sz += vector.size();
+    for(auto& vec : *this)
+      sz += vec.size();
     return sz;
   }
 
@@ -382,8 +539,8 @@ class VectorsVector : public std::vector<VectorT> {
   void print(std::ostream& out) const {
     out << "VectorsVector(" << VectorsT::size() << '/' << VectorsT::capacity()
         << " vectors=[";
-    for(auto& vector : *this)
-      out << vector.size() << '/' << vector.capacity() << ',';
+    for(auto& vec : *this)
+      out << vec.size() << '/' << vec.capacity() << ',';
     out << "])";
   }
 

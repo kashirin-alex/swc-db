@@ -9,6 +9,7 @@
 
 
 #include "swcdb/db/Cells/ReqScan.h"
+#include "swcdb/core/Vector.h"
 #include "swcdb/core/VectorsVector.h"
 
 
@@ -17,11 +18,23 @@ namespace SWC { namespace DB { namespace Cells {
 
 class Mutable final {
 
-  typedef Core::VectorsVector<std::vector<Cell*>, 6144> Container;
-
   /*
-  typedef Core::VectorsVector<Core::Vector<Cell*, uint32_t>, 6144> Container;
+  using VectorT = std::vector<Cell*>;
+  typedef Core::VectorsVector<
+    std::vector<VectorT>,
+    VectorT,
+    6144
+  > Container;
   */
+
+  /**/
+  using VectorT = Core::Vector<Cell*, uint32_t>;
+  typedef Core::VectorsVector<
+    Core::Vector<VectorT, uint32_t, 1>,
+    VectorT,
+    6144
+  > Container;
+  /**/
 
   /*
   #include "swcdb/core/ArraysArraysVector.h"
