@@ -10,6 +10,7 @@
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Buffer.h"
+#include "swcdb/core/Vector.h"
 #include "swcdb/db/Cells/Mutable.h"
 
 
@@ -17,9 +18,9 @@ namespace SWC { namespace DB { namespace Cells {
 
 
 
-class MutableVec final : private std::vector<Mutable*> {
+class MutableVec final : private Core::Vector<Mutable*> {
 
-  typedef std::vector<Mutable*> Vec;
+  typedef Core::Vector<Mutable*> Vec;
 
   public:
 

@@ -23,7 +23,7 @@ class Mutable final {
   typedef Core::VectorsVector<
     std::vector<VectorT>,
     VectorT,
-    6144
+    8192
   > Container;
   */
 
@@ -32,7 +32,7 @@ class Mutable final {
   typedef Core::VectorsVector<
     Core::Vector<VectorT, uint32_t, 1>,
     VectorT,
-    6144
+    8192
   > Container;
   /**/
 

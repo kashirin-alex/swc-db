@@ -7,89 +7,12 @@
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Vector.h"
+#include "swcdb/core/VectorsVector.h"
+
 #include <map>
 
 namespace SWC {
 
-/*
-template<typename T>
-void test_vector_huge(size_t sz) {
-  uint64_t took;
-  Time::Measure_ns track;
-
-  /// Core::Vector<T>
-  Core::Vector<T> swc_vec;
-  for(T n=sz; n; --n)
-    swc_vec.add(n);
-  SWC_ASSERT(sz == swc_vec.size());
-  took = track.elapsed();
-  std::cout << " swc_vec add: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-
-  track.restart();
-  for(T n=1; n <= sz; ++n) {
-    const T* p = swc_vec.cfind_(n);
-    SWC_ASSERT(p && *p == n);
-  }
-  took = track.elapsed();
-  std::cout << " swc_vec cfind_: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-
-  track.restart();
-  for(T n=1; n <= sz; ++n) {
-    T* p = swc_vec.find(n);
-    SWC_ASSERT(p && *p == n);
-  }
-  took = track.elapsed();
-  std::cout << " swc_vec find: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-
-  track.restart();
-  for(T n=1; n <= sz; ++n) {
-    const T* p = swc_vec.cfind(n);
-    SWC_ASSERT(p && *p == n);
-  }
-  took = track.elapsed();
-  std::cout << " swc_vec cfind: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-
-  /// std::unordered_map
-  track.restart();
-  std::unordered_map<T, T> std_unomap;
-  for(T n=sz; n; --n)
-    std_unomap[n] = n;
-  SWC_ASSERT(sz == std_unomap.size());
-  took = track.elapsed();
-  std::cout << " std_unomap add: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-  track.restart();
-  for(T n=1; n <= sz; ++n) {
-    auto it = std_unomap.find(n);
-    SWC_ASSERT(it != std_unomap.end() && it->second == n);
-  }
-  took = track.elapsed();
-  std::cout << " std_unomap find: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-
-  /// std::map
-  track.restart();
-  std::map<T, T> std_map;
-  for(T n=sz; n; --n)
-    std_map[n] = n;
-  SWC_ASSERT(sz == std_map.size());
-  took = track.elapsed();
-  std::cout << " std_map add: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-  track.restart();
-  for(T n=1; n <= sz; ++n) {
-    auto it = std_map.find(n);
-    SWC_ASSERT(it != std_map.end() && it->second == n);
-  }
-  took = track.elapsed();
-  std::cout << " std_map find: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
-
-}
-*/
 
 template<typename VecT, typename T = typename  VecT::value_type>
 void test_check_eq(const VecT& vec, size_t sz) {
@@ -102,8 +25,9 @@ void test_check_eq(const VecT& vec, size_t sz) {
   }
 }
 
-template<typename VecT, typename T = typename  VecT::value_type>
-void test_vector(const size_t sz) {
+template<typename VecT, typename T = typename VecT::value_type>
+void test_vector(const typename VecT::size_type _sz) {
+  const size_t sz = _sz;
 
   // ctor arg
   {
@@ -356,6 +280,107 @@ void test_vector(const size_t sz) {
 
 
 
+template<typename VecT, typename T = typename  VecT::value_type>
+void test_checkbig_eq(const VecT& vec, size_t sz) {
+  auto it = vec.GetConstIterator();
+  for(T n=sz; n; --n, ++it) {
+    if(n != it.item()) {
+      std::cout << "n=" << n << " it.item()=" << it.item() << std::endl;
+      SWC_ASSERT(n == it.item());
+    }
+  }
+}
+
+template<typename VecT, typename T = typename VecT::value_type>
+void test_big_vector(const typename VecT::size_type _sz) {
+  const size_t sz = _sz;
+
+  // push_back
+  {
+  Time::Measure_ns track;
+  VecT vec;
+  for(T n=sz; n; --n)
+    vec.push_back(n);
+  SWC_ASSERT(sz == vec.count());
+  uint64_t took = track.elapsed();
+  std::cout << typeid(VecT).name() << " cp push_back: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
+  test_checkbig_eq(vec, sz);
+  }
+
+  {
+  Time::Measure_ns track;
+  VecT vec;
+  for(T n=sz; n; --n) {
+    T v(n);
+    vec.push_back(std::move(v));
+  }
+  SWC_ASSERT(sz == vec.count());
+  uint64_t took = track.elapsed();
+  std::cout << typeid(VecT).name() << " mv push_back: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
+  test_checkbig_eq(vec, sz);
+  }
+
+
+  // cp insert at it
+  {
+  Time::Measure_ns track;
+  VecT vec;
+  vec.push_back(T(1));
+  auto it = vec.GetIterator();
+  for(T n=1; n < sz; )
+    it.insert(++n);
+  SWC_ASSERT(sz == vec.count());
+  uint64_t took = track.elapsed();
+  std::cout << typeid(VecT).name() << " cp insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
+  test_checkbig_eq(vec, sz);
+  }
+
+  // mv insert at it
+  {
+  Time::Measure_ns track;
+  VecT vec;
+  vec.push_back(T(1));
+  auto it = vec.GetIterator();
+  for(T n=1; n < sz; ) {
+    T v(++n);
+    it.insert(std::move(v));
+    //std::cout << n << " ?= " << vec.front() << std::endl;
+  }
+  SWC_ASSERT(sz == vec.count());
+  uint64_t took = track.elapsed();
+  std::cout << typeid(VecT).name() << " mv insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
+  test_checkbig_eq(vec, sz);
+
+
+  // GetConstIterator at size/2
+  track.restart();
+  auto cit = vec.GetConstIterator(sz/2);
+  SWC_ASSERT(cit && sz/2 == cit.item());
+  took = track.elapsed();
+  std::cout << typeid(VecT).name() << " GetConstIterator: elapse=" <<  took << " avg=" << (took/(sz/2)) << std::endl;
+  
+  // GetIterator at size/2
+  track.restart();
+  auto mit = vec.GetIterator(sz/2);
+  SWC_ASSERT(mit && sz/2 == mit.item());
+  took = track.elapsed();
+  std::cout << typeid(VecT).name() << " GetIterator: elapse=" <<  took << " avg=" << (took/(sz/2)) << std::endl;
+  
+  // GetConstIterator at size/2
+  track.restart();
+  auto cit2 = vec.GetConstIterator(sz/2);
+  SWC_ASSERT(cit2 && sz/2 == cit2.item());
+  took = track.elapsed();
+  std::cout << typeid(VecT).name() << " GetConstIterator: elapse=" <<  took << " avg=" << (took/(sz/2)) << std::endl;
+  
+  }
+}
+
+
+
+
+
+
 template<typename VecT>
 void test_vector(size_t sz, uint8_t probes) {
   std::cout << std::endl << "Testing with size=" << sz << std::endl;
@@ -363,6 +388,21 @@ void test_vector(size_t sz, uint8_t probes) {
   Time::Measure_ns track;
   for(uint8_t n=0; n<probes; ++n)
     SWC::test_vector<VecT>(sz);
+  uint64_t took = track.elapsed();
+
+  std::cout << typeid(VecT).name()
+            << " sizeof=" << sizeof(VecT)
+            << " elapse=" << took
+            << " avg=" << (took/sz) << std::endl;
+}
+
+template<typename VecT>
+void test_big_vector(size_t sz, uint8_t probes) {
+  std::cout << std::endl << "Testing with size=" << sz << std::endl;
+
+  Time::Measure_ns track;
+  for(uint8_t n=0; n<probes; ++n)
+    SWC::test_big_vector<VecT>(sz);
   uint64_t took = track.elapsed();
 
   std::cout << typeid(VecT).name()
@@ -567,6 +607,28 @@ int main() {
   SWC::test_vector< SWC::Core::Vector<Type2, uint16_t>          >(UINT16_MAX/4, probes);
   SWC::test_vector< SWC::Core::Vector<Type2, uint16_t, 4096>    >(UINT16_MAX/4, probes);
 
+
+
+  // uint64_t big-vector
+  using VectorT1 = std::vector<uint64_t>;
+  typedef SWC::Core::VectorsVector<
+    std::vector<VectorT1>,
+    VectorT1,
+    1536
+  > Container1;
+
+  using VectorT2 = SWC::Core::Vector<uint64_t, uint32_t>;
+  typedef SWC::Core::VectorsVector<
+    SWC::Core::Vector<VectorT2, uint32_t, 1>,
+    VectorT2,
+    1536
+  > Container2;
+  
+  SWC::test_big_vector< Container1 >(100000, probes);
+  SWC::test_big_vector< Container2 >(100000, probes);
+
+  SWC::test_big_vector< Container1 >(10000000, probes);
+  SWC::test_big_vector< Container2 >(10000000, probes);
 
   std::cout << " OK! \n";
   return 0;

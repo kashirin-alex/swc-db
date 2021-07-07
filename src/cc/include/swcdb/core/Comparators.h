@@ -8,6 +8,7 @@
 #define swcdb_core_Comparators_h
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/Vector.h"
 #include <cmath>
 #include <re2/re2.h>
 
@@ -250,7 +251,7 @@ bool sbs(const uint8_t* p1, uint32_t p1_len,
          const uint8_t* p2, uint32_t p2_len) noexcept {
   if(p1_len > p2_len)
     return false;
-  std::vector<const uint8_t*> found(p1_len, nullptr);
+  Core::Vector<const uint8_t*> found(p1_len, nullptr);
   const uint8_t* p2_end = p2 + p2_len;
   for(const uint8_t* p1_end = p1 + p1_len; p1 < p1_end; ++p1) {
     for(const uint8_t* ptr = p2; ; ) {

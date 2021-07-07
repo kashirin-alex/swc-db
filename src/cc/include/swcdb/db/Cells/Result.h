@@ -16,15 +16,18 @@ namespace SWC { namespace DB { namespace Cells {
 class Result final : private std::vector<Cell*> {
   public:
 
-  using std::vector<Cell*>::empty;
-  using std::vector<Cell*>::capacity;
-  using std::vector<Cell*>::reserve;
-  using std::vector<Cell*>::size;
-  using std::vector<Cell*>::back;
-  using std::vector<Cell*>::front;
-  using std::vector<Cell*>::begin;
-  using std::vector<Cell*>::end;
-  using std::vector<Cell*>::operator[];
+  using Vec = std::vector<Cell*>;
+  using Vec::empty;
+  using Vec::capacity;
+  using Vec::reserve;
+  using Vec::size;
+  using Vec::back;
+  using Vec::front;
+  using Vec::begin;
+  using Vec::end;
+  using Vec::cbegin;
+  using Vec::cend;
+  using Vec::operator[];
 
   size_t            bytes;
   uint64_t          ttl;
@@ -36,7 +39,7 @@ class Result final : private std::vector<Cell*> {
 
   SWC_CAN_INLINE
   explicit Result(Result&& other) noexcept
-                  : std::vector<Cell*>(std::move(other)),
+                  : Vec(std::move(other)),
                     bytes(other.bytes), ttl(other.ttl) {
     other.bytes = 0;
   }
@@ -96,10 +99,10 @@ void Result::free() {
 SWC_CAN_INLINE
 void Result::take(Result& other) {
   if(empty()) {
-    std::vector<Cell*>::operator=(std::move(other));
+    Vec::operator=(std::move(other));
     bytes = other.bytes;
   } else {
-    insert(end(), other.begin(), other.end());
+    insert(cend(), other.cbegin(), other.cend());
     other.clear();
     bytes += other.bytes;
   }
@@ -127,7 +130,7 @@ size_t Result::add(const uint8_t* ptr, size_t remain) {
 
 SWC_CAN_INLINE
 Cell* Result::takeout_begin(size_t idx) {
-  auto it = begin() + idx;
+  auto it = cbegin() + idx;
   Cell* cell = *it;
   erase(it);
   bytes -= cell->encoded_length();
@@ -136,7 +139,7 @@ Cell* Result::takeout_begin(size_t idx) {
 
 SWC_CAN_INLINE
 Cell* Result::takeout_end(size_t idx) {
-  auto it = end() - idx;
+  auto it = cend() - idx;
   Cell* cell = *it;
   erase(it);
   bytes -= cell->encoded_length();
