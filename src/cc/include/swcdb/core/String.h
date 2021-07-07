@@ -35,8 +35,8 @@ std::string format_list(const SequenceT &seq, const char *sep = ", ") {
   if(seq.empty())
     return "[]";
 
-  auto it = seq.begin();
-  auto end = seq.end();
+  auto it = seq.cbegin();
+  auto end = seq.cend();
 
   std::ostringstream out;
   out << '[';

@@ -40,7 +40,7 @@ void Group::add_host(Comm::EndPoints& new_endpoints) {
 
 Hosts Group::get_hosts() {
   Core::MutexSptd::scope lock(m_mutex);
-  return Hosts(begin(), end());
+  return Hosts(cbegin(), cend());
 }
 
 bool Group::is_in_group(const Comm::EndPoint& endpoint) noexcept {
@@ -69,7 +69,7 @@ void Group::apply_endpoints(Comm::EndPoints& to) {
 
   for(auto& endpoints : *this) {
     for(auto& point : endpoints) {
-      if(std::find(to.begin(), to.end(), point) == to.end())
+      if(std::find(to.cbegin(), to.cend(), point) == to.cend())
         to.push_back(point);
     }
   }
@@ -78,7 +78,7 @@ void Group::apply_endpoints(Comm::EndPoints& to) {
 void Group::_get_host(const Comm::EndPoint& point,
                       Comm::EndPoints*& found_host) noexcept {
   for(auto& points : *this) {
-    if(std::find(points.begin(), points.end(), point) != points.end()) {
+    if(std::find(points.cbegin(), points.cend(), point) != points.cend()) {
       found_host = &points;
       return;
     }
@@ -244,7 +244,7 @@ void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
 
 Groups::Vec Groups::get_groups() {
   Core::MutexSptd::scope lock(m_mutex);
-  return Vec(begin(), end());
+  return Vec(cbegin(), cend());
 }
 
 void Groups::hosts(uint8_t role, cid_t cid, Hosts& hosts,
@@ -272,7 +272,7 @@ Groups::Vec Groups::get_groups(const Comm::EndPoints& endpoints) {
   for(auto& group : *this) {
     for(auto& endpoint : endpoints) {
       if(group->is_in_group(endpoint) &&
-         std::find(hgroups.begin(), hgroups.end(), group) == hgroups.end())
+         std::find(hgroups.cbegin(), hgroups.cend(), group) == hgroups.cend())
         hgroups.push_back(group);
     }
   }
@@ -308,7 +308,7 @@ void Groups::print(std::ostream& out) {
 void Groups::add(Groups::GroupHost&& g_host) {
   Core::MutexSptd::scope lock(m_mutex);
 
-  for(auto it=m_active_g_host.begin(); it != m_active_g_host.end(); ++it) {
+  for(auto it=m_active_g_host.begin(); it != m_active_g_host.cend(); ++it) {
     if(Comm::has_endpoint(g_host.endpoints, it->endpoints))
       return;
     if(g_host.role == it->role &&
@@ -324,7 +324,7 @@ void Groups::add(Groups::GroupHost&& g_host) {
 void Groups::remove(const Comm::EndPoints& endpoints) {
   Core::MutexSptd::scope lock(m_mutex);
 
-  for(auto it=m_active_g_host.begin(); it != m_active_g_host.end(); ) {
+  for(auto it=m_active_g_host.cbegin(); it != m_active_g_host.cend(); ) {
     if(Comm::has_endpoint(endpoints, it->endpoints))
       m_active_g_host.erase(it);
     else

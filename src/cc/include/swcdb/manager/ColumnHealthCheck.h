@@ -66,11 +66,11 @@ class ColumnHealthCheck final
 
     typedef std::shared_ptr<ColumnMerger>   Ptr;
     const ColumnHealthCheck::Ptr            col_checker;
-    std::vector<Range::Ptr>                 m_ranges;
+    Core::Vector<Range::Ptr>                m_ranges;
     DB::Cells::Result                       cells;
 
     ColumnMerger(const ColumnHealthCheck::Ptr& col_checker,
-                 std::vector<Range::Ptr>&& ranges) noexcept;
+                 Core::Vector<Range::Ptr>&& ranges) noexcept;
 
     //~ColumnMerger() { }
 
@@ -88,7 +88,7 @@ class ColumnHealthCheck final
       const ColumnMerger::Ptr                 col_merger;
 
       RangesMerger(const ColumnMerger::Ptr& col_merger,
-                   std::vector<Range::Ptr>&& ranges) noexcept;
+                   Core::Vector<Range::Ptr>&& ranges) noexcept;
 
       //~RangesMerger() { }
 
@@ -99,13 +99,13 @@ class ColumnHealthCheck final
       private:
       Core::MutexSptd           m_mutex;
       int                       m_err;
-      std::vector<Range::Ptr>   m_ranges;
-      std::vector<Range::Ptr>   m_ready;
+      Core::Vector<Range::Ptr>  m_ranges;
+      Core::Vector<Range::Ptr>  m_ready;
     };
 
     private:
     Core::MutexSptd                 m_mutex;
-    std::vector<RangesMerger::Ptr>  m_mergers;
+    Core::Vector<RangesMerger::Ptr> m_mergers;
   };
 
 
@@ -124,13 +124,13 @@ class ColumnHealthCheck final
   private:
   Core::StateRunning              m_check;
   Core::MutexSptd                 m_mutex;
-  std::vector<RangerCheck::Ptr>   m_checkers;
-  std::vector<Range::Ptr>         m_mergeable_ranges;
+  Core::Vector<RangerCheck::Ptr>  m_checkers;
+  Core::Vector<Range::Ptr>        m_mergeable_ranges;
 
 };
 
 
-typedef std::vector<ColumnHealthCheck::Ptr> ColumnHealthChecks;
+typedef Core::Vector<ColumnHealthCheck::Ptr> ColumnHealthChecks;
 
 
 }}

@@ -296,7 +296,7 @@ Property::Value::Ptr ParserConfig::get_default(const std::string& name) {
 
 void ParserConfig::remove(const std::string& name) {
   auto it = options.find(name);
-  if(it != options.end()) {
+  if(it != options.cend()) {
     if(own)
       delete it->second.value;
     options.erase(it);
@@ -486,7 +486,7 @@ void Parser::parse_line(const std::string& line) {
 
   name.erase(std::remove_if(name.begin(), name.end(),
                 [](unsigned char x){return std::isspace(x);}),
-            name.end());
+            name.cend());
 
   std::string value = line.substr(at+1);
   cmt = value.find_first_of("#"); // remove followup comment
@@ -504,7 +504,7 @@ void Parser::parse_line(const std::string& line) {
     // remove spaces
     value.erase(std::remove_if(value.begin(), value.end(),
                   [](unsigned char x){return std::isspace(x);}),
-                value.end());
+                value.cend());
   }
   parse_opt(name+"="+value); // << input must be NAME=VALUE !
 

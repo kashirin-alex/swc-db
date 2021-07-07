@@ -37,7 +37,7 @@ Key::Key(const Key& other) : std::vector<Fraction>(other) { }
 
 void Key::copy(const Key &other) {
   clear();
-  assign(other.begin(), other.end());
+  assign(other.cbegin(), other.cend());
 }
 
 bool Key::equal(const Key &other) const noexcept {
@@ -50,7 +50,7 @@ void Key::set(const DB::Cell::Key &cell_key, Condition::Comp comp) {
 
   uint32_t len;
   const uint8_t* ptr = cell_key.data;
-  for(auto it=begin(); it != end(); ++it) {
+  for(auto it=begin(); it != cend(); ++it) {
     it->comp = comp;
     if((len = Serialization::decode_vi32(&ptr))) {
       it->append(reinterpret_cast<const char*>(ptr), len);
@@ -75,31 +75,31 @@ Fraction& Key::add(const char* buf, uint32_t len,
 
 
 Fraction& Key::insert(uint32_t idx, Fraction&& other) {
-  return *emplace(begin() + idx, std::move(other));
+  return *emplace(cbegin() + idx, std::move(other));
 }
 
 Fraction& Key::insert(uint32_t idx, std::string&& fraction,
                       Condition::Comp comp) {
-  return *emplace(begin() + idx, std::move(fraction), comp);
+  return *emplace(cbegin() + idx, std::move(fraction), comp);
 }
 
 Fraction& Key::insert(uint32_t idx, const char* buf, uint32_t len,
                       Condition::Comp comp) {
-  return *emplace(begin() + idx, buf, len, comp);
+  return *emplace(cbegin() + idx, buf, len, comp);
 }
 
 
 void Key::get(DB::Cell::Key& key) const {
   key.free();
-  for(auto it=begin(); it != end(); ++it)
+  for(auto it = cbegin(); it != cend(); ++it)
     key.add(*it);
 }
 
 void Key::remove(uint32_t idx, bool recursive) {
   if(recursive)
-    erase(begin()+idx, end());
+    erase(cbegin()+idx, cend());
   else
-    erase(begin()+idx);
+    erase(cbegin()+idx);
 }
 
 std::string Key::to_string() const {

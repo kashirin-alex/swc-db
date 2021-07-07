@@ -30,9 +30,9 @@ void MutableVec::add_raw(const Cell& cell) {
     return add_sorted(cell);
 
   Mutable* cells;
-  for(auto it = begin(); it != end();) {
+  for(auto it = cbegin(); it != cend();) {
     cells = *it;
-    if(++it == end() ||
+    if(++it == cend() ||
        DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
       cells->add_raw(cell);
@@ -50,9 +50,9 @@ void MutableVec::add_raw(const Cell& cell,
     *offset_itp = 0;
 
   Mutable* cells;
-  for(auto it = begin()+*offset_itp; it != end(); ++*offset_itp, *offsetp=0) {
+  for(auto it = cbegin()+*offset_itp; it != cend(); ++*offset_itp, *offsetp=0) {
     cells = *it;
-    if(++it == end() ||
+    if(++it == cend() ||
        DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
       cells->add_raw(cell, offsetp);
@@ -66,7 +66,7 @@ void MutableVec::add_raw(const Cell& cell,
 void MutableVec::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                                 Interval& intval, uint32_t threshold,
                                 uint32_t max_cells) {
-  for(auto it = begin(); it != end() &&
+  for(auto it = cbegin(); it != cend() &&
                          (!threshold || threshold > cells.fill()) &&
                          (!max_cells || max_cells > cell_count);) {
     (*it)->write_and_free(cells, cell_count, intval, threshold, max_cells);

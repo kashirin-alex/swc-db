@@ -74,13 +74,13 @@ void Properties::set(const char* name, Property::Value::Ptr p) {
 }
 
 bool Properties::has(const char* name) const noexcept {
-  for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
+  for(auto it=m_map.cbegin(); it!=m_map.cend(); ++it) {
     if(Condition::str_eq(it->first.c_str(), name))
       return true;
   }
-  for(auto it=m_alias_map.begin(); it!=m_alias_map.end(); ++it) {
+  for(auto it=m_alias_map.cbegin(); it!=m_alias_map.cend(); ++it) {
     if(Condition::str_eq(it->first.c_str(), name))
-      return m_map.find(it->second) != m_map.end();
+      return m_map.find(it->second) != m_map.cend();
   }
   return false;
 }
@@ -94,12 +94,12 @@ std::string Properties::to_string(const char* name) const {
 }
 
 void Properties::get_names(std::vector<std::string>& names) const {
-  for(auto it = m_map.begin(); it != m_map.end(); ++it)
+  for(auto it = m_map.cbegin(); it != m_map.cend(); ++it)
     names.push_back(it->first);
 }
 
 void Properties::remove(const char* name) {
-  for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
+  for(auto it=m_map.cbegin(); it!=m_map.cend(); ++it) {
     if(Condition::str_eq(it->first.c_str(), name)) {
       delete it->second;
       m_map.erase(it);
@@ -111,14 +111,14 @@ void Properties::remove(const char* name) {
 
 Property::Value::Ptr Properties::get_ptr(const char* name,
                                          bool null_ok) const {
-  for(auto it=m_map.begin(); it!=m_map.end(); ++it) {
+  for(auto it=m_map.cbegin(); it!=m_map.cend(); ++it) {
     if(Condition::str_eq(it->first.c_str(), name))
       return it->second;
   }
-  for(auto it=m_alias_map.begin(); it!=m_alias_map.end(); ++it) {
+  for(auto it=m_alias_map.cbegin(); it!=m_alias_map.cend(); ++it) {
     if(Condition::str_eq(it->first.c_str(), name)) {
       auto prop = m_map.find(it->second);
-      if(prop != m_map.end())
+      if(prop != m_map.cend())
         return prop->second;
       break;
     }

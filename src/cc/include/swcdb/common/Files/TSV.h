@@ -319,8 +319,8 @@ class FileReader {
     for(auto& entry : entries) {
       if(entry.is_dir)
         continue;
-      for(auto it = files.begin(); ; ++it) {
-        if(it == files.end() ||
+      for(auto it = files.cbegin(); ; ++it) {
+        if(it == files.cend() ||
            Condition::lt_volume(
              reinterpret_cast<const uint8_t*>((*it)->name.c_str()),
              (*it)->name.size(),

@@ -46,14 +46,14 @@ SWC_CAN_INLINE
 RangePtr Column::get_range(const rid_t rid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(rid);
-  return it == end() ? nullptr : it->second;
+  return it == cend() ? nullptr : it->second;
 }
 
 RangePtr Column::get_next(size_t &idx) {
   Core::MutexSptd::scope lock(m_mutex);
 
   if(size() > idx) {
-    auto it = begin();
+    auto it = cbegin();
     for(int i=idx; i; --i, ++it);
     return it->second;
   }
@@ -64,7 +64,7 @@ RangePtr Column::get_next(size_t &idx) {
 void Column::get_rids(std::vector<rid_t>& rids) {
   Core::MutexSptd::scope lock(m_mutex);
   rids.reserve(size());
-  for(auto it = begin(); it != end(); ++it)
+  for(auto it = cbegin(); it != cend(); ++it)
     rids.push_back(it->first);
 }
 
@@ -79,7 +79,7 @@ void Column::schema_update(const DB::Schema& schema) {
   cfg->update(schema);
   if(and_cells) {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it = begin(); it != end(); ++it)
+    for(auto it = cbegin(); it != cend(); ++it)
       it->second->schema_update(compact);
   }
   if(compact)
@@ -89,7 +89,7 @@ void Column::schema_update(const DB::Schema& schema) {
 void Column::compact() {
   {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it = begin(); it != end(); ++it)
+    for(auto it = cbegin(); it != cend(); ++it)
       it->second->compact_require(true);
   }
   Env::Rgr::compaction_schedule(100);
@@ -116,16 +116,16 @@ size_t Column::release(size_t bytes) {
     return 0;
 
   RangePtr range;
-  iterator it;
+  const_iterator it;
   size_t released = 0;
   for(size_t offset = 0; ; ++offset) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(cfg->deleting)
         break;
-      it = begin();
-      for(size_t i=0; i<offset && it != end(); ++it, ++i);
-      if(it == end())
+      it = cbegin();
+      for(size_t i=0; i<offset && it != cend(); ++it, ++i);
+      if(it == cend())
         break;
       range = it->second;
     }
@@ -144,7 +144,7 @@ void Column::print(std::ostream& out, bool minimal) {
   cfg->print(out << '(');
   out << " ranges=[";
 
-  for(auto it = begin(); it != end(); ++it){
+  for(auto it = cbegin(); it != cend(); ++it){
     it->second->print(out, minimal);
     out << ", ";
   }
@@ -205,7 +205,7 @@ void Column::internal_remove(int &err, const rid_t rid) {
 void Column::internal_delete(rid_t rid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(rid);
-  if(it != end())
+  if(it != cend())
     erase(it);
 }
 
@@ -290,7 +290,7 @@ void Column::unload_all(const Callback::ColumnsUnload::Ptr& req) {
       Core::MutexSptd::scope lock(m_mutex);
       if(empty())
         break;
-      range = begin()->second;
+      range = cbegin()->second;
     }
     if(range) {
       bool chk_empty = false;
@@ -312,11 +312,11 @@ void Column::remove(const Callback::ColumnDelete::Ptr& req) {
     return req->response_ok();
 
   cfg->deleting.store(true);
-  std::vector<RangePtr> ranges;
+  Core::Vector<RangePtr> ranges;
   {
     Core::MutexSptd::scope lock(m_mutex);
     ranges.reserve(size());
-    for(auto it=begin(); it != end(); ++it) {
+    for(auto it=cbegin(); it != cend(); ++it) {
       req->add(it->second);
       ranges.push_back(it->second);
     }

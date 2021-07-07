@@ -71,7 +71,7 @@ class Rangers final {
               uint64_t req_id, bool ack_required);
 
   void column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
-                     const std::vector<rgrid_t>& rgrids);
+                     const Core::Vector<rgrid_t>& rgrids);
 
   void column_compact(const Column::Ptr& col);
 

@@ -137,8 +137,8 @@ void Reader::expect_token(const char* token, uint8_t token_len, bool& found) {
 DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
                                    const std::string& col) {
   DB::Schema::Ptr schema;
-  if(std::find_if(col.begin(), col.end(),
-      [](unsigned char c){ return !std::isdigit(c); } ) != col.end()){
+  if(std::find_if(col.cbegin(), col.cend(),
+      [](unsigned char c){ return !std::isdigit(c); } ) != col.cend()){
     schema = clients->get_schema(err, col);
   } else {
     try {
@@ -402,7 +402,7 @@ void Reader::error_msg(int error, const std::string& msg) {
   message.append("^ at=");
   message.append(std::to_string(at));
   message.append("\n");
-  message.insert(message.end(), at + 5, ' ');
+  message.insert(message.cend(), at + 5, ' ');
   message.append(msg);
   message.append("\n");
 }

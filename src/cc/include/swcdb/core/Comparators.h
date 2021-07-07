@@ -8,7 +8,6 @@
 #define swcdb_core_Comparators_h
 
 #include "swcdb/core/Compat.h"
-#include "swcdb/core/Vector.h"
 #include <cmath>
 #include <re2/re2.h>
 

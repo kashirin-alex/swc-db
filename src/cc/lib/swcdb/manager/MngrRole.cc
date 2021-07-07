@@ -117,7 +117,7 @@ bool MngrRole::are_all_active(const client::Mngr::Groups::Vec& groups) {
 
 void MngrRole::get_states(MngrsStatus& states) {
   Core::SharedLock lock(m_mutex);
-  states.assign(m_states.begin(), m_states.end());
+  states.assign(m_states.cbegin(), m_states.cend());
 }
 
 SWC_CAN_INLINE
@@ -284,7 +284,7 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
     Core::ScopedLock lock(m_mutex);
 
     auto it = m_mngrs_client_srv.find(Comm::endpoint_hash(endpoint_server));
-    if(it != m_mngrs_client_srv.end()) {
+    if(it != m_mngrs_client_srv.cend()) {
       endpoints.push_back(it->second);
       m_mngrs_client_srv.erase(it);
     } else
@@ -326,7 +326,7 @@ void MngrRole::stop() {
       if(m_states.empty())
         break;
       h = m_states.front();
-      m_states.erase(m_states.begin());
+      m_states.erase(m_states.cbegin());
     }
     if(h->conn && h->conn->is_open())
       h->conn->do_close();
@@ -368,7 +368,7 @@ void MngrRole::_apply_cfg() {
           g->role, g->cid_begin, g->cid_end, endpoints, nullptr, pr));
     }
   }
-  for(auto it=m_states.begin(); it != m_states.end(); ) {
+  for(auto it=m_states.cbegin(); it != m_states.cend(); ) {
     bool found = false;
     for(auto& g : groups) {
       for(auto& endpoints : g->get_hosts()) {
@@ -432,7 +432,7 @@ void MngrRole::fill_states() {
   MngrsStatus states;
   {
     Core::SharedLock lock(m_mutex);
-    states.assign(m_states.begin(), m_states.end());
+    states.assign(m_states.cbegin(), m_states.cend());
   }
   fill_states(states, 0, nullptr);
 }
@@ -451,7 +451,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
     Core::SharedLock lock(m_mutex);
     if(next == m_states.size())
       next = 0;
-    host_chk = m_states.at(next);
+    host_chk = m_states[next];
     ++next;
   }
 

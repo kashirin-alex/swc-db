@@ -17,7 +17,7 @@
 namespace SWC { namespace Manager {
 
 
-class Column final : private std::vector<Range::Ptr> {
+class Column final : private Core::Vector<Range::Ptr> {
 
   public:
 
@@ -111,7 +111,8 @@ class Column final : private std::vector<Range::Ptr> {
     return size();
   }
 
-  void assigned(rgrid_t rgrid, size_t& num, std::vector<Range::Ptr>& ranges) {
+  void assigned(rgrid_t rgrid, size_t& num,
+                Core::Vector<Range::Ptr>& ranges) {
     Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
       if(range->assigned(rgrid)) {
@@ -122,9 +123,9 @@ class Column final : private std::vector<Range::Ptr> {
     }
   }
 
-  void get_ranges(std::vector<Range::Ptr>& ranges) {
+  void get_ranges(Core::Vector<Range::Ptr>& ranges) {
     Core::SharedLock lock(m_mutex);
-    ranges.assign(begin(), end());
+    ranges.assign(cbegin(), cend());
   }
 
   Range::Ptr get_range(const rid_t rid, bool initialize=false) {
@@ -168,14 +169,14 @@ class Column final : private std::vector<Range::Ptr> {
       range->set(interval);
 
       if(size() > 1) {
-        for(auto it = begin(); it != end(); ++it) {
+        for(auto it = cbegin(); it != cend(); ++it) {
           if(range->rid == (*it)->rid) {
             erase(it);
             break;
           }
         }
         bool added = false;
-        for(auto it=begin(); it != end(); ++it) {
+        for(auto it=cbegin(); it != cend(); ++it) {
           if((*it)->after(range)) {
             insert(it, range);
             added = true;
@@ -193,7 +194,7 @@ class Column final : private std::vector<Range::Ptr> {
   Range::Ptr left_sibling(const Range::Ptr& right) {
     Core::SharedLock lock(m_mutex);
 
-    if(!empty()) for(auto it = begin() + 1; it != end(); ++it) {
+    if(!empty()) for(auto it = cbegin() + 1; it != cend(); ++it) {
       if((*it)->rid == right->rid)
         return *--it;
     }
@@ -246,7 +247,7 @@ class Column final : private std::vector<Range::Ptr> {
         range->set_rgr_id(rgrid);
     }
 
-    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it) {
+    for(auto it = m_schemas_rev.cbegin(); it != m_schemas_rev.cend(); ++it) {
       if(it->first == rgrid_old) {
         int64_t last = it->second;
         m_schemas_rev.erase(it);
@@ -266,10 +267,10 @@ class Column final : private std::vector<Range::Ptr> {
     _remove_rgr_schema(rgrid);
   }
 
-  void need_schema_sync(int64_t rev, std::vector<rgrid_t> &rgrids) {
+  void need_schema_sync(int64_t rev, Core::Vector<rgrid_t> &rgrids) {
     Core::SharedLock lock(m_mutex);
 
-    for(auto it = m_schemas_rev.begin(); it != m_schemas_rev.end(); ++it) {
+    for(auto it = m_schemas_rev.cbegin(); it != m_schemas_rev.cend(); ++it) {
       if(it->second != rev)
         rgrids.push_back(it->first);
     }
@@ -279,19 +280,19 @@ class Column final : private std::vector<Range::Ptr> {
     Core::SharedLock lock(m_mutex);
 
     auto it = m_schemas_rev.find(rgrid);
-    if(it != m_schemas_rev.end())
+    if(it != m_schemas_rev.cend())
       return rev != it->second;
     return true;
   }
 
-  void assigned(std::vector<rgrid_t> &rgrids) {
+  void assigned(Core::Vector<rgrid_t> &rgrids) {
     Core::SharedLock lock(m_mutex);
 
     rgrid_t rgrid;
     for(auto& range : *this) {
       if(!(rgrid = range->get_rgr_id()))
         continue;
-      if(std::find(rgrids.begin(), rgrids.end(), rgrid) == rgrids.end())
+      if(std::find(rgrids.cbegin(), rgrids.cend(), rgrid) == rgrids.cend())
         rgrids.push_back(rgrid);
     }
   }
@@ -311,7 +312,7 @@ class Column final : private std::vector<Range::Ptr> {
   }
 
   void need_health_check(int64_t ts, uint32_t ms,
-                         std::vector<Range::Ptr> &ranges,
+                         Core::Vector<Range::Ptr> &ranges,
                          rgrid_t rgrid = 0, size_t max = 0) {
     Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
@@ -325,7 +326,7 @@ class Column final : private std::vector<Range::Ptr> {
 
   void remove_range(rid_t rid) {
     Core::ScopedLock lock(m_mutex);
-    for(auto it = begin(); it != end(); ++it) {
+    for(auto it = cbegin(); it != cend(); ++it) {
       if(rid == (*it)->rid) {
         (*it)->set_deleted();
         erase(it);
@@ -355,7 +356,7 @@ class Column final : private std::vector<Range::Ptr> {
       clear();
     } else {
       rgrid_t eid;
-      for(auto it=begin(); it != end(); ) {
+      for(auto it=cbegin(); it != cend(); ) {
         if((eid = (*it)->get_rgr_id()) == rgrid || !eid)
           erase(it);
         else
@@ -434,7 +435,7 @@ class Column final : private std::vector<Range::Ptr> {
 
   void _remove_rgr_schema(const rgrid_t rgrid) {
     auto it = m_schemas_rev.find(rgrid);
-    if(it != m_schemas_rev.end())
+    if(it != m_schemas_rev.cend())
        m_schemas_rev.erase(it);
   }
 

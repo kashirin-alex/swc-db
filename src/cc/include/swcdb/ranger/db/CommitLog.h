@@ -16,7 +16,7 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 class Compact;
 
-class Fragments final : private std::vector<Fragment::Ptr> {
+class Fragments final : private Core::Vector<Fragment::Ptr> {
 
   /* file-format(dir-structure):
     ../log/{N}.frag
@@ -24,8 +24,9 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   public:
 
-  typedef std::vector<Fragment::Ptr> Vec;
-  typedef Fragments*                 Ptr;
+  typedef Core::Vector<Fragment::Ptr> Vec;
+  typedef Fragments*                  Ptr;
+  typedef Core::Vector<Vec>           CompactGroups;
 
   RangePtr            range;
   Core::AtomicBool    stopping;
@@ -52,7 +53,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   bool is_compacting() const;
 
-  size_t need_compact(std::vector<Vec>& groups, const Vec& without,
+  size_t need_compact(CompactGroups& groups, const Vec& without,
                       size_t vol);
 
   bool try_compact(uint32_t tnum = 1);
@@ -116,7 +117,7 @@ class Fragments final : private std::vector<Fragment::Ptr> {
 
   bool _need_roll() const;
 
-  size_t _need_compact(std::vector<Vec>& groups,const Vec& without,
+  size_t _need_compact(CompactGroups& groups,const Vec& without,
                        size_t vol);
 
   bool _need_compact_major();

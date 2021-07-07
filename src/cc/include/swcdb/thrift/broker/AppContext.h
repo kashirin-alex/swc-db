@@ -131,7 +131,7 @@ class AppContext final : virtual public BrokerIfFactory,
       m_metrics->net->disconnected();
     Core::MutexSptd::scope lock(m_mutex_handlers);
     auto it = m_handlers.find(handler);
-    if(it != m_handlers.end())
+    if(it != m_handlers.cend())
       m_handlers.erase(it);
   }
 
@@ -197,7 +197,7 @@ class AppContext final : virtual public BrokerIfFactory,
           Core::MutexSptd::scope lock(m_mutex_handlers);
           if(idx >= m_handlers.size())
             break;
-          auto it = m_handlers.begin();
+          auto it = m_handlers.cbegin();
           for(size_t i = idx; i; --i, ++it);
           handler = *it;
         }

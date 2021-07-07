@@ -317,7 +317,7 @@ void Read::_run_queued() {
 
 SWC_CAN_INLINE
 void Read::get_blocks(int&, Blocks& to) const {
-  to.insert(to.end(), blocks.cbegin(), blocks.cend());
+  to.insert(to.cend(), blocks.cbegin(), blocks.cend());
 }
 
 SWC_CAN_INLINE
@@ -482,7 +482,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
   uint32_t len_data = 0;
   Block::Write::Ptr blk;
 
-  auto it = m_blocks.begin();
+  auto it = m_blocks.cbegin();
   auto it_last = it;
   do {
     blk = *it;
@@ -494,7 +494,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
     ++blks_count;
     len_data += blk->header.encoded_length_idx();
 
-    if(++it == m_blocks.end() || len_data >= block_size) {
+    if(++it == m_blocks.cend() || len_data >= block_size) {
       len_data += Serialization::encoded_length_vi32(blks_count);
 
       StaticBuffer raw_buffer(static_cast<size_t>(len_data));
@@ -541,7 +541,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
       size += buff_write.size;
       blks_count = len_data = 0;
     }
-  } while (it != m_blocks.end());
+  } while (it != m_blocks.cend());
 }
 
 SWC_CAN_INLINE

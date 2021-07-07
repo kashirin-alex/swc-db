@@ -41,8 +41,9 @@ static const uint8_t  IDX_BLKS_HEADER_SIZE = 17;
 class Read final {
   public:
 
-  typedef Read*                         Ptr;
-  typedef std::vector<Block::Read::Ptr> Blocks;
+  typedef Read*                          Ptr;
+  typedef Core::Vector<Block::Read::Ptr> Blocks;
+
   static constexpr uint32_t MAX_BLOCKS = UINT32_MAX;
 
   inline static Ptr make(int& err, const csid_t csid,
@@ -175,10 +176,10 @@ class Write final {
 
   void close_and_validate(int& err);
 
-  std::vector<Block::Write::Ptr> m_blocks;
+  Core::Vector<Block::Write::Ptr> m_blocks;
 };
 
-typedef std::vector<Write::Ptr>   Writers;
+typedef Core::Vector<Write::Ptr>  Writers;
 typedef std::shared_ptr<Writers>  WritersPtr;
 
 

@@ -57,7 +57,7 @@ void BaseUnorderedMap::next(std::vector<Base::Column*>& cols) noexcept {
 Base::Column* BaseUnorderedMap::next(cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
-  return it != end() && !it->second->error() && !it->second->empty()
+  return it != cend() && !it->second->error() && !it->second->empty()
     ? it->second.get() : nullptr;
 }
 
@@ -82,7 +82,7 @@ ColumnMutable::Ptr& BaseUnorderedMap::create(const cid_t cid,
 
 bool BaseUnorderedMap::exists(const cid_t cid) noexcept{
   Core::MutexSptd::scope lock(m_mutex);
-  return find(cid) != end();
+  return find(cid) != cend();
 }
 
 void BaseUnorderedMap::add(const cid_t cid, const DB::Cells::Cell& cell) {
@@ -90,7 +90,7 @@ void BaseUnorderedMap::add(const cid_t cid, const DB::Cells::Cell& cell) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     auto it = find(cid);
-    if(it == end())
+    if(it == cend())
       SWC_THROWF(ENOKEY, "Map Missing column=%lu (1st do create)", cid);
     col = it->second;
   }
@@ -100,13 +100,13 @@ void BaseUnorderedMap::add(const cid_t cid, const DB::Cells::Cell& cell) {
 ColumnMutable::Ptr BaseUnorderedMap::get(cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
-  return it == end() ? nullptr : it->second;
+  return it == cend() ? nullptr : it->second;
 }
 
 Base::Column* BaseUnorderedMap::get_base_ptr(cid_t cid) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
-  return it == end() ? nullptr : it->second.get();
+  return it == cend() ? nullptr : it->second.get();
 }
 
 }}}}}

@@ -192,8 +192,8 @@ void Settings::load_files_by(const char* fileprop, bool allow_unregistered) {
       load(fname, file_desc, cmdline_desc, allow_unregistered);
 
       Core::MutexSptd::scope lock(mutex);
-      auto it = std::find(m_dyn_files.begin(), m_dyn_files.end(), fname);
-      if(it == m_dyn_files.end())
+      auto it = std::find(m_dyn_files.cbegin(), m_dyn_files.cend(), fname);
+      if(it == m_dyn_files.cend())
         m_dyn_files.emplace_back(std::move(fname));
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

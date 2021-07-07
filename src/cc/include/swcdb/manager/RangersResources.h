@@ -40,7 +40,7 @@ struct RangerResources {
 };
 
 
-class RangersResources final : private std::vector<RangerResources> {
+class RangersResources final : private Core::Vector<RangerResources> {
 
   public:
 
@@ -190,7 +190,7 @@ class RangersResources final : private std::vector<RangerResources> {
         break;
       }
     }
-    std::vector<RangerResources>::clear();
+    Core::Vector<RangerResources>::clear();
   }
 
   private:

@@ -134,7 +134,7 @@ class Ranger final {
 
 };
 
-typedef std::vector<Ranger::Ptr>  RangerList;
+typedef Core::Vector<Ranger::Ptr>  RangerList;
 
 }}
 

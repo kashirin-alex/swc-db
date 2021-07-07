@@ -12,16 +12,18 @@
 
 namespace SWC { namespace Ranger { namespace CellStore {
 
-class Readers final : private std::vector<Read::Ptr> {
+class Readers final : private Core::Vector<Read::Ptr> {
   public:
 
-  typedef std::vector<Read::Ptr>  Vec;
+  typedef Core::Vector<Read::Ptr> Vec;
   typedef Readers*                Ptr;
 
   using Vec::empty;
   using Vec::size;
   using Vec::begin;
   using Vec::end;
+  using Vec::cbegin;
+  using Vec::cend;
   using Vec::front;
   using Vec::back;
   using Vec::erase;

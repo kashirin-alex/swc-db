@@ -113,12 +113,12 @@ class RangeSplit final {
 
     CellStore::Readers::Vec mv_css;
 
-    auto it = range->blocks.cellstores.begin() + split_at;
-    mv_css.assign(it, range->blocks.cellstores.end());
+    auto it = range->blocks.cellstores.cbegin() + split_at;
+    mv_css.assign(it, range->blocks.cellstores.cend());
 
     new_range->internal_create(err, mv_css);
     if(!err) {
-      for(; it != range->blocks.cellstores.end(); ) {
+      for(; it != range->blocks.cellstores.cend(); ) {
         delete *it;
         range->blocks.cellstores.erase(it);
       }

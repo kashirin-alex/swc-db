@@ -120,7 +120,7 @@ void Readers::get_blocks(int& err, Read::Blocks& to) const {
 
 SWC_CAN_INLINE
 void Readers::get_prev_key_end(uint32_t idx, DB::Cell::Key& key) const {
-  key.copy((*(begin()+idx))->prev_key_end);
+  key.copy((*(cbegin()+idx))->prev_key_end);
 }
 
 SWC_CAN_INLINE

@@ -25,8 +25,8 @@ void ColumnDelete::removed(const RangePtr& range) {
   SWC_LOG_OUT(LOG_INFO, range->print(SWC_LOG_OSTREAM << "REMOVED RANGE "); );
   {
     Core::MutexSptd::scope lock(m_mutex);
-    auto it = std::find(m_ranges.begin(), m_ranges.end(), range);
-    if(it != m_ranges.end())
+    auto it = std::find(m_ranges.cbegin(), m_ranges.cend(), range);
+    if(it != m_ranges.cend())
       m_ranges.erase(it);
     if(!m_ranges.empty())
       return;

@@ -69,7 +69,7 @@ class ParserConfig final {
   };
 
   typedef std::map<std::string, ParserOpt>          Map;
-  typedef std::vector<std::pair<int, std::string>>  Positions;
+  typedef Core::Vector<std::pair<int, std::string>> Positions;
 
   public:
 

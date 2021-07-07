@@ -82,11 +82,11 @@ class SerializedServer final {
 
   const std::string               m_appname;
   Core::AtomicBool                m_run;
-  std::vector<IoContextPtr>       m_io_contexts;
-  std::vector<Acceptor::Ptr>      m_acceptors;
+  Core::Vector<IoContextPtr>      m_io_contexts;
+  Core::Vector<Acceptor::Ptr>     m_acceptors;
 
   Core::MutexSptd                 m_mutex;
-  std::vector<ConnHandlerPtr>     m_conns;
+  Core::Vector<ConnHandlerPtr>    m_conns;
   ConfigSSL*                      m_ssl_cfg;
 };
 

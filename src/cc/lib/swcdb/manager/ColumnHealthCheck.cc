@@ -35,7 +35,7 @@ void ColumnHealthCheck::RangerCheck::add_range(const Range::Ptr& range) {
 
 bool ColumnHealthCheck::RangerCheck::add_ranges(uint8_t more) {
   if(rgr->state == DB::Types::MngrRangerState::ACK) {
-    std::vector<Range::Ptr> ranges;
+    Core::Vector<Range::Ptr> ranges;
     col_checker->col->need_health_check(
       col_checker->check_ts, col_checker->check_intval,
       ranges, rgr->rgrid, more
@@ -120,7 +120,7 @@ void ColumnHealthCheck::run(bool initial) {
   if(m_check.running())
     return;
 
-  std::vector<Range::Ptr> ranges;
+  Core::Vector<Range::Ptr> ranges;
   col->need_health_check(check_ts, check_intval, ranges, 0, 100);
 
   RangerCheck::Ptr checker;
@@ -132,11 +132,11 @@ void ColumnHealthCheck::run(bool initial) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       auto it = std::find_if(
-        m_checkers.begin(), m_checkers.end(),
+        m_checkers.cbegin(), m_checkers.cend(),
         [rgrid](const RangerCheck::Ptr& checker) {
           return rgrid == checker->rgr->rgrid; }
       );
-      checker = it == m_checkers.end() ? nullptr : *it;
+      checker = it == m_checkers.cend() ? nullptr : *it;
     }
     if(!checker) {
       auto rgr = Env::Mngr::rangers()->rgr_get(rgrid);
@@ -231,16 +231,16 @@ void ColumnHealthCheck::finishing(bool finished_range) {
 SWC_CAN_INLINE
 ColumnHealthCheck::ColumnMerger::ColumnMerger(
             const ColumnHealthCheck::Ptr& col_checker,
-            std::vector<Range::Ptr>&& ranges) noexcept
+            Core::Vector<Range::Ptr>&& ranges) noexcept
             : col_checker(col_checker), m_ranges(std::move(ranges)) {
 }
 
 void ColumnHealthCheck::ColumnMerger::run_master() {
-  std::vector<Range::Ptr> sorted;
+  Core::Vector<Range::Ptr> sorted;
   sorted.reserve(m_ranges.size());
   for(auto& range : m_ranges) {
     bool added = false;
-    for(auto it=sorted.begin(); it != sorted.end(); ++it) {
+    for(auto it=sorted.cbegin(); it != sorted.cend(); ++it) {
       if((*it)->after(range)) {
         sorted.insert(it, range);
         added = true;
@@ -251,7 +251,7 @@ void ColumnHealthCheck::ColumnMerger::run_master() {
       sorted.push_back(range);
   }
 
-  std::vector<Range::Ptr> group;
+  Core::Vector<Range::Ptr> group;
   for(auto& range : sorted) {
     auto left = col_checker->col->left_sibling(range);
     if(!left) {
@@ -274,18 +274,18 @@ void ColumnHealthCheck::ColumnMerger::run_master() {
       new RangesMerger(shared_from_this(), std::move(group)));
 
   if(m_mergers.empty()) {
-    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%lu",
-             col_checker->col->cfg->cid, m_ranges.size());
+    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%ld",
+             col_checker->col->cfg->cid, int64_t(m_ranges.size()));
     Env::Mngr::rangers()->health_check_finished(col_checker);
   } else {
-    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%lu",
-             col_checker->col->cfg->cid, m_mergers.size());
+    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%ld",
+             col_checker->col->cfg->cid, int64_t(m_mergers.size()));
     completion();
   }
 }
 
 void ColumnHealthCheck::ColumnMerger::run() {
-  std::vector<Range::Ptr> group;
+  Core::Vector<Range::Ptr> group;
   Range::Ptr left = nullptr;
   for(auto& cell : cells) {
     //SWC_LOG_OUT(LOG_DEBUG,
@@ -327,12 +327,12 @@ void ColumnHealthCheck::ColumnMerger::run() {
       new RangesMerger(shared_from_this(), std::move(group)));
 
   if(m_mergers.empty()) {
-    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%lu",
-             col_checker->col->cfg->cid, m_ranges.size());
+    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%ld",
+             col_checker->col->cfg->cid, int64_t(m_ranges.size()));
     Env::Mngr::rangers()->health_check_finished(col_checker);
   } else {
-    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%lu",
-             col_checker->col->cfg->cid, m_mergers.size());
+    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%ld",
+             col_checker->col->cfg->cid, int64_t(m_mergers.size()));
     completion();
   }
 }
@@ -345,7 +345,7 @@ void ColumnHealthCheck::ColumnMerger::completion() {
     return;
   }
   auto merger = m_mergers.back();
-  m_mergers.erase(m_mergers.end() - 1);
+  m_mergers.erase(m_mergers.cend() - 1);
   merger->run();
 }
 
@@ -354,7 +354,7 @@ void ColumnHealthCheck::ColumnMerger::completion() {
 SWC_CAN_INLINE
 ColumnHealthCheck::ColumnMerger::RangesMerger::RangesMerger(
                 const ColumnMerger::Ptr& col_merger,
-                std::vector<Range::Ptr>&& ranges) noexcept
+                Core::Vector<Range::Ptr>&& ranges) noexcept
       : col_merger(col_merger), m_err(Error::OK),
         m_ranges(std::move(ranges)) {
 }
@@ -420,7 +420,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
   m_ready.clear();
 
   Range::Ptr main_range = m_ranges.front(); //group-merge-to-this-range
-  m_ranges.erase(m_ranges.begin());
+  m_ranges.erase(m_ranges.cbegin());
 
   const std::string main_range_path =
     DB::RangeBase::get_path(
@@ -429,7 +429,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
     DB::RangeBase::get_path_on_range(
       main_range_path, DB::RangeBase::CELLSTORES_DIR);
 
-  std::vector<Range::Ptr> merged;
+  Core::Vector<Range::Ptr> merged;
   csid_t last_cs_id;
 
   const auto& fs = Env::FsInterface::interface();
@@ -541,8 +541,9 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
   Env::Mngr::rangers()->schedule_check(2000);
 
   SWC_LOGF(LOG_INFO,
-    "Column-Health MERGE GROUP cid(%lu) ranges(%lu/%lu) to range(%lu)",
-    main_range->cfg->cid, merged.size(), m_ranges.size(), main_range->rid);
+    "Column-Health MERGE GROUP cid(%lu) ranges(%ld/%ld) to range(%lu)",
+    main_range->cfg->cid, int64_t(merged.size()), int64_t(m_ranges.size()),
+    main_range->rid);
   return col_merger->completion();
 }
 

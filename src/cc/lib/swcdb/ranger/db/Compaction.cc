@@ -220,8 +220,8 @@ void Compaction::compacted(const CompactRange::Ptr req,
   compacted();
 
   Core::ScopedLock lock(m_mutex);
-  auto it = std::find(m_compacting.begin(), m_compacting.end(), req);
-  if(it != m_compacting.end())
+  auto it = std::find(m_compacting.cbegin(), m_compacting.cend(), req);
+  if(it != m_compacting.cend())
     m_compacting.erase(it);
 }
 

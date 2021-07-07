@@ -9,7 +9,6 @@
 
 
 #include "swcdb/db/Cells/ReqScan.h"
-#include "swcdb/core/Vector.h"
 #include "swcdb/core/VectorsVector.h"
 
 

@@ -60,7 +60,8 @@ void encode(uint8_t** bufp, const Comm::EndPoints& endpoints) {
 
 void decode(const uint8_t** bufp, size_t* remainp,
             Comm::EndPoints& endpoints) {
-  endpoints.free();
+  endpoints.clear();
+  endpoints.shrink_to_fit();
   if(uint32_t sz = Serialization::decode_vi32(bufp, remainp)) {
     endpoints.reserve(sz);
     for(uint32_t i=0; i<sz; ++i)
@@ -85,9 +86,8 @@ void print(std::ostream& out, const EndPoints& endpoints) {
 
 bool has_endpoint(const EndPoint& e1,
                   const EndPoints& endpoints_in) noexcept {
-  return !endpoints_in.empty() &&
-         std::find(endpoints_in.begin(), endpoints_in.end(), e1)
-            != endpoints_in.end();
+  return  std::find(endpoints_in.cbegin(), endpoints_in.cend(), e1)
+            != endpoints_in.cend();
 }
 
 bool has_endpoint(const EndPoints& endpoints,

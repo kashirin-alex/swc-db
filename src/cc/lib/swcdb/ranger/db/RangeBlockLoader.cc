@@ -106,8 +106,8 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
         Core::MutexSptd::scope lock(m_mutex);
         m_logs += m_f_selected.size() - offset;
       }
-      for(auto it=m_f_selected.begin() + offset;
-          it != m_f_selected.end(); ++it) {
+      for(auto it=m_f_selected.cbegin() + offset;
+          it != m_f_selected.cend(); ++it) {
         (*it)->load([this](const CommitLog::Fragment::Ptr& frag) {
           loaded_frag(frag); });
         (*it)->processing_decrement();

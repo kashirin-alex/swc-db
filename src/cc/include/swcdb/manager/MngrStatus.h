@@ -88,7 +88,7 @@ class MngrStatus final {
   int                                 failures;
 };
 
-typedef std::vector<MngrStatus::Ptr> MngrsStatus;
+typedef Core::Vector<MngrStatus::Ptr> MngrsStatus;
 
 
 

@@ -163,7 +163,7 @@ void Compact::Group::finalize() {
 
 
 Compact::Compact(Fragments* log, uint32_t repetition,
-                 const std::vector<Fragments::Vec>& groups,
+                 const Fragments::CompactGroups& groups,
                  uint8_t cointervaling,
                  Compact::Cb_t&& cb)
                 : log(log),
@@ -187,7 +187,7 @@ Compact::Compact(Fragments* log, uint32_t repetition,
       continue;
     m_groups.push_back(new Group(this, m_groups.size()+1));
 
-    for(auto it = frags.begin(); it != frags.end(); ++it) {
+    for(auto it = frags.cbegin(); it != frags.cend(); ++it) {
       m_groups.back()->read_frags.push_back(*it);
       if(!blks) {
         if(m_groups.back()->read_frags.size() < cointervaling)
@@ -206,9 +206,9 @@ Compact::Compact(Fragments* log, uint32_t repetition,
   }
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-START %lu/%lu w=%lu frags=%lu(%lu)/%lu repetition=%u",
+    "COMPACT-LOG-START %lu/%lu w=%ld frags=%lu(%lu)/%lu repetition=%u",
     log->range->cfg->cid, log->range->rid,
-    m_groups.size(), nfrags, ngroups, log->size(), repetition
+    int64_t(m_groups.size()), nfrags, ngroups, log->size(), repetition
   );
 
   m_workers.store(m_groups.size());
@@ -235,8 +235,8 @@ void Compact::finished(Group* group, size_t cells_count) {
   if(running)
     return;
 
-  SWC_LOGF(LOG_INFO, "COMPACT-LOG-FINISHING %lu/%lu w=%lu",
-                      log->range->cfg->cid, log->range->rid, m_groups.size());
+  SWC_LOGF(LOG_INFO, "COMPACT-LOG-FINISHING %lu/%lu w=%ld",
+    log->range->cfg->cid, log->range->rid, int64_t(m_groups.size()));
 
   log->range->compacting(Range::COMPACT_APPLYING);
   log->range->blocks.wait_processing(); // sync processing state
@@ -255,10 +255,11 @@ void Compact::finalized() {
     return;
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-FINISH %lu/%lu w=%lu frags=%lu(%lu)/%lu"
+    "COMPACT-LOG-FINISH %lu/%lu w=%ld frags=%lu(%lu)/%lu"
     " repetition=%u %luns",
     log->range->cfg->cid, log->range->rid,
-    m_groups.size(), nfrags, ngroups, log->size(), repetition, ts.elapsed()
+    int64_t(m_groups.size()), nfrags, ngroups, log->size(), repetition,
+    ts.elapsed()
   );
 
   m_cb ? m_cb(this) : log->finish_compact(this);

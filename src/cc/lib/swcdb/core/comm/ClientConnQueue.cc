@@ -30,8 +30,8 @@ void ConnQueue::stop() {
   }
   for(;;) {
     Core::MutexSptd::scope lock(m_mutex);
-    auto it = m_delayed.begin();
-    if(it == m_delayed.end()) {
+    auto it = m_delayed.cbegin();
+    if(it == m_delayed.cend()) {
       if(m_conn) {
         if(m_conn->is_open())
           m_conn->do_close();

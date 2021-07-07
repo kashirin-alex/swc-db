@@ -340,7 +340,7 @@ void ConnHandler::disconnected() noexcept {
         if(m_pending.empty())
           return;
         pending = std::move(m_pending.begin()->second);
-        m_pending.erase(m_pending.begin());
+        m_pending.erase(m_pending.cbegin());
       }
       if(pending.timer)
         pending.timer->cancel();
@@ -365,7 +365,7 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       auto it = m_pending.find(ev->header.id);
-      if(it != m_pending.end()) {
+      if(it != m_pending.cend()) {
         if(partial) {
           pending.hdlr = it->second.hdlr;
         } else {
@@ -435,7 +435,7 @@ SocketLayer* ConnHandlerPlain::socket_layer() noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerPlain::do_async_write(
-        std::vector<asio::const_buffer>&& buffers,
+        Core::Vector<asio::const_buffer>&& buffers,
         std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
         noexcept {
   asio::async_write(m_sock, std::move(buffers), std::move(hdlr));
@@ -553,7 +553,7 @@ SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 void ConnHandlerSSL::do_async_write(
-        std::vector<asio::const_buffer>&& buffers,
+        Core::Vector<asio::const_buffer>&& buffers,
         std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
         noexcept {
   asio::async_write(

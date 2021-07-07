@@ -184,11 +184,11 @@ class Interface {
   private:
 
   bool cmd_option(const std::string& line) {
-    auto opt = std::find_if(options.begin(), options.end(), 
+    auto opt = std::find_if(options.cbegin(), options.cend(), 
                 [line](const Option* opt){ 
                   return RE2::PartialMatch(line.c_str(), *opt->re); 
                 });
-    if(opt != options.end()) {
+    if(opt != options.cend()) {
       return (*opt)->call(line);
     } else {
       addstr(" Unknown command='");

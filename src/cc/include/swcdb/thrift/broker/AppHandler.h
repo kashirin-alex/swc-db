@@ -366,8 +366,8 @@ class AppHandler final : virtual public BrokerIf {
     Core::MutexSptd::scope lock(m_mutex);
 
     int64_t id = 1;
-    for(auto it = m_updaters.begin();
-        it != m_updaters.end();
+    for(auto it = m_updaters.cbegin();
+        it != m_updaters.cend();
         it = m_updaters.find(++id)
     );
     m_updaters[id] = client::Query::Update::Handlers::Common::make(
@@ -383,7 +383,7 @@ class AppHandler final : virtual public BrokerIf {
       Core::MutexSptd::scope lock(m_mutex);
 
       auto it = m_updaters.find(id);
-      if(it == m_updaters.end())
+      if(it == m_updaters.cend())
         Converter::exception(ERANGE, "Updater ID not found");
       hdlr = it->second;
       m_updaters.erase(it);
@@ -541,7 +541,7 @@ class AppHandler final : virtual public BrokerIf {
         Core::MutexSptd::scope lock(m_mutex);
         if(idx >= m_updaters.size())
           break;
-        auto it = m_updaters.begin();
+        auto it = m_updaters.cbegin();
         for(size_t n=0; n < idx; ++it, ++n);
         hdlr = it->second;
       }
@@ -560,8 +560,8 @@ class AppHandler final : virtual public BrokerIf {
     for(client::Query::Update::Handlers::Common::Ptr hdlr;;) {
       {
         Core::MutexSptd::scope lock(m_mutex);
-        auto it = m_updaters.begin();
-        if(it == m_updaters.end())
+        auto it = m_updaters.cbegin();
+        if(it == m_updaters.cend())
           break;
         m_updaters.erase(it);
         hdlr = it->second;
@@ -575,7 +575,7 @@ class AppHandler final : virtual public BrokerIf {
     Core::MutexSptd::scope lock(m_mutex);
 
     auto it = m_updaters.find(id);
-    if(it == m_updaters.end())
+    if(it == m_updaters.cend())
       Converter::exception(ERANGE, "Updater ID not found");
     hdlr = it->second;
   }
@@ -606,7 +606,7 @@ class AppHandler final : virtual public BrokerIf {
         Converter::exception(
           err, "problem getting columns schemas on patterns");
       err = Error::OK;
-      dbschemas.insert(dbschemas.end(), schemas.begin(), schemas.end());
+      dbschemas.insert(dbschemas.cend(), schemas.cbegin(), schemas.cend());
 
     } else if(dbschemas.empty()) { // get all schemas
       Comm::Protocol::Mngr::Req::ColumnList_Sync::request(

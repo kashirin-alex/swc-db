@@ -11,7 +11,7 @@ namespace SWC { namespace FS {
 
 
 std::string normalize_pathname(std::string s) {
-  if(*(--s.end()) != '/')
+  if(*(--s.cend()) != '/')
     s.append("/");
   return s;
 }

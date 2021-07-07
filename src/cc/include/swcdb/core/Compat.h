@@ -177,5 +177,6 @@ static_assert(
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
 #include "swcdb/core/Comparators_basic.h"
 #include "swcdb/core/MutexLock.h"
+#include "swcdb/core/Vector.h"
 
 #endif // swcdb_core_Compact_h

@@ -134,9 +134,9 @@ Serialized::Serialized(const Config::Settings& settings,
 
 ServerConnections::Ptr Serialized::get_srv(const EndPoint& endpoint) {
   size_t hash = endpoint_hash(endpoint);
-  iterator it;
+  const_iterator it;
   Core::MutexSptd::scope lock(m_mutex);
-  if((it = find(hash)) == end())
+  if((it = find(hash)) == cend())
     it = emplace(
       hash,
       new ServerConnections(
@@ -269,18 +269,18 @@ void Serialized::_get_connection(
 
 void Serialized::preserve(ConnHandlerPtr& conn) {
   size_t hash = conn->endpoint_remote_hash();
-  iterator it;
+  const_iterator it;
   Core::MutexSptd::scope lock(m_mutex);
-  if((it = find(hash)) != end())
+  if((it = find(hash)) != cend())
     it->second->push(conn);
 }
 
 void Serialized::close(ConnHandlerPtr& conn) {
   size_t hash = conn->endpoint_remote_hash();
   conn->do_close();
-  iterator it;
+  const_iterator it;
   Core::MutexSptd::scope lock(m_mutex);
-  if((it = find(hash)) != end() && it->second->empty())
+  if((it = find(hash)) != cend() && it->second->empty())
     erase(it);
 }
 
@@ -291,11 +291,11 @@ void Serialized::print(std::ostream& out, ConnHandlerPtr& conn) {
 void Serialized::stop() {
   m_run.store(false);
 
-  iterator it;
+  const_iterator it;
   for(ServerConnections::Ptr srv;;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
-      if((it = begin()) == end())
+      if((it = cbegin()) == cend())
         break;
       srv = it->second;
       erase(it);

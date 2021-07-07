@@ -634,7 +634,7 @@ align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
   for(uint24_t c = 0; c < key.count; ++c, ptr += len) {
     len = Serialization::decode_vi24(&ptr);
 
-    if(it_min == start.end()) {
+    if(it_min == start.cend()) {
       start.add(ptr, len);
       chg = true;
       it_min = start.end();
@@ -647,7 +647,7 @@ align(const Cell::Key& key, Cell::KeyVec& start, Cell::KeyVec& finish) {
       ++it_min;
     }
 
-    if(it_max == finish.end()) {
+    if(it_max == finish.cend()) {
       finish.add(ptr, len);
       chg = true;
       it_max = finish.end();

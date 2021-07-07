@@ -79,7 +79,7 @@ std::string fmt_ns(int64_t ns) {
   std::strftime(res, 20, "%Y/%m/%d %H:%M:%S", std::gmtime(&t_secs));
 
   if(nanos.size() < 9)
-    nanos.insert(nanos.begin(), 9-nanos.size(), '0');
+    nanos.insert(nanos.cbegin(), 9-nanos.size(), '0');
   return std::string(res) + "." + nanos;
 }
 

@@ -36,7 +36,7 @@ class Host final : public ConnQueue  {
 
 
 class ConnQueues final :
-    private std::vector<Host::Ptr>,
+    private Core::Vector<Host::Ptr>,
     public std::enable_shared_from_this<ConnQueues> {
 
   public:

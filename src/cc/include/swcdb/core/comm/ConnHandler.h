@@ -173,7 +173,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) = 0;
 
   virtual void do_async_write(
-      std::vector<asio::const_buffer>&& buffers,
+      Core::Vector<asio::const_buffer>&& buffers,
       std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
       noexcept = 0;
 
@@ -251,7 +251,7 @@ class ConnHandlerPlain final : public ConnHandler {
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
-    std::vector<asio::const_buffer>&& buffers,
+    Core::Vector<asio::const_buffer>&& buffers,
     std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
     noexcept override;
 
@@ -304,7 +304,7 @@ class ConnHandlerSSL final : public ConnHandler {
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
-    std::vector<asio::const_buffer>&& buffers,
+    Core::Vector<asio::const_buffer>&& buffers,
     std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
     noexcept override;
 

@@ -149,7 +149,7 @@ class Buffers final {
     return expiry_ms && Time::now_ms() > expiry_ms;
   }
 
-  std::vector<asio::const_buffer> get_buffers();
+  Core::Vector<asio::const_buffer> get_buffers();
 
   Header    header;
   int64_t   expiry_ms;

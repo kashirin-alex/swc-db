@@ -32,7 +32,7 @@ void Schemas::remove(cid_t cid) {
 
 void Schemas::_remove(cid_t cid) {
   auto it = find(cid);
-  if(it != end())
+  if(it != cend())
     erase(it);
 }
 
@@ -54,7 +54,7 @@ Schema::Ptr Schemas::get(cid_t cid) noexcept {
 
 Schema::Ptr Schemas::_get(cid_t cid) const noexcept {
   auto it = find(cid);
-  return it == end() ? nullptr : it->second;
+  return it == cend() ? nullptr : it->second;
 }
 
 Schema::Ptr Schemas::get(const std::string& name) noexcept {

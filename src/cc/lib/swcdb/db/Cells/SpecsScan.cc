@@ -58,8 +58,8 @@ bool Scan::equal(const Scan &other) const noexcept {
   if(columns.size() != other.columns.size() || !other.flags.equal(flags))
     return false;
 
-  auto it2=other.columns.begin();
-  for(auto it1=columns.begin(); it1 != columns.end(); ++it1, ++it2)
+  auto it2 = other.columns.cbegin();
+  for(auto it1 = columns.cbegin(); it1 != columns.cend(); ++it1, ++it2)
     if(!(*it1)->equal(*(*it2)))
       return false;
   return true;

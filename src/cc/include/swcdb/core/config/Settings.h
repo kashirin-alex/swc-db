@@ -83,7 +83,7 @@ class Settings final : public Properties {
       return Condition::str_eq(filename, other);
     }
   };
-  std::vector<DynFile> m_dyn_files;
+  Core::Vector<DynFile> m_dyn_files;
 };
 
 

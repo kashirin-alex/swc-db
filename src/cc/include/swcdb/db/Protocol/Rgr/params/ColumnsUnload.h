@@ -68,7 +68,7 @@ class ColumnsUnloadRsp final : public Serializable {
     if(err)
       return sz;
     sz += Serialization::encoded_length_vi64(columns.size());
-    for(auto it = columns.begin(); it != columns.end(); ++it) {
+    for(auto it = columns.cbegin(); it != columns.cend(); ++it) {
       sz += Serialization::encoded_length_vi64(it->first);
       sz += Serialization::encoded_length_vi64(it->second.size());
       for(auto& r : it->second)
@@ -82,7 +82,7 @@ class ColumnsUnloadRsp final : public Serializable {
     if(err)
       return;
     Serialization::encode_vi64(bufp, columns.size());
-    for(auto it = columns.begin(); it != columns.end(); ++it) {
+    for(auto it = columns.cbegin(); it != columns.cend(); ++it) {
       Serialization::encode_vi64(bufp, it->first);
       Serialization::encode_vi64(bufp, it->second.size());
       for(auto& r : it->second)
@@ -99,8 +99,8 @@ class ColumnsUnloadRsp final : public Serializable {
       cid = Serialization::decode_vi64(bufp, remainp);
       auto& rids = columns[cid];
       rids.resize(Serialization::decode_vi64(bufp, remainp));
-      for(auto it = rids.begin(); it != rids.end(); ++it)
-        *it = Serialization::decode_vi64(bufp, remainp);
+      for(auto& rid : rids)
+        rid = Serialization::decode_vi64(bufp, remainp);
     }
   }
 

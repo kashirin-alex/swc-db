@@ -180,7 +180,7 @@ void MngdColumns::action(const ColumnReq::Ptr& req) {
 }
 
 void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
-                             std::vector<cid_t>&& columns,
+                             Core::Vector<cid_t>&& columns,
                              bool initial) {
   if(!initial &&
      Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
@@ -205,8 +205,8 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
     auto _cols = Env::Mngr::columns();
     Core::MutexSptd::scope lock(m_mutex_expect);
     for(auto cid : columns) {
-      if(std::find(m_expected_load.begin(), m_expected_load.end(), cid)
-                                              == m_expected_load.end() &&
+      if(std::find(m_expected_load.cbegin(), m_expected_load.cend(), cid)
+                                              == m_expected_load.cend() &&
          !_cols->get_column(err = Error::OK, cid))
         m_expected_load.push_back(cid);
     }
@@ -254,7 +254,7 @@ void MngdColumns::update_status(ColumnMngFunc func,
 
       } else {
         SWC_LOGF(LOG_DEBUG, "DELETING cid=%lu", schema->cid);
-        std::vector<rgrid_t> rgrids;
+        Core::Vector<rgrid_t> rgrids;
         col->assigned(rgrids);
         do_update = rgrids.empty();
         if(do_update)
@@ -275,8 +275,8 @@ void MngdColumns::update_status(ColumnMngFunc func,
           Core::MutexSptd::scope lock(m_mutex_expect);
           if(!m_expected_ready) {
             auto it = std::find(
-              m_expected_load.begin(), m_expected_load.end(), schema->cid);
-            if(it != m_expected_load.end()) {
+              m_expected_load.cbegin(), m_expected_load.cend(), schema->cid);
+            if(it != m_expected_load.cend()) {
               m_expected_load.erase(it);
               if(m_expected_load.empty()) {
                 m_expected_load.shrink_to_fit();
@@ -284,8 +284,8 @@ void MngdColumns::update_status(ColumnMngFunc func,
               }
               init = true;
               SWC_LOGF(LOG_DEBUG,
-                "Expected Column(%lu) Loaded remain=%lu",
-                schema->cid, m_expected_load.size());
+                "Expected Column(%lu) Loaded remain=%ld",
+                schema->cid, int64_t(m_expected_load.size()));
             }
           }
         }
@@ -432,7 +432,7 @@ bool MngdColumns::initialize() {
   }
   // initialize / recover sys-columns
   for(cid_t cid=1; cid <= DB::Types::SystemColumn::SYS_CID_END; ++cid) {
-    if(std::find(entries.begin(), entries.end(), cid) == entries.end()) {
+    if(std::find(entries.cbegin(), entries.cend(), cid) == entries.cend()) {
       Column::create(err, cid);
       entries.push_back(cid);
     }
@@ -440,11 +440,11 @@ bool MngdColumns::initialize() {
 
   Core::Semaphore pending(Env::Mngr::io()->get_size()/4 + 1, 1);
   int32_t vol = entries.size()/pending.available() + 1;
-  auto it = entries.begin();
-  FS::IdEntries_t::iterator it_to;
+  auto it = entries.cbegin();
+  FS::IdEntries_t::const_iterator it_to;
   do {
     pending.acquire();
-    it_to = entries.end() - it > vol ? (it + vol) : entries.end();
+    it_to = entries.cend() - it > vol ? (it + vol) : entries.cend();
     Env::Mngr::post(
       [&pending,
        entries=FS::IdEntries_t(it, it_to),
@@ -464,7 +464,7 @@ bool MngdColumns::initialize() {
       }
     );
     it += it_to - it;
-  } while(it_to != entries.end());
+  } while(it_to != entries.cend());
 
   pending.release();
   pending.wait_all();
@@ -515,19 +515,19 @@ bool MngdColumns::columns_load() {
     [](const DB::Schema::Ptr& s1, const DB::Schema::Ptr& s2) {
       return s1->cid < s2->cid; });
 
-  auto it = entries.begin();
+  auto it = entries.cbegin();
   auto it_batch = it;
   size_t g_batches;
   for(auto& g : groups) {
     if(!(g->role & DB::Types::MngrRole::COLUMNS))
       continue;
     g_batches = 0;
-    std::vector<cid_t> columns;
+    Core::Vector<cid_t> columns;
 
     make_batch:
       it_batch = it;
       columns.reserve(1000);
-      for(;it != entries.end() && columns.size() < 1000 &&
+      for(;it != entries.cend() && columns.size() < 1000 &&
            (!g->cid_begin || g->cid_begin <= (*it)->cid) &&
            (!g->cid_end || g->cid_end >= (*it)->cid); ++it) {
         columns.push_back((*it)->cid);
@@ -535,9 +535,9 @@ bool MngdColumns::columns_load() {
       if(++g_batches > 1 && columns.empty())
         continue;
 
-      auto sz = columns.size();
+      int64_t sz = columns.size();
       SWC_LOGF(LOG_DEBUG,
-        "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%lu",
+        "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%ld",
         g->cid_begin, g->cid_end, g_batches, sz);
       set_expect(g->cid_begin, g->cid_end, std::move(columns), true);
       columns.clear();
@@ -546,7 +546,7 @@ bool MngdColumns::columns_load() {
         update_status(
           ColumnMngFunc::INTERNAL_LOAD, *it_batch, Error::OK, 0, true);
       }
-      if(it != entries.end() && sz == 1000)
+      if(it != entries.cend() && sz == 1000)
         goto make_batch;
   }
 
@@ -707,7 +707,7 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
   {
     Core::MutexSptd::scope lock(m_mutex_actions);
     auto it = m_actions_pending.find(req_id);
-    if(it != m_actions_pending.end()) {
+    if(it != m_actions_pending.cend()) {
       pending = std::move(it->second);
       m_actions_pending.erase(it);
     }

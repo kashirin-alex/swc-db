@@ -27,8 +27,8 @@ void CachedRangers::clear_expired() {
   auto ms = Time::now_ms();
 
   Core::MutexSptd::scope lock(m_mutex);
-  for(auto c = begin(); c != end(); ) {
-    for(auto r = c->second.begin(); r != c->second.end(); ) {
+  for(auto c = begin(); c != cend(); ) {
+    for(auto r = c->second.cbegin(); r != c->second.cend(); ) {
       if(ms - r->second->ts > m_expiry_ms->get()) {
         delete r->second;
         r = c->second.erase(r);
@@ -47,10 +47,10 @@ void CachedRangers::remove(const cid_t cid, const rid_t rid) {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto c = find(cid);
-  if(c == end())
+  if(c == cend())
     return;
   auto r = c->second.find(rid);
-  if(r == c->second.end())
+  if(r == c->second.cend())
     return;
   delete r->second;
   c->second.erase(r);
@@ -64,9 +64,9 @@ bool CachedRangers::get(const cid_t cid, const rid_t rid,
 
   Core::MutexSptd::scope lock(m_mutex);
   auto c = find(cid);
-  if(c != end()) {
+  if(c != cend()) {
     auto r = c->second.find(rid);
-    if(r != c->second.end() &&
+    if(r != c->second.cend() &&
        Time::now_ms() - r->second->ts < m_expiry_ms->get()) {
       found = true;
       endpoints = r->second->endpoints;

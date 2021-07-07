@@ -248,7 +248,7 @@ class Key final : public std::vector<Fraction> {
   SWC_CAN_INLINE
   uint32_t encoded_length() const noexcept {
     uint32_t len = Serialization::encoded_length_vi32(size());
-    for(auto it = begin(); it != end(); ++it)
+    for(auto it = cbegin(); it != cend(); ++it)
       len += it->encoded_length();
     return len;
   }
@@ -256,7 +256,7 @@ class Key final : public std::vector<Fraction> {
   SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     Serialization::encode_vi32(bufp, size());
-    for(auto it = begin(); it != end(); ++it)
+    for(auto it = cbegin(); it != cend(); ++it)
       it->encode(bufp);
   }
 
@@ -264,7 +264,7 @@ class Key final : public std::vector<Fraction> {
   void decode(const uint8_t** bufp, size_t* remainp) {
     clear();
     resize(Serialization::decode_vi32(bufp, remainp));
-    for(auto it = begin(); it != end(); ++it)
+    for(auto it = begin(); it != cend(); ++it)
       it->decode(bufp, remainp);
   }
 
@@ -353,8 +353,8 @@ Key::is_matching(const Cell::Key &key) const {
 
   const uint8_t* ptr = key.data;
   uint32_t len;
-  auto it = begin();
-  for(uint24_t c = key.count; c && it != end(); ++it, --c, ptr += len) {
+  auto it = cbegin();
+  for(uint24_t c = key.count; c && it != cend(); ++it, --c, ptr += len) {
     len = Serialization::decode_vi24(&ptr);
     if(!it->is_matching<T_seq>(ptr, len))
       return false;

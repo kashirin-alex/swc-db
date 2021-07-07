@@ -32,10 +32,10 @@ class Splitter final {
   void run () {
     SWC_LOGF(LOG_DEBUG,
       "COMPACT-SPLIT commitlog START "
-      "from(%lu/%lu) to(%lu/%lu) fragments=%lu",
+      "from(%lu/%lu) to(%lu/%lu) fragments=%ld",
       log_left->range->cfg->cid, log_left->range->rid,
       log_right->range->cfg->cid, log_right->range->rid,
-      m_fragments.size()
+      int64_t(m_fragments.size())
     );
 
     int err;
@@ -43,7 +43,7 @@ class Splitter final {
     size_t moved = 0;
     size_t splitted = 0;
     Fragment::Ptr frag;
-    for(auto it = m_fragments.begin(); it != m_fragments.end();) {
+    for(auto it = m_fragments.cbegin(); it != m_fragments.cend();) {
       frag = *it;
       if(DB::KeySeq::compare(frag->interval.key_seq,
           key, frag->interval.key_end) != Condition::GT) {

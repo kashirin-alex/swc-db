@@ -34,7 +34,7 @@ class PeriodicTimer final : private asio::high_resolution_timer {
 
 
 class PeriodicTimers final
-    : private std::vector<std::unique_ptr<PeriodicTimer>> {
+    : private Core::Vector<std::unique_ptr<PeriodicTimer>> {
   public:
 
   //~PeriodicTimers() { }

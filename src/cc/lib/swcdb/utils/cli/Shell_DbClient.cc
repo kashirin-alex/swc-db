@@ -233,7 +233,7 @@ bool DbClient::compact_column(std::string& cmd) {
     if(schemas.empty())
       schemas = std::move(_schemas);
     else
-      schemas.insert(schemas.end(), _schemas.begin(), _schemas.end());
+      schemas.insert(schemas.cend(), _schemas.cbegin(), _schemas.cend());
   }
   for(auto& schema : schemas) {
     with_broker
@@ -276,7 +276,7 @@ bool DbClient::list_columns(std::string& cmd) {
     if(schemas.empty())
       schemas = std::move(_schemas);
     else
-      schemas.insert(schemas.end(), _schemas.begin(), _schemas.end());
+      schemas.insert(schemas.cend(), _schemas.cbegin(), _schemas.cend());
   }
 
   std::sort(

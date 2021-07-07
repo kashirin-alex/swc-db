@@ -65,7 +65,7 @@ class Compact final {
   size_t                  nfrags;
 
   Compact(Fragments* log, uint32_t repetition,
-          const std::vector<Fragments::Vec>& groups,
+          const Fragments::CompactGroups& groups,
           uint8_t cointervaling,
           Compact::Cb_t&& cb = nullptr);
 
@@ -86,7 +86,7 @@ class Compact final {
   std::string get_filepath(const int64_t frag) const;
 
   Core::Atomic<size_t>  m_workers;
-  std::vector<Group*>   m_groups;
+  Core::Vector<Group*>  m_groups;
   Cb_t                  m_cb;
 
 

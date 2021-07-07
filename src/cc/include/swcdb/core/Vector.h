@@ -68,6 +68,12 @@ class Vector {
   }
 
   SWC_CAN_INLINE
+  Vector(const_iterator _b, const_iterator _e)
+        : _data(nullptr), _cap(0), _size(0) {
+    assign(_b, _e);
+  }
+
+  SWC_CAN_INLINE
   ~Vector() {
     if(_data) {
       if(!is_SimpleType) {

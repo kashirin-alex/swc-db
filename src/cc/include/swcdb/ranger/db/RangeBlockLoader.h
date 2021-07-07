@@ -70,7 +70,7 @@ class BlockLoader final {
   uint8_t                                   m_logs;
 
   std::queue<CellStore::Block::Read::Ptr>   m_cs_blocks;
-  std::vector<CommitLog::Fragment::Ptr>     m_f_selected;
+  CommitLog::Fragments::Vec                 m_f_selected;
   std::queue<CommitLog::Fragment::Ptr>      m_fragments;
 
 };

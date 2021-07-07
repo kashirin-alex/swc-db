@@ -87,8 +87,8 @@ int run() {
   tmp.push_back(std::cref(endpoints.front()));
   app_ctx->init(host, tmp); //missing socket->getLocalAddr
   }
-  std::vector<std::unique_ptr<std::thread>> threads;
-  std::vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;
+  Core::Vector<std::unique_ptr<std::thread>> threads;
+  Core::Vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;
 
   for(uint32_t reactor=0; reactor < reactors; ++reactor) {
 

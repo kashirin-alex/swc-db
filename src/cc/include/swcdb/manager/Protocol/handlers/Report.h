@@ -109,7 +109,7 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         else if(err)
           goto send_error;
 
-        std::vector<Manager::Range::Ptr> ranges;
+        Core::Vector<Manager::Range::Ptr> ranges;
         col->get_ranges(ranges);
         rsp_params.ranges.resize(ranges.size());
         size_t i = 0;

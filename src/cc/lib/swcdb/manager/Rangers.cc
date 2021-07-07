@@ -59,7 +59,7 @@ void Rangers::stop(bool shuttingdown) {
       if(m_rangers.empty())
         break;
       h = m_rangers.front();
-      m_rangers.erase(m_rangers.begin());
+      m_rangers.erase(m_rangers.cbegin());
     }
     h->stop();
   }
@@ -192,7 +192,9 @@ bool Rangers::rgr_ack_id(rgrid_t rgrid, const Comm::EndPoints& endpoints) {
   }
 
   if(new_ack) {
-    changes({new_ack});
+    RangerList chged;
+    chged.push_back(new_ack);
+    changes(chged);
     schedule_check(500);
   }
   return ack;
@@ -218,7 +220,7 @@ void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
   Ranger::Ptr removed = nullptr;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it=m_rangers.begin(); it != m_rangers.end(); ++it) {
+    for(auto it=m_rangers.cbegin(); it != m_rangers.cend(); ++it) {
       if(Comm::has_endpoint((*it)->endpoints, endpoints)) {
         removed = std::move(*it);
         m_rangers.erase(it);
@@ -229,7 +231,9 @@ void Rangers::rgr_shutdown(rgrid_t, const Comm::EndPoints& endpoints) {
     }
   }
   if(removed) {
-    changes({removed});
+    RangerList chged;
+    chged.push_back(removed);
+    changes(chged);
     schedule_check(5000);
   }
 }
@@ -258,7 +262,7 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
 
     for(auto& rs_new : new_rgr_status) {
       found = false;
-      for(auto it=m_rangers.begin(); it != m_rangers.end(); ++it) {
+      for(auto it=m_rangers.cbegin(); it != m_rangers.cend(); ++it) {
         h = *it;
         if(!Comm::has_endpoint(h->endpoints, rs_new->endpoints))
           continue;
@@ -344,7 +348,7 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
   }
 
   for(auto h : balance_rangers) {
-    std::vector<Range::Ptr> ranges;
+    Core::Vector<Range::Ptr> ranges;
     Env::Mngr::columns()->assigned(h->rgrid, 1, ranges);
     int err = Error::OK;
     for(auto& range : ranges) {
@@ -357,7 +361,7 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
       h->interm_ranges.fetch_add(1);
     }
     if(h->rebalance() && !sync_all) {
-      if(std::find(changed.begin(), changed.end(), h) == changed.end())
+      if(std::find(changed.cbegin(), changed.cend(), h) == changed.cend())
         changed.push_back(h);
     }
   }
@@ -378,7 +382,9 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
       } else if(err == Error::SERVER_SHUTTING_DOWN &&
                 rgr->state == RangerState::ACK) {
         rgr->state.fetch_or(RangerState::SHUTTINGDOWN);
-        changes({rgr}, true);
+        RangerList chged;
+        chged.push_back(rgr);
+        changes(chged, true);
         schedule_check(1000);
       }
 
@@ -405,7 +411,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 
 bool Rangers::update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
                      uint64_t req_id, bool ack_required) {
-  std::vector<rgrid_t> rgrids;
+  Core::Vector<rgrid_t> rgrids;
   col->need_schema_sync(schema->revision, rgrids);
   bool undergo = false;
   for(rgrid_t rgrid : rgrids) {
@@ -429,7 +435,7 @@ bool Rangers::update(const Column::Ptr& col, const DB::Schema::Ptr& schema,
 }
 
 void Rangers::column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
-                            const std::vector<rgrid_t>& rgrids) {
+                            const Core::Vector<rgrid_t>& rgrids) {
   for(rgrid_t rgrid : rgrids) {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto& rgr : m_rangers) {
@@ -443,7 +449,7 @@ void Rangers::column_delete(const DB::Schema::Ptr& schema, uint64_t req_id,
 }
 
 void Rangers::column_compact(const Column::Ptr& col) {
-  std::vector<rgrid_t> rgrids;
+  Core::Vector<rgrid_t> rgrids;
   col->assigned(rgrids);
   for(rgrid_t rgrid : rgrids) {
     Core::MutexSptd::scope lock(m_mutex);
@@ -462,9 +468,9 @@ void Rangers::need_health_check(const Column::Ptr& col) {
   {
     Core::MutexSptd::scope lock(m_mutex_columns_check);
     auto it = std::find_if(
-      m_columns_check.begin(), m_columns_check.end(),
+      m_columns_check.cbegin(), m_columns_check.cend(),
       [&col](const ColumnHealthCheck::Ptr chk) { return chk->col == col; });
-    if(it != m_columns_check.end())
+    if(it != m_columns_check.cend())
       return;
   }
   col->reset_health_check();
@@ -474,8 +480,9 @@ void Rangers::need_health_check(const Column::Ptr& col) {
 void Rangers::health_check_finished(const ColumnHealthCheck::Ptr& chk) {
   {
     Core::MutexSptd::scope lock(m_mutex_columns_check);
-    auto it = std::find(m_columns_check.begin(), m_columns_check.end(), chk);
-    if(it != m_columns_check.end())
+    auto it = std::find(
+      m_columns_check.cbegin(), m_columns_check.cend(), chk);
+    if(it != m_columns_check.cend())
       m_columns_check.erase(it);
   }
   health_check_columns();
@@ -486,11 +493,11 @@ void Rangers::wait_health_check(cid_t cid) {
     {
       Core::MutexSptd::scope lock(m_mutex_columns_check);
       auto it = cid == DB::Schema::NO_CID
-        ? m_columns_check.begin()
-        : std::find_if(m_columns_check.begin(), m_columns_check.end(),
+        ? m_columns_check.cbegin()
+        : std::find_if(m_columns_check.cbegin(), m_columns_check.cend(),
             [cid](const ColumnHealthCheck::Ptr chk) {
               return chk->col->cfg->cid == cid; });
-      if(it == m_columns_check.end())
+      if(it == m_columns_check.cend())
         return;
     }
     std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -578,7 +585,9 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
     } else if(rgr->failures >= cfg_rgr_failures->get()) {
       Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
       rgr->state.store(RangerState::MARKED_OFFLINE);
-      _changes({rgr}, true);
+      RangerList chged;
+      chged.push_back(rgr);
+      _changes(chged, true);
 
     } else if(state & RangerState::ACK) {
       if(!last_rgr->endpoints.empty() &&
@@ -633,7 +642,7 @@ void Rangers::health_check_columns() {
 
 Ranger::Ptr Rangers::rgr_set(const Comm::EndPoints& endpoints,
                              rgrid_t opt_rgrid) {
-  for(auto it=m_rangers.begin();it != m_rangers.end(); ++it) {
+  for(auto it=m_rangers.cbegin();it != m_rangers.cend(); ++it) {
     auto h = *it;
     if(Comm::has_endpoint(h->endpoints, endpoints)) {
       if(h->state & RangerState::ACK) {

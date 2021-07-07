@@ -108,9 +108,9 @@ Statistics::Statistics()
       {"list stat-names;"},
       [this](std::string&) {
         SWC_PRINT << "stat-names: ";
-        for(auto it=m_stat_names.begin(); it != m_stat_names.end();) {
+        for(auto it=m_stat_names.cbegin(); it != m_stat_names.cend();) {
           SWC_LOG_OSTREAM << '"' << *it << '"';
-          if(++it != m_stat_names.end())
+          if(++it != m_stat_names.cend())
             SWC_LOG_OSTREAM<< ", ";
         }
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
@@ -282,8 +282,8 @@ bool Statistics::read(std::string& cmd, bool extended) {
 
   for(auto& g : m_read_groups) {
     auto it = g.key.begin();
-    auto it_set = g.key.begin();
-    for(; it != g.key.end(); ++it) {
+    auto it_set = g.key.cbegin();
+    for(; it != g.key.cend(); ++it) {
       if(!it->empty()) {
         it->comp = Condition::EQ;
         it_set = it;
@@ -291,12 +291,12 @@ bool Statistics::read(std::string& cmd, bool extended) {
       }
       it->comp = Condition::GE;
     }
-    if(it_set == g.key.begin()) {
+    if(it_set == g.key.cbegin()) {
       g.key.clear();
-    } else if(it_set != g.key.end() &&
-              ++it_set != g.key.end() &&
-              ++it_set != g.key.end()) {
-      g.key.erase(it_set, g.key.end());
+    } else if(it_set != g.key.cend() &&
+              ++it_set != g.key.cend() &&
+              ++it_set != g.key.cend()) {
+      g.key.erase(it_set, g.key.cend());
     }
   }
 

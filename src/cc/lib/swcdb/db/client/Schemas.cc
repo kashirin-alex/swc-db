@@ -16,7 +16,7 @@ void Schemas::remove(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
-  if(it != m_track.end())
+  if(it != m_track.cend())
     m_track.erase(it);
   _remove(cid);
 }
@@ -28,7 +28,7 @@ void Schemas::remove(const std::string& name) {
   if(!schema)
     return;
   auto it = m_track.find(schema->cid);
-  if(it != m_track.end())
+  if(it != m_track.cend())
     m_track.erase(it);
   _remove(schema->cid);
 }
@@ -38,7 +38,7 @@ DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
 
   auto it = m_track.find(cid);
-  if(it != m_track.end() &&
+  if(it != m_track.cend() &&
      Time::now_ms() - it->second < m_expiry_ms->get() &&
      (schema = _get(cid)))
     return schema;
@@ -58,7 +58,7 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
 
   if((schema = _get(name))) {
     auto it = m_track.find(schema->cid);
-    if(it != m_track.end() && Time::now_ms()-it->second < m_expiry_ms->get())
+    if(it != m_track.cend() && Time::now_ms()-it->second < m_expiry_ms->get())
       return schema;
     schema = nullptr;
   }
@@ -76,7 +76,7 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
 DB::Schema::Ptr Schemas::get(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = m_track.find(cid);
-  return it != m_track.end() &&
+  return it != m_track.cend() &&
          Time::now_ms()-it->second < m_expiry_ms->get()
          ? _get(cid) : nullptr;
 }
@@ -86,7 +86,7 @@ DB::Schema::Ptr Schemas::get(const std::string& name) {
   Core::MutexSptd::scope lock(m_mutex);
   if((schema = _get(name))) {
     auto it = m_track.find(schema->cid);
-    if(it == m_track.end() || Time::now_ms()-it->second > m_expiry_ms->get())
+    if(it == m_track.cend() || Time::now_ms()-it->second > m_expiry_ms->get())
       schema = nullptr;
   }
   return schema;

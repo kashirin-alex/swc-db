@@ -76,7 +76,7 @@ class Compaction final {
 
   size_t                          m_idx_cid;
   size_t                          m_idx_rid;
-  std::vector<CompactRange::Ptr>  m_compacting;
+  Core::Vector<CompactRange::Ptr> m_compacting;
 
 };
 

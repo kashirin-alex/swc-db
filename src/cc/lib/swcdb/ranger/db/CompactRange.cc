@@ -178,22 +178,22 @@ void CompactRange::initialize() {
   if(range->blocks.cellstores.size() >= range->cfg->cellstore_max() * 2 &&
      range->blocks.cellstores.size_bytes(false) > cs_size) {
     size_t split_at = range->blocks.cellstores.size() / 2;
-    auto it = range->blocks.cellstores.begin();
+    auto it = range->blocks.cellstores.cbegin();
 
     split_option:
-      it = range->blocks.cellstores.begin() + split_at;
+      it = range->blocks.cellstores.cbegin() + split_at;
       do {
         if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
           break;
-      } while(++it != range->blocks.cellstores.end());
+      } while(++it != range->blocks.cellstores.cend());
 
-    if(it == range->blocks.cellstores.end()) {
+    if(it == range->blocks.cellstores.cend()) {
       if(split_at > 1) {
         split_at = 1;
         goto split_option;
       }
     } else {
-      RangeSplit splitter(range, it - range->blocks.cellstores.begin());
+      RangeSplit splitter(range, it - range->blocks.cellstores.cbegin());
       int err = splitter.run();
       if(!err)
         return finished(true);
@@ -215,7 +215,7 @@ void CompactRange::initial_commitlog(uint32_t tnum) {
   if(m_log_sz < cointervaling || m_stopped)
     return initial_commitlog_done(nullptr);
 
-  std::vector<CommitLog::Fragments::Vec> groups;
+  CommitLog::Fragments::CompactGroups groups;
   if(range->blocks.commitlog.need_compact(groups, {}, cointervaling) &&
      !m_stopped) {
     new CommitLog::Compact(
@@ -388,7 +388,7 @@ void CompactRange::commitlog(uint32_t tnum) {
       < cointervaling || m_stopped)
     return commitlog_done(nullptr);
 
-  std::vector<CommitLog::Fragments::Vec> groups;
+  CommitLog::Fragments::CompactGroups groups;
   if(range->blocks.commitlog.need_compact(
       groups, fragments_old, cointervaling) && !m_stopped) {
     new CommitLog::Compact(
@@ -653,27 +653,27 @@ ssize_t CompactRange::can_split_at() {
   if(cellstores.size() < (max < 2 ? 2 : max))
     return 0;
 
-  auto it = cellstores.begin() + 1;
+  auto it = cellstores.cbegin() + 1;
   if((*it)->size < (cs_size/100) * range->cfg->compact_percent())
     return -2;
 
   size_t at = cellstores.size() / 2;
 
   split_option:
-    it = cellstores.begin() + at;
+    it = cellstores.cbegin() + at;
     do {
       if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
         break;
-    } while(++it != cellstores.end());
+    } while(++it != cellstores.cend());
 
-  if(it == cellstores.end()) {
+  if(it == cellstores.cend()) {
     if(at > 1) {
       at = 1;
       goto split_option;
     }
     return -1;
   }
-  return it - cellstores.begin();
+  return it - cellstores.cbegin();
 }
 
 void CompactRange::finalize() {
@@ -735,13 +735,13 @@ void CompactRange::finalize() {
   ssize_t split_at = can_split_at();
   if(split_at == -1) {
     SWC_LOGF(LOG_WARN,
-      "COMPACT-SPLIT %lu/%lu fail(versions-over-cs) cs-count=%lu",
-      range->cfg->cid, range->rid, cellstores.size());
+      "COMPACT-SPLIT %lu/%lu fail(versions-over-cs) cs-count=%ld",
+      range->cfg->cid, range->rid, int64_t(cellstores.size()));
 
   } else if(split_at == -2) {
     SWC_LOGF(LOG_DEBUG,
-      "COMPACT-SPLIT %lu/%lu skipping(last-cs-small) cs-count=%lu",
-      range->cfg->cid, range->rid, cellstores.size());
+      "COMPACT-SPLIT %lu/%lu skipping(last-cs-small) cs-count=%ld",
+      range->cfg->cid, range->rid, int64_t(cellstores.size()));
   }
 
   split_at > 0
@@ -824,9 +824,9 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   }
 
   CellStore::Writers new_cellstores;
-  auto it = cellstores.begin()+split_at;
-  new_cellstores.assign(it, cellstores.end());
-  cellstores.erase(it, cellstores.end());
+  auto it = cellstores.cbegin() + split_at;
+  new_cellstores.assign(it, cellstores.cend());
+  cellstores.erase(it, cellstores.cend());
 
   new_range->internal_create(err, new_cellstores);
   if(!err)

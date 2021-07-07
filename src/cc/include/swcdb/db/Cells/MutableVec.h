@@ -10,7 +10,6 @@
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Buffer.h"
-#include "swcdb/core/Vector.h"
 #include "swcdb/db/Cells/Mutable.h"
 
 
@@ -98,7 +97,7 @@ class MutableVec final : private Core::Vector<Mutable*> {
 
   private:
 
-  bool split(Mutable& cells, iterator it);
+  bool split(Mutable& cells, const_iterator it);
 
 };
 
@@ -118,7 +117,7 @@ void MutableVec::free() {
 }
 
 SWC_CAN_INLINE
-bool MutableVec::split(Mutable& cells, MutableVec::iterator it) {
+bool MutableVec::split(Mutable& cells, MutableVec::const_iterator it) {
   if(cells.size() >= split_size && cells.can_split()) {
     cells.split(**insert(it, new Mutable(key_seq, max_revs, ttl, type)));
     return true;
@@ -131,7 +130,7 @@ void MutableVec::add_sorted(const Cell& cell) {
   if(Vec::empty())
     push_back(new Mutable(key_seq, max_revs, ttl, type));
   back()->add_sorted(cell);
-  split(*back(), end());
+  split(*back(), cend());
 }
 
 

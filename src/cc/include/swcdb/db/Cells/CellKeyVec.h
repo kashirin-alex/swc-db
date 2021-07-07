@@ -221,7 +221,7 @@ void KeyVec::decode(const uint8_t** bufp, size_t* remainp) {
   clear();
   resize(Serialization::decode_vi32(bufp, remainp));
   uint32_t len;
-  for(auto it = begin(); it != end(); ++it) {
+  for(auto it = begin(); it != cend(); ++it) {
     *remainp -= len = Serialization::decode_vi32(bufp, remainp);
     it->assign(*bufp, len);
     *bufp += len;

@@ -39,7 +39,7 @@ class ColumnsUnload : public ManageBase {
   private:
 
   Core::MutexSptd                                 m_mutex;
-  std::vector<ColumnPtr>                          m_cols;
+  Core::Vector<ColumnPtr>                         m_cols;
   Comm::Protocol::Rgr::Params::ColumnsUnloadRsp   m_rsp_params;
 
 };

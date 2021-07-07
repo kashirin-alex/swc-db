@@ -30,7 +30,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
 
   SWC_CAN_INLINE
   ColumnUpdate(cid_t cid_begin, cid_t cid_end,
-               std::vector<cid_t>&& columns)
+               Core::Vector<cid_t>&& columns)
               : client::ConnQueue::ReqBase(
                   Buffers::make(
                     Params::ColumnUpdate(

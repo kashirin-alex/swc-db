@@ -155,8 +155,8 @@ void Fragments::add(Fragment::Ptr& frag) {
 }
 
 void Fragments::_add(Fragment::Ptr& frag) {
-  for(auto it = begin() + _narrow(frag->interval.key_begin);
-      it != end(); ++it) {
+  for(auto it = cbegin() + _narrow(frag->interval.key_begin);
+      it != cend(); ++it) {
     if(DB::KeySeq::compare(m_cells.key_seq,
         (*it)->interval.key_begin, frag->interval.key_begin)
          != Condition::GT) {
@@ -172,7 +172,7 @@ bool Fragments::is_compacting() const {
   return m_compacting;
 }
 
-size_t Fragments::need_compact(std::vector<Fragments::Vec>& groups,
+size_t Fragments::need_compact(CompactGroups& groups,
                                const Fragments::Vec& without,
                                size_t vol) {
   Core::SharedLock lock(m_mutex);
@@ -199,7 +199,7 @@ bool Fragments::try_compact(uint32_t tnum) {
     return false;
   }
 
-  std::vector<Fragments::Vec> groups;
+  CompactGroups groups;
   uint8_t cointervaling = range->cfg->log_compact_cointervaling();
   size_t need = 0;
   bool need_major;
@@ -315,7 +315,7 @@ SWC_CAN_INLINE
 void Fragments::_load_cells(BlockLoader* loader, Fragments::Vec& frags,
                             uint8_t& vol) {
   for(auto& frag : *this) {
-    if(std::find(frags.begin(), frags.end(), frag) == frags.end() &&
+    if(std::find(frags.cbegin(), frags.cend(), frag) == frags.cend() &&
        loader->block->is_consist(frag->interval)) {
       frag->processing_increment();
       frags.push_back(frag);
@@ -326,10 +326,8 @@ void Fragments::_load_cells(BlockLoader* loader, Fragments::Vec& frags,
 }
 
 void Fragments::get(Fragments::Vec& fragments) {
-  fragments.clear();
-
   Core::SharedLock lock(m_mutex);
-  fragments.assign(begin(), end());
+  fragments.assign(cbegin(), cend());
 }
 
 size_t Fragments::release(size_t bytes) {
@@ -358,8 +356,8 @@ void Fragments::_remove(int &err, Fragments::Vec& fragments_old,
   for(auto& frag : fragments_old) {
     semp->acquire();
     frag->remove(err, semp);
-    auto it = std::find(begin(), end(), frag);
-    if(it != end())
+    auto it = std::find(cbegin(), cend(), frag);
+    if(it != cend())
       erase(it);
   }
 }
@@ -368,8 +366,8 @@ void Fragments::remove(int &err, Fragment::Ptr& frag, bool remove_file) {
   Core::ScopedLock lock(m_mutex);
   if(remove_file)
     frag->remove(err);
-  auto it = std::find(begin(), end(), frag);
-  if(it != end())
+  auto it = std::find(cbegin(), cend(), frag);
+  if(it != cend())
     erase(it);
 }
 
@@ -425,7 +423,7 @@ void Fragments::take_ownership(int& err, Fragments::Vec& frags,
                                          Fragments::Vec& removing) {
   const auto& fs_if = Env::FsInterface::interface();
   Fragments::Vec tmp_frags;
-  for(auto it = frags.begin(); !stopping && it != frags.end(); ) {
+  for(auto it = frags.cbegin(); !stopping && it != frags.cend(); ) {
     auto smartfd = FS::SmartFd::make_ptr(get_log_fragment(next_id()), 0);
     fs_if->rename(err, (*it)->get_filepath(), smartfd->filepath());
     if(err)
@@ -567,7 +565,7 @@ bool Fragments::_need_roll() const {
           Env::Rgr::res().need_ram(bytes) );
 }
 
-size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
+size_t Fragments::_need_compact(CompactGroups& groups,
                                 const Fragments::Vec& without,
                                 size_t vol) {
   size_t need = 0;
@@ -582,40 +580,38 @@ size_t Fragments::_need_compact(std::vector<Fragments::Vec>& groups,
       return need;
     fragments.reserve(Vec::size() - without.size());
     for(auto& frag : *this) {
-      if(std::find(without.begin(), without.end(), frag) == without.end())
+      if(std::find(without.cbegin(), without.cend(), frag) == without.cend())
         fragments.push_back(frag);
     }
     if(fragments.size() < vol)
       return need;
   }
 
-  auto it = fragments.begin();
-  groups.push_back({*it});
+  auto it = fragments.cbegin();
+  groups.emplace_back().push_back(*it);
   ++need;
   Fragment::Ptr curt;
   Condition::Comp cond;
-  for(++it; it != fragments.end(); ++it) {
+  for(++it; it != fragments.cend(); ++it) {
     auto const& last = *groups.back().back();
-    if((cond = DB::KeySeq::compare(m_cells.key_seq, last.interval.key_end,
+    if(!( (cond = DB::KeySeq::compare(m_cells.key_seq, last.interval.key_end,
                         (curt = *it)->interval.key_begin)) == Condition::LT ||
         (cond == Condition::EQ && ( range->cfg->cell_versions() == 1 || (
           curt->cells_count < range->cfg->block_cells() &&
           curt->size_bytes() < range->cfg->block_size() &&
           last.cells_count < range->cfg->block_cells() &&
-          last.size_bytes() < range->cfg->block_size() ) )) ) {
-      groups.back().push_back(curt);
-      ++need;
-    } else {
+          last.size_bytes() < range->cfg->block_size() ) )) ) ) {
       if(groups.back().size() < vol) {
         need -= groups.back().size();
-        groups.back() = {curt};
+        groups.back().clear();
       } else {
-        groups.push_back({curt});
+        groups.emplace_back();
       }
-      ++need;
     }
+    groups.back().push_back(curt);
+    ++need;
   }
-  for(auto it=groups.begin(); it != groups.end(); ) {
+  for(auto it=groups.cbegin(); it != groups.cend(); ) {
     if(it->size() < vol) {
       need -= it->size();
       groups.erase(it);
@@ -673,7 +669,7 @@ size_t Fragments::_narrow(const DB::Cell::Key& key) const {
   size_t step = offset = Vec::size() >> 1;
   try_narrow:
     if(DB::KeySeq::compare(m_cells.key_seq,
-        (*(begin() + offset))->interval.key_begin, key) == Condition::GT) {
+        (*(cbegin() + offset))->interval.key_begin, key) == Condition::GT) {
       if(step < MAX_FRAGMENTS_NARROW)
         return offset;
       offset += step >>= 1;

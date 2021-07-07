@@ -74,7 +74,7 @@ bool Mngr::cluster_status(std::string&) {
   auto groups = clients->managers.groups->get_groups();
   for(auto& g : groups) {
     auto tmp =  g->get_hosts();
-    hosts.insert(hosts.end(), tmp.begin(), tmp.end());
+    hosts.insert(hosts.cend(), tmp.cbegin(), tmp.cend());
   }
   if(hosts.empty()) {
     err = Error::FAILED_EXPECTATION;
@@ -159,7 +159,7 @@ bool Mngr::managers_status(std::string& cmd) {
     auto groups = clients->managers.groups->get_groups();
     for(auto& g : groups) {
       auto tmp =  g->get_hosts();
-      hosts.insert(hosts.end(), tmp.begin(), tmp.end());
+      hosts.insert(hosts.cend(), tmp.cbegin(), tmp.cend());
     }
 
   } else { // reader.found_token("schemas", 7)

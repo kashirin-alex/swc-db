@@ -27,7 +27,7 @@ class ColumnUpdate final : public Serializable {
   SWC_CAN_INLINE
   ColumnUpdate(ColumnMng::Function function,
                cid_t cid_begin, cid_t cid_end,
-               std::vector<cid_t>&& columns) noexcept
+               Core::Vector<cid_t>&& columns) noexcept
               : function(function), id(0),
                 columns(std::move(columns)),
                 cid_begin(cid_begin), cid_end(cid_end),
@@ -54,7 +54,7 @@ class ColumnUpdate final : public Serializable {
 
   ColumnMng::Function function;
   uint64_t            id;
-  std::vector<cid_t>  columns;
+  Core::Vector<cid_t> columns;
   cid_t               cid_begin;
   cid_t               cid_end;
   DB::Schema::Ptr     schema;
@@ -111,8 +111,8 @@ class ColumnUpdate final : public Serializable {
         cid_end = Serialization::decode_vi64(bufp, remainp);
         columns.clear();
         columns.resize(Serialization::decode_vi64(bufp, remainp));
-        for(auto it = columns.begin(); it != columns.end(); ++it)
-          *it = Serialization::decode_vi64(bufp, remainp);
+        for(auto& col : columns)
+          col = Serialization::decode_vi64(bufp, remainp);
         break;
       }
       default : {

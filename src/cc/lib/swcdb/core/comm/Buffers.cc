@@ -31,7 +31,7 @@ void Buffers::set_data(const Serializable& params, uint32_t reserve) {
   data_ptr = buf_data.base;
 }
 
-std::vector<asio::const_buffer> Buffers::get_buffers() {
+Core::Vector<asio::const_buffer> Buffers::get_buffers() {
   uint8_t buf_header_len = header.encoded_length();
   {
     uint8_t* buf = buf_header;
@@ -52,7 +52,7 @@ std::vector<asio::const_buffer> Buffers::get_buffers() {
     nchunks += (buf_ext_chunks += buf_ext.size / BUFFER_CHUNK_SZ)
             + (buf_ext_not_aligned = buf_ext.size % BUFFER_CHUNK_SZ);
 
-  std::vector<asio::const_buffer> buffers;
+  Core::Vector<asio::const_buffer> buffers;
   buffers.reserve(nchunks);
   buffers.emplace_back(buf_header, buf_header_len);
 

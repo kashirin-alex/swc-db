@@ -112,7 +112,7 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
   Block::Ptr blk;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    blk = m_block ? *(m_blocks_idx.begin()+_narrow(cell.key)) : nullptr;
+    blk = m_block ? *(m_blocks_idx.cbegin()+_narrow(cell.key)) : nullptr;
   }
   while(blk && !blk->add_logged(cell)) {
     Core::MutexSptd::scope lock(m_mutex);
@@ -162,7 +162,7 @@ void Blocks::scan(ReqScan::Ptr req, Block::Ptr blk_ptr) {
 
       } else {
         support = m_mutex.lock();
-        blk_ptr = (*(m_blocks_idx.begin() +
+        blk_ptr = (*(m_blocks_idx.cbegin() +
           _narrow(
             req->spec.offset_key.empty()
               ? req->spec.range_begin
@@ -248,7 +248,7 @@ bool Blocks::_split(Block::Ptr blk, bool loaded) {
         m_mutex.unlock(support);
         return had;
       }
-      m_blocks_idx.insert(m_blocks_idx.begin()+(++offset), blk);
+      m_blocks_idx.insert(m_blocks_idx.cbegin()+(++offset), blk);
       if(!blk->loaded()) {
         if((preload = !commitlog.is_compacting() &&
                   range->is_loaded() && range->compacting() &&
@@ -451,9 +451,9 @@ void Blocks::init_blocks(int& err) {
 
 SWC_CAN_INLINE
 size_t Blocks::_get_block_idx(Block::Ptr blk) const {
-  for(auto it=m_blocks_idx.begin(); it != m_blocks_idx.end();++it)
+  for(auto it=m_blocks_idx.cbegin(); it != m_blocks_idx.cend();++it)
     if(*it == blk)
-      return it - m_blocks_idx.begin();
+      return it - m_blocks_idx.cbegin();
   return 0; // eq m_block;
 }
 
@@ -465,7 +465,7 @@ size_t Blocks::_narrow(const DB::Cell::Key& key) const {
 
   size_t step = offset = m_blocks_idx.size() >> 1;
   try_narrow:
-    if(!(*(m_blocks_idx.begin() + offset))->is_in_end(key)) {
+    if(!(*(m_blocks_idx.cbegin() + offset))->is_in_end(key)) {
       if(step < MAX_IDX_NARROW)
         return offset;
       offset += step >>= 1;

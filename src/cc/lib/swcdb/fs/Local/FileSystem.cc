@@ -107,7 +107,7 @@ int _mkdirs(std::string& dirname) {
   dirname.append("/");
   struct stat statbuf;
   errno = 0;
-  for(auto it = dirname.begin(); ++it != dirname.end(); ) {
+  for(auto it = dirname.begin(); ++it != dirname.cend(); ) {
     if(*it != '/')
       continue;
     *it = 0;

@@ -30,8 +30,8 @@ class ColumnDelete : public ManageBase {
   void complete();
 
   private:
-  Core::MutexSptd       m_mutex;
-  std::vector<RangePtr> m_ranges;
+  Core::MutexSptd        m_mutex;
+  Core::Vector<RangePtr> m_ranges;
 
 };
 

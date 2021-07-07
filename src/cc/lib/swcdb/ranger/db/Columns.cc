@@ -14,7 +14,7 @@ SWC_CAN_INLINE
 ColumnPtr Columns::get_column(const cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
-  return it == end() ? nullptr : it->second;
+  return it == cend() ? nullptr : it->second;
 }
 
 SWC_CAN_INLINE
@@ -30,7 +30,7 @@ RangePtr Columns::get_range(int &err, const cid_t cid, const rid_t rid) {
 ColumnPtr Columns::get_next(size_t& idx) {
   Core::MutexSptd::scope lock(m_mutex);
   if(size() > idx) {
-    auto it = begin();
+    auto it = cbegin();
     for(int i=idx; i; --i, ++it);
     return it->second;
   }
@@ -41,7 +41,7 @@ ColumnPtr Columns::get_next(size_t& idx) {
 void Columns::get_cids(std::vector<cid_t>& cids) {
   Core::MutexSptd::scope lock(m_mutex);
   cids.reserve(size());
-  for(auto it = begin(); it != end(); ++it)
+  for(auto it = cbegin(); it != cend(); ++it)
     cids.push_back(it->first);
 }
 
@@ -87,7 +87,7 @@ void Columns::unload(cid_t cid_begin, cid_t cid_end,
                      Callback::ColumnsUnload::Ptr req) {
   {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it = begin(); it != end(); ++it) {
+    for(auto it = cbegin(); it != cend(); ++it) {
       if((!cid_begin || cid_begin <= it->first) &&
          (!cid_end || cid_end >= it->first)) {
         req->add(it->second);
@@ -115,7 +115,7 @@ void Columns::unload_all(bool validation) {
 void Columns::erase_if_empty(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
-  if(it != end() && it->second->is_not_used()) {
+  if(it != cend() && it->second->is_not_used()) {
     erase(it);
   }
 }
@@ -123,7 +123,7 @@ void Columns::erase_if_empty(cid_t cid) {
 void Columns::internal_delete(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
   auto it = find(cid);
-  if(it != end())
+  if(it != cend())
     erase(it);
 }
 
@@ -132,14 +132,14 @@ size_t Columns::release(size_t bytes) {
     return 0;
 
   ColumnPtr col;
-  iterator it;
+  const_iterator it;
   size_t released = 0;
   for(size_t offset = 0; ; ++offset) {
     {
       Core::MutexSptd::scope lock(m_mutex);
-      it = begin();
-      for(size_t i=0; i<offset && it != end(); ++it, ++i);
-      if(it == end())
+      it = cbegin();
+      for(size_t i=0; i<offset && it != cend(); ++it, ++i);
+      if(it == cend())
         break;
       if(!DB::Types::SystemColumn::is_data(it->first))
         continue;
@@ -156,7 +156,7 @@ size_t Columns::release(size_t bytes) {
 void Columns::print(std::ostream& out, bool minimal) {
   out << "columns=[";
   Core::MutexSptd::scope lock(m_mutex);
-  for(auto it = begin(); it != end(); ++it){
+  for(auto it = cbegin(); it != cend(); ++it){
     it->second->print(out, minimal);
     out << ", ";
   }

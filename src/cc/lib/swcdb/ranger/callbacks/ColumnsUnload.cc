@@ -41,8 +41,8 @@ void ColumnsUnload::unloaded(RangePtr range) {
 void ColumnsUnload::unloaded(const ColumnPtr& col) {
   {
     Core::MutexSptd::scope lock(m_mutex);
-    auto it = std::find(m_cols.begin(), m_cols.end(), col);
-    if(it != m_cols.end())
+    auto it = std::find(m_cols.cbegin(), m_cols.cend(), col);
+    if(it != m_cols.cend())
       m_cols.erase(it);
     if(!m_cols.empty())
       return;

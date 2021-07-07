@@ -66,8 +66,8 @@ bool Fs::ls(const std::string& cmd) {
       lname = entry.name.size();
 
     auto& tmp = entry.is_dir ? dirs : files;
-    for(auto it = tmp.begin(); ; ++it) {
-      if(it == tmp.end() ||
+    for(auto it = tmp.cbegin(); ; ++it) {
+      if(it == tmp.cend() ||
          Condition::lt_volume(
            reinterpret_cast<const uint8_t*>((*it)->name.c_str()),
            (*it)->name.size(),

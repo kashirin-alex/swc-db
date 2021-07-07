@@ -53,7 +53,7 @@ bool Rgr::read_endpoint(std::string& host_or_ips,
   host_or_ips.erase(
     std::remove_if(host_or_ips.begin(), host_or_ips.end(),
                   [](unsigned char x){return std::isspace(x);} ),
-    host_or_ips.end()
+    host_or_ips.cend()
   );
   std::string message;
 
