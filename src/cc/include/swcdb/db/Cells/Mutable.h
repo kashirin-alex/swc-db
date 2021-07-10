@@ -605,6 +605,13 @@ class Mutable final {
   }
 
   SWC_CAN_INLINE
+  void _adjust_copy(Cell& cell, const Cell& other) {
+    _bytes -= cell.encoded_length();
+    cell.copy(other);
+    _bytes += cell.encoded_length();
+  }
+
+  SWC_CAN_INLINE
   void _insert(Iterator& it, const Cell& cell) {
     Cell* add = new Cell(cell);
     _add(*add);

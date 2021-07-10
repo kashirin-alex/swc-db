@@ -257,7 +257,6 @@ bool Mutable::split(Mutable& cells, bool loaded) {
   if(!it_chk)
     return false;
   const DB::Cell::Key& from_key = it_chk.item()->key;
-  size_t count = _size;
   bool from_set = false;
   Iterator it_start = get<Iterator>();
   Cell* cell;
@@ -265,12 +264,8 @@ bool Mutable::split(Mutable& cells, bool loaded) {
     cell = it.item();
 
     if(!from_set) {
-      if(DB::KeySeq::compare(key_seq, cell->key, from_key)
-           == Condition::GT) {
-       --count;
+      if(DB::KeySeq::compare(key_seq, cell->key, from_key) == Condition::GT)
         continue;
-      }
-
       it_start = it;
       if(!loaded)
         break;
@@ -283,7 +278,7 @@ bool Mutable::split(Mutable& cells, bool loaded) {
       cells.add_sorted(cell);
   }
 
-  _remove(it_start, count, !loaded);
+  _remove(it_start, _size, !loaded);
   return true;
 }
 
@@ -368,7 +363,7 @@ void Mutable::_add_plain(const Cell& e_cell, Mutable::Iterator& it,
 
     if(chk_ts && cell->get_timestamp() == ts) {
       if(!chk_rev || rev > cell->get_revision())
-        return cell->copy(e_cell);
+        return _adjust_copy(*cell, e_cell);
       return;
     }
 
@@ -384,7 +379,7 @@ void Mutable::_add_plain(const Cell& e_cell, Mutable::Iterator& it,
 
     if(max_revs == revs) {
       if(!chk_rev || rev > cell->get_revision())
-        cell->copy(e_cell);
+        _adjust_copy(*cell, e_cell);
     } else {
       _insert(it, e_cell);
       ++it;
@@ -439,7 +434,7 @@ void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
     }
 
     if(e_cell.get_counter_op() & OP_EQUAL) {
-      cell->copy(e_cell);
+      _adjust_copy(*cell, e_cell);
     } else {
       value_1 += e_cell.get_counter();
       cell->set_counter(op_1, value_1, type, eq_rev_1);
