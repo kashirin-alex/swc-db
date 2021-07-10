@@ -270,11 +270,11 @@ SWC_CAN_INLINE
 Condition::Comp
 compare<Types::KeySeq::FC_LEXIC>(const Cell::Key& key,
                                  const Cell::Key& other) {
-  if(key.count < other.count)
-    return Condition::GT;
-  if(key.count > other.count)
-    return Condition::LT;
-  return compare<Types::KeySeq::LEXIC>(key, other);
+  return key.count < other.count
+    ? Condition::GT
+    : (key.count > other.count
+      ? Condition::LT
+      : compare<Types::KeySeq::LEXIC>(key, other) );
 }
 
 template<>
@@ -282,11 +282,11 @@ SWC_CAN_INLINE
 Condition::Comp
 compare<Types::KeySeq::FC_VOLUME>(const Cell::Key& key,
                                   const Cell::Key& other) {
-  if(key.count < other.count)
-    return Condition::GT;
-  if(key.count > other.count)
-    return Condition::LT;
-  return compare<Types::KeySeq::VOLUME>(key, other);
+  return key.count < other.count
+    ? Condition::GT
+    : (key.count > other.count
+      ? Condition::LT
+      : compare<Types::KeySeq::VOLUME>(key, other) );
 }
 
 extern SWC_CAN_INLINE
