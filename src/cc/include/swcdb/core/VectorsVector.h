@@ -27,7 +27,7 @@ class VectorsVector : public VectorsT {
 
   constexpr SWC_CAN_INLINE
   static size_t need_reserve(VectorT& vec) {
-    if(vec.capacity() == vec.size() && vec.capacity() >= GROW) {
+    if(GROW > 1 && vec.capacity() == vec.size() && vec.capacity() >= GROW) {
       size_t sz = vec.size() + GROW;
       if((sz > SIZE ? (sz = SIZE) : sz) > vec.capacity())
         return sz;
@@ -53,12 +53,11 @@ class VectorsVector : public VectorsT {
     ConstIterator(const VectorsT& _vectors, size_t offset) noexcept
                   : _vectors(_vectors), _pos_vec(0) {
       for(; _pos_vec < _vectors.size(); ++_pos_vec) {
-        if(offset >= _vectors[_pos_vec].size()) {
-          offset -= _vectors[_pos_vec].size();
-        } else {
+        if(!offset || offset < _vectors[_pos_vec].size()) {
           _pos_item = offset;
           break;
         }
+        offset -= _vectors[_pos_vec].size();
       }
     }
 
@@ -78,12 +77,11 @@ class VectorsVector : public VectorsT {
     constexpr SWC_CAN_INLINE
     ConstIterator& at(size_t offset) noexcept {
       for(_pos_vec = 0; _pos_vec < _vectors.size(); ++_pos_vec) {
-        if(offset >= _vectors[_pos_vec].size()) {
-          offset -= _vectors[_pos_vec].size();
-        } else {
+        if(!offset || offset < _vectors[_pos_vec].size()) {
           _pos_item = offset;
           break;
         }
+        offset -= _vectors[_pos_vec].size();
       }
       return *this;
     }
@@ -124,12 +122,11 @@ class VectorsVector : public VectorsT {
     Iterator(VectorsT& _vectors, size_t offset) noexcept
             : _vectors(_vectors), _pos_vec(0) {
       for(; _pos_vec < _vectors.size(); ++_pos_vec) {
-        if(offset >= _vectors[_pos_vec].size()) {
-          offset -= _vectors[_pos_vec].size();
-        } else {
+        if(!offset || offset < _vectors[_pos_vec].size()) {
           _pos_item = offset;
           break;
         }
+        offset -= _vectors[_pos_vec].size();
       }
     }
 
@@ -149,12 +146,11 @@ class VectorsVector : public VectorsT {
     constexpr SWC_CAN_INLINE
     Iterator& at(size_t offset) noexcept {
       for(_pos_vec = 0; _pos_vec < _vectors.size(); ++_pos_vec) {
-        if(offset >= _vectors[_pos_vec].size()) {
-          offset -= _vectors[_pos_vec].size();
-        } else {
+        if(!offset || offset < _vectors[_pos_vec].size()) {
           _pos_item = offset;
           break;
         }
+        offset -= _vectors[_pos_vec].size();
       }
       return *this;
     }
@@ -267,7 +263,7 @@ class VectorsVector : public VectorsT {
 
 
 
-  /* Position by vector iterator */ 
+  /* Position by vector iterator */
   class ConstIterator final {
     const VectorsT&                   _vectors;
     typename VectorsT::const_iterator _vector;
@@ -276,28 +272,27 @@ class VectorsVector : public VectorsT {
 
     constexpr SWC_CAN_INLINE
     ConstIterator(const VectorsT& _vectors) noexcept
-            : _vectors(_vectors), _vector(_vectors.cbegin()),
-              _item(_vector == _vectors.cend()
-                      ? typename VectorT::const_iterator() : _vector->cbegin()) {
+        : _vectors(_vectors), _vector(_vectors.cbegin()),
+          _item(_vector == _vectors.cend()
+                  ? typename VectorT::const_iterator() : _vector->cbegin()) {
     }
 
     constexpr SWC_CAN_INLINE
     ConstIterator(const VectorsT& _vectors, size_t offset) noexcept
-            : _vectors(_vectors), _vector(_vectors.cbegin()) {
+        : _vectors(_vectors), _vector(_vectors.cbegin()) {
       for(; _vector != _vectors.cend(); ++_vector) {
-        if(offset >= _vector->size()) {
-          offset -= _vector->size();
-        } else {
+        if(!offset || offset < _vector->size()) {
           _item = _vector->cbegin() + offset;
           break;
         }
+        offset -= _vector->size();
       }
     }
 
     constexpr SWC_CAN_INLINE
     ConstIterator(const ConstIterator& other) noexcept
-            : _vectors(other._vectors),
-              _vector(other._vector), _item(other._item) {
+        : _vectors(other._vectors), _vector(other._vector),
+          _item(other._item) {
     }
 
     constexpr SWC_CAN_INLINE
@@ -310,12 +305,11 @@ class VectorsVector : public VectorsT {
     constexpr SWC_CAN_INLINE
     ConstIterator& at(size_t offset) noexcept {
       for(_vector=_vectors.cbegin(); _vector != _vectors.cend(); ++_vector) {
-        if(offset >= _vector->size()) {
-          offset -= _vector->size();
-        } else {
+        if(!offset || offset < _vector->size()) {
           _item = _vector->cbegin() + offset;
           break;
         }
+        offset -= _vector->size();
       }
       return *this;
     }
@@ -347,28 +341,27 @@ class VectorsVector : public VectorsT {
 
     constexpr SWC_CAN_INLINE
     Iterator(VectorsT& _vectors) noexcept
-            : _vectors(_vectors), _vector(_vectors.begin()),
-              _item(_vector == _vectors.cend()
-                      ? typename VectorT::iterator() : _vector->begin()) {
+        : _vectors(_vectors), _vector(_vectors.begin()),
+          _item(_vector == _vectors.cend()
+                  ? typename VectorT::iterator() : _vector->begin()) {
     }
 
     constexpr SWC_CAN_INLINE
     Iterator(VectorsT& _vectors, size_t offset) noexcept
-            : _vectors(_vectors), _vector(_vectors.begin()) {
+        : _vectors(_vectors), _vector(_vectors.begin()) {
       for(; _vector != _vectors.cend(); ++_vector) {
-        if(offset >= _vector->size()) {
-          offset -= _vector->size();
-        } else {
+        if(!offset || offset < _vector->size()) {
           _item = _vector->begin() + offset;
           break;
         }
+        offset -= _vector->size();
       }
     }
 
     constexpr SWC_CAN_INLINE
     Iterator(const Iterator& other) noexcept
-            : _vectors(other._vectors),
-              _vector(other._vector), _item(other._item) {
+        : _vectors(other._vectors), _vector(other._vector),
+          _item(other._item) {
     }
 
     constexpr SWC_CAN_INLINE
@@ -381,12 +374,11 @@ class VectorsVector : public VectorsT {
     constexpr SWC_CAN_INLINE
     Iterator& at(size_t offset) noexcept {
       for(_vector=_vectors.begin(); _vector != _vectors.cend(); ++_vector) {
-        if(offset >= _vector->size()) {
-          offset -= _vector->size();
-        } else {
+        if(!offset || offset < _vector->size()) {
           _item = _vector->begin() + offset;
           break;
         }
+        offset -= _vector->size();
       }
       return *this;
     }
@@ -598,7 +590,7 @@ class VectorsVector : public VectorsT {
 
 
   SWC_CAN_INLINE
-  void add(VectorsVector&& other) { 
+  void add(VectorsVector&& other) {
     VectorsT::reserve(VectorsT::size() + other.size());
     for(auto it = other.begin(); it != other.cend(); ++it)
       VectorsT::emplace_back(std::move(*it));
@@ -610,10 +602,9 @@ class VectorsVector : public VectorsT {
   SWC_CAN_INLINE
   void split(size_t split_at, VectorsVector& to) {
     to.reserve(to.size() + split_at);
-    auto it = VectorsT::begin() + split_at;
-    for(; it != VectorsT::cend(); ++it) 
+    for(auto it = VectorsT::begin() + split_at; it != VectorsT::cend(); ++it)
       to.emplace_back(std::move(*it));
-    VectorsT::erase(it, VectorsT::cend());
+    VectorsT::erase(VectorsT::cbegin() + split_at, VectorsT::cend());
   }
 
   void print(std::ostream& out) const {
