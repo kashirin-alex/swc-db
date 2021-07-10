@@ -110,17 +110,17 @@ void Encoder::decode(
       strm.opaque = Z_NULL;
       strm.avail_in = 0;
       strm.next_in = Z_NULL;
-      if(::inflateInit(&strm) != Z_OK) {
+      if(::inflateInit(&strm) == Z_OK) {
+        strm.avail_in = sz_enc;
+        strm.next_in = const_cast<Bytef*>(src);
+        strm.avail_out = sz;
+        strm.next_out = dst;
+        if(::inflate(&strm, Z_NO_FLUSH) != Z_STREAM_END || strm.avail_out)
+          err = Error::ENCODER_DECODE;
+      } else {
         err = Error::ENCODER_DECODE;
-        return;
       }
-      strm.avail_in = sz_enc;
-      strm.next_in = const_cast<Bytef*>(src);
-      strm.avail_out = sz;
-      strm.next_out = dst;
-      if(::inflate(&strm, Z_NO_FLUSH) != Z_STREAM_END || strm.avail_out)
-        err = Error::ENCODER_DECODE;
-      ::inflateReset(&strm);
+      ::inflateEnd(&strm);
       return;
     }
 
@@ -175,7 +175,7 @@ void Encoder::encode(
         if(::deflate(&strm, Z_FINISH) == Z_STREAM_END)
           *sz_enc = avail_out - strm.avail_out;
       }
-      ::deflateReset(&strm);
+      ::deflateEnd(&strm);
       if(*sz_enc && (ok_more || *sz_enc < src_sz)) {
         output.ptr += *sz_enc;
         return;
