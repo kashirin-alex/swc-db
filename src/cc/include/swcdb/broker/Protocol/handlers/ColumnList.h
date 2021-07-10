@@ -34,16 +34,17 @@ struct ColumnList {
 
   SWC_CAN_INLINE
   bool valid() {
-    return !ev->expired() && conn->is_open();
+    return !ev->expired() && conn->is_open() && Env::Bkr::is_accepting();
   }
 
   SWC_CAN_INLINE
   void callback(const client::ConnQueue::ReqBase::Ptr&,
                 int err, const Mngr::Params::ColumnListRsp& rsp) {
-    if(valid()) {
+    if(!ev->expired() && conn->is_open()) {
+      if(err == Error::CLIENT_STOPPING || !Env::Bkr::is_accepting())
+        err = Error::SERVER_SHUTTING_DOWN;
       auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rsp, 4);
-      cbp->append_i32(
-        err == Error::CLIENT_STOPPING ? Error::SERVER_SHUTTING_DOWN : err);
+      cbp->append_i32(err);
       conn->send_response(cbp);
     }
     if(!err)

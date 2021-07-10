@@ -34,6 +34,11 @@ class Bkr final {
   }
 
   SWC_CAN_INLINE
+  static bool is_accepting() noexcept {
+    return !m_env->m_not_accepting;
+  }
+
+  SWC_CAN_INLINE
   static bool can_process() noexcept {
     if(m_env->m_not_accepting)
       return false;

@@ -34,23 +34,19 @@ struct ColumnMng  {
   SWC::client::Clients::Ptr& get_clients() noexcept {
     return Env::Clients::get();
   }
-  
+
   SWC_CAN_INLINE
   bool valid() {
-    return !ev->expired() && conn->is_open();
+    return !ev->expired() && conn->is_open() && Env::Bkr::is_accepting();
   }
 
   SWC_CAN_INLINE
   void callback(const client::ConnQueue::ReqBase::Ptr&, int err) {
-    if(valid())
-      err
-        ? conn->send_error(
-            err == Error::CLIENT_STOPPING ? Error::SERVER_SHUTTING_DOWN : err,
-            "",
-            ev
-          )
-        : conn->response_ok(ev);
-
+    if(!ev->expired() && conn->is_open()) {
+      if(err == Error::CLIENT_STOPPING || !Env::Bkr::is_accepting())
+        err = Error::SERVER_SHUTTING_DOWN;
+      err ? conn->send_error(err, "", ev) : conn->response_ok(ev);
+    }
     schema->cid == DB::Schema::NO_CID
       ? Env::Clients::get()->schemas.remove(schema->col_name)
       : Env::Clients::get()->schemas.remove(schema->cid);

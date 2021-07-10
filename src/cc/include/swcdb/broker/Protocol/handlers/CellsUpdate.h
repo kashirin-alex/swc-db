@@ -41,14 +41,15 @@ class Updater final
   virtual ~Updater() { }
 
   bool valid() noexcept override {
-    return !error() && !ev->expired() && conn->is_open();
+    return !error() && !ev->expired() && conn->is_open() &&
+            Env::Bkr::is_accepting();
   }
 
   void response(int err=Error::OK) override {
     if(!completion.is_last())
       return;
 
-    if(!err && requires_commit()) {
+    if(!err && requires_commit() && Env::Bkr::is_accepting()) {
       commit(&column);
       return;
     }
@@ -59,14 +60,9 @@ class Updater final
       error(Error::CLIENT_DATA_REMAINED);
 
     if(!ev->expired() && conn->is_open()) {
-      conn->send_response(Buffers::make(
-        ev,
-        Params::CellsUpdateRsp(
-          error() == Error::CLIENT_STOPPING
-            ? Error::SERVER_SHUTTING_DOWN
-            : error()
-        )
-      ));
+      if(error() == Error::CLIENT_STOPPING || !Env::Bkr::is_accepting())
+         error(Error::SERVER_SHUTTING_DOWN);
+      conn->send_response(Buffers::make(ev, Params::CellsUpdateRsp(error())));
     }
     profile.finished();
 

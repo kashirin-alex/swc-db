@@ -36,7 +36,8 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
   virtual ~Selector() { }
 
   bool valid() noexcept override  {
-    return !state_error && !ev->expired() && conn->is_open();
+    return !state_error && !ev->expired() && conn->is_open() &&
+            Env::Bkr::is_accepting();
   }
 
   void error(const cid_t, int err) override {
@@ -70,12 +71,10 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
     SWC::client::Query::Select::Handlers::Base::error(err);
 
     if(!sent && !ev->expired() && conn->is_open()) {
-      conn->send_response(Buffers::make(ev, Params::CellsSelectRsp(
-        state_error == Error::CLIENT_STOPPING
-          ? Error::SERVER_SHUTTING_DOWN
-          : state_error,
-        false
-      )));
+      if(state_error == Error::CLIENT_STOPPING || !Env::Bkr::is_accepting())
+         state_error.store(Error::SERVER_SHUTTING_DOWN);
+      conn->send_response(
+        Buffers::make(ev, Params::CellsSelectRsp(state_error, false)));
     }
     profile.finished();
 

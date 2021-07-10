@@ -34,19 +34,19 @@ struct ColumnCompact {
 
   SWC_CAN_INLINE
   bool valid() {
-    return !ev->expired() && conn->is_open();
+    return !ev->expired() && conn->is_open() && Env::Bkr::is_accepting();
   }
 
   SWC_CAN_INLINE
   void callback(const client::ConnQueue::ReqBase::Ptr&,
                 const Mngr::Params::ColumnCompactRsp& rsp) {
-    if(valid())
-      conn->send_response(Buffers::make(
-        ev,
-        rsp.err == Error::CLIENT_STOPPING
-          ? Mngr::Params::ColumnCompactRsp(Error::SERVER_SHUTTING_DOWN)
-          : rsp
-      ));
+    if(!ev->expired() && conn->is_open()) {
+      int err = rsp.err;
+      if(err == Error::CLIENT_STOPPING || !Env::Bkr::is_accepting())
+        err = Error::SERVER_SHUTTING_DOWN;
+      conn->send_response(
+        Buffers::make(ev, Mngr::Params::ColumnCompactRsp(err)));
+    }
     Env::Bkr::processed();
   }
 
