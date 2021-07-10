@@ -26,12 +26,8 @@ void MutableVec::configure(uint32_t split,
 }
 
 void MutableVec::add_raw(const Cell& cell) {
-  if(Vec::empty())
-    return add_sorted(cell);
-
-  Mutable* cells;
   for(auto it = cbegin(); it != cend();) {
-    cells = *it;
+    Mutable* cells = *it;
     if(++it == cend() ||
        DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
@@ -40,18 +36,16 @@ void MutableVec::add_raw(const Cell& cell) {
       return;
     }
   }
+  return add_sorted(cell);
 }
 
 void MutableVec::add_raw(const Cell& cell,
                          size_t* offset_itp, size_t* offsetp) {
-  if(Vec::empty())
-    return add_sorted(cell);
   if(*offset_itp >= Vec::size())
     *offset_itp = 0;
 
-  Mutable* cells;
-  for(auto it = cbegin()+*offset_itp; it != cend(); ++*offset_itp, *offsetp=0) {
-    cells = *it;
+  for(auto it=cbegin()+*offset_itp; it != cend(); ++*offset_itp, *offsetp=0) {
+     Mutable* cells = *it;
     if(++it == cend() ||
        DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
@@ -61,6 +55,7 @@ void MutableVec::add_raw(const Cell& cell,
       return;
     }
   }
+  return add_sorted(cell);
 }
 
 void MutableVec::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
