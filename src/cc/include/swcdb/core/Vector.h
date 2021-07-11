@@ -579,7 +579,7 @@ class Vector {
                        size_type size_prev) noexcept(is_SimpleType) {
     for(pointer ptr=data; size_prev; --size_prev, ++ptr, ++data_prev) {
       _construct(ptr, std::move(*data_prev));
-      if(!is_SimpleType) 
+      if(!is_SimpleType)
         data_prev->~value_type();
     }
     //std::uninitialized_move_n(data_prev, size_prev, data);
