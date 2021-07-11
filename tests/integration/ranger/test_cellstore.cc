@@ -366,6 +366,8 @@ int main(int argc, char** argv) {
   SWC::Env::Rgr::shuttingdown();
   SWC::Env::Clients::get()->stop();
 
+  if(SWC::Env::Rgr::metrics_track())
+    SWC::Env::Rgr::metrics_track()->wait();
   SWC::Env::Rgr::reset();
   SWC::Env::Clients::reset();
   SWC::Env::FsInterface::reset();
