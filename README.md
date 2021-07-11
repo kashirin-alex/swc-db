@@ -19,7 +19,7 @@ _All the documentations are based on the ./docs/_.
 * ###### [SWC-DB Read The Docs - https://swc-db.readthedocs.io/](https://swc-db.readthedocs.io/)
 
 * ###### [Browse the docs/](https://github.com/kashirin-alex/swc-db/blob/master/docs/)
-
+![SWC-DB_Architecture_brief-select-query](docs/SWC-DB_Architecture_brief-select-query.png)
 
 
 
