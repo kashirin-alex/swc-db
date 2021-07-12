@@ -232,13 +232,13 @@ class Mutable final {
   }
 
   template<typename T>
-  constexpr SWC_CAN_INLINE
+  constexpr// SWC_CAN_INLINE
   T get(size_t offset) noexcept {
     return _container.get<T>(offset);
   }
 
   template<typename T>
-  constexpr SWC_CAN_INLINE
+  constexpr// SWC_CAN_INLINE
   T get(size_t offset) const noexcept {
     return _container.get<T>(offset);
   }
@@ -550,6 +550,7 @@ class Mutable final {
   bool split(Mutable& cells, bool loaded);
 
 
+  SWC_CAN_INLINE
   void split(Mutable& cells) {
     size_t split_at = _container.size() / 2;
     if(!split_at)
