@@ -248,6 +248,8 @@ bool Scanner::mngr_located_master(
       selector->clients->rgr_cache_set(rsp.cid, rsp.rid, rsp.endpoints);
       master_mngr_next = true;
       master_mngr_offset.copy(rsp.range_begin);
+      master_mngr_offset.remove(0); // master-cid
+      master_mngr_offset.remove(0); // meta-cid
       if(DB::Types::SystemColumn::is_master(data_cid)) {
         data_rid = rsp.rid;
         data_req_base = req;

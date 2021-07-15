@@ -155,8 +155,11 @@ void Committer::located_on_manager(
     ? committer->commit_data(std::move(rsp.endpoints), base)
     : committer->locate_on_ranger(std::move(rsp.endpoints));
 
-  if(!rsp.range_end.empty()) {
-    auto next_key_start = colp->get_key_next(rsp.range_end);
+  if(rsp.range_end.count > 2) {
+    DB::Cell::Key key(rsp.range_end);
+    key.remove(0); // master-cid
+    key.remove(0); // meta-cid
+    auto next_key_start = colp->get_key_next(key);
     if(next_key_start) {
       Ptr(new Committer(
         DB::Types::Range::MASTER,

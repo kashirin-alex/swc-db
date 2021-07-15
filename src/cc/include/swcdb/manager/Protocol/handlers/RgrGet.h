@@ -31,7 +31,7 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     //  Env::Mngr::rangers()->need_health_check(col);
 
     Manager::Range::Ptr range;
-    if(!params.rid) {
+    if(!params.rid) { // MASTER-COLUMN
       range = col->get_range(
         rsp_params.err,
         params.range_begin,
@@ -39,11 +39,10 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         params.next_range
       );
       if(range) {
-        range->get_interval(rsp_params.range_begin, rsp_params.range_end);
-        rsp_params.range_begin.remove(0);
-        rsp_params.range_begin.remove(0);
-        rsp_params.range_end.remove(0);
-        rsp_params.range_end.remove(0);
+        range->get_interval(
+          rsp_params.range_begin, rsp_params.range_end,
+          rsp_params.revision
+        );
       }
     } else {
       range = col->get_range(params.rid);

@@ -76,7 +76,7 @@ class Column final : private Core::Vector<Range::Ptr> {
 
   void set_unloaded(const Range::Ptr& range) {
     Core::ScopedLock lock(m_mutex);
-    range->set_state(Range::State::NOTSET, 0);
+    range->set_state_none();
     _set_loading();
   }
 
@@ -143,12 +143,9 @@ class Column final : private Core::Vector<Range::Ptr> {
                        const DB::Cell::Key& range_end,
                        bool next_range) {
     bool found = false;
-    uint32_t any_is = DB::Types::SystemColumn::is_master(cfg->cid)
-      ? 2 : (DB::Types::SystemColumn::is_meta(cfg->cid) ? 1 : 0);
-
     Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
-      if(!range->includes(range_begin, range_end, any_is))
+      if(!range->includes(range_begin, range_end))
         continue;
       if(!next_range)
         return range;
@@ -161,12 +158,13 @@ class Column final : private Core::Vector<Range::Ptr> {
     return nullptr;
   }
 
-  void sort(Range::Ptr& range, const DB::Cells::Interval& interval) {
+  void sort(Range::Ptr& range,
+            const DB::Cells::Interval& interval, int64_t revision) {
     Core::ScopedLock lock(m_mutex);
 
     // std::sort(begin(), end(), Range);
     if(!range->equal(interval)) {
-      range->set(interval);
+      range->set(interval, revision);
 
       if(size() > 1) {
         for(auto it = cbegin(); it != cend(); ++it) {
@@ -232,7 +230,7 @@ class Column final : private Core::Vector<Range::Ptr> {
 
     for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid) {
-        range->set_state(Range::State::NOTSET, 0);
+        range->set_state_none();
         _set_loading();
       }
     }

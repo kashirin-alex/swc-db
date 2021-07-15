@@ -45,7 +45,7 @@ void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       err = e.code();
     }
   }
-  loaded(err, false, params.interval);
+  loaded(err, false, params.interval, params.revision);
 }
 
 bool RangeLoad::valid() {
@@ -54,17 +54,18 @@ bool RangeLoad::valid() {
 
 void RangeLoad::handle_no_conn() {
   loaded(Error::COMM_NOT_CONNECTED, true,
-         DB::Cells::Interval(range->cfg->key_seq));
+         DB::Cells::Interval(range->cfg->key_seq), 0);
 }
 
 
 void RangeLoad::loaded(int err, bool failure,
-                       const DB::Cells::Interval& intval) {
+                       const DB::Cells::Interval& intval, int64_t revision) {
   if(!err)
     col->change_rgr_schema(rgr->rgrid, schema_revision);
 
-  Env::Mngr::rangers()->range_loaded(rgr, range, err, failure, false);
-  col->sort(range, intval);
+  Env::Mngr::rangers()->range_loaded(
+    rgr, range, revision, err, failure, false);
+  col->sort(range, intval, revision);
 
   SWC_LOG_OUT(LOG_INFO,
     Error::print(SWC_LOG_OSTREAM << "RANGE-STATUS ", err);

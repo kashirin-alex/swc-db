@@ -52,12 +52,12 @@ class RgrGetRsp final : public Serializable {
 
   SWC_CAN_INLINE
   RgrGetRsp(int err = Error::OK) noexcept
-            : err(err), cid(0), rid(0) {
+            : err(err), cid(0), rid(0), revision(0) {
   }
 
   SWC_CAN_INLINE
   RgrGetRsp(cid_t cid, rid_t rid) noexcept
-            : err(Error::OK), cid(cid), rid(rid) {
+            : err(Error::OK), cid(cid), rid(rid), revision(0) {
   }
 
   RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
@@ -70,6 +70,7 @@ class RgrGetRsp final : public Serializable {
   rid_t           rid;
   DB::Cell::Key   range_end;
   DB::Cell::Key   range_begin;
+  int64_t         revision;
 
   void print(std::ostream& out) const;
 

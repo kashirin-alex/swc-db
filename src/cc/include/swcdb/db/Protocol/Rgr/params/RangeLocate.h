@@ -24,6 +24,7 @@ class RangeLocateReq final : public Serializable {
   static const uint8_t COMMIT         = 0x04;
   static const uint8_t RANGE_END_REST = 0x08;
   static const uint8_t KEY_EQUAL      = 0x10;
+  static const uint8_t HAVE_REVISION  = 0x20;
 
   SWC_CAN_INLINE
   RangeLocateReq(cid_t cid=0, rid_t rid=0) noexcept
@@ -38,6 +39,7 @@ class RangeLocateReq final : public Serializable {
   rid_t          rid;
   DB::Cell::Key  range_begin, range_end, range_offset;
   uint8_t        flags;
+  int64_t        revision;
 
   private:
 

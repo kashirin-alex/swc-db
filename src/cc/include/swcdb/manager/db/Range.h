@@ -33,7 +33,7 @@ class Range final {
         : cfg(cfg), rid(rid),
           m_path(DB::RangeBase::get_path(cfg->cid, rid)),
           m_state(State::NOTSET), m_check_ts(0),
-          m_rgrid(0), m_last_rgr(nullptr) {
+          m_rgrid(0), m_last_rgr(nullptr), m_load_revision(0) {
   }
 
   void init(int&) { }
@@ -90,8 +90,31 @@ class Range final {
     Core::ScopedLock lock(m_mutex);
     m_state = new_state;
     m_rgrid = rgrid;
-    m_check_ts = m_state == State::ASSIGNED || m_state == State::QUEUED
-                  ? Time::now_ms() : 0;
+    m_load_revision = 0;
+    m_check_ts = 0;
+  }
+
+  void set_state_none() {
+    set_state(State::NOTSET, 0);
+  }
+
+  void set_state_queued(rgrid_t rgrid) {
+    int64_t ts = Time::now_ms();
+    Core::ScopedLock lock(m_mutex);
+    m_state = State::QUEUED;
+    m_rgrid = rgrid;
+    m_load_revision = 0;
+    m_check_ts = ts;
+  }
+
+  void set_state_assigned(rgrid_t rgrid, int64_t revision) {
+    int64_t ts = Time::now_ms();
+    Core::ScopedLock lock(m_mutex);
+    m_state = State::ASSIGNED;
+    m_rgrid = rgrid;
+    m_load_revision = revision;
+    m_check_ts = ts;
+    m_last_rgr = nullptr;
   }
 
   void set_deleted() {
@@ -119,22 +142,19 @@ class Range final {
     return m_last_rgr;
   }
 
-  SWC_CAN_INLINE
-  void clear_last_rgr() {
-    Core::ScopedLock lock(m_mutex);
-    m_last_rgr = nullptr;
-  }
-
-  void set(const DB::Cells::Interval& intval) {
+  void set(const DB::Cells::Interval& intval, int64_t revision) {
     Core::ScopedLock lock(m_mutex);
     m_key_begin.copy(intval.key_begin);
     m_key_end.copy(intval.key_end);
+    m_load_revision = revision;
   }
 
-  void get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end) {
+  void get_interval(DB::Cell::Key& key_begin, DB::Cell::Key& key_end,
+                    int64_t& revision) {
     Core::SharedLock lock(m_mutex);
     key_begin.copy(m_key_begin);
     key_end.copy(m_key_end);
+    revision = m_load_revision;
   }
 
   bool equal(const DB::Cells::Interval& intval) {
@@ -144,18 +164,14 @@ class Range final {
   }
 
   bool includes(const DB::Cell::Key& range_begin,
-                const DB::Cell::Key& range_end, uint32_t any_is=0) {
+                const DB::Cell::Key& range_end) {
     Core::SharedLock lock(m_mutex);
     return (
-        m_key_begin.empty() ||
-        m_key_begin.count == any_is ||
-        range_end.empty() ||
+        m_key_begin.empty() || range_end.empty() ||
         DB::KeySeq::compare(cfg->key_seq, range_end, m_key_begin)
           != Condition::GT
       ) && (
-        m_key_end.empty() ||
-        m_key_end.count == any_is ||
-        range_begin.empty() ||
+        m_key_end.empty() || range_begin.empty() ||
         DB::KeySeq::compare(cfg->key_seq, range_begin, m_key_end)
           != Condition::LT
       );
@@ -180,6 +196,7 @@ class Range final {
     out << " rid="    << rid
         << " state="  << DB::Types::to_string(m_state)
         << " rgr="    << m_rgrid
+        << " rev="    << m_load_revision
         << ')';
   }
 
@@ -194,6 +211,7 @@ class Range final {
 
   DB::Cell::Key                 m_key_begin;
   DB::Cell::Key                 m_key_end;
+  int64_t                       m_load_revision;
 
 };
 

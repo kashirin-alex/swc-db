@@ -39,7 +39,7 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       rsp_params.err = Error::RANGE_NOT_FOUND;
       goto send_response;
     }
-    range->set_state(Manager::Range::State::NOTSET, 0);
+    range->set_state_none();
 
     Env::Mngr::rangers()->schedule_check(1);
 

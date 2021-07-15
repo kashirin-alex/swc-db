@@ -6,7 +6,7 @@
 
 #include "swcdb/db/Protocol/Mngr/params/RgrGet.h"
 #include "swcdb/core/Serialization.h"
-
+#include "swcdb/db/Types/SystemColumn.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -72,9 +72,10 @@ void RgrGetRsp::print(std::ostream& out) const {
   if(!err) {
     out << " cid=" << cid << " rid=" << rid;
     Comm::print(out << ' ', endpoints);
-    if(cid == 1) {
+    if(DB::Types::SystemColumn::is_master(cid)) {
       range_begin.print(out << " RangeBegin");
       range_end.print(out << " RangeEnd");
+      out << " revision=" << revision;
     }
   }
   out << ')';
@@ -86,8 +87,10 @@ size_t RgrGetRsp::internal_encoded_length() const {
       (Serialization::encoded_length_vi64(cid)
       + Serialization::encoded_length_vi64(rid)
       + Serialization::encoded_length(endpoints)
-      + (cid == 1
-        ? (range_end.encoded_length() + range_begin.encoded_length())
+      + (DB::Types::SystemColumn::is_master(cid)
+        ? (range_begin.encoded_length() +
+           range_end.encoded_length() +
+           Serialization::encoded_length_vi64(revision))
         : 0)
       )
     );
@@ -99,9 +102,10 @@ void RgrGetRsp::internal_encode(uint8_t** bufp) const {
     Serialization::encode_vi64(bufp, cid);
     Serialization::encode_vi64(bufp, rid);
     Serialization::encode(bufp, endpoints);
-    if(cid == 1) {
-      range_end.encode(bufp);
+    if(DB::Types::SystemColumn::is_master(cid)) {
       range_begin.encode(bufp);
+      range_end.encode(bufp);
+      Serialization::encode_vi64(bufp, revision);
     }
   }
 }
@@ -112,9 +116,10 @@ void RgrGetRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
     cid = Serialization::decode_vi64(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
     Serialization::decode(bufp, remainp, endpoints);
-    if(cid == 1) {
-      range_end.decode(bufp, remainp, false);
+    if(DB::Types::SystemColumn::is_master(cid)) {
       range_begin.decode(bufp, remainp, false);
+      range_end.decode(bufp, remainp, false);
+      revision = Serialization::decode_vi64(bufp, remainp);
     }
   }
 }

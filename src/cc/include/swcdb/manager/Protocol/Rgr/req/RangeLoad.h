@@ -27,8 +27,8 @@ class RangeLoad : public client::ConnQueue::ReqBase {
 
   void handle_no_conn() override;
 
-  void loaded(int err, bool failure, const DB::Cells::Interval& intval);
-
+  void loaded(int err, bool failure,
+              const DB::Cells::Interval& intval, int64_t revision);
 
   private:
 

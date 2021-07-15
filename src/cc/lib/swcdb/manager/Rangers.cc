@@ -46,7 +46,7 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
           "swc.mngr.column.health.checks.delay")),
       m_run(true),
       m_timer(asio::high_resolution_timer(app_io->executor())),
-      m_assignments(0) {
+      m_assignments(0), m_columns_check_ts(0) {
 }
 
 void Rangers::stop(bool shuttingdown) {
@@ -374,6 +374,7 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
 }
 
 void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
+                           int64_t revision,
                            int err, bool failure, bool verbose) {
   bool run_assign = m_assignments.fetch_sub(1) == cfg_assign_due->get();
   if(!range->deleted()) {
@@ -391,7 +392,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
         schedule_check(1000);
       }
 
-      range->set_state(Range::State::NOTSET, 0);
+      range->set_state_none();
       if(!run_assign)
         schedule_check(2000);
       if(verbose)
@@ -402,8 +403,7 @@ void Rangers::range_loaded(Ranger::Ptr rgr, Range::Ptr range,
 
     } else {
       rgr->failures.store(0);
-      range->set_state(Range::State::ASSIGNED, rgr->rgrid);
-      range->clear_last_rgr();
+      range->set_state_assigned(rgr->rgrid, revision);
     }
   }
 
@@ -554,7 +554,7 @@ void Rangers::assign_ranges_run() {
     if(!schema)
       continue;
 
-    range->set_state(Range::State::QUEUED, rgr->rgrid);
+    range->set_state_queued(rgr->rgrid);
     rgr->interm_ranges.fetch_add(1);
     state = m_assignments.add_rslt(1) < cfg_assign_due->get();
     if(!state)

@@ -41,7 +41,8 @@ void RangeLoad::loaded(int& err) {
     m_conn->send_error(err, "", m_ev);
 
   } else {
-    Comm::Protocol::Rgr::Params::RangeLoaded params(range->cfg->key_seq);
+    Comm::Protocol::Rgr::Params::RangeLoaded params(
+      range->cfg->key_seq, range->get_load_revision());
     if((params.intval = range->cfg->range_type == DB::Types::Range::MASTER))
       range->get_interval(params.interval);
 

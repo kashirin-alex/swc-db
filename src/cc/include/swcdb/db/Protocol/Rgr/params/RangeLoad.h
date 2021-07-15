@@ -59,30 +59,34 @@ class RangeLoaded final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeLoaded(const DB::Types::KeySeq key_seq) noexcept
-              : intval(false), interval(key_seq) {
+  RangeLoaded(const DB::Types::KeySeq key_seq, int64_t revision=0) noexcept
+              : intval(false), interval(key_seq), revision(revision) {
   }
 
   //~RangeLoaded() { }
 
   bool                intval;
   DB::Cells::Interval interval;
+  int64_t             revision;
 
   private:
 
   size_t internal_encoded_length() const override {
-    return 1 + (intval ? interval.encoded_length() : 0);
+    return 1 + (intval ? interval.encoded_length() : 0) +
+           Serialization::encoded_length_vi64(revision);
   }
 
   void internal_encode(uint8_t** bufp) const override {
     Serialization::encode_bool(bufp, intval);
     if(intval)
       interval.encode(bufp);
+    Serialization::encode_vi64(bufp, revision);
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
     if((intval = Serialization::decode_bool(bufp, remainp)))
       interval.decode(bufp, remainp, false);
+    revision = Serialization::decode_vi64(bufp, remainp);
   }
 
 };

@@ -26,8 +26,9 @@ void range_locate(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
-    
-    if(!err && (!range || !range->is_loaded()))
+    if((!err && (!range || !range->is_loaded())) ||
+       (params.flags & Params::RangeLocateReq::HAVE_REVISION &&
+        params.revision != range->get_load_revision()))
       err = Error::RGR_NOT_LOADED_RANGE;
 
   } catch(...) {

@@ -90,6 +90,10 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void set_state(State new_state);
 
+  void reset_load_revision();
+
+  int64_t get_load_revision();
+
   bool is_loaded();
 
   bool deleted();
@@ -170,6 +174,7 @@ class Range final : public std::enable_shared_from_this<Range> {
   Core::MutexAtomic             m_mutex_intval;
   Core::MutexAtomic             m_mutex_intval_alignment;
   DB::Cells::Interval           m_interval;
+  Core::Atomic<int64_t>         m_load_revision;
 
   std::shared_mutex             m_mutex;
 

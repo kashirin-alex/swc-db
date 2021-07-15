@@ -63,7 +63,7 @@ class Rangers final {
 
   void update_status(const RangerList& new_rgr_status, bool sync_all);
 
-  void range_loaded(Ranger::Ptr rgr, Range::Ptr range,
+  void range_loaded(Ranger::Ptr rgr, Range::Ptr range, int64_t revision,
                     int err, bool failure=false, bool verbose=true);
 
   void assign_ranges();

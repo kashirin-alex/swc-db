@@ -77,7 +77,7 @@ Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
             : cfg(cfg), rid(rid),
               blocks(cfg->key_seq),
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
-              m_interval(cfg->key_seq),
+              m_interval(cfg->key_seq), m_load_revision(0),
               m_state(State::NOTLOADED),
               m_compacting(COMPACT_NONE), m_require_compact(false),
               m_q_run_add(false), m_q_run_scan(false),
@@ -187,6 +187,16 @@ void Range::schema_update(bool compact) {
 void Range::set_state(Range::State new_state) {
   Core::ScopedLock lock(m_mutex);
   m_state.store(new_state);
+}
+
+SWC_CAN_INLINE
+void Range::reset_load_revision() {
+  m_load_revision.store(Time::now_ns());
+}
+
+SWC_CAN_INLINE
+int64_t Range::get_load_revision() {
+  return m_load_revision.load();
 }
 
 SWC_CAN_INLINE
@@ -579,14 +589,16 @@ void Range::expand_and_align(bool w_chg_chk,
       blocks.expand(m_interval);
   }
 
-  bool intval_chg = !w_chg_chk ||
-                    !m_interval.key_begin.equal(old_key_begin) ||
-                    !m_interval.key_end.equal(key_end) ||
-                    !m_interval.aligned_min.equal(aligned_min) ||
-                    !m_interval.aligned_max.equal(aligned_max);
-  intval_chg
-    ? on_change(false, hdlr, w_chg_chk ? &old_key_begin : nullptr)
-    : hdlr->callback();
+  if(!w_chg_chk ||
+     !m_interval.key_begin.equal(old_key_begin) ||
+     !m_interval.key_end.equal(key_end) ||
+     !m_interval.aligned_min.equal(aligned_min) ||
+     !m_interval.aligned_max.equal(aligned_max)) {
+    on_change(false, hdlr, w_chg_chk ? &old_key_begin : nullptr);
+    reset_load_revision();
+  } else {
+    hdlr->callback();
+  }
 }
 
 SWC_CAN_INLINE
@@ -655,6 +667,7 @@ void Range::print(std::ostream& out, bool minimal) {
     Core::MutexAtomic::scope lock(m_mutex_intval);
     Core::MutexAtomic::scope lock_align(m_mutex_intval_alignment);
     m_interval.print(out << ' ');
+    out << " revision=" << m_load_revision;
   }
   out << ')';
 }
@@ -841,6 +854,8 @@ void Range::loaded(int err, const Callback::RangeLoad::Ptr& req) {
     if(tried)
       m_state.store(err ? State::NOTLOADED : State::LOADED);
   }
+  if(tried && !err)
+    reset_load_revision();
 
   SWC_LOG_OUT((is_loaded() ? LOG_INFO : LOG_WARN),
     if(!tried)
