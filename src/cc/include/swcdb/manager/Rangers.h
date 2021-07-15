@@ -25,6 +25,7 @@ class Rangers final {
 
   const Config::Property::V_GINT32::Ptr   cfg_column_health_chk;
   const Config::Property::V_GINT32::Ptr   cfg_column_health_chkers;
+  const Config::Property::V_GINT32::Ptr   cfg_column_health_chkers_delay;
 
   Rangers(const Comm::IoContextPtr& app_io);
 
@@ -111,6 +112,7 @@ class Rangers final {
 
   Core::MutexSptd               m_mutex_columns_check;
   ColumnHealthChecks            m_columns_check;
+  int64_t                       m_columns_check_ts;
 
 };
 

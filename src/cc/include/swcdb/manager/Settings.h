@@ -82,6 +82,8 @@ void Settings::init_app_options(){
      "Column Health Check Interval in ms")
     ("swc.mngr.column.health.checks", g_i32(2),
      "Number of concurrent Column Health Checks")
+    ("swc.mngr.column.health.checks.delay", g_i32(3000),
+     "Column Health delay in ms between Checks")
 
     ("swc.mngr.schema.replication", g_i8(3),
      "Save schema under N-replications (fs-dependent)")

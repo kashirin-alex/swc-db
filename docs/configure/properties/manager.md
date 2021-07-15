@@ -123,16 +123,21 @@ _default_ **```swc.mngr.ranges.assign.interval.check=60000```**
 The total allowed ranges due on Ranger assignment \
 _default_ **```swc.mngr.ranges.assign.due=100```**
 
+
 * ### swc.mngr.column.health.interval.check
 ```G_INT32```
 The Column Health Check Interval in milliseconds \
 _default_ **```swc.mngr.column.health.interval.check=300000```**
 
-
 * ### swc.mngr.column.health.checks
 ```G_INT32```
 The Number of concurrent Column Health Checks \
 _default_ **```swc.mngr.column.health.checks=2```**
+
+* ### swc.mngr.column.health.checks.delay
+```G_INT32```
+The delay between Column Health Checks in milliseconds \
+_default_ **```swc.mngr.column.health.checks.delay=3000```**
 
 
 * ### swc.mngr.schema.replication

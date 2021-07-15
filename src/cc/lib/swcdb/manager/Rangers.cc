@@ -41,6 +41,9 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
       cfg_column_health_chkers(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
           "swc.mngr.column.health.checks")),
+      cfg_column_health_chkers_delay(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.column.health.checks.delay")),
       m_run(true),
       m_timer(asio::high_resolution_timer(app_io->executor())),
       m_assignments(0) {
@@ -628,13 +631,18 @@ void Rangers::health_check_columns() {
      !m_mutex_columns_check.try_full_lock(support))
     return;
   int64_t ts = Time::now_ms();
-  uint32_t intval = cfg_column_health_chk->get();
-  for(Column::Ptr col;
-      m_columns_check.size() < size_t(cfg_column_health_chkers->get()) &&
-      (col = Env::Mngr::columns()->get_need_health_check(ts, intval)); ) {
-    Env::Mngr::post(
-      [chk=m_columns_check.emplace_back(
-        new ColumnHealthCheck(col, ts, intval))]() { chk->run(); });
+  if(ts - m_columns_check_ts < cfg_column_health_chkers_delay->get()) {
+    schedule_check(cfg_column_health_chkers_delay->get());
+  } else {
+    m_columns_check_ts = ts;
+    uint32_t intval = cfg_column_health_chk->get();
+    for(Column::Ptr col;
+        m_columns_check.size() < size_t(cfg_column_health_chkers->get()) &&
+        (col = Env::Mngr::columns()->get_need_health_check(ts, intval)); ) {
+      Env::Mngr::post(
+        [chk=m_columns_check.emplace_back(
+          new ColumnHealthCheck(col, ts, intval))]() { chk->run(); });
+    }
   }
   m_mutex_columns_check.unlock(support);
 }
