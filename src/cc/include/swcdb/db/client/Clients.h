@@ -168,6 +168,34 @@ class Clients : public std::enable_shared_from_this<Clients> {
 
 
   SWC_CAN_INLINE
+  void mngr_cache_remove_master(const cid_t cid, const rid_t rid) {
+    managers.master_ranges_cache.remove(cid, rid);
+  }
+
+  SWC_CAN_INLINE
+  bool mngr_cache_get_master(const cid_t cid,
+                             const DB::Cell::Key& range_begin,
+                             const DB::Cell::Key& range_end,
+                             Managers::CACHE_APPLY_KEY kind,
+                             rid_t& rid, DB::Cell::Key& apply,
+                             Comm::EndPoints& endpoints,
+                             int64_t& revision) {
+    return managers.master_ranges_cache.get(
+      cid, range_begin, range_end, kind, rid, apply, endpoints, revision);
+  }
+
+  SWC_CAN_INLINE
+  void mngr_cache_set_master(const cid_t cid, const rid_t rid,
+                             const DB::Cell::Key& range_begin,
+                             const DB::Cell::Key& range_end,
+                             const Comm::EndPoints& endpoints,
+                             const int64_t revision) {
+    managers.master_ranges_cache.set(
+      cid, rid, range_begin, range_end, endpoints, revision);
+  }
+
+
+  SWC_CAN_INLINE
   Comm::IoContextPtr get_mngr_io() {
     return managers.queues->service->io();
   }

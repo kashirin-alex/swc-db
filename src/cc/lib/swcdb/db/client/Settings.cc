@@ -71,6 +71,9 @@ void Settings::init_client_options() {
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
+    ("swc.client.Mngr.range.master.expiry", g_i32(1800000),
+     "Cached Master Range expiry in ms")
+
     ("swc.client.schema.expiry", g_i32(1800000),
      "Schemas expiry in ms")
 

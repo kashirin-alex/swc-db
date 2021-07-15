@@ -157,6 +157,11 @@ The encoding to use in communication with Manager, options PLAIN/ZSTD/SNAPPY/ZLI
 
   _default_ **```swc.client.Mngr.comm.encoder=ZSTD```**
 
+* ### swc.client.Mngr.range.master.expiry
+```G_INT32```
+The Located Master-Range and Ranger cache expiry in milliseconds. \
+_default_ **```swc.client.Mngr.range.master.expiry=1800000```**
+
 
 * ### swc.client.schema.expiry
 ```G_INT32```

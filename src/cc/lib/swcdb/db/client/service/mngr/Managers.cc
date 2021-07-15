@@ -7,6 +7,7 @@
 #include "swcdb/db/client/Clients.h"
 #include "swcdb/db/client/service/mngr/Managers.h"
 #include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
+#include "swcdb/db/Cells/KeyComparator.h"
 
 namespace SWC { namespace client {
 
@@ -32,7 +33,8 @@ Managers::Managers(const Config::Settings& settings,
         settings.get<Config::Property::V_GINT32>(
           "swc.client.request.again.delay")
       )),
-      groups(Mngr::Groups::Ptr(new Mngr::Groups(settings))->init()) {
+      groups(Mngr::Groups::Ptr(new Mngr::Groups(settings))->init()),
+      master_ranges_cache(settings) {
 }
 
 bool Managers::put(const ClientsPtr& clients,
@@ -72,6 +74,89 @@ bool Managers::put_role_schemas(
   }
   queues->get(endpoints)->put(req);
   return true;
+}
+
+
+void Managers::MasterRangesCache::Column::clear_expired() noexcept {
+  int64_t ms = Time::now_ms() - expiry_ms->get();
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = cbegin(); it != cend(); ) {
+    if(it->ts > ms) {
+      ++it;
+    } else {
+      erase(it);
+    }
+  }
+}
+
+void Managers::MasterRangesCache::Column::remove(const rid_t rid) noexcept {
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = cbegin(); it != cend(); ++it) {
+    if(rid == it->rid) {
+      erase(it);
+      return;
+    }
+  }
+}
+
+void Managers::MasterRangesCache::Column::set(
+        const rid_t rid,
+        const DB::Cell::Key& range_begin,
+        const DB::Cell::Key& range_end,
+        const Comm::EndPoints& endpoints,
+        const int64_t revision) {
+  int64_t ts = Time::now_ms();
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = cbegin(); it != cend(); ++it) {
+    if(rid == it->rid) {
+      erase(it);
+      break;
+    }
+  }
+  for(auto it = begin(); it != cend(); ++it) {
+    switch(DB::KeySeq::compare(key_seq, range_end, it->key_end)) {
+      case Condition::EQ:
+        it->change(ts, rid, range_begin, range_end, endpoints, revision);
+        return;
+      case Condition::GT:
+        insert(it, ts, rid, range_begin, range_end, endpoints, revision);
+        return;
+      default:
+        break;
+    }
+  }
+  push_back(ts, rid, range_begin, range_end, endpoints, revision);
+}
+
+bool Managers::MasterRangesCache::Column::get(
+        const DB::Cell::Key& range_begin,
+        const DB::Cell::Key& range_end,
+        Managers::CACHE_APPLY_KEY kind,
+        rid_t& rid,
+        DB::Cell::Key& apply,
+        Comm::EndPoints& endpoints,
+        int64_t& revision) {
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = cbegin(); it != cend(); ++it) {
+    if((it->key_begin.empty() || range_end.empty() ||
+        DB::KeySeq::compare(key_seq, range_end, it->key_begin)
+          != Condition::GT)
+        &&
+       (it->key_end.empty() || range_begin.empty() ||
+        DB::KeySeq::compare(key_seq, range_begin, it->key_end)
+          != Condition::LT) ) {
+      if(it->ts + expiry_ms->get() <= Time::now_ms()) {
+        erase(it);
+        break;
+      }
+      rid = it->rid;
+      apply.copy(kind==CACHE_APPLY_KEY::BEGIN ? it->key_begin : it->key_end);
+      endpoints = it->endpoints;
+      revision = it->revision;
+      return true;
+    }
+  }
+  return false;
 }
 
 
