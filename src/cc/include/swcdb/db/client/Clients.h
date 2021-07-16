@@ -173,18 +173,6 @@ class Clients : public std::enable_shared_from_this<Clients> {
   }
 
   SWC_CAN_INLINE
-  bool mngr_cache_get_master(const cid_t cid,
-                             const DB::Cell::Key& range_begin,
-                             const DB::Cell::Key& range_end,
-                             Managers::CACHE_APPLY_KEY kind,
-                             rid_t& rid, DB::Cell::Key& apply,
-                             Comm::EndPoints& endpoints,
-                             int64_t& revision) {
-    return managers.master_ranges_cache.get(
-      cid, range_begin, range_end, kind, rid, apply, endpoints, revision);
-  }
-
-  SWC_CAN_INLINE
   void mngr_cache_set_master(const cid_t cid, const rid_t rid,
                              const DB::Cell::Key& range_begin,
                              const DB::Cell::Key& range_end,
@@ -192,6 +180,30 @@ class Clients : public std::enable_shared_from_this<Clients> {
                              const int64_t revision) {
     managers.master_ranges_cache.set(
       cid, rid, range_begin, range_end, endpoints, revision);
+  }
+
+  SWC_CAN_INLINE
+  bool mngr_cache_get_read_master(const cid_t cid,
+                                  const DB::Cell::Key& range_begin,
+                                  const DB::Cell::Key& range_end,
+                                  rid_t& rid,
+                                  DB::Cell::Key& offset,
+                                  bool& is_end,
+                                  Comm::EndPoints& endpoints,
+                                  int64_t& revision) {
+    return managers.master_ranges_cache.get_read(
+      cid, range_begin, range_end, rid, offset, is_end, endpoints, revision);
+  }
+
+  SWC_CAN_INLINE
+  bool mngr_cache_get_write_master(const cid_t cid,
+                                   const DB::Cell::Key& key,
+                                   rid_t& rid,
+                                   DB::Cell::Key& key_end,
+                                   Comm::EndPoints& endpoints,
+                                   int64_t& revision) {
+    return managers.master_ranges_cache.get_write(
+      cid, key, rid, key_end, endpoints, revision);
   }
 
 

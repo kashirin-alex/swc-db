@@ -57,7 +57,10 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
   cid_t                                   meta_rid;
   cid_t                                   data_rid;
 
+  int64_t                                 master_mngr_revision;
+  bool                                    master_mngr_is_end;
   bool                                    master_mngr_next;
+
   bool                                    master_rgr_next;
   bool                                    meta_next;
   uint8_t                                 retry_point;

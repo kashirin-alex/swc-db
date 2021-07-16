@@ -128,12 +128,12 @@ void Managers::MasterRangesCache::Column::set(
   push_back(ts, rid, range_begin, range_end, endpoints, revision);
 }
 
-bool Managers::MasterRangesCache::Column::get(
+bool Managers::MasterRangesCache::Column::get_read(
         const DB::Cell::Key& range_begin,
         const DB::Cell::Key& range_end,
-        Managers::CACHE_APPLY_KEY kind,
         rid_t& rid,
-        DB::Cell::Key& apply,
+        DB::Cell::Key& offset,
+        bool& is_end,
         Comm::EndPoints& endpoints,
         int64_t& revision) {
   Core::MutexSptd::scope lock(m_mutex);
@@ -145,12 +145,35 @@ bool Managers::MasterRangesCache::Column::get(
        (it->key_end.empty() || range_begin.empty() ||
         DB::KeySeq::compare(key_seq, range_begin, it->key_end)
           != Condition::LT) ) {
-      if(it->ts + expiry_ms->get() <= Time::now_ms()) {
-        erase(it);
+      if(Time::now_ms() - it->ts > expiry_ms->get())
         break;
-      }
       rid = it->rid;
-      apply.copy(kind==CACHE_APPLY_KEY::BEGIN ? it->key_begin : it->key_end);
+      offset.copy(it->key_begin);
+      endpoints = it->endpoints;
+      revision = it->revision;
+      is_end = it->key_end.empty();
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Managers::MasterRangesCache::Column::get_write(
+        const DB::Cell::Key& key,
+        rid_t& rid,
+        DB::Cell::Key& key_end,
+        Comm::EndPoints& endpoints,
+        int64_t& revision) {
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = cbegin(); it != cend(); ++it) {
+    // it->key_begin needs to be previous range_end (key Condition::GT)
+    if(it->key_end.empty() || key.empty() ||
+       DB::KeySeq::compare(key_seq, key, it->key_end)
+        != Condition::LT ) {
+      if(Time::now_ms() - it->ts > expiry_ms->get())
+        break;
+      rid = it->rid;
+      key_end.copy(it->key_end);
       endpoints = it->endpoints;
       revision = it->revision;
       return true;

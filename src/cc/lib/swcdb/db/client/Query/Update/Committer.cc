@@ -34,10 +34,12 @@ Committer::Committer(const DB::Types::Range type,
                      const Handlers::Base::Ptr& hdlr,
                      const ReqBase::Ptr& parent,
                      const rid_t rid) noexcept
-              : type(type), workload(0),
-                cid(cid), colp(colp),
-                key_start(key_start),
-                hdlr(hdlr), parent(parent), rid(rid) {
+  : type(type),
+    master_cid(DB::Types::SystemColumn::get_master_cid(colp->get_sequence())),
+    workload(0),
+    cid(cid), colp(colp),
+    key_start(key_start),
+    hdlr(hdlr), parent(parent), rid(rid) {
 }
 
 Committer::Committer(const DB::Types::Range type,
@@ -48,10 +50,12 @@ Committer::Committer(const DB::Types::Range type,
                      const ReqBase::Ptr& parent,
                      const rid_t rid,
                      const DB::Cell::Key& key_finish)
-              : type(type), workload(0),
-                cid(cid), colp(colp),
-                key_start(key_start),
-                hdlr(hdlr), parent(parent), rid(rid), key_finish(key_finish) {
+  : type(type),
+    master_cid(DB::Types::SystemColumn::get_master_cid(colp->get_sequence())),
+    workload(0),
+    cid(cid), colp(colp),
+    key_start(key_start),
+    hdlr(hdlr), parent(parent), rid(rid), key_finish(key_finish) {
 }
 
 void Committer::print(std::ostream& out) {
@@ -85,8 +89,9 @@ void Committer::locate_on_manager() {
   if(!hdlr->valid())
     return hdlr->response();
 
-  Comm::Protocol::Mngr::Params::RgrGetReq params(
-    DB::Types::SystemColumn::get_master_cid(colp->get_sequence()));
+  Profiling::Component::Start profile(hdlr->profile.mngr_locate());
+
+  Comm::Protocol::Mngr::Params::RgrGetReq params(master_cid);
   params.range_begin.copy(*key_start.get());
   if(DB::Types::SystemColumn::is_data(cid))
     params.range_begin.insert(0, std::to_string(cid));
@@ -98,9 +103,9 @@ void Committer::locate_on_manager() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& committer) noexcept
-            : ReqDataBase(committer),
-              profile(committer->hdlr->profile.mngr_locate()) { }
+    ReqData(const Ptr& committer,
+            Profiling::Component::Start& profile) noexcept
+            : ReqDataBase(committer), profile(profile) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -109,8 +114,53 @@ void Committer::locate_on_manager() {
     };
   };
 
-  Comm::Protocol::Mngr::Req::RgrGet<ReqData>
-    ::request(params, 10000, shared_from_this());
+  auto req = Comm::Protocol::Mngr::Req::RgrGet<ReqData>
+    ::make(params, 10000, shared_from_this(), profile);
+
+  if(!DB::Types::SystemColumn::is_master(colp->get_cid())) {
+    rid_t             master_rid;
+    DB::Cell::Key     key_end;
+    Comm::EndPoints   master_rgr_endpoints;
+    int64_t           master_mngr_revision;
+
+    if(hdlr->clients->mngr_cache_get_write_master(
+        master_cid, params.range_begin,
+        master_rid, key_end, master_rgr_endpoints, master_mngr_revision)) {
+      profile.add_cached(Error::OK);
+      SWC_LOG_OUT(LOG_DEBUG,
+        SWC_LOG_OSTREAM
+          << "mngr_located_master Cache hit revision=" << master_mngr_revision
+          << " Ranger(cid=" << master_cid << " rid=" << master_rid
+          << " endpoints=[";
+          for(auto& endpoint : master_rgr_endpoints)
+            SWC_LOG_OSTREAM << endpoint << ',';
+          SWC_LOG_OSTREAM << "])";
+      );
+      Ptr(new Committer(
+        DB::Types::Range::MASTER,
+        master_cid, colp, key_start,
+        hdlr, req,
+        master_rid
+      ))->locate_on_ranger(
+        std::move(master_rgr_endpoints), master_mngr_revision);
+
+      if(key_end.count > 2) {
+        key_end.remove(0); // master-cid
+        key_end.remove(0); // meta-cid
+        auto next_key_start = colp->get_key_next(key_end);
+        if(next_key_start) {
+          Ptr(new Committer(
+            DB::Types::Range::MASTER,
+            colp->get_cid(), colp, next_key_start,
+            hdlr
+          ))->locate_on_manager();
+        }
+      }
+      return hdlr->response();
+    }
+  }
+
+  req->run();
 }
 
 
@@ -145,15 +195,21 @@ void Committer::located_on_manager(
 
   SWC_LOCATOR_RSP_DEBUG("mngr_located_master");
 
+  hdlr->clients->mngr_cache_set_master(
+    master_cid, rsp.rid,
+    rsp.range_begin, rsp.range_end,
+    rsp.endpoints, rsp.revision
+  );
+
   Ptr committer(new Committer(
     DB::Types::Range::MASTER,
-    rsp.cid, colp, key_start,
+    master_cid, colp, key_start,
     hdlr, base,
     rsp.rid
   ));
   DB::Types::SystemColumn::is_master(colp->get_cid())
     ? committer->commit_data(std::move(rsp.endpoints), base)
-    : committer->locate_on_ranger(std::move(rsp.endpoints));
+    : committer->locate_on_ranger(std::move(rsp.endpoints), rsp.revision);
 
   if(rsp.range_end.count > 2) {
     DB::Cell::Key key(rsp.range_end);
@@ -171,13 +227,19 @@ void Committer::located_on_manager(
   hdlr->response();
 }
 
-void Committer::locate_on_ranger(Comm::EndPoints&& endpoints) {
+void Committer::locate_on_ranger(Comm::EndPoints&& endpoints,
+                                 int64_t revision) {
   hdlr->completion.increment();
   if(!hdlr->valid())
     return hdlr->response();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(cid, rid);
   params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::COMMIT;
+  if(revision) {
+    params.revision = revision;
+    params.flags |=
+      Comm::Protocol::Rgr::Params::RangeLocateReq::HAVE_REVISION;
+  }
 
   params.range_begin.copy(*key_start.get());
   if(!DB::Types::SystemColumn::is_master(colp->get_cid())) {
@@ -225,13 +287,18 @@ void Committer::located_on_ranger(
     case Error::SERVER_SHUTTING_DOWN:
     case Error::COMM_NOT_CONNECTED: {
       SWC_LOCATOR_RSP_DEBUG("rgr_located RETRYING");
-      hdlr->clients->rgr_cache_remove(cid, rid);
+      cid == master_cid
+        ? hdlr->clients->mngr_cache_remove_master(cid, rid)
+        : hdlr->clients->rgr_cache_remove(cid, rid);
       return parent->request_again();
     }
     default: {
       SWC_LOCATOR_RSP_DEBUG("rgr_located RETRYING");
-      if(rsp.err != Error::REQUEST_TIMEOUT)
-        hdlr->clients->rgr_cache_remove(cid, rid);
+      if(rsp.err != Error::REQUEST_TIMEOUT) {
+        cid == master_cid
+          ? hdlr->clients->mngr_cache_remove_master(cid, rid)
+          : hdlr->clients->rgr_cache_remove(cid, rid);
+      }
       return base->request_again();
     }
   }

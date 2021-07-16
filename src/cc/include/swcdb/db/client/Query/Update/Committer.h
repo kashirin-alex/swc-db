@@ -37,6 +37,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
 
   typedef std::shared_ptr<Committer>  Ptr;
   const DB::Types::Range              type;
+  const cid_t                         master_cid;
   Core::CompletionCounter<uint32_t>   workload;
   const cid_t                         cid;
   Handlers::Base::Column*             colp;
@@ -90,7 +91,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
       const ReqBase::Ptr& base,
       Comm::Protocol::Mngr::Params::RgrGetRsp& rsp);
 
-  void locate_on_ranger(Comm::EndPoints&& endpoints);
+  void locate_on_ranger(Comm::EndPoints&& endpoints, int64_t revision=0);
 
   void located_on_ranger(
       Comm::EndPoints&& endpoints,

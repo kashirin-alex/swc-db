@@ -46,6 +46,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_rid(0),
               meta_rid(0),
               data_rid(0),
+              master_mngr_revision(0),
+              master_mngr_is_end(false),
               master_mngr_next(false),
               master_rgr_next(false),
               meta_next(false),
@@ -67,6 +69,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_rid(0),
               meta_rid(0),
               data_rid(0),
+              master_mngr_revision(0),
+              master_mngr_is_end(false),
               master_mngr_next(false),
               master_rgr_next(false),
               meta_next(false),
@@ -89,6 +93,7 @@ void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
 void Scanner::print(std::ostream& out) {
   out << "Scanner(" << DB::Types::to_string(col_seq)
       << " master(" << master_cid << '/' << master_rid
+        << " mngr-rev=" << master_mngr_revision
         << " mngr-next=" << master_mngr_next
         << " rgr-next=" << master_rgr_next << ')'
       << " meta(" << meta_cid << '/' << meta_rid
@@ -175,6 +180,8 @@ void Scanner::mngr_locate_master() {
   if(!selector->valid())
     return response_if_last();
 
+  Profiling::Component::Start profile(selector->profile.mngr_locate());
+
   Comm::Protocol::Mngr::Params::RgrGetReq params(
     master_cid, 0, master_mngr_next && !retry_point);
 
@@ -193,12 +200,14 @@ void Scanner::mngr_locate_master() {
 
   if(DB::Types::SystemColumn::is_data(data_cid)) {
     auto data_cid_str = std::to_string(data_cid);
-    params.range_begin.insert(0, data_cid_str);
+    if(!master_mngr_next)
+      params.range_begin.insert(0, data_cid_str);
     params.range_end.insert(0, data_cid_str);
   }
   if(!DB::Types::SystemColumn::is_master(data_cid)) {
     auto meta_cid_str = DB::Types::SystemColumn::get_meta_cid_str(col_seq);
-    params.range_begin.insert(0, meta_cid_str);
+    if(!master_mngr_next)
+      params.range_begin.insert(0, meta_cid_str);
     params.range_end.insert(0, meta_cid_str);
   }
 
@@ -206,9 +215,8 @@ void Scanner::mngr_locate_master() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner) noexcept
-            : ReqDataBase(scanner),
-              profile(scanner->selector->profile.mngr_locate()) { }
+    ReqData(const Ptr& scanner, Profiling::Component::Start& profile) noexcept
+            : ReqDataBase(scanner), profile(profile) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -218,8 +226,32 @@ void Scanner::mngr_locate_master() {
     }
   };
 
-  Comm::Protocol::Mngr::Req::RgrGet<ReqData>
-    ::request(params, 10000, shared_from_this());
+  auto req = Comm::Protocol::Mngr::Req::RgrGet<ReqData>
+    ::make(params, 10000, shared_from_this(), profile);
+
+  if((!master_mngr_next || !master_mngr_is_end) &&
+     !DB::Types::SystemColumn::is_master(data_cid) &&
+     selector->clients->mngr_cache_get_read_master(
+       master_cid, params.range_begin, params.range_end,
+       master_rid, master_mngr_offset, master_mngr_is_end,
+       master_rgr_endpoints, master_mngr_revision)) {
+    profile.add_cached(Error::OK);
+    SWC_LOG_OUT(LOG_DEBUG, SWC_LOG_OSTREAM
+        << "mngr_located_master Cache hit"
+        << " Ranger(cid=" << master_cid << " rid=" << master_rid
+        << " rev=" << master_mngr_revision << " endpoints=[";
+        for(auto& endpoint : master_rgr_endpoints)
+          SWC_LOG_OSTREAM << endpoint << ',';
+        master_mngr_offset.print(SWC_LOG_OSTREAM << "] Offset");
+        SWC_LOG_OSTREAM << ')';
+    );
+    master_mngr_next = true;
+    master_rgr_req_base = req;
+    rgr_locate_master();
+    response_if_last();
+  } else {
+    req->run();
+  }
 }
 
 bool Scanner::mngr_located_master(
@@ -245,20 +277,24 @@ bool Scanner::mngr_located_master(
       }
 
       SWC_SCANNER_RSP_DEBUG("mngr_located_master");
-      selector->clients->rgr_cache_set(rsp.cid, rsp.rid, rsp.endpoints);
       master_mngr_next = true;
       master_mngr_offset.copy(rsp.range_begin);
-      master_mngr_offset.remove(0); // master-cid
-      master_mngr_offset.remove(0); // meta-cid
       if(DB::Types::SystemColumn::is_master(data_cid)) {
         data_rid = rsp.rid;
         data_req_base = req;
         data_endpoints = std::move(rsp.endpoints);
         rgr_select();
       } else {
+        selector->clients->mngr_cache_set_master(
+          master_cid, rsp.rid,
+          rsp.range_begin, rsp.range_end,
+          rsp.endpoints, rsp.revision
+        );
         master_rid = rsp.rid;
         master_rgr_req_base = req;
         master_rgr_endpoints = std::move(rsp.endpoints);
+        master_mngr_revision = rsp.revision;
+        master_mngr_is_end = rsp.range_end.empty();
         rgr_locate_master();
       }
       return true;
@@ -295,6 +331,8 @@ void Scanner::rgr_locate_master() {
     return response_if_last();
 
   Comm::Protocol::Rgr::Params::RangeLocateReq params(master_cid, master_rid);
+  params.revision = master_mngr_revision;
+  params.flags |= Comm::Protocol::Rgr::Params::RangeLocateReq::HAVE_REVISION;
   auto data_cid_str = std::to_string(data_cid);
   if(master_rgr_next) {
     params.flags |= retry_point
@@ -355,7 +393,7 @@ void Scanner::rgr_located_master(
     case Error::OK: {
       if(!rsp.rid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(no rid)");
-        selector->clients->rgr_cache_remove(master_cid, master_rid);
+        selector->clients->mngr_cache_remove_master(master_cid, master_rid);
         if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_MASTER;
@@ -365,7 +403,7 @@ void Scanner::rgr_located_master(
       }
       if(meta_cid != rsp.cid) { // sake check (must be an err rsp)
         SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING(cid no match)");
-        selector->clients->rgr_cache_remove(master_cid, master_rid);
+        selector->clients->mngr_cache_remove_master(master_cid, master_rid);
         if(selector->valid()) {
           if(!retry_point)
             retry_point = RETRY_POINT_MASTER;
@@ -400,7 +438,7 @@ void Scanner::rgr_located_master(
     case Error::SERVER_SHUTTING_DOWN:
     case Error::COMM_NOT_CONNECTED: {
       SWC_SCANNER_RSP_DEBUG("rgr_located_master RETRYING");
-      selector->clients->rgr_cache_remove(master_cid, master_rid);
+      selector->clients->mngr_cache_remove_master(master_cid, master_rid);
       if(selector->valid()) {
         if(!retry_point)
           retry_point = RETRY_POINT_MASTER;

@@ -20,14 +20,6 @@ namespace SWC { namespace client {
 
 
 class Managers  {
-  public:
-
-  enum CACHE_APPLY_KEY : uint8_t {
-    BEGIN = 0x00,
-    END   = 0x01
-  };
-
-
   private:
 
   class MasterRangesCache final {
@@ -109,13 +101,19 @@ class Managers  {
                const Comm::EndPoints& endpoints,
                const int64_t revision);
 
-      bool get(const DB::Cell::Key& range_begin,
-               const DB::Cell::Key& range_end,
-               CACHE_APPLY_KEY kind,
-               rid_t& rid,
-               DB::Cell::Key& apply,
-               Comm::EndPoints& endpoints, int64_t& revision);
+      bool get_read(const DB::Cell::Key& range_begin,
+                    const DB::Cell::Key& range_end,
+                    rid_t& rid,
+                    DB::Cell::Key& offset,
+                    bool& is_end,
+                    Comm::EndPoints& endpoints,
+                    int64_t& revision);
 
+      bool get_write(const DB::Cell::Key& key,
+                     rid_t& rid,
+                     DB::Cell::Key& key_end,
+                     Comm::EndPoints& endpoints,
+                     int64_t& revision);
     };
 
 
@@ -158,16 +156,27 @@ class Managers  {
     }
 
     SWC_CAN_INLINE
-    bool get(const cid_t cid,
-             const DB::Cell::Key& range_begin,
-             const DB::Cell::Key& range_end,
-             CACHE_APPLY_KEY kind,
-             rid_t& rid,
-             DB::Cell::Key& apply,
-             Comm::EndPoints& endpoints,
-             int64_t& revision) {
-      return columns[cid - 1].get(
-        range_begin, range_end, kind, rid, apply, endpoints, revision);
+    bool get_read(const cid_t cid,
+                  const DB::Cell::Key& range_begin,
+                  const DB::Cell::Key& range_end,
+                  rid_t& rid,
+                  DB::Cell::Key& offset,
+                  bool& is_end,
+                  Comm::EndPoints& endpoints,
+                  int64_t& revision) {
+      return columns[cid - 1].get_read(
+        range_begin, range_end, rid, offset, is_end, endpoints, revision);
+    }
+
+    SWC_CAN_INLINE
+    bool get_write(const cid_t cid,
+                   const DB::Cell::Key& key,
+                   rid_t& rid,
+                   DB::Cell::Key& key_end,
+                   Comm::EndPoints& endpoints,
+                   int64_t& revision) {
+      return columns[cid - 1].get_write(
+        key, rid, key_end, endpoints, revision);
     }
 
     private:

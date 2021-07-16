@@ -53,9 +53,10 @@ void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
   } else {
     range->scan(Ranger::Callback::RangeQuerySelect::Ptr(
       new Ranger::Callback::RangeQuerySelect(
-        conn, ev, std::move(params.interval), range) 
+        conn, ev, std::move(params.interval), range)
     ));
   }
+
 }
 
 
