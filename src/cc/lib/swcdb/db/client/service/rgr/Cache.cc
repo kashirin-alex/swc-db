@@ -11,13 +11,6 @@ namespace SWC { namespace client {
 
 
 
-CachedRangers::~CachedRangers() {
-  for(auto c : *this) {
-    for(auto r : c.second)
-      delete r.second;
-  }
-}
-
 void CachedRangers::clear() {
   Core::MutexSptd::scope lock(m_mutex);
   Map::clear();
@@ -29,8 +22,7 @@ void CachedRangers::clear_expired() {
   Core::MutexSptd::scope lock(m_mutex);
   for(auto c = begin(); c != cend(); ) {
     for(auto r = c->second.cbegin(); r != c->second.cend(); ) {
-      if(ms - r->second->ts > m_expiry_ms->get()) {
-        delete r->second;
+      if(ms - r->second.ts > m_expiry_ms->get()) {
         r = c->second.erase(r);
       } else {
         ++r;
@@ -52,7 +44,6 @@ void CachedRangers::remove(const cid_t cid, const rid_t rid) {
   auto r = c->second.find(rid);
   if(r == c->second.cend())
     return;
-  delete r->second;
   c->second.erase(r);
   if(c->second.empty())
     erase(c);
@@ -60,31 +51,26 @@ void CachedRangers::remove(const cid_t cid, const rid_t rid) {
 
 bool CachedRangers::get(const cid_t cid, const rid_t rid,
                         Comm::EndPoints& endpoints) {
-  bool found = false;
-
   Core::MutexSptd::scope lock(m_mutex);
   auto c = find(cid);
   if(c != cend()) {
     auto r = c->second.find(rid);
     if(r != c->second.cend() &&
-       Time::now_ms() - r->second->ts < m_expiry_ms->get()) {
-      found = true;
-      endpoints = r->second->endpoints;
+       Time::now_ms() - r->second.ts < m_expiry_ms->get()) {
+      endpoints = r->second.endpoints;
+      return true;
     }
   }
-  return found;
+  return false;
 }
 
 void CachedRangers::set(const cid_t cid, const rid_t rid,
                         const Comm::EndPoints& endpoints) {
-  auto r_new = new RangeEndPoints(Time::now_ms(), endpoints);
-
+  int64_t ts = Time::now_ms();
   Core::MutexSptd::scope lock(m_mutex);
-  auto res = (*this)[cid].emplace(rid, r_new);
-  if(!res.second) {
-    delete res.first->second;
-    res.first->second = r_new;
-  }
+  auto& r = (*this)[cid][rid];
+  r.ts = ts;
+  r.endpoints = endpoints;
 }
 
 

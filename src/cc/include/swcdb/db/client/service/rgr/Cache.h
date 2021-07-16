@@ -17,22 +17,31 @@
 
 namespace SWC { namespace client {
 
+
 struct RangeEndPoints final {
-  const int64_t           ts;
-  const Comm::EndPoints   endpoints;
+  int64_t          ts;
+  Comm::EndPoints  endpoints;
   SWC_CAN_INLINE
-  RangeEndPoints(const int64_t ts, const Comm::EndPoints& endpoints)
-                : ts(ts), endpoints(endpoints) {
+  RangeEndPoints() noexcept { }
+  SWC_CAN_INLINE
+  RangeEndPoints(RangeEndPoints&& other) noexcept
+                : ts(other.ts), endpoints(std::move(other.endpoints)) {
+  }
+  SWC_CAN_INLINE
+  RangeEndPoints& operator=(RangeEndPoints&& other) noexcept {
+    ts = other.ts;
+    endpoints = std::move(other.endpoints);
+    return *this;
   }
 };
 
 
 class CachedRangers final
     : private std::unordered_map<
-        cid_t, std::unordered_map<rid_t, RangeEndPoints*>> {
+        cid_t, std::unordered_map<rid_t, RangeEndPoints>> {
 
   typedef std::unordered_map<
-    cid_t, std::unordered_map<rid_t, RangeEndPoints*>> Map;
+    cid_t, std::unordered_map<rid_t, RangeEndPoints>> Map;
 
   public:
 
@@ -40,8 +49,6 @@ class CachedRangers final
   CachedRangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
                 : m_expiry_ms(expiry_ms) {
   }
-
-  ~CachedRangers();
 
   void clear();
 
