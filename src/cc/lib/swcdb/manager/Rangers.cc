@@ -524,10 +524,10 @@ void Rangers::assign_ranges() {
 }
 
 void Rangers::assign_ranges_run() {
-  Column::Ptr col;
-  Range::Ptr range;
+  Column::Ptr col(nullptr);
+  Range::Ptr range(nullptr);
 
-  for(bool state;;) {
+  for(bool state; ; range.reset(static_cast<Range*>(nullptr))) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       state = m_rangers.empty() || !m_run;
@@ -537,8 +537,7 @@ void Rangers::assign_ranges_run() {
       return schedule_check();
     }
 
-    range = Env::Mngr::columns()->get_next_unassigned(col, state = false);
-    if(!range) {
+    if(!Env::Mngr::columns()->get_next_unassigned(col, range, state=false)) {
       if(state) // waiting-on-meta-ranges
         schedule_check(2000);
       m_assign.stop();
@@ -552,8 +551,10 @@ void Rangers::assign_ranges_run() {
       return schedule_check();
     }
     auto schema = Env::Mngr::schemas()->get(col->cfg->cid);
-    if(!schema)
+    if(!schema) {
+      col.reset(static_cast<Column*>(nullptr));
       continue;
+    }
 
     range->set_state_queued(rgr->rgrid);
     rgr->interm_ranges.fetch_add(1);

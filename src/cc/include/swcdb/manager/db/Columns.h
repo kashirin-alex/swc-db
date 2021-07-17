@@ -73,8 +73,12 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     return nullptr;
   }
 
-  Range::Ptr get_next_unassigned(Column::Ptr& col, bool& waiting_meta) {
-    Range::Ptr range = nullptr;
+  bool get_next_unassigned(Column::Ptr& col, Range::Ptr& range,
+                           bool& waiting_meta) {
+    if(col && col->cfg->cid <= DB::Types::SystemColumn::SYS_CID_END &&
+      (range = col->get_next_unassigned()))
+      return true;
+
     const_iterator it;
     Core::MutexSptd::scope lock(m_mutex);
     for(cid_t cid = DB::Types::SystemColumn::CID_MASTER_BEGIN;
@@ -82,7 +86,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       if((it = find(cid)) != cend()) {
         if((range = it->second->get_next_unassigned())) {
           col = it->second;
-          return range;
+          return true;
         }
         if(it->second->state() != Column::State::OK)
           waiting_meta = true;
@@ -90,19 +94,33 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       if(waiting_meta &&
          (cid == DB::Types::SystemColumn::CID_MASTER_END ||
           cid == DB::Types::SystemColumn::CID_META_END))
-        return nullptr;
+        return false;
     }
     if(waiting_meta)
-      return nullptr;
+      return false;
+
+    if(col) {
+      if((range = col->get_next_unassigned()))
+        return true;
+      if((it = find(col->cfg->cid)) != cend())
+        ++it;
+      for(; it != cend(); ++it) {
+        if(it->second->state() != Column::State::DELETED &&
+           (range = it->second->get_next_unassigned())) {
+          col = it->second;
+          return true;
+        }
+      }
+    }
 
     for(it = cbegin(); it != cend(); ++it) {
       if(it->second->state() != Column::State::DELETED &&
          (range = it->second->get_next_unassigned())) {
         col = it->second;
-        return range;
+        return true;
       }
     }
-    return nullptr;
+    return false;
   }
 
   void set_rgr_unassigned(rgrid_t rgrid) {
