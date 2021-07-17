@@ -93,7 +93,8 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         c->mem_bytes = 0;
 
         Ranger::RangePtr range;
-        for(rid_t ridx = 0; (range=col->get_next(ridx)); ++ridx) {
+        rid_t last_rid = 0;
+        for(size_t ridx = 0; (range=col->get_next(last_rid, ridx)); ++ridx) {
           auto r = new Params::Report::RspColumnsRanges::Range(c->col_seq);
           c->ranges.push_back(r);
           c->mem_bytes += range->blocks.size_bytes_total(true);
@@ -121,13 +122,15 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         Ranger::ColumnPtr col;
         Ranger::RangePtr range;
         auto& columns = *Env::Rgr::columns();
-        for(cid_t cidx = 0; (col=columns.get_next(cidx)); ++cidx) {
+        cid_t last_cid = 0;
+        rid_t last_rid = 0;
+        for(size_t cidx=0; (col=columns.get_next(last_cid, cidx)); ++cidx) {
           auto c = new Params::Report::RspColumnsRanges::Column();
           rsp_params.columns.push_back(c);
           c->cid = col->cfg->cid;
           c->col_seq = col->cfg->key_seq;
           c->mem_bytes = 0;
-          for(rid_t ridx = 0; (range=col->get_next(ridx)); ++ridx) {
+          for(size_t ridx=0; (range=col->get_next(last_rid, ridx)); ++ridx) {
             auto r = new Params::Report::RspColumnsRanges::Range(c->col_seq);
             c->ranges.push_back(r);
             c->mem_bytes += range->blocks.size_bytes_total(true);

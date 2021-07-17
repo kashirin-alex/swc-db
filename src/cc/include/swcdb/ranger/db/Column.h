@@ -37,7 +37,7 @@ class Column final :
 
   RangePtr get_range(const rid_t rid);
 
-  RangePtr get_next(size_t &idx);
+  RangePtr get_next(cid_t& last_rid, size_t &idx);
 
   void get_rids(std::vector<rid_t>& rids);
 

@@ -27,14 +27,28 @@ RangePtr Columns::get_range(int &err, const cid_t cid, const rid_t rid) {
   return err ? nullptr : col->get_range(rid);
 }
 
-ColumnPtr Columns::get_next(size_t& idx) {
+ColumnPtr Columns::get_next(cid_t& last_cid, size_t& idx) {
   Core::MutexSptd::scope lock(m_mutex);
+  if(last_cid) {
+    auto it = find(last_cid);
+    if(it != end()) {
+      if(++it != end()) {
+        last_cid = it->second->cfg->cid;
+        return it->second;
+      }
+      idx = 0;
+      last_cid = 0;
+      return nullptr;
+    }
+  }
   if(size() > idx) {
     auto it = cbegin();
-    for(int i=idx; i; --i, ++it);
+    for(size_t i=idx; i; --i, ++it);
+    last_cid = it->second->cfg->cid;
     return it->second;
   }
   idx = 0;
+  last_cid = 0;
   return nullptr;
 }
 

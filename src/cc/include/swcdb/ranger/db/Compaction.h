@@ -74,8 +74,11 @@ class Compaction final {
   asio::high_resolution_timer     m_check_timer;
   std::condition_variable         m_cv;
 
+  cid_t                           m_last_cid;
   size_t                          m_idx_cid;
+  cid_t                           m_last_rid;
   size_t                          m_idx_rid;
+
   Core::Vector<CompactRange::Ptr> m_compacting;
 
 };

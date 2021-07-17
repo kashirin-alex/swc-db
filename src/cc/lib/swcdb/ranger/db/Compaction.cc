@@ -28,7 +28,8 @@ Compaction::Compaction()
             m_check_timer(
               asio::high_resolution_timer(
                 Env::Rgr::maintenance_io()->executor())),
-            m_idx_cid(0), m_idx_rid(0)  {
+            m_last_cid(0), m_idx_cid(0),
+            m_last_rid(0), m_idx_rid(0)  {
 }
 
 SWC_CAN_INLINE
@@ -105,15 +106,10 @@ void Compaction::run(bool initial) {
   RangePtr range  = nullptr;
   for(ColumnPtr col = nullptr;
       !stopped() && (!m_running || !Env::Rgr::res().is_low_mem_state()) &&
-      (col || (col = Env::Rgr::columns()->get_next(m_idx_cid)) ); ) {
+      (col || (col=Env::Rgr::columns()->get_next(m_last_cid, m_idx_cid)));) {
 
-    if(col->removing()) {
-      ++m_idx_cid;
-      col = nullptr;
-      continue;
-    }
-
-    if(!(range = col->get_next(m_idx_rid))) {
+    if(col->removing() ||
+       !(range = col->get_next(m_last_rid, m_idx_rid))) {
       ++m_idx_cid;
       col = nullptr;
       continue;

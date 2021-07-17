@@ -49,15 +49,28 @@ RangePtr Column::get_range(const rid_t rid) {
   return it == cend() ? nullptr : it->second;
 }
 
-RangePtr Column::get_next(size_t &idx) {
+RangePtr Column::get_next(cid_t& last_rid, size_t &idx) {
   Core::MutexSptd::scope lock(m_mutex);
-
+  if(last_rid) {
+    auto it = find(last_rid);
+    if(it != end()) {
+      if(++it != end()) {
+        last_rid = it->second->rid;
+        return it->second;
+      }
+      idx = 0;
+      last_rid = 0;
+      return nullptr;
+    }
+  }
   if(size() > idx) {
     auto it = cbegin();
-    for(int i=idx; i; --i, ++it);
+    for(size_t i=idx; i; --i, ++it);
+    last_rid = it->second->rid;
     return it->second;
   }
   idx = 0;
+  last_rid = 0;
   return nullptr;
 }
 
