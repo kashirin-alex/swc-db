@@ -99,18 +99,19 @@ void Rangers::schedule_check(uint32_t t_ms) {
 }
 
 void Rangers::schedule_run() {
+  int64_t chk = 0;
   if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::RANGERS)) {
-    {
-      Core::MutexSptd::scope lock(m_mutex);
-      m_rangers_resources.check(m_rangers);
-    }
-    schedule_check(m_rangers_resources.cfg_check->get());
+    Core::MutexSptd::scope lock(m_mutex);
+    chk = m_rangers_resources.check(m_rangers);
   }
   if(Env::Mngr::mngd_columns()->has_active()) {
     assign_ranges();
     health_check_columns();
-    schedule_check(cfg_column_health_chk->get());
+    if(chk > cfg_column_health_chk->get())
+      chk = cfg_column_health_chk->get();
   }
+  if(chk)
+    schedule_check(chk);
 }
 
 void Rangers::rgr_report(
@@ -263,45 +264,45 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
 
     Core::MutexSptd::scope lock(m_mutex);
 
-    for(auto& rs_new : new_rgr_status) {
+    for(auto& rgr_new : new_rgr_status) {
       found = false;
       for(auto it=m_rangers.cbegin(); it != m_rangers.cend(); ++it) {
         h = *it;
-        if(!Comm::has_endpoint(h->endpoints, rs_new->endpoints))
+        if(!Comm::has_endpoint(h->endpoints, rgr_new->endpoints))
           continue;
 
         found = true;
         chg = false;
-        if(rs_new->rgrid != h->rgrid) {
+        if(rgr_new->rgrid != h->rgrid) {
           if(rangers_mngr)
-            rs_new->rgrid.store(
-              rgr_set(rs_new->endpoints, rs_new->rgrid)->rgrid.load());
+            rgr_new->rgrid.store(
+              rgr_set(rgr_new->endpoints, rgr_new->rgrid)->rgrid.load());
 
-          if(rangers_mngr && rs_new->rgrid != h->rgrid)
-            Env::Mngr::columns()->change_rgr(h->rgrid, rs_new->rgrid);
+          if(rangers_mngr && rgr_new->rgrid != h->rgrid)
+            Env::Mngr::columns()->change_rgr(h->rgrid, rgr_new->rgrid);
 
-          h->rgrid.store(rs_new->rgrid);
+          h->rgrid.store(rgr_new->rgrid);
           chg = true;
         }
-        for(auto& endpoint: rs_new->endpoints) {
+        for(auto& endpoint: rgr_new->endpoints) {
           if(!Comm::has_endpoint(endpoint, h->endpoints)) {
-            h->set(rs_new->endpoints);
+            h->set(rgr_new->endpoints);
             chg = true;
             break;
           }
         }
         for(auto& endpoint: h->endpoints) {
-          if(!Comm::has_endpoint(endpoint, rs_new->endpoints)) {
-            h->set(rs_new->endpoints);
+          if(!Comm::has_endpoint(endpoint, rgr_new->endpoints)) {
+            h->set(rgr_new->endpoints);
             chg = true;
             break;
           }
         }
-        if(rs_new->state != h->state) {
-          if(rs_new->state & RangerState::ACK) {
+        if(rgr_new->state != h->state) {
+          if(rgr_new->state & RangerState::ACK) {
             if(h->state & RangerState::SHUTTINGDOWN) {
-              rs_new->state.store(h->state);
-            } else if(rs_new->state == RangerState::ACK &&
+              rgr_new->state.store(h->state);
+            } else if(rgr_new->state == RangerState::ACK &&
                       h->state == RangerState::MARKED_OFFLINE) {
               cid_t cid_begin, cid_end = DB::Schema::NO_CID;
               if(Env::Mngr::mngd_columns()->active(cid_begin, cid_end))
@@ -313,20 +314,20 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
             }
           } else {
             Env::Mngr::columns()->set_rgr_unassigned(h->rgrid);
-            if(rs_new->state == RangerState::REMOVED)
+            if(rgr_new->state == RangerState::REMOVED)
               m_rangers.erase(it);
           }
-          h->state.store(rs_new->state);
+          h->state.store(rgr_new->state);
           chg = true;
         }
 
-        if(rs_new->load_scale != h->load_scale) {
-          h->load_scale.store(rs_new->load_scale);
+        if(rgr_new->load_scale != h->load_scale) {
+          h->load_scale.store(rgr_new->load_scale);
           chg = true;
         }
 
-        if(rs_new->rebalance()) {
-          h->rebalance(rs_new->rebalance());
+        if(rgr_new->rebalance()) {
+          h->rebalance(rgr_new->rebalance());
           balance_rangers.push_back(h);
         } else {
           h->rebalance(0);
@@ -338,10 +339,10 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
       }
 
       if(!found) {
-        if(rs_new->state == RangerState::ACK) {
-          rs_new->init_queue();
-          m_rangers.push_back(rs_new);
-          changed.push_back(rs_new);
+        if(rgr_new->state == RangerState::ACK) {
+          rgr_new->init_queue();
+          m_rangers.push_back(rgr_new);
+          changed.push_back(rgr_new);
         }
       }
     }
@@ -570,7 +571,7 @@ void Rangers::assign_ranges_run() {
   schedule_check(cfg_chk_assign->get());
 }
 
-void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
+void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rgr_set) {
   size_t n_rgrs = 0;
   size_t avg_ranges = 0;
   Ranger::Ptr rgr;
@@ -596,7 +597,7 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
       if(!last_rgr->endpoints.empty() &&
          !(state & RangerState::SHUTTINGDOWN) &&
          Comm::has_endpoint(rgr->endpoints, last_rgr->endpoints)) {
-        rs_set = rgr;
+        rgr_set = rgr;
         return;
       }
       avg_ranges += rgr->interm_ranges;
@@ -619,7 +620,7 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set) {
         (n_rgrs == 1 && !DB::Types::SystemColumn::is_data(range->cfg->cid)) )) {
       best = rgr->load_scale;
       interm_ranges = rgr->interm_ranges;
-      rs_set = rgr;
+      rgr_set = rgr;
     }
   }
 }

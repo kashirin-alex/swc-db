@@ -68,25 +68,31 @@ class RangersResources final : private Core::Vector<RangerResources> {
     out << "\n])";
   }
 
-  void check(const RangerList& rangers) {
+  int64_t check(const RangerList& rangers) {
+    int64_t chk = cfg_check->get();
     bool support;
-    if(!m_mutex.try_full_lock(support))
-      return;
-    if(m_due ||
-       int64_t(m_last_check + cfg_check->get()) > Time::now_ns())
-      return m_mutex.unlock(support);
-
-    m_last_check = Time::now_ns();
-    for(auto& rgr : rangers) {
-      if(rgr->state == RangerState::ACK ||
-         rgr->state == RangerState::MARKED_OFFLINE) {
-        rgr->put(Comm::Protocol::Rgr::Req::ReportRes::Ptr(
-          new Comm::Protocol::Rgr::Req::ReportRes(rgr)
-        ));
-        ++m_due;
+    if(m_mutex.try_full_lock(support)) {
+      if(!m_due) {
+        int64_t ts = Time::now_ms();
+        
+        if(ts - m_last_check >= chk) {
+          m_last_check = ts;
+          for(auto& rgr : rangers) {
+            if(rgr->state == RangerState::ACK ||
+               rgr->state == RangerState::MARKED_OFFLINE) {
+              rgr->put(Comm::Protocol::Rgr::Req::ReportRes::Ptr(
+                new Comm::Protocol::Rgr::Req::ReportRes(rgr)
+              ));
+              ++m_due;
+            }
+          }
+        } else {
+          chk -= ts - m_last_check;
+        }
       }
+      m_mutex.unlock(support);
     }
-    m_mutex.unlock(support);
+    return chk;
   }
 
   bool add_and_more(rgrid_t rgrid, int err,
@@ -197,7 +203,7 @@ class RangersResources final : private Core::Vector<RangerResources> {
 
   Core::MutexSptd    m_mutex;
   size_t             m_due;
-  size_t             m_last_check;
+  int64_t            m_last_check;
 
 };
 

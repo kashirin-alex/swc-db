@@ -89,7 +89,7 @@ class Rangers final {
 
   void assign_ranges_run();
 
-  void next_rgr(const Range::Ptr& range, Ranger::Ptr& rs_set);
+  void next_rgr(const Range::Ptr& range, Ranger::Ptr& rgr_set);
 
   void health_check_columns();
 
