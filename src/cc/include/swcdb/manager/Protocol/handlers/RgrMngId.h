@@ -38,23 +38,24 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     auto rangers = Env::Mngr::rangers();
     switch(req_params.flag) {
 
-      case Params::RgrMngId::Flag::RS_REQ: {
+      case Params::RgrMngId::Flag::RGR_REQ: {
         rsp_params.rgrid = rangers->rgr_set_id(req_params.endpoints);
         rsp_params.flag = Params::RgrMngId::Flag::MNGR_ASSIGNED;
         rsp_params.fs = Env::FsInterface::interface()->get_type_underlying();
 
         SWC_LOG_OUT(LOG_DEBUG,
-          SWC_LOG_OSTREAM << "RS_REQ, rgrid=" << rsp_params.rgrid;
+          SWC_LOG_OSTREAM << "RGR_REQ, rgrid=" << rsp_params.rgrid
+                          << " fs=" << FS::to_string(rsp_params.fs);
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
         break;
       }
 
-      case Params::RgrMngId::Flag::RS_ACK: {
+      case Params::RgrMngId::Flag::RGR_ACK: {
         if(rangers->rgr_ack_id(req_params.rgrid, req_params.endpoints)) {
           SWC_LOG_OUT(LOG_DEBUG,
             SWC_LOG_OSTREAM
-              << "RS_ACK, rgrid=" << req_params.rgrid;
+              << "RGR_ACK, rgrid=" << req_params.rgrid;
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
           rsp_params.flag = Params::RgrMngId::Flag::MNGR_ACK;
@@ -62,7 +63,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         } else {
           SWC_LOG_OUT(LOG_DEBUG,
             SWC_LOG_OSTREAM
-              << "RS_ACK(MNGR_REREQ), rgrid=" << req_params.rgrid;
+              << "RGR_ACK(MNGR_REREQ), rgrid=" << req_params.rgrid;
             req_params.print(SWC_LOG_OSTREAM << ' ');
           );
           rsp_params.flag = Params::RgrMngId::Flag::MNGR_REREQ;
@@ -70,7 +71,7 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
         break;
       }
 
-      case Params::RgrMngId::Flag::RS_DISAGREE: {
+      case Params::RgrMngId::Flag::RGR_DISAGREE: {
         rsp_params.rgrid = rangers->rgr_had_id(
           req_params.rgrid, req_params.endpoints);
 
@@ -79,22 +80,22 @@ void rgr_mng_id(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
           : Params::RgrMngId::Flag::MNGR_ACK;
 
         SWC_LOG_OUT(LOG_DEBUG,
-          SWC_LOG_OSTREAM << "RS_DISAGREE, rgr_had_id=" << req_params.rgrid
+          SWC_LOG_OSTREAM << "RGR_DISAGREE, rgr_had_id=" << req_params.rgrid
             << " > rgrid=" << rsp_params.rgrid;
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
         break;
       }
 
-      case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
+      case Params::RgrMngId::Flag::RGR_SHUTTINGDOWN: {
         rangers->rgr_shutdown(req_params.rgrid, req_params.endpoints);
 
         SWC_LOG_OUT(LOG_DEBUG,
-          SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN, rgrid=" << req_params.rgrid;
+          SWC_LOG_OSTREAM << "RGR_SHUTTINGDOWN, rgrid=" << req_params.rgrid;
           req_params.print(SWC_LOG_OSTREAM << ' ');
         );
 
-        rsp_params.flag = Params::RgrMngId::Flag::RS_SHUTTINGDOWN;
+        rsp_params.flag = Params::RgrMngId::Flag::RGR_SHUTTINGDOWN;
         rsp_params.rgrid = req_params.rgrid;
         break;
       }

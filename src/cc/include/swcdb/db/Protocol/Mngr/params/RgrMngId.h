@@ -18,15 +18,15 @@ class RgrMngId final : public Serializable {
   public:
 
   enum Flag : uint8_t {
-    MNGR_ASSIGNED   = 1,
-    MNGR_NOT_ACTIVE = 2,
-    MNGR_REASSIGN   = 3,
-    MNGR_REREQ      = 4,
-    MNGR_ACK        = 5,
-    RS_REQ          = 6, // >= params with host endpoints
-      RS_ACK          = 7,
-    RS_DISAGREE     = 8,
-    RS_SHUTTINGDOWN = 9
+    MNGR_ASSIGNED     = 1,
+    MNGR_NOT_ACTIVE   = 2,
+    MNGR_REASSIGN     = 3,
+    MNGR_REREQ        = 4,
+    MNGR_ACK          = 5,
+    RGR_REQ           = 6, // >= params with host endpoints
+    RGR_ACK           = 7,
+    RGR_DISAGREE      = 8,
+    RGR_SHUTTINGDOWN  = 9
     };
 
   SWC_CAN_INLINE
@@ -43,7 +43,10 @@ class RgrMngId final : public Serializable {
   void print(std::ostream& out) const {
     out << "RgrMngId(id=" << rgrid;
     Comm::print(out << ' ', endpoints);
-    out << " flag=" << int(flag) << " fs=" << FS::to_string(fs) << ')';
+    out << " flag=" << int(flag);
+    if(flag == Flag::MNGR_ASSIGNED)
+      out << " fs=" << FS::to_string(fs);
+    out << ')';
   }
 
   EndPoints       endpoints;
@@ -58,7 +61,7 @@ class RgrMngId final : public Serializable {
     if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
       len += Serialization::encoded_length_vi64(rgrid);
 
-    if(flag >= Flag::RS_REQ)
+    if(flag >= Flag::RGR_REQ)
       len +=  Serialization::encoded_length(endpoints);
 
     if(flag == Flag::MNGR_ASSIGNED)
@@ -71,7 +74,7 @@ class RgrMngId final : public Serializable {
     if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
       Serialization::encode_vi64(bufp, rgrid);
 
-    if(flag >= Flag::RS_REQ)
+    if(flag >= Flag::RGR_REQ)
       Serialization::encode(bufp, endpoints);
 
     if(flag == Flag::MNGR_ASSIGNED)
@@ -83,7 +86,7 @@ class RgrMngId final : public Serializable {
     if(flag != Flag::MNGR_NOT_ACTIVE && flag != Flag::MNGR_ACK)
       rgrid = Serialization::decode_vi64(bufp, remainp);
 
-    if(flag >= Flag::RS_REQ)
+    if(flag >= Flag::RGR_REQ)
       Serialization::decode(bufp, remainp, endpoints);
 
     if(flag == Flag::MNGR_ASSIGNED)

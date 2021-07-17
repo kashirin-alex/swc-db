@@ -42,11 +42,11 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     auto rgr_data = Env::Rgr::rgr_data();
     if(Env::Rgr::is_shuttingdown()) {
       SWC_LOG_OUT(LOG_DEBUG,
-        rgr_data->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN(req) "); );
+        rgr_data->print(SWC_LOG_OSTREAM << "RGR_SHUTTINGDOWN(req) "); );
       create(
         Params::RgrMngId(
           rgr_data->rgrid.load(),
-          Params::RgrMngId::Flag::RS_SHUTTINGDOWN,
+          Params::RgrMngId::Flag::RGR_SHUTTINGDOWN,
           rgr_data->endpoints
         )
       );
@@ -58,7 +58,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
       create(
         Params::RgrMngId(
           0,
-          Params::RgrMngId::Flag::RS_REQ,
+          Params::RgrMngId::Flag::RGR_REQ,
           rgr_data->endpoints
         )
       );
@@ -113,9 +113,9 @@ class RgrMngId: public client::ConnQueue::ReqBase {
         return request();
       }
 
-      case Params::RgrMngId::Flag::RS_SHUTTINGDOWN: {
+      case Params::RgrMngId::Flag::RGR_SHUTTINGDOWN: {
         SWC_LOG_OUT(LOG_DEBUG,
-          Env::Rgr::rgr_data()->print(SWC_LOG_OSTREAM << "RS_SHUTTINGDOWN ");
+          Env::Rgr::rgr_data()->print(SWC_LOG_OSTREAM << "RGR_SHUTTINGDOWN ");
         );
         stop();
         if(cb_shutdown)
@@ -139,7 +139,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
               << "Ranger's " << Env::FsInterface::interface()->to_string()
               << " not matching with Mngr's FS-type="
               << FS::to_string(rsp_params.fs);
-            rgr_data->print(SWC_LOG_OSTREAM << ", RS_SHUTTINGDOWN ");
+            rgr_data->print(SWC_LOG_OSTREAM << ", RGR_SHUTTINGDOWN ");
           );
 
           std::raise(SIGTERM);
@@ -152,14 +152,14 @@ class RgrMngId: public client::ConnQueue::ReqBase {
            rsp_params.flag == Params::RgrMngId::Flag::MNGR_REASSIGN)) {
 
           rgr_data->rgrid.store(rsp_params.rgrid);
-          flag = Params::RgrMngId::Flag::RS_ACK;
+          flag = Params::RgrMngId::Flag::RGR_ACK;
           SWC_LOG_OUT(LOG_DEBUG,
-            rgr_data->print(SWC_LOG_OSTREAM << "RS_ACK "); );
+            rgr_data->print(SWC_LOG_OSTREAM << "RGR_ACK "); );
         } else {
 
-          flag = Params::RgrMngId::Flag::RS_DISAGREE;
+          flag = Params::RgrMngId::Flag::RGR_DISAGREE;
           SWC_LOG_OUT(LOG_DEBUG,
-            rgr_data->print(SWC_LOG_OSTREAM << "RS_DISAGREE "); );
+            rgr_data->print(SWC_LOG_OSTREAM << "RGR_DISAGREE "); );
         }
 
         create(Params::RgrMngId(rgr_data->rgrid, flag, rgr_data->endpoints));
