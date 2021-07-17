@@ -78,7 +78,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     const_iterator it;
     Core::MutexSptd::scope lock(m_mutex);
     for(cid_t cid = DB::Types::SystemColumn::CID_MASTER_BEGIN;
-        cid <= DB::Types::SystemColumn::CID_META_END; ++cid) {
+        cid <= DB::Types::SystemColumn::SYS_CID_END; ++cid) {
       if((it = find(cid)) != cend()) {
         if((range = it->second->get_next_unassigned())) {
           col = it->second;
@@ -87,7 +87,9 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
         if(it->second->state() != Column::State::OK)
           waiting_meta = true;
       }
-      if(waiting_meta && cid == DB::Types::SystemColumn::CID_MASTER_END)
+      if(waiting_meta &&
+         (cid == DB::Types::SystemColumn::CID_MASTER_END ||
+          cid == DB::Types::SystemColumn::CID_META_END))
         return nullptr;
     }
     if(waiting_meta)
