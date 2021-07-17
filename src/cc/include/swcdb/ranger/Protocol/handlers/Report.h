@@ -27,17 +27,15 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       Params::Report::Function(Serialization::decode_i8(&ptr, &remain))) {
 
       case Params::Report::Function::RESOURCES: {
-        Params::Report::RspRes rsp_params;
-        rsp_params.mem = Env::Rgr::res().available_mem_mb();
-        rsp_params.cpu = Env::Rgr::res().available_cpu_mhz();
-
-        rsp_params.ranges = 0;
-        Ranger::ColumnPtr col;
-        auto& columns = *Env::Rgr::columns();
-        for(cid_t cidx = 0; (col=columns.get_next(cidx)); ++cidx) {
-          rsp_params.ranges += col->ranges_count(); // *= (Master|Meta) weight
-        }
-        cbp = Buffers::make(ev, rsp_params, 4);
+        cbp = Buffers::make(
+          ev,
+          Params::Report::RspRes(
+            Env::Rgr::res().available_mem_mb(),
+            Env::Rgr::res().available_cpu_mhz(),
+            Env::Rgr::in_process_ranges()
+          ),
+          4
+        );
         cbp->append_i32(err);
         goto send_response;
       }

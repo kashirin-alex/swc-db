@@ -56,6 +56,11 @@ class RspRes final : public Serializable {
   SWC_CAN_INLINE
   RspRes() noexcept { }
 
+  SWC_CAN_INLINE
+  RspRes(uint32_t mem, uint32_t cpu, size_t ranges) noexcept
+        : mem(mem), cpu(cpu), ranges(ranges) {
+  }
+
   //~RspRes() { }
 
   uint32_t    mem;

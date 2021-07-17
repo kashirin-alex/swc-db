@@ -120,6 +120,9 @@ void Compaction::run(bool initial) {
     }
     ++m_idx_rid;
 
+    SWC_LOGF(LOG_DEBUG, "COMPACT-CHECKING %lu/%lu",
+                          range->cfg->cid, range->rid);
+
     if((!range->compact_required() && range->blocks.commitlog.try_compact()) ||
         !range->compact_possible())
       continue;

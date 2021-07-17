@@ -82,7 +82,7 @@ Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
               m_compacting(COMPACT_NONE), m_require_compact(false),
               m_q_run_add(false), m_q_run_scan(false),
               m_adding(0) { //, m_inbytes(0)
-  Env::Rgr::in_process(1);
+  Env::Rgr::in_process_ranges(1);
   Env::Rgr::res().more_mem_usage(size_of());
 }
 
@@ -93,7 +93,7 @@ void Range::init() {
 
 Range::~Range() {
   Env::Rgr::res().less_mem_usage(size_of());
-  Env::Rgr::in_process(-1);
+  Env::Rgr::in_process_ranges(-1);
 }
 
 SWC_CAN_INLINE
@@ -677,16 +677,16 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
 
   // ranger.data
   auto rgr_data = Env::Rgr::rgr_data();
-  Common::Files::RgrData::Ptr rs_last = get_last_rgr(err);
+  Common::Files::RgrData::Ptr rgr_last = get_last_rgr(err);
 
-  if(rs_last->endpoints.size() &&
-     !Comm::has_endpoint(rgr_data->endpoints, rs_last->endpoints)) {
+  if(rgr_last->endpoints.size() &&
+     !Comm::has_endpoint(rgr_data->endpoints, rgr_last->endpoints)) {
     SWC_LOG_OUT(LOG_DEBUG,
-      rs_last->print(SWC_LOG_OSTREAM << "RANGER LAST=");
+      rgr_last->print(SWC_LOG_OSTREAM << "RANGER LAST=");
       rgr_data->print(SWC_LOG_OSTREAM << " NEW=");
     );
 
-    Env::Clients::get()->get_rgr_queue(rs_last->endpoints)->put(
+    Env::Clients::get()->get_rgr_queue(rgr_last->endpoints)->put(
       Comm::Protocol::Rgr::Req::RangeUnload::Ptr(
         new Comm::Protocol::Rgr::Req::RangeUnload(shared_from_this(), req)
       )

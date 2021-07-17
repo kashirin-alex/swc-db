@@ -70,6 +70,16 @@ class Rgr final {
   }
 
   SWC_CAN_INLINE
+  static int64_t in_process_ranges() noexcept {
+    return  m_env->m_in_process_ranges;
+  }
+
+  SWC_CAN_INLINE
+  static void in_process_ranges(int64_t count) noexcept {
+    m_env->m_in_process_ranges.fetch_add(count);
+  }
+
+  SWC_CAN_INLINE
   static size_t scan_reserved_bytes() noexcept {
     return m_env->m_scan_reserved_bytes;
   }
@@ -178,6 +188,7 @@ class Rgr final {
   Core::AtomicBool                    m_shuttingdown;
   Core::AtomicBool                    m_not_accepting;
   Core::Atomic<int64_t>               m_in_process;
+  Core::Atomic<int64_t>               m_in_process_ranges;
   Core::Atomic<size_t>                m_scan_reserved_bytes;
 
 };
@@ -265,7 +276,8 @@ Rgr::Rgr()
         [this](size_t bytes) { return _columns->release(bytes); }
       ),
       m_shuttingdown(false), m_not_accepting(false),
-      m_in_process(0), m_scan_reserved_bytes(0) {
+      m_in_process(0), m_in_process_ranges(0),
+      m_scan_reserved_bytes(0) {
 }
 
 Rgr::~Rgr() {
@@ -303,11 +315,12 @@ void Rgr::shuttingdown() {
 
 void Rgr::wait_if_in_process() {
   size_t n = 0;
-  while(in_process()) {
+  while(in_process() || in_process_ranges()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     m_env->_columns->unload_all(true); //re-check
     if(!(++n % 10))
-      SWC_LOGF(LOG_WARN, "In-process=%ld check=%lu", in_process(), n);
+      SWC_LOGF(LOG_WARN, "In-process=%ld ranges=%ld check=%lu",
+                          in_process(), in_process_ranges(), n);
   }
 }
 
