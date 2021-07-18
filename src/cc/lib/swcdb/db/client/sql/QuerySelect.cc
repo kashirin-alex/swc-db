@@ -287,7 +287,7 @@ void QuerySelect::read_columns_intervals() {
   bool processed = false;
   bool possible_and = false;
   Condition::Comp comp;
-  std::vector<DB::Schemas::Pattern> schema_patterns;
+  DB::Schemas::NamePatterns schema_patterns;
 
   std::string col_name;
   std::vector<DB::Schema::Ptr> cols;
@@ -407,8 +407,8 @@ DB::Schema::Ptr QuerySelect::add_column(const std::string& col) {
   return schema;
 }
 
-void QuerySelect::add_column(const std::vector<DB::Schemas::Pattern>& patterns,
-                           std::vector<DB::Schema::Ptr>& cols) {
+void QuerySelect::add_column(const DB::Schemas::NamePatterns& patterns,
+                             std::vector<DB::Schema::Ptr>& cols) {
   auto schemas = get_schema(clients, patterns);
   if(err)
   return;

@@ -620,13 +620,11 @@ class AppHandler final : virtual public BrokerIf {
                    std::vector<DB::Schema::Ptr>& dbschemas) {
     auto clients = Env::Clients::get();
     if(!spec.patterns.empty()) {
-      std::vector<DB::Schemas::Pattern> dbpatterns;
-      dbpatterns.resize(spec.patterns.size());
-      size_t i = 0;
+      DB::Schemas::NamePatterns dbpatterns;
+      dbpatterns.reserve(spec.patterns.size());
       for(auto& pattern : spec.patterns) {
-        dbpatterns[i].comp  = Condition::Comp(uint8_t(pattern.comp));
-        dbpatterns[i].value = pattern.value;
-        ++i;
+        dbpatterns.emplace_back(
+          Condition::Comp(uint8_t(pattern.comp)), pattern.value);
       }
       clients->get_schema(err, dbpatterns, dbschemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)

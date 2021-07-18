@@ -93,7 +93,7 @@ DB::Schema::Ptr Schemas::get(const std::string& name) {
 }
 
 void
-Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
+Schemas::get(int& err, const DB::Schemas::NamePatterns& patterns,
              std::vector<DB::Schema::Ptr>& schemas) {
   _request(err, patterns, schemas);
 
@@ -111,7 +111,7 @@ Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns,
 }
 
 std::vector<DB::Schema::Ptr>
-Schemas::get(int& err, const std::vector<DB::Schemas::Pattern>& patterns) {
+Schemas::get(int& err, const DB::Schemas::NamePatterns& patterns) {
   std::vector<DB::Schema::Ptr> schemas;
   get(err, patterns, schemas);
   return schemas;
@@ -160,7 +160,7 @@ void Schemas::_request(int& err, const std::string& name,
 }
 
 void Schemas::_request(int& err,
-                       const std::vector<DB::Schemas::Pattern>& patterns,
+                       const DB::Schemas::NamePatterns& patterns,
                        std::vector<DB::Schema::Ptr>& schemas) {
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   params.patterns = patterns;

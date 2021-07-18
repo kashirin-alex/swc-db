@@ -20,19 +20,40 @@ namespace SWC { namespace DB {
 class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   public:
 
-  struct Pattern {
+
+  struct Pattern : public std::string {
+
+    Condition::Comp comp;
 
     SWC_CAN_INLINE
     Pattern() noexcept { }
 
     SWC_CAN_INLINE
+    Pattern(Condition::Comp comp, std::string&& value) noexcept
+            : std::string(std::move(value)), comp(comp) {
+    }
+    SWC_CAN_INLINE
     Pattern(Condition::Comp comp, const std::string& value)
-            : comp(comp), value(value) {
+            : std::string(value), comp(comp) {
+    }
+    SWC_CAN_INLINE
+    void set(Condition::Comp _comp, std::string&& value) {
+      std::string::operator=(std::move(value));
+      comp = _comp;
+    }
+    SWC_CAN_INLINE
+    void set(Condition::Comp _comp, const std::string& value) {
+      std::string::operator=(value);
+      comp = _comp;
     }
 
-    Condition::Comp comp;
-    std::string     value;
+    void print(std::ostream& out) const {
+      out << Condition::to_string(comp, true) << '"' << *this << '"';
+    }
+
   };
+  typedef std::vector<Pattern> NamePatterns;
+
 
   SWC_CAN_INLINE
   Schemas() noexcept { }
@@ -51,7 +72,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
 
   void all(std::vector<Schema::Ptr>& entries);
 
-  void matching(const std::vector<Pattern>& patterns,
+  void matching(const NamePatterns& patterns,
                 std::vector<Schema::Ptr>& entries,
                 bool no_sys=true);
 

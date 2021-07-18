@@ -912,7 +912,7 @@ void generate() {
 
   uint32_t ncolumns(settings->get_i32("gen-col-number"));
 
-  std::vector<DB::Schemas::Pattern> patterns;
+  DB::Schemas::NamePatterns patterns;
   patterns.push_back(DB::Schemas::Pattern(Condition::PF, col_name));
 
   std::vector<DB::Schema::Ptr> schemas;

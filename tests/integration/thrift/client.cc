@@ -452,7 +452,7 @@ void spec_delete_test_column(Client& client) {
   }
 }
 
-void spec_create_test_column(Client& client, uint32_t cell_versions=1, 
+void spec_create_test_column(Client& client, uint32_t cell_versions=1,
                              bool serial=false) {
   spec_delete_test_column(client);
   std::cout << std::endl << "test: spec_create_test_column: " << std::endl;
@@ -487,9 +487,7 @@ void spec_list_columns(Client& client) {
   std::cout << std::endl << "test: spec_list_columns: " << std::endl;
 
   SpecSchemas spec;
-  auto& pattern = spec.patterns.emplace_back();
-  pattern.value = column_pre;
-  pattern.comp = Comp::PF;
+  spec.patterns.emplace_back(Comp::PF, column_pre);
 
   Schemas schemas;
   client.list_columns(schemas, spec);
@@ -577,8 +575,8 @@ void spec_update_serial(Client& client, size_t updater_id=0, int batch=0) {
           fields.__set_v_lb({
             column_name(c),
             std::to_string(c),
-            std::to_string(i), 
-            std::to_string(f), 
+            std::to_string(i),
+            std::to_string(f),
             std::to_string(batch)
           });
         }
@@ -629,7 +627,7 @@ void spec_select(Client& client) {
   std::cout << " cells.size()=" << container.cells.size()
             << " serial_cells.size()=" << container.serial_cells.size()
             << " expected=" << num_fractions*num_columns << "\n";
-  assert(container.cells.size() + container.serial_cells.size() 
+  assert(container.cells.size() + container.serial_cells.size()
          == num_fractions*num_columns);
 
   for(auto rslt_typ : {
@@ -678,11 +676,11 @@ void spec_select(Client& client) {
         break;
       }
       default: { // IN_LIST
-        std::cout << rslt_typ 
+        std::cout << rslt_typ
                   << " cells.size()=" << gcells.cells.cells.size()
                   << " serial_cells.size()=" << gcells.cells.serial_cells.size()
                   << " expected=" << num_fractions*num_columns << "\n";
-        assert(gcells.cells.cells.size() + gcells.cells.serial_cells.size() 
+        assert(gcells.cells.cells.size() + gcells.cells.serial_cells.size()
                 == num_fractions*num_columns);
         break;
       }

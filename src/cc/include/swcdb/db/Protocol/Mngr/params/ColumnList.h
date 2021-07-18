@@ -23,7 +23,7 @@ class ColumnListReq final : public Serializable {
 
   //~ColumnListReq() { }
 
-  std::vector<DB::Schemas::Pattern> patterns;
+  DB::Schemas::NamePatterns patterns;
 
   private:
 

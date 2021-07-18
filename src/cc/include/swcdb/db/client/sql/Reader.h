@@ -65,7 +65,7 @@ class Reader {
 
   std::vector<DB::Schema::Ptr>
   get_schema(const Clients::Ptr& clients,
-             const std::vector<DB::Schemas::Pattern>& patterns);
+             const DB::Schemas::NamePatterns& patterns);
 
   void read(std::string& buf,
             const char* stop = nullptr, bool keep_escape=false);

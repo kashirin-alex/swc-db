@@ -155,13 +155,13 @@ DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
 
 std::vector<DB::Schema::Ptr>
 Reader::get_schema(const Clients::Ptr& clients,
-                   const std::vector<DB::Schemas::Pattern>& patterns) {
+                   const DB::Schemas::NamePatterns& patterns) {
   auto schemas = clients->get_schema(err, patterns);
   if(err) {
     std::string msg("problem getting columns on patterns=[");
     for(auto& p : patterns) {
       msg.append(Condition::to_string(p.comp, true));
-      msg.append("'" + p.value + "', ");
+      msg.append("'" + p + "', ");
     }
     error_msg(err, msg + "] schema");
   }

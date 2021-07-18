@@ -77,8 +77,9 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
     entries.push_back(it.second);
 }
 
-void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
-                       std::vector<Schema::Ptr>& entries, bool no_sys) {
+void Schemas::matching(const Schemas::NamePatterns& patterns,
+                       std::vector<Schema::Ptr>& entries,
+                       bool no_sys) {
   Core::MutexSptd::scope lock(m_mutex);
   for(const auto& it : *this) {
     if(no_sys && it.second->cid <= DB::Types::SystemColumn::SYS_CID_END)
@@ -86,8 +87,8 @@ void Schemas::matching(const std::vector<Schemas::Pattern>& patterns,
     for(auto& pattern : patterns) {
       if(Condition::is_matching_extended(
           pattern.comp,
-          reinterpret_cast<const uint8_t*>(pattern.value.c_str()),
-          pattern.value.size(),
+          reinterpret_cast<const uint8_t*>(pattern.c_str()),
+          pattern.size(),
           reinterpret_cast<const uint8_t*>(it.second->col_name.c_str()),
           it.second->col_name.size() )
         ) {
