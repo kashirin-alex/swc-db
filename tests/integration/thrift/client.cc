@@ -487,7 +487,9 @@ void spec_list_columns(Client& client) {
   std::cout << std::endl << "test: spec_list_columns: " << std::endl;
 
   SpecSchemas spec;
-  spec.patterns.emplace_back(Comp::PF, column_pre);
+  auto& pattern = spec.patterns.emplace_back();
+  pattern.value = column_pre;
+  pattern.comp = Comp::PF;
 
   Schemas schemas;
   client.list_columns(schemas, spec);
