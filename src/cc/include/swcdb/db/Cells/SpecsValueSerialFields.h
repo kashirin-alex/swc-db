@@ -264,8 +264,9 @@ struct Field_LIST_INT64 : Field {
 
   void print(std::ostream& out) const override;
 
-  Condition::Comp   comp;
-  std::vector<Item> items;
+  Condition::Comp     comp;
+  std::vector<Item>   items;
+  Core::Vector<bool> _found;
 
 };
 //
@@ -316,8 +317,9 @@ struct Field_LIST_BYTES : Field {
 
   void print(std::ostream& out) const override;
 
-  Condition::Comp   comp;
-  std::vector<Item> items;
+  Condition::Comp     comp;
+  std::vector<Item>   items;
+  Core::Vector<bool> _found;
 
 };
 //
@@ -349,6 +351,7 @@ struct Fields {
   void print(std::ostream& out) const;
 
   std::vector<Field::Ptr> fields;
+  Core::Vector<Field*>    _fields_ptr;
 
 };
 //

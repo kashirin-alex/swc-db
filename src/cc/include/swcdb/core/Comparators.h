@@ -248,28 +248,22 @@ bool re(const uint8_t* p1, uint32_t p1_len,
 extern SWC_CAN_INLINE
 bool sbs(const uint8_t* p1, uint32_t p1_len,
          const uint8_t* p2, uint32_t p2_len) noexcept {
+  if(!p1_len)
+    return true;
   if(p1_len > p2_len)
     return false;
-  Core::Vector<const uint8_t*> found(p1_len, nullptr);
-  const uint8_t* p2_end = p2 + p2_len;
-  for(const uint8_t* p1_end = p1 + p1_len; p1 < p1_end; ++p1) {
-    for(const uint8_t* ptr = p2; ; ) {
-      if(*p1 == *ptr) {
-        auto it = found.begin();
-        for(; *it; ++it) {
-          if(*it == ptr)
-            goto _continue;
-        }
-        *it = ptr;
+  Core::Vector<bool> found(p1_len, false);
+  for(uint32_t count = p1_len; p2_len; ++p2, --p2_len) {
+    for(uint32_t i = 0; i < p1_len; ++i) {
+      if(!found[i] && p1[i] == *p2) {
+        if(!--count)
+          return true;
+        found[i] = true;
         break;
       }
-      _continue:
-        if(++ptr == p2_end)
-          return false;
     }
-
   }
-  return true;
+  return false;
 }
 
 extern SWC_CAN_INLINE
