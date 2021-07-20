@@ -302,6 +302,8 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
       if(!remain)
         return true;
       uint32_t sz = items.size();
+      if(!sz)
+        return false;
       for(auto& f : _found)
         f = false;
       while(remain) {
@@ -531,6 +533,8 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
       if(!remain)
         return true;
       uint32_t sz = items.size();
+      if(!sz)
+        return false;
       for(auto& f : _found)
         f = false;
       while(remain) {
