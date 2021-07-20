@@ -908,9 +908,18 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               found_comparator(item.comp = Condition::NONE, false);
              if(!is_numeric_comparator(item.comp))
                 return;
-              read_int64_t(item.value, was_set, ",]");
-              if(err)
-                return;
+              std::string buff;
+              read(buff, ",]");
+              if(buff.empty()) {
+                field->items.pop_back();
+              } else {
+                try {
+                  item.value = std::stoll(buff);
+                } catch(...) {
+                  error_msg(Error::SQL_PARSE_ERROR,
+                    " signed 64-bit integer out of range");
+                }
+              }
               seek_space();
             } while(found_char(','));
 
@@ -938,6 +947,12 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               read(item.value, ",]", item.comp == Condition::RE);
               if(err)
                 return;
+              if(item.comp == Condition::NONE) {
+                if(item.value.empty())
+                  field->items.pop_back();
+                else
+                  item.comp = Condition::EQ;
+              }
               seek_space();
             } while(found_char(','));
 

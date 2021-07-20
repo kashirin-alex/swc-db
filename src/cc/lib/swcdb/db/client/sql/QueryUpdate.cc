@@ -327,10 +327,13 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
               return;
             std::vector<int64_t> items;
             do {
-              read_int64_t(items.emplace_back(), was_set, ",]");
-              if(err)
-                return;
               seek_space();
+              if(!is_char(",]")) {
+                read_int64_t(items.emplace_back(), was_set, ",]");
+                if(err)
+                  return;
+                seek_space();
+              }
             } while(found_char(','));
             expect_token("]", 1, bracket_square);
             if(err)
@@ -346,10 +349,13 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
               return;
             std::vector<std::string> items;
             do {
-              read(items.emplace_back(), ",]");
-              if(err)
-                return;
               seek_space();
+              if(!is_char(",]")) {
+                read(items.emplace_back(), ",]");
+                if(err)
+                  return;
+                seek_space();
+              }
             } while(found_char(','));
             expect_token("]", 1, bracket_square);
             if(err)

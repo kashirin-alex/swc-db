@@ -275,11 +275,11 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
     }
 
     case Condition::SBS: {
-      if(!remain)
-        return false;
       uint32_t sz = items.size();
       if(!sz)
         return true;
+      if(!remain)
+        return false;
       uint32_t count = sz;
       for(auto& f : _found)
         f = false;
@@ -501,11 +501,11 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
     }
 
     case Condition::SBS: {
-      if(!remain)
-        return false;
       uint32_t sz = items.size();
       if(!sz)
         return true;
+      if(!remain)
+        return false;
       uint32_t count = sz;
       for(auto& f : _found)
         f = false;
