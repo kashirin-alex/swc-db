@@ -447,9 +447,10 @@ class Vector {
 
   SWC_CAN_INLINE
   static pointer _allocate_uinitialized(size_type size) {
-    return static_cast<pointer>(::operator new(sizeof(value_type) * size));
-    //return static_cast<pointer>(
-      //std::aligned_alloc(alignof(value_type), sizeof(value_type) * size));
+    return static_cast<pointer>(::operator new(
+      sizeof(value_type) * size,
+      std::align_val_t(std::alignment_of<value_type>::value)
+    ));
   }
 
   /* IF can grow in-place
