@@ -23,6 +23,7 @@ class Schema final {
   public:
 
   typedef std::shared_ptr<Schema>  Ptr;
+  typedef std::vector<std::string> Tags;
 
   static constexpr const cid_t     NO_CID = 0;
 
@@ -63,6 +64,7 @@ class Schema final {
 
   cid_t                 cid;
   std::string           col_name;
+  Tags                  tags;
 
   Types::KeySeq         col_seq;
   Types::Column         col_type;

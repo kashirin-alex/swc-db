@@ -25,7 +25,7 @@ Schema::Schema() noexcept
 }
 
 Schema::Schema(const Schema& other)
-      : cid(other.cid), col_name(other.col_name),
+      : cid(other.cid), col_name(other.col_name), tags(other.tags),
         col_seq(other.col_seq), col_type(other.col_type),
         cell_versions(other.cell_versions), cell_ttl(other.cell_ttl),
         blk_encoding(other.blk_encoding), blk_size(other.blk_size),
@@ -39,9 +39,24 @@ Schema::Schema(const Schema& other)
         revision(other.revision) {
 }
 
+namespace {
+SWC_CAN_INLINE
+Schema::Tags read_tags(const uint8_t** bufp, size_t* remainp) {
+  Schema::Tags tags;
+  if(uint32_t sz = Serialization::decode_vi32(bufp, remainp)) {
+    tags.reserve(sz);
+    for(;sz;--sz)
+      tags.emplace_back(
+        std::move(Serialization::decode_bytes_string(bufp, remainp)));
+  }
+  return tags;
+}
+}
+
 Schema::Schema(const uint8_t** bufp, size_t* remainp)
   : cid(Serialization::decode_vi64(bufp, remainp)),
     col_name(Serialization::decode_bytes_string(bufp, remainp)),
+    tags(read_tags(bufp, remainp)),
 
     col_seq(Types::KeySeq(Serialization::decode_i8(bufp, remainp))),
     col_type(Types::Column(Serialization::decode_i8(bufp, remainp))),
@@ -84,11 +99,16 @@ bool Schema::equal(const Ptr& other, bool with_rev) noexcept {
           && compact_percent == other->compact_percent
           && (!with_rev || revision == other->revision)
           && Condition::str_eq(col_name, other->col_name)
+          && tags == other->tags
           ;
 }
 
 uint32_t Schema::encoded_length() const noexcept {
-  return Serialization::encoded_length_vi64(cid)
+  uint32_t sz = Serialization::encoded_length_vi32(tags.size());
+  for(auto& tag : tags)
+    sz += Serialization::encoded_length_bytes(tag.size());
+  return sz
+       + Serialization::encoded_length_vi64(cid)
        + Serialization::encoded_length_bytes(col_name.size())
        + 2
        + Serialization::encoded_length_vi32(cell_versions)
@@ -105,6 +125,10 @@ uint32_t Schema::encoded_length() const noexcept {
 void Schema::encode(uint8_t** bufp) const {
   Serialization::encode_vi64(bufp, cid);
   Serialization::encode_bytes(bufp, col_name.c_str(), col_name.size());
+
+  Serialization::encode_vi32(bufp, tags.size());
+  for(auto& tag : tags)
+    Serialization::encode_bytes(bufp, tag.c_str(), tag.size());
 
   Serialization::encode_i8(bufp, uint8_t(col_seq));
   Serialization::encode_i8(bufp, uint8_t(col_type));
@@ -140,6 +164,14 @@ void Schema::display(std::ostream& out) const {
     << "Schema("
     << "cid=" << std::to_string(cid)
     << " name=\"" << col_name << "\""
+    << " tags=[";
+  for(auto it = tags.cbegin(); it != tags.cend(); ) {
+    out << '"' << *it << '"';
+    if(++it == tags.cend())
+      break;
+    out << ',';
+  }
+  out << ']'
     << " seq=" << Types::to_string(col_seq)
     << " type=" << Types::to_string(col_type)
 

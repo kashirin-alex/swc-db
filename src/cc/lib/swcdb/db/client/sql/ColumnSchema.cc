@@ -127,6 +127,32 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       continue;
     }
 
+    if((any = found_token("tags", 4))) {
+      seek_space();
+      expect_eq();
+      seek_space();
+      if(err)
+        return;
+      seek_space();
+      bool chk;
+      expect_token("[", 1, chk);
+      if(err)
+        return;
+      while(remain && !err) {
+        if(found_space() || found_char(','))
+          continue;
+        std::string buff;
+        read(buff, ",]");
+        if(!buff.empty())
+          schema->tags.emplace_back(std::move(buff));
+        if((chk = found_char(']')))
+          break;
+      }
+      if(!chk)
+        expect_token("]", 1, chk);
+      continue;
+    }
+
     if((any = found_token("type", 4))) {
       expect_eq();
       if(err)
