@@ -1,4 +1,6 @@
-# **SWC-DB©** &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   ![SWC-DB](docs/logo-small.png)
+
+[<img src="docs/logo-big.svg" alt="SWC-DB" style="padding:0 15%;max-width:70%;" />](docs/logo-big.svg)
+
 ## SWC-DB© (_Super Wide Column Database_) - DBMS
 
 

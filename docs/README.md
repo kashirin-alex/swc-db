@@ -197,6 +197,6 @@ In worst case of outdated data being used with a request the Ranger return an er
 
 
 
-![SWC-DB©]({{ site.baseurl }}/logo-big.png)
+![SWC-DB©]({{ site.baseurl }}/logo-big.svg)
 
 
