@@ -155,15 +155,29 @@ DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
 
 std::vector<DB::Schema::Ptr>
 Reader::get_schema(const Clients::Ptr& clients,
-                   const DB::Schemas::NamePatterns& patterns) {
+                   const DB::Schemas::SelectorPatterns& patterns) {
   auto schemas = clients->get_schema(err, patterns);
   if(err) {
-    std::string msg("problem getting columns on patterns=[");
-    for(auto& p : patterns) {
-      msg.append(Condition::to_string(p.comp, true));
-      msg.append("'" + p + "', ");
+    std::string msg("problem getting columns schema on patterns");
+    if(!patterns.names.empty()) {
+      msg.append(" names=[");
+      for(auto& p : patterns.names) {
+        msg.append(Condition::to_string(p.comp, true));
+        msg.append("'" + p + "', ");
+      }
+      msg += ']';
     }
-    error_msg(err, msg + "] schema");
+    if(!patterns.tags.empty() || patterns.tags.comp != Condition::NONE) {
+      msg.append(" tags");
+      msg.append(Condition::to_string(patterns.tags.comp, false));
+      msg += '[';
+      for(auto& p : patterns.tags) {
+        msg.append(Condition::to_string(p.comp, true));
+        msg.append("'" + p + "', ");
+      }
+      msg += ']';
+    }
+    error_msg(err, msg);
   }
   return schemas;
 }
@@ -385,6 +399,76 @@ bool Reader::is_numeric_comparator(Condition::Comp& comp, bool _double) {
       return true;
   }
 }
+
+void Reader::read_column_tags(DB::Schemas::TagsPattern& tags) {
+  Condition::Comp comp = Condition::NONE;
+  seek_space();
+  found_comparator(comp, false);
+  if(comp != Condition::NONE &&
+     comp != Condition::NE &&
+     comp != Condition::GT &&
+     comp != Condition::LT &&
+     comp != Condition::GE &&
+     comp != Condition::LE &&
+     comp != Condition::EQ &&
+     comp != Condition::SBS &&
+     comp != Condition::SPS &&
+     comp != Condition::POSBS &&
+     comp != Condition::FOSBS &&
+     comp != Condition::POSPS &&
+     comp != Condition::FOSPS ) {
+    error_msg(Error::SQL_PARSE_ERROR,
+      std::string("unsupported 'comparator' ") +
+      Condition::to_string(comp, true)
+    );
+    return;
+  }
+  tags.comp = comp;
+  seek_space();
+  bool chk;
+  expect_token("[", 1, chk);
+
+  std::string buff;
+  while(remain && !err) {
+    if(found_char(',') || found_space())
+      continue;
+    if(found_char(']')) {
+      if(tags.comp == Condition::NONE && !tags.empty()) {
+        tags.comp = Condition::EQ;
+      }
+      return;
+    }
+    found_comparator(comp = Condition::NONE, true);
+    seek_space();
+    read(buff, ",]", comp == Condition::RE);
+    if(!buff.empty() || comp != Condition::NONE) {
+      tags.emplace_back(
+        comp == Condition::NONE ? Condition::EQ : comp,
+        std::move(buff)
+      );
+    }
+  }
+  expect_token("]", 1, chk);
+}
+
+void Reader::read_column(const char* stop,
+                         std::string& col_name,
+                         DB::Schemas::NamePatterns& names) {
+  Condition::Comp comp = Condition::NONE;
+  found_comparator(comp, true);
+  read(col_name, stop, comp == Condition::RE);
+  if(comp != Condition::NONE && comp != Condition::EQ) {
+    if(col_name.empty()) {
+      error_msg(
+        Error::SQL_PARSE_ERROR,
+        "expected column name(expression) after comparator"
+      );
+    } else {
+      names.emplace_back(comp, std::move(col_name));
+    }
+  }
+}
+
 
 void Reader::error_msg(int error, const std::string& msg) {
   err = error;

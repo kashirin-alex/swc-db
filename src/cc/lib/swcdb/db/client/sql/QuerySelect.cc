@@ -286,8 +286,7 @@ void QuerySelect::read_columns_intervals() {
   bool col_names_set = false;
   bool processed = false;
   bool possible_and = false;
-  Condition::Comp comp;
-  DB::Schemas::NamePatterns schema_patterns;
+  DB::Schemas::SelectorPatterns schema_patterns;
 
   std::string col_name;
   std::vector<DB::Schema::Ptr> cols;
@@ -308,7 +307,8 @@ void QuerySelect::read_columns_intervals() {
     }
 
     if(token_col && !col_names_set) {
-      //"col(, 1 2 ,re"aa$, =^"Ds", "3 4")" => ["1","2", [patterns], "3 4"]
+      // "col(, 1 2 ,re"aa$, =^"Ds", "3 4", tags>=['1',>4,<'5'])"
+      //   --> ["1","2", [patterns], "3 4", [tags]]
       if(found_space())
         continue;
 
@@ -321,9 +321,11 @@ void QuerySelect::read_columns_intervals() {
         continue;
 
       if(found_char(')')) {
-        if(!schema_patterns.empty()) {
+        if(!schema_patterns.names.empty() ||
+            schema_patterns.tags.comp != Condition::NONE) {
           add_column(schema_patterns, cols);
-          schema_patterns.clear();
+          schema_patterns.names.clear();
+          schema_patterns.tags.clear();
         }
 
         if(cols.empty()) {
@@ -339,21 +341,16 @@ void QuerySelect::read_columns_intervals() {
         break;
       }
 
-      found_comparator(comp = Condition::NONE, true);
-      read(col_name, ",)", comp == Condition::RE);
-      if(comp != Condition::NONE) {
-        if(col_name.empty()) {
-          error_msg(
-            Error::SQL_PARSE_ERROR,
-            "expected column name(expression) after comparator"
-          );
-          break;
-        }
-        schema_patterns.emplace_back(comp, col_name);
-      } else if(!col_name.empty()) {
-        cols.push_back(add_column(col_name));
+      if(found_token("tags", 4)) {
+        read_column_tags(schema_patterns.tags);
+        continue;
       }
-      col_name.clear();
+
+      read_column(",)", col_name, schema_patterns.names);
+      if(!col_name.empty()) {
+        cols.push_back(add_column(col_name));
+        col_name.clear();
+      }
       continue;
     }
 
@@ -407,7 +404,7 @@ DB::Schema::Ptr QuerySelect::add_column(const std::string& col) {
   return schema;
 }
 
-void QuerySelect::add_column(const DB::Schemas::NamePatterns& patterns,
+void QuerySelect::add_column(const DB::Schemas::SelectorPatterns& patterns,
                              std::vector<DB::Schema::Ptr>& cols) {
   auto schemas = get_schema(clients, patterns);
   if(err)

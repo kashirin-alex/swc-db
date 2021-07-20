@@ -77,27 +77,224 @@ void Schemas::all(std::vector<Schema::Ptr>& entries) {
     entries.push_back(it.second);
 }
 
-void Schemas::matching(const Schemas::NamePatterns& patterns,
+
+// local-declaration
+namespace {
+bool is_matching(const Schema::Tags& s_tags,
+                 const Schemas::TagsPattern& tags,
+                 Core::Vector<bool>& found);
+}
+
+void Schemas::matching(const Schemas::SelectorPatterns& patterns,
                        std::vector<Schema::Ptr>& entries,
                        bool no_sys) {
+  Core::Vector<bool> found;
+  if(patterns.tags.comp == Condition::SBS ||
+     patterns.tags.comp == Condition::SPS)
+    found.resize(patterns.tags.size());
+  bool match;
+
   Core::MutexSptd::scope lock(m_mutex);
   for(const auto& it : *this) {
     if(no_sys && it.second->cid <= DB::Types::SystemColumn::SYS_CID_END)
       continue;
-    for(auto& pattern : patterns) {
-      if(Condition::is_matching_extended(
-          pattern.comp,
-          reinterpret_cast<const uint8_t*>(pattern.c_str()),
-          pattern.size(),
-          reinterpret_cast<const uint8_t*>(it.second->col_name.c_str()),
-          it.second->col_name.size() )
-        ) {
-        entries.push_back(it.second);
+    const Schema& schema = *it.second.get();
+    match = false;
+    for(auto& pattern : patterns.names) {
+      match = Condition::is_matching_extended(
+        pattern.comp,
+        reinterpret_cast<const uint8_t*>(pattern.c_str()),
+        pattern.size(),
+        reinterpret_cast<const uint8_t*>(schema.col_name.c_str()),
+        schema.col_name.size()
+      );
+      if(match)
         break;
-      }
     }
+    if(match || is_matching(schema.tags, patterns.tags, found))
+      entries.push_back(it.second);
   }
 }
+
+// local-definition
+namespace {
+SWC_CAN_INLINE
+bool is_matching(const Schema::Tags& s_tags, const Schemas::TagsPattern& tags,
+                 Core::Vector<bool>& found) {
+  switch(tags.comp) {
+    case Condition::NE: {
+      auto it = tags.cbegin();
+      auto itt = s_tags.cbegin();
+      for(; it != tags.cend() && itt != s_tags.cend(); ++it, ++itt) {
+        if(!Condition::is_matching_extended(
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->c_str()), it->size(),
+              reinterpret_cast<const uint8_t*>(itt->c_str()), itt->size())) {
+          return true;
+        }
+      }
+      return itt != s_tags.cend() || it != tags.cend();
+    }
+
+    case Condition::GT:
+    case Condition::LT:
+    case Condition::GE:
+    case Condition::LE:
+    case Condition::EQ: {
+      auto it = tags.cbegin();
+      auto itt = s_tags.cbegin();
+      for(; it != tags.cend() && itt != s_tags.cend(); ++it, ++itt) {
+        if(!Condition::is_matching_extended(
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->c_str()), it->size(),
+              reinterpret_cast<const uint8_t*>(itt->c_str()), itt->size()))
+          break;
+      }
+      return itt != s_tags.cend()
+        ? it == tags.cend() &&
+          (tags.comp == Condition::GT || tags.comp == Condition::GE)
+        : (it == tags.cend()
+            ? (tags.comp == Condition::EQ ||
+               tags.comp == Condition::LE || tags.comp == Condition::GE)
+            : (tags.comp == Condition::LT || tags.comp == Condition::LE));
+    }
+
+    case Condition::SBS: {
+      uint32_t sz = tags.size();
+      if(!sz)
+        return true;
+      if(sz > s_tags.size())
+        return false;
+      for(auto& f : found)
+        f = false;
+      uint32_t count = sz;
+      for(auto itt = s_tags.cbegin(); itt != s_tags.cend(); ++itt) {
+        for(uint32_t i = 0; i < sz; ++i) {
+          if(!found[i] &&
+             Condition::is_matching_extended(
+              tags[i].comp,
+              reinterpret_cast<const uint8_t*>(tags[i].c_str()),
+              tags[i].size(),
+              reinterpret_cast<const uint8_t*>(itt->c_str()),
+              itt->size())) {
+            if(!--count)
+              return true;
+            found[i] = true;
+            break;
+          }
+        }
+      }
+      return false;
+    }
+
+    case Condition::SPS: {
+      uint32_t sz = s_tags.size();
+      if(!sz)
+        return true;
+      if(sz > tags.size())
+        return false;
+      for(auto& f : found)
+        f = false;
+      uint32_t count = sz;
+      for(auto it = tags.cbegin(); it != tags.cend(); ++it) {
+        for(uint32_t i = 0; i < sz; ++i) {
+          if(!found[i] &&
+             Condition::is_matching_extended(
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->c_str()),
+              it->size(),
+              reinterpret_cast<const uint8_t*>(s_tags[i].c_str()),
+              s_tags[i].size())) {
+            if(!--count)
+              return true;
+            found[i] = true;
+            break;
+          }
+        }
+      }
+      return false;
+    }
+
+    case Condition::POSBS: {
+      auto it = tags.cbegin();
+      for(auto itt = s_tags.cbegin();
+          itt != s_tags.cend() && it != tags.cend(); ++itt) {
+        if(Condition::is_matching_extended(
+            it->comp,
+            reinterpret_cast<const uint8_t*>(it->c_str()), it->size(),
+            reinterpret_cast<const uint8_t*>(itt->c_str()), itt->size()))
+          ++it;
+      }
+      return it == tags.cend();
+    }
+
+    case Condition::FOSBS: {
+      auto it = tags.cbegin();
+      auto itt = s_tags.cbegin();
+      for(bool start = false;
+          itt != s_tags.cend() && it != tags.cend(); ++itt) {
+        if(Condition::is_matching_extended(
+            it->comp,
+            reinterpret_cast<const uint8_t*>(it->c_str()), it->size(),
+            reinterpret_cast<const uint8_t*>(itt->c_str()), itt->size())) {
+          start = true;
+          ++it;
+        } else if(start) {
+          return false;
+        }
+      }
+      return it == tags.cend();
+    }
+
+    case Condition::POSPS: {
+      auto itt = s_tags.cbegin();
+      for(auto ord = tags.cbegin();
+          itt != s_tags.cend() && ord != tags.cend(); ++itt) {
+        for(auto it = ord; ;) {
+          if(Condition::is_matching_extended(
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->c_str()), it->size(),
+              reinterpret_cast<const uint8_t*>(itt->c_str()), itt->size())) {
+            ++ord;
+            break;
+          }
+          if(++it == tags.cend())
+            return false;
+        }
+      }
+      return itt == s_tags.cend();
+    }
+
+    case Condition::FOSPS: {
+      auto itt = s_tags.cbegin();
+      bool start = false;
+      for(auto ord = tags.cbegin();
+          itt != s_tags.cend() && ord != tags.cend(); ++itt) {
+        for(auto it = ord; ;) {
+          if(Condition::is_matching_extended(
+              it->comp,
+              reinterpret_cast<const uint8_t*>(it->c_str()), it->size(),
+              reinterpret_cast<const uint8_t*>(itt->c_str()), itt->size())) {
+            start = true;
+            ord = ++it;
+            break;
+          } else if(start) {
+            return false;
+          }
+          if(++it == tags.cend())
+            return false;
+        }
+      }
+      return itt == s_tags.cend();
+    }
+
+    default:
+      break;
+  }
+  return false;
+}
+}
+
 
 void Schemas::reset() {
   Core::MutexSptd::scope lock(m_mutex);

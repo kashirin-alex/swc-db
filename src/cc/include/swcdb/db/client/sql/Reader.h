@@ -65,7 +65,7 @@ class Reader {
 
   std::vector<DB::Schema::Ptr>
   get_schema(const Clients::Ptr& clients,
-             const DB::Schemas::NamePatterns& patterns);
+             const DB::Schemas::SelectorPatterns& patterns);
 
   void read(std::string& buf,
             const char* stop = nullptr, bool keep_escape=false);
@@ -96,6 +96,11 @@ class Reader {
   void read_key(DB::Cell::Key& key);
 
   bool is_numeric_comparator(Condition::Comp& comp, bool _double=false);
+
+  void read_column_tags(DB::Schemas::TagsPattern& tags);
+
+  void read_column(const char* stop,
+                   std::string& col_name, DB::Schemas::NamePatterns& names);
 
   void error_msg(int error, const std::string& msg);
 

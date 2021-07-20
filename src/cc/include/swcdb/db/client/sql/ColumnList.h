@@ -23,7 +23,7 @@ class ColumnList final : public Reader {
 
   public:
 
-  DB::Schemas::NamePatterns patterns;
+  DB::Schemas::SelectorPatterns patterns;
 
   ColumnList(const Clients::Ptr& clients, const std::string& sql,
              std::vector<DB::Schema::Ptr>& schemas, std::string& message);

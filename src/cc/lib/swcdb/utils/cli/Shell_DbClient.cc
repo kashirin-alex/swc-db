@@ -88,7 +88,8 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "list columns",
-      {"list|get column|s [OUTPUT_FLAGS] [(NAME|ID)|Comp'expr'..];",
+      {"list|get column|s [OUTPUT_FLAGS]",
+       "     [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];",
        "* OUTPUT_FLAGS: OUTPUT_ONLY_CID"},
       [ptr=this](std::string& cmd){return ptr->list_columns(cmd);},
       new re2::RE2(
@@ -98,7 +99,8 @@ DbClient::DbClient()
   options.push_back(
     new Option(
       "compact column",
-      {"compact column|s [(NAME|ID)|Comp'expr',..];"},
+      {"compact column|s",
+       "     [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];"},
       [ptr=this](std::string& cmd) {
         return ptr->compact_column(cmd);
       },
@@ -110,7 +112,8 @@ DbClient::DbClient()
     new Option(
       "select",
       {"select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;",
-      "-> select where COL(NAME|ID|Comp'expr',)=(cells=(Interval Flags)) AND",
+      "-> select where COL(NAME|ID,.,Comp'expr',.,tags Comp[Comp'expr',..])",
+      "                 = (cells=(Interval Flags)) AND",
       "     COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(",
       "       [F-begin] <= range <= [F-end]                   AND",
       "       [[COMP 'F-start'] <=  key  <= [COMP 'F-finish'] AND]",
@@ -217,7 +220,9 @@ bool DbClient::compact_column(std::string& cmd) {
   if(err)
     return error(message);
 
-  if(!params.patterns.empty() || schemas.empty()) {
+  if(!params.patterns.names.empty() ||
+      params.patterns.tags.comp != Condition::NONE ||
+      schemas.empty()) {
     // get all schemas or on patterns
     std::vector<DB::Schema::Ptr> _schemas;
     with_broker
@@ -260,7 +265,9 @@ bool DbClient::list_columns(std::string& cmd) {
   if(err)
     return error(message);
 
-  if(!params.patterns.empty() || schemas.empty()) {
+  if(!params.patterns.names.empty() ||
+      params.patterns.tags.comp != Condition::NONE ||
+      schemas.empty()) {
     // get all schemas or on patterns
     std::vector<DB::Schema::Ptr> _schemas;
     with_broker

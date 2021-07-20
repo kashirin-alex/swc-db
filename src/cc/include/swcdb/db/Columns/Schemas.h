@@ -54,6 +54,18 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   };
   typedef std::vector<Pattern> NamePatterns;
 
+  struct TagsPattern : public std::vector<Pattern> {
+    Condition::Comp comp;
+    SWC_CAN_INLINE
+    TagsPattern() noexcept : comp(Condition::NONE) { }
+  };
+
+  struct SelectorPatterns {
+    NamePatterns  names;
+    TagsPattern   tags;
+  };
+
+
 
   SWC_CAN_INLINE
   Schemas() noexcept { }
@@ -72,7 +84,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
 
   void all(std::vector<Schema::Ptr>& entries);
 
-  void matching(const NamePatterns& patterns,
+  void matching(const SelectorPatterns& patterns,
                 std::vector<Schema::Ptr>& entries,
                 bool no_sys=true);
 

@@ -599,7 +599,8 @@ class AppHandler final : virtual public BrokerIf {
     if(err)
       Converter::exception(err, message);
 
-    if(!params.patterns.empty()) {
+    if(!params.patterns.names.empty() ||
+        params.patterns.tags.comp != Condition::NONE) {
       std::vector<DB::Schema::Ptr> schemas;
       clients->get_schema(err, params.patterns, schemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)
@@ -620,10 +621,11 @@ class AppHandler final : virtual public BrokerIf {
                    std::vector<DB::Schema::Ptr>& dbschemas) {
     auto clients = Env::Clients::get();
     if(!spec.patterns.empty()) {
-      DB::Schemas::NamePatterns dbpatterns;
-      dbpatterns.reserve(spec.patterns.size());
+      // !spec.patterns.names.empty() ||  !spec.patterns.tags.empty()
+      DB::Schemas::SelectorPatterns dbpatterns;
+      dbpatterns.names.reserve(spec.patterns.size());
       for(auto& pattern : spec.patterns) {
-        dbpatterns.emplace_back(
+        dbpatterns.names.emplace_back(
           Condition::Comp(uint8_t(pattern.comp)), pattern.value);
       }
       clients->get_schema(err, dbpatterns, dbschemas);

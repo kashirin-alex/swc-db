@@ -137,14 +137,14 @@ class Clients : public std::enable_shared_from_this<Clients> {
   }
 
   SWC_CAN_INLINE
-  void get_schema(int& err, const DB::Schemas::NamePatterns& patterns,
+  void get_schema(int& err, const DB::Schemas::SelectorPatterns& patterns,
                   std::vector<DB::Schema::Ptr>& _schemas) {
     schemas.get(err, patterns, _schemas);
   }
 
   SWC_CAN_INLINE
   std::vector<DB::Schema::Ptr>
-  get_schema(int& err, const DB::Schemas::NamePatterns& patterns) {
+  get_schema(int& err, const DB::Schemas::SelectorPatterns& patterns) {
     return schemas.get(err, patterns);
   }
 

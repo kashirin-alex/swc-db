@@ -104,30 +104,20 @@ void ColumnList::parse_list_columns() {
 void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols,
                               const char* stop) {
   std::string col_name;
-  Condition::Comp comp;
   while(remain && !err) {
     if(found_char(',') || found_space())
       continue;
 
-    found_comparator(comp = Condition::NONE, true);
-    if(comp != Condition::NONE) {
-      read(col_name, stop, comp == Condition::RE);
-      if(col_name.empty()) {
-        error_msg(
-          Error::SQL_PARSE_ERROR,
-          "expected column name(expression) after comparator"
-        );
-        break;
-      }
-      patterns.emplace_back(comp, col_name);
-
-    } else {
-      read(col_name, stop);
-      if(col_name.empty())
-        break;
-      cols.push_back(get_schema(clients, col_name));
+    if(found_token("tags", 4)) {
+      read_column_tags(patterns.tags);
+      continue;
     }
-    col_name.clear();
+
+    read_column(stop, col_name, patterns.names);
+    if(!col_name.empty()) {
+      cols.push_back(get_schema(clients, col_name));
+      col_name.clear();
+    }
   }
 }
 

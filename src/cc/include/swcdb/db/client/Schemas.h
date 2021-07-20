@@ -34,11 +34,11 @@ class Schemas final : private DB::Schemas {
 
   DB::Schema::Ptr get(const std::string& name);
 
-  void get(int& err, const DB::Schemas::NamePatterns& patterns,
+  void get(int& err, const DB::Schemas::SelectorPatterns& patterns,
            std::vector<DB::Schema::Ptr>& schemas);
 
   std::vector<DB::Schema::Ptr>
-  get(int& err, const DB::Schemas::NamePatterns& patterns);
+  get(int& err, const DB::Schemas::SelectorPatterns& patterns);
 
   void set(const DB::Schema::Ptr& schema);
 
@@ -50,8 +50,7 @@ class Schemas final : private DB::Schemas {
 
   void _request(int& err, const std::string& name, DB::Schema::Ptr& schema);
 
-  void _request(int& err,
-                const DB::Schemas::NamePatterns& patterns,
+  void _request(int& err, const DB::Schemas::SelectorPatterns& patterns,
                 std::vector<DB::Schema::Ptr>& schemas);
 
   Clients*                            _clients;

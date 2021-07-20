@@ -104,7 +104,8 @@ void parse_list_columns(int& err, const Clients::Ptr& clients,
                         std::string& message, const char* expect_cmd) {
   ColumnList parser(clients, sql, schemas, message);
   err = parser.parse_list_columns(expect_cmd);
-  if(!parser.patterns.empty())
+  if(!parser.patterns.names.empty() ||
+     parser.patterns.tags.comp != Condition::NONE)
     params.patterns = std::move(parser.patterns);
 }
 
@@ -116,7 +117,8 @@ void parse_list_columns(int& err, const Clients::Ptr& clients,
                         std::string& message, const char* expect_cmd) {
   ColumnList parser(clients, sql, schemas, message);
   err = parser.parse_list_columns(expect_cmd, output_flags);
-  if(!parser.patterns.empty())
+  if(!parser.patterns.names.empty() ||
+     parser.patterns.tags.comp != Condition::NONE)
     params.patterns = std::move(parser.patterns);
 }
 

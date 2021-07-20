@@ -46,8 +46,7 @@ Schema::Tags read_tags(const uint8_t** bufp, size_t* remainp) {
   if(uint32_t sz = Serialization::decode_vi32(bufp, remainp)) {
     tags.reserve(sz);
     for(;sz;--sz)
-      tags.emplace_back(
-        std::move(Serialization::decode_bytes_string(bufp, remainp)));
+      tags.emplace_back(Serialization::decode_bytes_string(bufp, remainp));
   }
   return tags;
 }
