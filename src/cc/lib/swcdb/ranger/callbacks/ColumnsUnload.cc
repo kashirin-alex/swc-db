@@ -56,11 +56,10 @@ void ColumnsUnload::complete() {
     cid_begin, cid_end,
     std::dynamic_pointer_cast<ColumnsUnload>(shared_from_this())
   );
-  if(m_cols.empty())
-    m_ev->header.flags &= Comm::Header::FLAG_RESPONSE_PARTIAL_MASK;
-  else
-    m_ev->header.flags |= Comm::Header::FLAG_RESPONSE_PARTIAL_BIT;
-  m_conn->send_response(Comm::Buffers::make(m_ev, m_rsp_params));
+  auto cbp = Comm::Buffers::make(m_ev, m_rsp_params);
+  if(!m_cols.empty())
+    cbp->header.flags |= Comm::Header::FLAG_RESPONSE_PARTIAL_BIT;
+  m_conn->send_response(cbp);
 
   m_rsp_params.columns.clear();
   if(!m_cols.empty())
