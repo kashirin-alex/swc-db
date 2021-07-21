@@ -305,11 +305,12 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
             } else if(rgr_new->state == RangerState::ACK &&
                       h->state == RangerState::MARKED_OFFLINE) {
               cid_t cid_begin, cid_end = DB::Schema::NO_CID;
-              if(Env::Mngr::mngd_columns()->active(cid_begin, cid_end))
+              if(Env::Mngr::mngd_columns()->active(cid_begin, cid_end)) {
                 h->put(Comm::Protocol::Rgr::Req::ColumnsUnload::Ptr(
                   new Comm::Protocol::Rgr::Req::ColumnsUnload(
                     h, cid_begin, cid_end)
                 ));
+              }
               h->failures.store(0);
             }
           } else {

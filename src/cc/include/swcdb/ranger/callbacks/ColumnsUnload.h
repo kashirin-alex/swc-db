@@ -19,10 +19,12 @@ class ColumnsUnload : public ManageBase {
 
   typedef std::shared_ptr<ColumnsUnload> Ptr;
 
-  const bool completely;
+  const bool  completely;
+  const cid_t cid_begin;
+  const cid_t cid_end;
 
   ColumnsUnload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-                bool completely) noexcept;
+                bool completely, cid_t cid_begin, cid_t cid_end) noexcept;
 
   virtual ~ColumnsUnload() { }
 

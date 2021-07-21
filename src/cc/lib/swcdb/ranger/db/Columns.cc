@@ -97,33 +97,44 @@ void Columns::load_range(const DB::Schema& schema,
   err ? req->response(err) : col->add_managing(req);
 }
 
-void Columns::unload(cid_t cid_begin, cid_t cid_end,
+bool Columns::unload(cid_t cid_begin, cid_t cid_end,
                      Callback::ColumnsUnload::Ptr req) {
   {
+    uint8_t count = 0;
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = cbegin(); it != cend(); ++it) {
       if((!cid_begin || cid_begin <= it->first) &&
          (!cid_end || cid_end >= it->first)) {
         req->add(it->second);
+        if(++count == 4)
+          return ++it != cend();
       }
     }
   }
-  req->run();
+  return false;
 }
 
 void Columns::unload_all(bool validation) {
   Callback::ColumnsUnloadAll::Ptr req(
     new Callback::ColumnsUnloadAll(validation));
-  unload(DB::Types::SystemColumn::CID_META_END + 1, 0, req);
-  req->wait();
+  bool more;
+  do {
+    more = unload(DB::Types::SystemColumn::CID_META_END + 1, 0, req);
+    req->run();
+    req->wait();
+  } while(more);
 
-  req.reset(new Callback::ColumnsUnloadAll(validation));
-  unload(DB::Types::SystemColumn::CID_META_BEGIN, 0, req);
-  req->wait();
+  do {
+    more = unload(DB::Types::SystemColumn::CID_META_BEGIN, 0, req);
+    req->run();
+    req->wait();
+  } while(more);
 
-  req.reset(new Callback::ColumnsUnloadAll(validation));
-  unload(0, 0, req);
-  req->wait();
+  do {
+    more = unload(0, 0, req);
+    req->run();
+    req->wait();
+  } while(more);
 }
 
 void Columns::erase_if_empty(cid_t cid) {

@@ -27,6 +27,7 @@ struct Header final {
 
   static const uint8_t FLAG_RESPONSE_IGNORE_BIT   = 0x02;
   static const uint8_t FLAG_RESPONSE_PARTIAL_BIT  = 0x04;
+  static const uint8_t FLAG_RESPONSE_PARTIAL_MASK = 0xFB;
 
 
   Header(uint64_t cmd=0, uint32_t timeout=0) noexcept

@@ -33,6 +33,9 @@ class ColumnsUnloadAll : public ColumnsUnload {
   SWC_CAN_INLINE
   void wait() {
     promise.get_future().wait();
+
+    std::promise<void> _promise;
+    promise.swap(_promise);
   }
 
 };

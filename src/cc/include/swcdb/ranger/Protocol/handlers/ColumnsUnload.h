@@ -22,11 +22,12 @@ void columns_unload(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ColumnsUnloadReq params;
     params.decode(&ptr, &remain);
 
-    Env::Rgr::columns()->unload(
-      params.cid_begin, params.cid_end,
-      Ranger::Callback::ColumnsUnload::Ptr(
-        new Ranger::Callback::ColumnsUnload(conn, ev, true))
+    Ranger::Callback::ColumnsUnload::Ptr req(
+      new Ranger::Callback::ColumnsUnload(
+        conn, ev, true, params.cid_begin, params.cid_end)
     );
+    Env::Rgr::columns()->unload(params.cid_begin, params.cid_end, req);
+    req->run();
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

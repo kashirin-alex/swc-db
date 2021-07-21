@@ -10,13 +10,14 @@ namespace SWC { namespace Ranger { namespace Callback {
 SWC_CAN_INLINE
 ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn,
                              const Comm::Event::Ptr& ev,
-                             bool completely) noexcept
+                             bool completely,
+                             cid_t cid_begin, cid_t cid_end) noexcept
                         : ManageBase(conn, ev, ManageBase::COLUMNS_UNLOAD),
-                          completely(completely) {
+                          completely(completely),
+                          cid_begin(cid_begin), cid_end(cid_end) {
 }
 
 void ColumnsUnload::add(const ColumnPtr& col) {
-  Core::MutexSptd::scope lock(m_mutex);
   m_cols.push_back(col);
 }
 
@@ -51,7 +52,19 @@ void ColumnsUnload::unloaded(const ColumnPtr& col) {
 }
 
 void ColumnsUnload::complete() {
+  Env::Rgr::columns()->unload(
+    cid_begin, cid_end,
+    std::dynamic_pointer_cast<ColumnsUnload>(shared_from_this())
+  );
+  if(m_cols.empty())
+    m_ev->header.flags &= Comm::Header::FLAG_RESPONSE_PARTIAL_MASK;
+  else
+    m_ev->header.flags |= Comm::Header::FLAG_RESPONSE_PARTIAL_BIT;
   m_conn->send_response(Comm::Buffers::make(m_ev, m_rsp_params));
+
+  m_rsp_params.columns.clear();
+  if(!m_cols.empty())
+    run();
 }
 
 

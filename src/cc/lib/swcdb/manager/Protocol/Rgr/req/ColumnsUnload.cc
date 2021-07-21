@@ -26,6 +26,7 @@ ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
 }
 
 void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
+  // handler accepts Partial Response Bit
   Params::ColumnsUnloadRsp rsp_params;
   int err = ev->error;
   if(!err) {

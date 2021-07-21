@@ -54,7 +54,7 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
   void load_range(const DB::Schema& schema,
                   const Callback::RangeLoad::Ptr& req);
 
-  void unload(cid_t cid_begin, cid_t cid_end,
+  bool unload(cid_t cid_begin, cid_t cid_end,
               Callback::ColumnsUnload::Ptr req);
 
   void unload_all(bool validation);
