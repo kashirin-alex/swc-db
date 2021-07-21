@@ -21,11 +21,12 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     Params::ColumnUpdate params;
     params.decode(&ptr, &remain);
-    
+
     if(!Env::Rgr::is_not_accepting()) {
-      auto col = Env::Rgr::columns()->get_column(params.schema->cid);
+      auto col = Env::Rgr::columns()->get_column(
+        params.schema_primitives.cid);
       if(col) {
-        col->schema_update(*params.schema.get());
+        col->schema_update(params.schema_primitives);
         SWC_LOG_OUT(LOG_DEBUG,
           col->cfg->print(SWC_LOG_OSTREAM << "updated "); );
       }
@@ -37,9 +38,9 @@ void column_update(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
     conn->send_error(e.code(), "", ev);
   }
-  
+
 }
-  
+
 
 }}}}}
 

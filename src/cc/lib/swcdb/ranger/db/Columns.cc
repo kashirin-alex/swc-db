@@ -59,7 +59,7 @@ void Columns::get_cids(std::vector<cid_t>& cids) {
     cids.push_back(it->first);
 }
 
-void Columns::load_range(const DB::Schema& schema,
+void Columns::load_range(const DB::SchemaPrimitives& schema,
                          const Callback::RangeLoad::Ptr& req) {
   int err = Error::OK;
   ColumnPtr col;

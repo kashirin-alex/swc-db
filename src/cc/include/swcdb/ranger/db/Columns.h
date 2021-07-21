@@ -51,7 +51,7 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
 
   void get_cids(std::vector<cid_t>& cids);
 
-  void load_range(const DB::Schema& schema,
+  void load_range(const DB::SchemaPrimitives& schema,
                   const Callback::RangeLoad::Ptr& req);
 
   bool unload(cid_t cid_begin, cid_t cid_end,

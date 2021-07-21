@@ -18,37 +18,33 @@ class RangeLoad final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeLoad() noexcept : cid(0), rid(0) { }
+  RangeLoad() noexcept : rid(0) { }
 
   SWC_CAN_INLINE
-  RangeLoad(cid_t cid, rid_t rid, const DB::Schema::Ptr& schema) noexcept
-            : cid(cid), rid(rid), schema(schema) {
+  RangeLoad(const DB::Schema::Ptr& schema, rid_t rid) noexcept
+            : schema_primitives(*schema.get()), rid(rid) {
   }
 
   //~RangeLoad() { }
 
-  cid_t           cid;
-  rid_t           rid;
-  DB::Schema::Ptr schema;
+  DB::SchemaPrimitives schema_primitives;
+  rid_t                rid;
 
   private:
 
   size_t internal_encoded_length() const override {
-    return  Serialization::encoded_length_vi64(cid)
-          + Serialization::encoded_length_vi64(rid)
-          + schema->encoded_length();
+    return schema_primitives.encoded_length() +
+           Serialization::encoded_length_vi64(rid);
   }
 
   void internal_encode(uint8_t** bufp) const override {
-    Serialization::encode_vi64(bufp, cid);
+    schema_primitives.encode(bufp);
     Serialization::encode_vi64(bufp, rid);
-    schema->encode(bufp);
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-    cid = Serialization::decode_vi64(bufp, remainp);
+    schema_primitives.decode(bufp, remainp);
     rid = Serialization::decode_vi64(bufp, remainp);
-    schema.reset(new DB::Schema(bufp, remainp));
   }
 
 };

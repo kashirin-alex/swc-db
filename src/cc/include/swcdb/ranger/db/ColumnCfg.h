@@ -45,7 +45,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
 
 
   SWC_CAN_INLINE
-  ColumnCfg(const cid_t cid, const DB::Schema& schema)
+  ColumnCfg(const cid_t cid, const DB::SchemaPrimitives& schema)
       : cid(cid),
         range_type(
           DB::Types::SystemColumn::get_range_type(cid)),
@@ -64,7 +64,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
 
   //~ColumnCfg() { }
 
-  void update(const DB::Schema& schema) const {
+  void update(const DB::SchemaPrimitives& schema) const {
     col_type.store(schema.col_type);
 
     c_versions.store(schema.cell_versions);

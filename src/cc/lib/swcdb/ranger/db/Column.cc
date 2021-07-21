@@ -11,7 +11,7 @@ namespace SWC { namespace Ranger {
 
 
 SWC_CAN_INLINE
-Column::Column(const cid_t cid, const DB::Schema& schema)
+Column::Column(const cid_t cid, const DB::SchemaPrimitives& schema)
               : cfg(new ColumnCfg(cid, schema)) {
   Env::Rgr::in_process(1);
   Env::Rgr::res().more_mem_usage(size_of());
@@ -81,7 +81,7 @@ void Column::get_rids(std::vector<rid_t>& rids) {
     rids.push_back(it->first);
 }
 
-void Column::schema_update(const DB::Schema& schema) {
+void Column::schema_update(const DB::SchemaPrimitives& schema) {
   bool compact =
     cfg->c_versions > schema.cell_versions ||
     (!cfg->c_ttl && schema.cell_ttl) ||

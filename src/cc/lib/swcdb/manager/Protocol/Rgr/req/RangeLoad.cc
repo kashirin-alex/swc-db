@@ -17,7 +17,7 @@ RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
                      const DB::Schema::Ptr& schema)
         : client::ConnQueue::ReqBase(
             Buffers::make(
-              Params::RangeLoad(range->cfg->cid, range->rid, schema),
+              Params::RangeLoad(schema, range->rid),
               0,
               RANGE_LOAD, 3600000
             )

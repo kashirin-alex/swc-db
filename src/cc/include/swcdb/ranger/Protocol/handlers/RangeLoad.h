@@ -24,9 +24,10 @@ void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     Env::Rgr::columns()->load_range(
-      *params.schema.get(),
+      params.schema_primitives,
       Ranger::Callback::RangeLoad::Ptr(
-        new Ranger::Callback::RangeLoad(conn, ev, params.cid, params.rid))
+        new Ranger::Callback::RangeLoad(
+          conn, ev, params.schema_primitives.cid, params.rid))
     );
 
   } catch(...) {
@@ -35,7 +36,7 @@ void range_load(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     conn->send_error(e.code(), "", ev);
   }
 }
-  
+
 
 }}}}}
 

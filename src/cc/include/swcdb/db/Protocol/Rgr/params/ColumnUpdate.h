@@ -18,24 +18,26 @@ class ColumnUpdate final : public Serializable {
   ColumnUpdate() noexcept { }
 
   SWC_CAN_INLINE
-  ColumnUpdate(const DB::Schema::Ptr& schema) noexcept : schema(schema) { }
+  ColumnUpdate(const DB::Schema::Ptr& schema) noexcept
+              : schema_primitives(*schema.get()) {
+  }
 
   //~ColumnUpdate() { }
 
-  DB::Schema::Ptr schema;
+  DB::SchemaPrimitives schema_primitives;
 
   private:
 
   size_t internal_encoded_length() const override {
-    return schema->encoded_length();
+    return schema_primitives.encoded_length();
   }
 
   void internal_encode(uint8_t** bufp) const override {
-    schema->encode(bufp);
+    schema_primitives.encode(bufp);
   }
 
   void internal_decode(const uint8_t** bufp, size_t* remainp) override {
-    schema.reset(new DB::Schema(bufp, remainp));
+    schema_primitives.decode(bufp, remainp);
   }
 
 };

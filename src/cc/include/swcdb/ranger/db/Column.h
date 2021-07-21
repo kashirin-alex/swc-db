@@ -23,7 +23,7 @@ class Column final :
 
   const ColumnCfg::Ptr cfg;
 
-  Column(const cid_t cid, const DB::Schema& schema);
+  Column(const cid_t cid, const DB::SchemaPrimitives& schema);
 
   ~Column();
 
@@ -41,7 +41,7 @@ class Column final :
 
   void get_rids(std::vector<rid_t>& rids);
 
-  void schema_update(const DB::Schema& schema);
+  void schema_update(const DB::SchemaPrimitives& schema);
 
   void compact();
 
