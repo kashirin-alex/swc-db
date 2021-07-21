@@ -19,7 +19,7 @@ class ColumnList_Sync {
 
   template<typename... DataArgsT>
   SWC_CAN_INLINE
-  static std::shared_ptr<ColumnList<ColumnList_Sync>> 
+  static std::shared_ptr<ColumnList<ColumnList_Sync>>
   make(const Params::ColumnListReq& params,
        const uint32_t timeout,
        DataArgsT&&... args) {
@@ -62,14 +62,29 @@ class ColumnList_Sync {
   void callback(const client::ConnQueue::ReqBase::Ptr&,
                 int error,
                 const Params::ColumnListRsp& rsp) {
-    err = error;
-    schemas = std::move(rsp.schemas);
+    if(!(err = error)) {
+      if(rsp.expected) {
+        Core::MutexSptd::scope lock(m_mutex);
+        if(schemas.empty()) {
+          schemas = std::move(rsp.schemas);
+        } else {
+          schemas.reserve(rsp.expected);
+          schemas.insert(
+            schemas.cend(), rsp.schemas.cbegin(), rsp.schemas.cend());
+        }
+        if(schemas.size() != rsp.expected)
+          return;
+      } else {
+        schemas = std::move(rsp.schemas);
+      }
+    }
     await.set_value();
   }
 
   private:
   SWC::client::Clients::Ptr     clients;
   int&                          err;
+  Core::MutexSptd               m_mutex;
   std::vector<DB::Schema::Ptr>& schemas;
 
 };

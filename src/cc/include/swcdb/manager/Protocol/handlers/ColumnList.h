@@ -16,7 +16,7 @@ namespace Mngr { namespace Handler {
 void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
-  Params::ColumnListRsp rsp;
+  std::vector<DB::Schema::Ptr> schemas;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;
@@ -27,8 +27,8 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(Env::Mngr::mngd_columns()->is_schemas_mngr(err) && !err)
       req_params.patterns.names.empty() &&
       req_params.patterns.tags.comp == Condition::NONE
-        ? Env::Mngr::schemas()->all(rsp.schemas)
-        : Env::Mngr::schemas()->matching(req_params.patterns, rsp.schemas);
+        ? Env::Mngr::schemas()->all(schemas)
+        : Env::Mngr::schemas()->matching(req_params.patterns, schemas);
     else if(!err)
       err = Error::MNGR_NOT_ACTIVE;
 
@@ -38,9 +38,34 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rsp, 4);
-  cbp->append_i32(err);
-  conn->send_response(cbp);
+  if(err) {
+    auto cbp = Buffers::make(ev, 4);
+    cbp->append_i32(err);
+    conn->send_response(cbp);
+
+  } else if(schemas.size() <= 1000) {
+    Params::ColumnListRsp rsp;
+    rsp.schemas = std::move(schemas);
+    auto cbp = Buffers::make(ev, rsp, 4);
+    cbp->append_i32(err);
+    conn->send_response(cbp);
+
+  } else {
+    size_t i = 0;
+    bool more;
+    do {
+      Params::ColumnListRsp rsp;
+      rsp.expected = schemas.size();
+      auto it = schemas.cbegin() + i;
+      more = (i += 1000) < rsp.expected;
+      rsp.schemas.assign(it, (more ? (it + 1000) : schemas.cend()));
+      auto cbp = Buffers::make(ev, rsp, 4);
+      if(more)
+        cbp->header.flags |= Comm::Header::FLAG_RESPONSE_PARTIAL_BIT;
+      cbp->append_i32(err);
+      conn->send_response(cbp);
+    } while(more);
+  }
 
 }
 

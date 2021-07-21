@@ -19,10 +19,10 @@ struct ColumnList {
 
   ConnHandlerPtr conn;
   Event::Ptr     ev;
-
+  uint64_t       remain;
   SWC_CAN_INLINE
   ColumnList(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
-            : conn(conn), ev(ev) {
+            : conn(conn), ev(ev), remain(0) {
   }
 
   //~ColumnList() { }
@@ -43,13 +43,28 @@ struct ColumnList {
     if(!ev->expired() && conn->is_open()) {
       if(err == Error::CLIENT_STOPPING || !Env::Bkr::is_accepting())
         err = Error::SERVER_SHUTTING_DOWN;
-      auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rsp, 4);
+      Buffers::Ptr cbp;
+      if(err) {
+        cbp = Buffers::make(ev, 4);
+      } else {
+        cbp = Buffers::make(ev, rsp, 4);
+        if(rsp.expected) {
+          if(!remain)
+            remain = rsp.expected;
+          remain -= rsp.schemas.size();
+          if(remain)
+            cbp->header.flags |= Header::FLAG_RESPONSE_PARTIAL_BIT;
+        }
+      }
       cbp->append_i32(err);
       conn->send_response(cbp);
     }
-    if(!err)
+    if(err)
+      remain = 0;
+    else
       Env::Clients::get()->schemas.set(rsp.schemas);
-    Env::Bkr::processed();
+    if(!remain)
+      Env::Bkr::processed();
   }
 
 };

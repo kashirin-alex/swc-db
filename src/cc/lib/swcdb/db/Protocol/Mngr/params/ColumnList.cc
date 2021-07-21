@@ -79,19 +79,22 @@ void ColumnListReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 size_t ColumnListRsp::internal_encoded_length() const {
-  size_t sz = Serialization::encoded_length_vi64(schemas.size());
+  size_t sz = Serialization::encoded_length_vi64(expected);
+  sz += Serialization::encoded_length_vi64(schemas.size());
   for (auto schema : schemas)
     sz += schema->encoded_length();
   return sz;
 }
 
 void ColumnListRsp::internal_encode(uint8_t** bufp) const {
+  Serialization::encode_vi64(bufp, expected);
   Serialization::encode_vi64(bufp, schemas.size());
   for(auto& schema : schemas)
     schema->encode(bufp);
 }
 
 void ColumnListRsp::internal_decode(const uint8_t** bufp, size_t* remainp) {
+  expected = Serialization::decode_vi64(bufp, remainp);
   if(size_t sz = Serialization::decode_vi64(bufp, remainp)) {
     schemas.reserve(sz);
     for(; sz; --sz)

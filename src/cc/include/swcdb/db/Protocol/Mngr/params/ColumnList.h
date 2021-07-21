@@ -46,10 +46,11 @@ class ColumnListRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnListRsp() noexcept { }
+  ColumnListRsp() noexcept : expected(0) { }
 
   //~ColumnListRsp() { }
 
+  uint64_t                     expected;
   std::vector<DB::Schema::Ptr> schemas;
 
   private:
