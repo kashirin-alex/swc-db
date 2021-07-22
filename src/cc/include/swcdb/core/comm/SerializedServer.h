@@ -38,14 +38,9 @@ class Acceptor final : protected asio::ip::tcp::acceptor {
     return this;
   }
 
-  protected:
-
-
   private:
-
-  void do_accept_mixed() noexcept;
-
-  void do_accept_plain() noexcept;
+  struct Mixed;
+  struct Plain;
 
   AppContext::Ptr   m_app_ctx;
   ConfigSSL*        m_ssl_cfg;

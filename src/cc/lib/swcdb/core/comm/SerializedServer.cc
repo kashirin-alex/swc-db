@@ -11,6 +11,70 @@
 
 namespace SWC { namespace Comm { namespace server {
 
+
+
+struct Acceptor::Mixed {
+  Acceptor* acceptor;
+  SWC_CAN_INLINE
+  Mixed(Acceptor* acceptor) noexcept : acceptor(acceptor) { }
+  void operator()(std::error_code ec, asio::ip::tcp::socket new_sock) {
+    if(ec) {
+      if(ec.value() != ECANCELED)
+        SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
+                  ec.value(), ec.message().c_str());
+      return;
+    }
+    bool need_ssl = false;
+    if(new_sock.is_open()) try {
+      need_ssl = acceptor->m_ssl_cfg->need_ssl(
+        new_sock.local_endpoint(ec), new_sock.remote_endpoint(ec));
+     if(!ec) {
+        if(need_ssl) {
+          acceptor->m_ssl_cfg->make_server(acceptor->m_app_ctx, new_sock);
+        } else {
+          auto conn = ConnHandlerPlain::make(acceptor->m_app_ctx, new_sock);
+          conn->new_connection();
+        }
+      } else if(new_sock.is_open()) {
+        new_sock.close(ec);
+      }
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
+      new_sock.close(ec);
+    }
+    acceptor->m_app_ctx->net_accepted(acceptor->local_endpoint(), need_ssl);
+
+    acceptor->async_accept(Mixed(acceptor));
+  }
+};
+
+struct Acceptor::Plain {
+  Acceptor* acceptor;
+  SWC_CAN_INLINE
+  Plain(Acceptor* acceptor) noexcept : acceptor(acceptor) { }
+  void operator()(const std::error_code& ec, asio::ip::tcp::socket new_sock) {
+    if(ec) {
+      if(ec.value() != ECANCELED)
+        SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
+                  ec.value(), ec.message().c_str());
+      return;
+    }
+
+    if(new_sock.is_open()) try {
+      auto conn = ConnHandlerPlain::make(acceptor->m_app_ctx, new_sock);
+      conn->new_connection();
+    } catch(...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
+      std::error_code ec;
+      new_sock.close(ec);
+    }
+    acceptor->m_app_ctx->net_accepted(acceptor->local_endpoint(), false);
+
+    acceptor->async_accept(Plain(acceptor));
+  }
+};
+
+
 Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
                    AppContext::Ptr& app_ctx,
                    ConfigSSL* ssl_cfg)
@@ -20,7 +84,10 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
   set_option(asio::ip::tcp::acceptor::reuse_address(true));
   set_option(asio::ip::tcp::no_delay(true));
 
-  m_ssl_cfg ? do_accept_mixed() : do_accept_plain();
+  if(m_ssl_cfg)
+    async_accept(Mixed(this));
+  else
+    async_accept(Plain(this));
 
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_OSTREAM << "Listening On: " << local_endpoint()
@@ -39,65 +106,6 @@ void Acceptor::stop() {
     std::error_code ec;
     close(ec);
   }
-}
-
-void Acceptor::do_accept_mixed() noexcept {
-  async_accept(
-    [this](std::error_code ec, asio::ip::tcp::socket new_sock) {
-      if(ec) {
-        if(ec.value() != ECANCELED)
-          SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
-                    ec.value(), ec.message().c_str());
-        return;
-      }
-      bool need_ssl = false;
-      if(new_sock.is_open()) try {
-        need_ssl = m_ssl_cfg->need_ssl(
-          new_sock.local_endpoint(ec), new_sock.remote_endpoint(ec));
-       if(!ec) {
-          if(need_ssl) {
-            m_ssl_cfg->make_server(m_app_ctx, new_sock);
-          } else {
-            auto conn = ConnHandlerPlain::make(m_app_ctx, new_sock);
-            conn->new_connection();
-          }
-        } else if(new_sock.is_open()) {
-          new_sock.close(ec);
-        }
-      } catch(...) {
-        SWC_LOG_CURRENT_EXCEPTION("");
-        new_sock.close(ec);
-      }
-      m_app_ctx->net_accepted(local_endpoint(), need_ssl);
-
-      do_accept_mixed();
-    }
-  );
-}
-
-void Acceptor::do_accept_plain() noexcept {
-  async_accept(
-    [this](const std::error_code& ec, asio::ip::tcp::socket new_sock) {
-      if(ec) {
-        if(ec.value() != ECANCELED)
-          SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
-                    ec.value(), ec.message().c_str());
-        return;
-      }
-
-      if(new_sock.is_open()) try {
-        auto conn = ConnHandlerPlain::make(m_app_ctx, new_sock);
-        conn->new_connection();
-      } catch(...) {
-        SWC_LOG_CURRENT_EXCEPTION("");
-        std::error_code ec;
-        new_sock.close(ec);
-      }
-      m_app_ctx->net_accepted(local_endpoint(), false);
-
-      do_accept_plain();
-    }
-  );
 }
 
 
