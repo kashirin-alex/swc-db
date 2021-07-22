@@ -63,7 +63,8 @@ void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       if(more)
         cbp->header.flags |= Comm::Header::FLAG_RESPONSE_PARTIAL_BIT;
       cbp->append_i32(err);
-      conn->send_response(cbp);
+      if(cbp->expired() || !conn->send_response(cbp))
+        break;
     } while(more);
   }
 
