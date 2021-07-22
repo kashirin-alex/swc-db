@@ -89,6 +89,57 @@ void ConnHandler::write_next() {
     write(outgoing);
 }
 
+
+
+struct ConnHandler::Sender_noAck final {
+  ConnHandlerPtr        conn;
+  Buffers::Ptr          cbuf;
+  SWC_CAN_INLINE
+  Sender_noAck(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf) noexcept
+              : conn(conn), cbuf(cbuf) {
+  }
+  void operator()(const asio::error_code& ec, uint32_t bytes) {
+    if(ec) {
+      conn->do_close();
+    } else {
+      conn->write_next();
+    }
+    if(bytes)
+      conn->app_ctx->net_bytes_sent(conn, bytes);
+  }
+};
+
+
+struct ConnHandler::Sender_Ack final {
+  ConnHandlerPtr        conn;
+  Buffers::Ptr          cbuf;
+  DispatchHandler::Ptr  hdlr;
+  SWC_CAN_INLINE
+  Sender_Ack(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf,
+             DispatchHandler::Ptr&& hdlr) noexcept
+              : conn(conn), cbuf(cbuf), hdlr(std::move(hdlr)) {
+  }
+  Sender_Ack(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf,
+             const DispatchHandler::Ptr& hdlr) noexcept
+              : conn(conn), cbuf(cbuf), hdlr(hdlr) {
+  }
+  void operator()(const asio::error_code& ec, uint32_t bytes) {
+    if(!ec)
+      conn->write_next();
+
+    auto ev = Event::make(ec ? Error::COMM_SEND_ERROR : Error::OK);
+    ev->header.initialize_from_response(cbuf->header);
+    hdlr->handle(conn, ev);
+    if(ec)
+      conn->do_close();
+    if(bytes)
+      conn->app_ctx->net_bytes_sent(conn, bytes);
+  }
+
+};
+
+
+
 void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
   auto cbuf = std::move(outgoing.cbuf);
   auto& header = cbuf->header;
@@ -97,18 +148,11 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
     // send request/response without sent/rsp-ack
     if(cbuf->expired())
       return write_next();
-    if(connected) do_async_write(
-      cbuf->get_buffers(),
-      [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t bytes) {
-        if(ec) {
-          conn->do_close();
-        } else {
-          conn->write_next();
-        }
-        if(bytes)
-          conn->app_ctx->net_bytes_sent(conn, bytes);
-      }
-    );
+    if(connected)
+      do_async_write(
+        cbuf->get_buffers(),
+        Sender_noAck(ptr(), cbuf)
+      );
     return;
   }
 
@@ -118,23 +162,12 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       if(cbuf->expired())
         return write_next();
 
-      if(connected) do_async_write(
-        cbuf->get_buffers(),
-        [cbuf, hdlr=std::move(outgoing.hdlr), conn=ptr()]
-        (const asio::error_code& ec, uint32_t bytes) {
-          if(!ec)
-            conn->write_next();
-
-          auto ev = Event::make(ec ? Error::COMM_SEND_ERROR : Error::OK);
-          ev->header.initialize_from_response(cbuf->header);
-          hdlr->handle(conn, ev);
-          if(ec)
-            conn->do_close();
-          if(bytes)
-            conn->app_ctx->net_bytes_sent(conn, bytes);
-        }
-      );
-    //} else {
+      if(connected) {
+        do_async_write(
+          cbuf->get_buffers(),
+          Sender_Ack(ptr(), cbuf, std::move(outgoing.hdlr))
+        );
+    } //else {
       // send_response expect sent/timeout ack with m_sends
     return;
   }
@@ -162,8 +195,13 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       r.first->second.timer = timer;
       timer->expires_after(
         std::chrono::milliseconds(header.timeout_ms));
-      timer->async_wait(
-        [cbuf, conn=ptr()] (const asio::error_code& ec) {
+      struct TimerTask {
+        ConnHandlerPtr        conn;
+        Buffers::Ptr          cbuf;
+        TimerTask(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf)
+                  noexcept : conn(conn), cbuf(cbuf) {
+        }
+        void operator()(const asio::error_code& ec) {
           if(ec == asio::error::operation_aborted)
             return;
           auto ev = Event::make(Error::REQUEST_TIMEOUT);
@@ -171,7 +209,8 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
           ev->header.flags &= Header::FLAG_REQUEST_MASK;
           conn->run_pending(ev);
         }
-      );
+      };
+      timer->async_wait(TimerTask(ptr(), cbuf));
     }
   }
 
@@ -180,81 +219,138 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
 
   do_async_write(
     cbuf->get_buffers(),
-    [cbuf, conn=ptr()] (const asio::error_code& ec, uint32_t bytes) {
-      if(ec) {
-        conn->do_close();
-      } else {
-        conn->write_next();
-      }
-      if(bytes)
-        conn->app_ctx->net_bytes_sent(conn, bytes);
-    }
+    Sender_noAck(ptr(), cbuf)
   );
 }
 
-void ConnHandler::read() noexcept {
-  if(!connected)
-    return;
 
-  m_recv_bytes = 0;
-  do_async_read(
-    _buf_header,
-    Header::PREFIX_LENGTH,
-    [conn=ptr()] (const asio::error_code& ec, size_t filled) {
-      conn->m_recv_bytes += filled;
-      if(ec || filled != Header::PREFIX_LENGTH)
-        return conn->do_close_recv();
 
-      auto ev = Event::make(Error::OK);
+struct ConnHandler::Receiver_HeaderPrefix final {
+  ConnHandlerPtr  conn;
+  SWC_CAN_INLINE
+  Receiver_HeaderPrefix(const ConnHandlerPtr& conn)
+                        noexcept : conn(conn) { }
+  void operator()(const asio::error_code& ec, size_t filled);
+};
+
+struct ConnHandler::Receiver_Header final {
+  ConnHandlerPtr  conn;
+  Event::Ptr      ev;
+  SWC_CAN_INLINE
+  Receiver_Header(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+                  noexcept : conn(conn), ev(ev) { }
+  void operator()(asio::error_code ec, size_t filled);
+};
+
+struct ConnHandler::Receiver_Buffer final {
+  ConnHandlerPtr  conn;
+  Event::Ptr      ev;
+  SWC_CAN_INLINE
+  Receiver_Buffer(const ConnHandlerPtr& conn, const Event::Ptr& ev)
+                  noexcept : conn(conn), ev(ev) { }
+  void operator()(asio::error_code ec, size_t filled);
+};
+
+
+void ConnHandler::Receiver_HeaderPrefix::operator()(
+                        const asio::error_code& ec, size_t filled) {
+  conn->m_recv_bytes += filled;
+  if(ec || filled != Header::PREFIX_LENGTH)
+    return conn->do_close_recv();
+
+  auto ev = Event::make(Error::OK);
+  try {
+    const uint8_t* buf = conn->_buf_header;
+    ev->header.decode_prefix(&buf, &filled);
+  } catch(...) {
+    ev->header.header_len = 0;
+  }
+
+  if(!ev->header.header_len) {
+    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
+             filled);
+    return conn->do_close_recv();
+  }
+  conn->do_async_read(
+    conn->_buf_header + Header::PREFIX_LENGTH,
+    ev->header.header_len - Header::PREFIX_LENGTH,
+    Receiver_Header(conn, ev)
+  );
+}
+
+void ConnHandler::Receiver_Header::operator()(
+                        asio::error_code ec, size_t filled) {
+  conn->m_recv_bytes += filled;
+  if(!ec) {
+    if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
+      ec = asio::error::eof;
+    } else {
+      filled = ev->header.header_len;
       try {
         const uint8_t* buf = conn->_buf_header;
-        ev->header.decode_prefix(&buf, &filled);
+        ev->header.decode(&buf, &filled);
       } catch(...) {
-        ev->header.header_len = 0;
+        ec = asio::error::eof;
       }
-
-      if(!ev->header.header_len) {
-        SWC_LOGF(
-          LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
-          filled);
-        return conn->do_close_recv();
-      }
-
-      conn->do_async_read(
-        conn->_buf_header + Header::PREFIX_LENGTH,
-        ev->header.header_len - Header::PREFIX_LENGTH,
-        [ev, conn](asio::error_code ec, size_t filled) {
-          conn->m_recv_bytes += filled;
-          if(!ec) {
-            if(filled + Header::PREFIX_LENGTH != ev->header.header_len) {
-              ec = asio::error::eof;
-            } else {
-              filled = ev->header.header_len;
-              try {
-                const uint8_t* buf = conn->_buf_header;
-                ev->header.decode(&buf, &filled);
-              } catch(...) {
-                ec = asio::error::eof;
-              }
-            }
-          }
-          if(ec) {
-            SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d",
-                     ev->header.header_len);
-            conn->do_close_recv();
-          } else if(ev->header.buffers) {
-            conn->recv_buffers(ev);
-          } else {
-            conn->received(ev);
-          }
-        }
-      );
     }
-  );
+  }
+  if(ec) {
+    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_TRUNCATED: len=%d",
+             ev->header.header_len);
+    conn->do_close_recv();
+  } else if(ev->header.buffers) {
+    conn->recv_buffers(ev);
+  } else {
+    conn->received(ev);
+  }
+}
+
+void ConnHandler::Receiver_Buffer::operator()(asio::error_code ec,
+                                              size_t filled) {
+  conn->m_recv_bytes += filled;
+  if(!ec) {
+    StaticBuffer* buffer;
+    uint32_t checksum;
+    if(!ev->data_ext.size) {
+      buffer = &ev->data;
+      checksum = ev->header.data.chksum;
+    } else {
+      buffer = &ev->data_ext;
+      checksum = ev->header.data_ext.chksum;
+    }
+    if(filled != buffer->size ||
+       !Core::checksum_i32_chk(checksum, buffer->base, buffer->size)) {
+      ec = asio::error::eof;
+    }
+  }
+  if(ec) {
+    SWC_LOG_OUT(LOG_WARN,
+      SWC_LOG_OSTREAM << "read, REQUEST PAYLOAD_TRUNCATED: nbuff("
+        << (bool(ev->data.size) + bool(ev->data_ext.size)) << ") ";
+      ev->print(SWC_LOG_OSTREAM);
+    );
+    conn->do_close_recv();
+  } else if(ev->header.buffers == bool(ev->data.size) +
+                                  bool(ev->data_ext.size)) {
+    conn->received(ev);
+  } else {
+    conn->recv_buffers(ev);
+  }
+}
+
+
+
+void ConnHandler::read() noexcept {
+  if(connected) {
+    m_recv_bytes = 0;
+    do_async_read(
+      _buf_header, Header::PREFIX_LENGTH,
+      Receiver_HeaderPrefix(ptr())
+    );
+  }
 }
 
 void ConnHandler::recv_buffers(const Event::Ptr& ev) {
-
   StaticBuffer* buffer;
   size_t remain;
   if(!ev->data.size) {
@@ -265,54 +361,15 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev) {
     remain = ev->header.data_ext.size;
   }
   buffer->reallocate(remain);
-
   do_async_read(
-    buffer->base,
-    remain,
-    [ev, conn=ptr()](asio::error_code ec, size_t filled) {
-      conn->m_recv_bytes += filled;
-      if(!ec) {
-        StaticBuffer* buffer;
-        uint32_t checksum;
-        if(!ev->data_ext.size) {
-          buffer = &ev->data;
-          checksum = ev->header.data.chksum;
-        } else {
-          buffer = &ev->data_ext;
-          checksum = ev->header.data_ext.chksum;
-        }
-
-        if(filled != buffer->size ||
-           !Core::checksum_i32_chk(checksum, buffer->base, buffer->size)) {
-          ec = asio::error::eof;
-        }
-      }
-      if(ec) {
-        SWC_LOG_OUT(LOG_WARN,
-          SWC_LOG_OSTREAM
-            << "read, REQUEST PAYLOAD_TRUNCATED: nbuff("
-            << (bool(ev->data.size) + bool(ev->data_ext.size))
-            << ") ";
-          ev->print(SWC_LOG_OSTREAM);
-        );
-        conn->do_close_recv();
-      } else if(ev->header.buffers == bool(ev->data.size) +
-                                      bool(ev->data_ext.size)) {
-        conn->received(ev);
-      } else {
-        conn->recv_buffers(ev);
-      }
-    }
+    buffer->base, remain,
+    Receiver_Buffer(ptr(), ev)
   );
 }
 
 void ConnHandler::received(const Event::Ptr& ev) noexcept {
   if(ev->header.flags & Header::FLAG_REQUEST_BIT)
     ev->received();
-
-  app_ctx->net_bytes_received(ptr(), m_recv_bytes);
-
-  read();
 
   try {
     run_pending(ev);
@@ -326,6 +383,9 @@ void ConnHandler::received(const Event::Ptr& ev) noexcept {
       );
     } catch(...) { }
   }
+
+  app_ctx->net_bytes_received(ptr(), m_recv_bytes);
+  read();
 }
 
 void ConnHandler::disconnected() noexcept {
@@ -378,13 +438,44 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
       pending.timer->cancel();
   }
 
-  if(!ev->error && ev->header.buffers)
-    ev->decode_buffers();
-
   if(pending.hdlr) {
-    pending.hdlr->handle(ptr(), ev);
+    struct PendingHandler {
+      ConnHandlerPtr        conn;
+      DispatchHandler::Ptr  hdlr;
+      Event::Ptr            ev;
+      PendingHandler(const ConnHandlerPtr& conn,
+                     const DispatchHandler::Ptr& hdlr,
+                     const Event::Ptr& ev) noexcept
+                    : conn(conn), hdlr(hdlr), ev(ev) {
+      }
+      void operator()() {
+        if(!ev->error && ev->header.buffers)
+          ev->decode_buffers();
+        hdlr->handle(conn, ev);
+      }
+    };
+    asio::post(
+      socket_layer()->get_executor(),
+      PendingHandler(ptr(), pending.hdlr, ev)
+    );
+
   } else {
-    app_ctx->handle(ptr(), ev);
+    struct AppCtxHandler {
+      ConnHandlerPtr        conn;
+      Event::Ptr            ev;
+      AppCtxHandler(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
+                    : conn(conn), ev(ev) {
+      }
+      void operator()() {
+        if(!ev->error && ev->header.buffers)
+          ev->decode_buffers();
+        conn->app_ctx->handle(conn, ev);
+      }
+    };
+    asio::post(
+      socket_layer()->get_executor(),
+      AppCtxHandler(ptr(), ev)
+    );
   }
 }
 
@@ -434,20 +525,39 @@ SocketLayer* ConnHandlerPlain::socket_layer() noexcept {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+
 void ConnHandlerPlain::do_async_write(
         Core::Vector<asio::const_buffer>&& buffers,
-        std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
+        ConnHandler::Sender_noAck&& hdlr)
+        noexcept {
+  asio::async_write(m_sock, std::move(buffers), std::move(hdlr));
+}
+
+void ConnHandlerPlain::do_async_write(
+        Core::Vector<asio::const_buffer>&& buffers,
+        ConnHandler::Sender_Ack&& hdlr)
         noexcept {
   asio::async_write(m_sock, std::move(buffers), std::move(hdlr));
 }
 
 void ConnHandlerPlain::do_async_read(
         uint8_t* data, uint32_t sz,
-        std::function<void(const asio::error_code&, size_t)>&& hdlr)
-        noexcept {
+        ConnHandler::Receiver_HeaderPrefix&& hdlr) noexcept {
   asio::async_read(m_sock, asio::mutable_buffer(data, sz), std::move(hdlr));
 }
-#pragma GCC diagnostic pop
+
+void ConnHandlerPlain::do_async_read(
+        uint8_t* data, uint32_t sz,
+        ConnHandler::Receiver_Header&& hdlr) noexcept {
+  asio::async_read(m_sock, asio::mutable_buffer(data, sz), std::move(hdlr));
+}
+
+void ConnHandlerPlain::do_async_read(
+        uint8_t* data, uint32_t sz,
+        ConnHandler::Receiver_Buffer&& hdlr) noexcept {
+  asio::async_read(m_sock, asio::mutable_buffer(data, sz), std::move(hdlr));
+}
+
 
 void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
                             asio::error_code& ec) { // unused
@@ -457,6 +567,8 @@ void ConnHandlerPlain::read(uint8_t** bufp, size_t* remainp,
       asio::mutable_buffer((*bufp)+=read, *remainp), ec);
   } while(!ec && (*remainp -= read));
 }
+
+#pragma GCC diagnostic pop
 
 
 
@@ -552,9 +664,20 @@ SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+
 void ConnHandlerSSL::do_async_write(
         Core::Vector<asio::const_buffer>&& buffers,
-        std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
+        ConnHandler::Sender_noAck&& hdlr)
+        noexcept {
+  asio::async_write(
+    m_sock, std::move(buffers),
+    asio::bind_executor(m_strand, std::move(hdlr))
+  );
+}
+
+void ConnHandlerSSL::do_async_write(
+        Core::Vector<asio::const_buffer>&& buffers,
+        ConnHandler::Sender_Ack&& hdlr)
         noexcept {
   asio::async_write(
     m_sock, std::move(buffers),
@@ -564,14 +687,31 @@ void ConnHandlerSSL::do_async_write(
 
 void ConnHandlerSSL::do_async_read(
         uint8_t* data, uint32_t sz,
-        std::function<void(const asio::error_code&, size_t)>&& hdlr)
-        noexcept {
+        ConnHandler::Receiver_HeaderPrefix&& hdlr) noexcept {
   asio::async_read(
     m_sock, asio::mutable_buffer(data, sz),
     asio::bind_executor(m_strand, std::move(hdlr))
   );
 }
-#pragma GCC diagnostic pop
+
+void ConnHandlerSSL::do_async_read(
+        uint8_t* data, uint32_t sz,
+        ConnHandler::Receiver_Header&& hdlr) noexcept {
+  asio::async_read(
+    m_sock, asio::mutable_buffer(data, sz),
+    asio::bind_executor(m_strand, std::move(hdlr))
+  );
+}
+
+void ConnHandlerSSL::do_async_read(
+        uint8_t* data, uint32_t sz,
+        ConnHandler::Receiver_Buffer&& hdlr) noexcept {
+  asio::async_read(
+    m_sock, asio::mutable_buffer(data, sz),
+    asio::bind_executor(m_strand, std::move(hdlr))
+  );
+}
+
 
 void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp,
                             asio::error_code& ec) { // unused
@@ -582,6 +722,7 @@ void ConnHandlerSSL::read(uint8_t** bufp, size_t* remainp,
   } while(!ec && (*remainp -= read));
 }
 
+#pragma GCC diagnostic pop
 
 
 }}

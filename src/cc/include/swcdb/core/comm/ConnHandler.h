@@ -172,15 +172,29 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   virtual void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) = 0;
 
+
+  struct Sender_noAck;
+  struct Sender_Ack;
+
   virtual void do_async_write(
-      Core::Vector<asio::const_buffer>&& buffers,
-      std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
+      Core::Vector<asio::const_buffer>&& buffers, Sender_noAck&& hdlr)
+      noexcept = 0;
+  virtual void do_async_write(
+      Core::Vector<asio::const_buffer>&& buffers, Sender_Ack&& hdlr)
       noexcept = 0;
 
-  virtual void do_async_read(
-      uint8_t* data, uint32_t sz,
-      std::function<void(const asio::error_code&, size_t)>&& hdlr)
-      noexcept = 0;
+
+  struct Receiver_HeaderPrefix;
+  struct Receiver_Header;
+  struct Receiver_Buffer;
+
+  virtual void do_async_read(uint8_t* data, uint32_t sz,
+                             Receiver_HeaderPrefix&& hdlr) noexcept = 0;
+  virtual void do_async_read(uint8_t* data, uint32_t sz,
+                             Receiver_Header&& hdlr) noexcept = 0;
+  virtual void do_async_read(uint8_t* data, uint32_t sz,
+                             Receiver_Buffer&& hdlr) noexcept = 0;
+
 
   void do_close_run() noexcept;
 
@@ -251,14 +265,18 @@ class ConnHandlerPlain final : public ConnHandler {
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
-    Core::Vector<asio::const_buffer>&& buffers,
-    std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
+    Core::Vector<asio::const_buffer>&& buffers, Sender_noAck&& hdlr)
+    noexcept override;
+  void do_async_write(
+    Core::Vector<asio::const_buffer>&& buffers, Sender_Ack&& hdlr)
     noexcept override;
 
-  void do_async_read(
-    uint8_t* data, uint32_t sz,
-    std::function<void(const asio::error_code&, size_t)>&& hdlr)
-    noexcept override;
+  void do_async_read(uint8_t* data, uint32_t sz,
+                     Receiver_HeaderPrefix&& hdlr) noexcept override;
+  void do_async_read(uint8_t* data, uint32_t sz,
+                     Receiver_Header&& hdlr) noexcept override;
+  void do_async_read(uint8_t* data, uint32_t sz,
+                     Receiver_Buffer&& hdlr) noexcept override;
 
   private:
 
@@ -304,14 +322,18 @@ class ConnHandlerSSL final : public ConnHandler {
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
   void do_async_write(
-    Core::Vector<asio::const_buffer>&& buffers,
-    std::function<void(const asio::error_code&, uint32_t)>&& hdlr)
+    Core::Vector<asio::const_buffer>&& buffers, Sender_noAck&& hdlr)
+    noexcept override;
+  void do_async_write(
+    Core::Vector<asio::const_buffer>&& buffers, Sender_Ack&& hdlr)
     noexcept override;
 
-  void do_async_read(
-    uint8_t* data, uint32_t sz,
-    std::function<void(const asio::error_code&, size_t)>&& hdlr)
-    noexcept override;
+  void do_async_read(uint8_t* data, uint32_t sz,
+                     Receiver_HeaderPrefix&& hdlr) noexcept override;
+  void do_async_read(uint8_t* data, uint32_t sz,
+                     Receiver_Header&& hdlr) noexcept override;
+  void do_async_read(uint8_t* data, uint32_t sz,
+                     Receiver_Buffer&& hdlr) noexcept override;
 
   private:
 
