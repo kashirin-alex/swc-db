@@ -170,13 +170,20 @@ class AppContext final : public Comm::AppContext {
 
   void shutting_down(const std::error_code &ec, const int &sig) {
     if(!sig) { // set signals listener
-      Env::Bkr::io()->signals->async_wait(
-        [this](const std::error_code &ec, const int &sig) {
+      struct Handler {
+        AppContext* ptr;
+        SWC_CAN_INLINE
+        Handler(AppContext* ptr) noexcept : ptr(ptr) { }
+        void operator()(const std::error_code& ec, const int &sig) {
+          if(ec == asio::error::operation_aborted)
+            return;
           SWC_LOGF(LOG_INFO, "Received signal, sig=%d ec=%s",
-                   sig, ec.message().c_str());
-          shutting_down(ec, sig);
+                    sig, ec.message().c_str());
+          ptr->shutting_down(ec, sig);
         }
-      );
+      };
+      Env::Bkr::io()->signals->async_wait(Handler(this));
+
       SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s",
               sig, ec.message().c_str());
       return;
