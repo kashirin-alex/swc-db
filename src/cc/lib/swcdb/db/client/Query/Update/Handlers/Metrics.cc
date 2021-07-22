@@ -312,10 +312,16 @@ void Reporting::schedule() {
   if(!running)
     return;
   m_timer.expires_after(std::chrono::seconds(secs));
-  m_timer.async_wait([this](const asio::error_code& ec) {
-    if(ec != asio::error::operation_aborted)
-      report();
-  });
+  struct TimerTask {
+    Reporting* ptr;
+    SWC_CAN_INLINE
+    TimerTask(Reporting* ptr) noexcept : ptr(ptr) { }
+    void operator()(const asio::error_code& ec) {
+      if(ec != asio::error::operation_aborted)
+        ptr->report();
+    }
+  };
+  m_timer.async_wait(TimerTask(this));
 }
 
 

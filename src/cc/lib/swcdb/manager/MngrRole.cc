@@ -53,12 +53,17 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
     return;
 
   m_check_timer.expires_after(set_in);
-  m_check_timer.async_wait(
-    [this](const asio::error_code& ec) {
-      if(ec != asio::error::operation_aborted) {
-        managers_checkin();
-      }
-  });
+  struct TimerTask {
+    MngrRole* ptr;
+    SWC_CAN_INLINE
+    TimerTask(MngrRole* ptr) noexcept : ptr(ptr) { }
+    void operator()(const asio::error_code& ec) {
+      if(ec != asio::error::operation_aborted)
+        ptr->managers_checkin();
+    }
+  };
+  m_check_timer.async_wait(TimerTask(this));
+
   SWC_LOGF(LOG_DEBUG, "MngrRole managers_checkin scheduled in ms=%u", t_ms);
 }
 

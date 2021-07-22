@@ -166,11 +166,17 @@ class Resources final {
   SWC_CAN_INLINE
   void schedule(uint64_t intval) {
     m_timer.expires_after(std::chrono::milliseconds(intval));
-    m_timer.async_wait([this](const asio::error_code& ec) {
-      if(ec != asio::error::operation_aborted)
-        checker();
-      running.is_last();
-    });
+    struct TimerTask {
+      Resources* ptr;
+      SWC_CAN_INLINE
+      TimerTask(Resources* ptr) noexcept : ptr(ptr) { }
+      void operator()(const asio::error_code& ec) {
+        if(ec != asio::error::operation_aborted)
+          ptr->checker();
+        ptr->running.is_last();
+      }
+    };
+    m_timer.async_wait(TimerTask(this));
   }
 
   Core::CompletionCounter<uint8_t>  running;

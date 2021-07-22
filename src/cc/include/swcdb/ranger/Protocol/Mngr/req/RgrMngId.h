@@ -199,13 +199,16 @@ class RgrMngId: public client::ConnQueue::ReqBase {
 
     m_timer.expires_after(
       std::chrono::milliseconds(ms ? ms : cfg_check_interval->get()));
-
-    m_timer.async_wait(
-      [this](const asio::error_code& ec) {
+    struct TimerTask {
+      RgrMngId* ptr;
+      SWC_CAN_INLINE
+      TimerTask(RgrMngId* ptr) noexcept : ptr(ptr) { }
+      void operator()(const asio::error_code& ec) {
         if(ec != asio::error::operation_aborted)
-          request();
+          ptr->request();
       }
-    );
+    };
+    m_timer.async_wait(TimerTask(this));
   }
 
   void cancel() {

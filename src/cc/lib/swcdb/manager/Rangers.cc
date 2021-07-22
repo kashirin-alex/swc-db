@@ -89,10 +89,16 @@ void Rangers::schedule_check(uint32_t t_ms) {
     return;
 
   m_timer.expires_after(set_in);
-  m_timer.async_wait([this](const asio::error_code& ec) {
-    if(ec != asio::error::operation_aborted)
-      schedule_run();
-  });
+  struct TimerTask {
+    Rangers* ptr;
+    SWC_CAN_INLINE
+    TimerTask(Rangers* ptr) noexcept : ptr(ptr) { }
+    void operator()(const asio::error_code& ec) {
+      if(ec != asio::error::operation_aborted)
+        ptr->schedule_run();
+    }
+  };
+  m_timer.async_wait(TimerTask(this));
 
   if(t_ms > 10000)
     SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%u", t_ms);

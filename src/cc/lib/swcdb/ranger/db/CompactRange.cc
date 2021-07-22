@@ -462,13 +462,16 @@ void CompactRange::progress_check_timer() {
   if(m_stopped || m_chk_final)
     return;
   m_chk_timer.expires_after(std::chrono::milliseconds(median));
-  m_chk_timer.async_wait(
-    [ptr=shared()](const asio::error_code& ec) {
-      if(ec == asio::error::operation_aborted)
-        return;
-      ptr->progress_check_timer();
+  struct TimerTask {
+    CompactRange::Ptr ptr;
+    SWC_CAN_INLINE
+    TimerTask(const CompactRange::Ptr& ptr) noexcept : ptr(ptr) { }
+    void operator()(const asio::error_code& ec) {
+      if(ec != asio::error::operation_aborted)
+        ptr->progress_check_timer();
     }
-  );
+  };
+  m_chk_timer.async_wait(TimerTask(shared()));
 }
 
 void CompactRange::stop_check_timer() {
