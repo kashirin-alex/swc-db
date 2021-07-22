@@ -17,14 +17,18 @@ PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
 
 void PeriodicTimer::schedule() {
   expires_after(std::chrono::milliseconds(m_ms->get()));
-  async_wait(
-    [this](const asio::error_code& ec) {
+  struct TimerTask {
+    PeriodicTimer* tm;
+    SWC_CAN_INLINE
+    TimerTask(PeriodicTimer* tm) noexcept : tm(tm) { }
+    void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
-        m_call();
-        schedule();
+        tm->m_call();
+        tm->schedule();
       }
     }
-  );
+  };
+  async_wait(TimerTask(this));
 }
 
 void PeriodicTimers::stop() {

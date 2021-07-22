@@ -107,18 +107,30 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
 
   Core::MutexSptd::scope lock(m_mutex);
   m_delayed.insert(tm);
-  tm->async_wait([this, req, tm](const asio::error_code& ec) {
-    if(ec == asio::error::operation_aborted) {
-      req->handle_no_conn();
-    } else {
-      {
-        Core::MutexSptd::scope lock(m_mutex);
-        m_delayed.erase(tm);
-      }
-      put(req);
+
+  struct TimerTask {
+    ConnQueue*                    queue;
+    ConnQueue::ReqBase::Ptr       req;
+    asio::high_resolution_timer*  tm;
+    SWC_CAN_INLINE
+    TimerTask(ConnQueue* queue, const ConnQueue::ReqBase::Ptr& req,
+              asio::high_resolution_timer* tm) noexcept
+              : queue(queue), req(req), tm(tm) {
     }
-    delete tm;
-  });
+    void operator()(const asio::error_code& ec) {
+      if(ec == asio::error::operation_aborted) {
+        req->handle_no_conn();
+      } else {
+        {
+          Core::MutexSptd::scope lock(queue->m_mutex);
+          queue->m_delayed.erase(tm);
+        }
+        queue->put(req);
+      }
+      delete tm;
+    }
+  };
+  tm->async_wait(TimerTask(this, req, tm));
 }
 
 void ConnQueue::print(std::ostream& out) {
@@ -142,7 +154,13 @@ void ConnQueue::exec_queue() {
       return;
     }
   }
-  m_ioctx->post([ptr=shared_from_this()](){ptr->run_queue();});
+  struct Task {
+    ConnQueuePtr queue;
+    SWC_CAN_INLINE
+    Task(const ConnQueuePtr& queue) noexcept : queue(queue) { }
+    void operator()() { queue->run_queue(); }
+  };
+  m_ioctx->post(Task(shared_from_this()));
 }
 
 void ConnQueue::run_queue() {
@@ -205,13 +223,17 @@ void ConnQueue::schedule_close(bool closing) {
     return;
   m_timer->cancel();
   m_timer->expires_after(std::chrono::milliseconds(cfg_keepalive_ms->get()));
-  m_timer->async_wait(
-    [ptr=shared_from_this()](const asio::error_code& ec) {
+  struct TimerTask {
+    ConnQueuePtr queue;
+    SWC_CAN_INLINE
+    TimerTask(const ConnQueuePtr& queue) noexcept : queue(queue) { }
+    void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted){
-        ptr->schedule_close(true);
+        queue->schedule_close(true);
       }
     }
-  );
+  };
+  m_timer->async_wait(TimerTask(shared_from_this()));
 }
 
 }}}

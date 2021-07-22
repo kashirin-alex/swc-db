@@ -63,6 +63,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
   }
 
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
   template <typename T_Handler>
   SWC_CAN_INLINE

@@ -119,6 +119,7 @@ struct ConnHandler::Sender_Ack final {
              DispatchHandler::Ptr&& hdlr) noexcept
               : conn(conn), cbuf(cbuf), hdlr(std::move(hdlr)) {
   }
+  SWC_CAN_INLINE
   Sender_Ack(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf,
              const DispatchHandler::Ptr& hdlr) noexcept
               : conn(conn), cbuf(cbuf), hdlr(hdlr) {
@@ -524,6 +525,7 @@ SocketLayer* ConnHandlerPlain::socket_layer() noexcept {
 }
 
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 
 void ConnHandlerPlain::do_async_write(
@@ -663,6 +665,7 @@ SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
 }
 
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 
 void ConnHandlerSSL::do_async_write(
