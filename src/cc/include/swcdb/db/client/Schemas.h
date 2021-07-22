@@ -26,19 +26,23 @@ class Schemas final : private DB::Schemas {
 
   void remove(const std::string& name);
 
-  DB::Schema::Ptr get(int& err, cid_t cid);
+  DB::Schema::Ptr get(int& err, cid_t cid,
+                      uint32_t timeout=300000);
 
-  DB::Schema::Ptr get(int& err, const std::string& name);
+  DB::Schema::Ptr get(int& err, const std::string& name,
+                      uint32_t timeout=300000);
 
   DB::Schema::Ptr get(cid_t cid);
 
   DB::Schema::Ptr get(const std::string& name);
 
   void get(int& err, const DB::Schemas::SelectorPatterns& patterns,
-           std::vector<DB::Schema::Ptr>& schemas);
+           std::vector<DB::Schema::Ptr>& schemas,
+           uint32_t timeout=300000);
 
   std::vector<DB::Schema::Ptr>
-  get(int& err, const DB::Schemas::SelectorPatterns& patterns);
+  get(int& err, const DB::Schemas::SelectorPatterns& patterns,
+      uint32_t timeout=300000);
 
   void set(const DB::Schema::Ptr& schema);
 
@@ -46,12 +50,15 @@ class Schemas final : private DB::Schemas {
 
   private:
 
-  void _request(int& err, cid_t cid, DB::Schema::Ptr& schema);
+  void _request(int& err, cid_t cid, DB::Schema::Ptr& schema,
+                uint32_t timeout);
 
-  void _request(int& err, const std::string& name, DB::Schema::Ptr& schema);
+  void _request(int& err, const std::string& name, DB::Schema::Ptr& schema,
+                uint32_t timeout);
 
   void _request(int& err, const DB::Schemas::SelectorPatterns& patterns,
-                std::vector<DB::Schema::Ptr>& schemas);
+                std::vector<DB::Schema::Ptr>& schemas,
+                uint32_t timeout);
 
   Clients*                            _clients;
   std::unordered_map<cid_t, int64_t>  m_track; // .second {time,queue(promises)}

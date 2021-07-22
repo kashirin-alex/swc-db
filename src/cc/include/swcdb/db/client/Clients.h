@@ -127,25 +127,29 @@ class Clients : public std::enable_shared_from_this<Clients> {
   }
 
   SWC_CAN_INLINE
-  DB::Schema::Ptr get_schema(int& err, cid_t cid) {
-    return schemas.get(err, cid);
+  DB::Schema::Ptr get_schema(int& err, cid_t cid,
+                             uint32_t timeout=300000) {
+    return schemas.get(err, cid, timeout);
   }
 
   SWC_CAN_INLINE
-  DB::Schema::Ptr get_schema(int& err, const std::string& name) {
-    return schemas.get(err, name);
+  DB::Schema::Ptr get_schema(int& err, const std::string& name,
+                             uint32_t timeout=300000) {
+    return schemas.get(err, name, timeout);
   }
 
   SWC_CAN_INLINE
   void get_schema(int& err, const DB::Schemas::SelectorPatterns& patterns,
-                  std::vector<DB::Schema::Ptr>& _schemas) {
-    schemas.get(err, patterns, _schemas);
+                  std::vector<DB::Schema::Ptr>& _schemas,
+                  uint32_t timeout=300000) {
+    schemas.get(err, patterns, _schemas, timeout);
   }
 
   SWC_CAN_INLINE
   std::vector<DB::Schema::Ptr>
-  get_schema(int& err, const DB::Schemas::SelectorPatterns& patterns) {
-    return schemas.get(err, patterns);
+  get_schema(int& err, const DB::Schemas::SelectorPatterns& patterns,
+             uint32_t timeout=300000) {
+    return schemas.get(err, patterns, timeout);
   }
 
 

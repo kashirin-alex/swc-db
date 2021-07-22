@@ -33,7 +33,8 @@ void Schemas::remove(const std::string& name) {
   _remove(schema->cid);
 }
 
-DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
+DB::Schema::Ptr Schemas::get(int& err, cid_t cid,
+                             uint32_t timeout) {
   DB::Schema::Ptr schema;
   Core::MutexSptd::scope lock(m_mutex);
 
@@ -43,7 +44,7 @@ DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
      (schema = _get(cid)))
     return schema;
 
-  _request(err, cid, schema);
+  _request(err, cid, schema, timeout);
   if(schema) {
     m_track.emplace(cid, Time::now_ms());
     _replace(schema);
@@ -52,7 +53,8 @@ DB::Schema::Ptr Schemas::get(int& err, cid_t cid) {
   return schema;
 }
 
-DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
+DB::Schema::Ptr Schemas::get(int& err, const std::string& name,
+                             uint32_t timeout) {
   DB::Schema::Ptr schema;
   Core::MutexSptd::scope lock(m_mutex);
 
@@ -63,7 +65,7 @@ DB::Schema::Ptr Schemas::get(int& err, const std::string& name) {
     schema = nullptr;
   }
 
-  _request(err, name, schema);
+  _request(err, name, schema, timeout);
   if(schema) {
     m_track.emplace(schema->cid, Time::now_ms());
     _replace(schema);
@@ -94,8 +96,8 @@ DB::Schema::Ptr Schemas::get(const std::string& name) {
 
 void
 Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
-             std::vector<DB::Schema::Ptr>& schemas) {
-  _request(err, patterns, schemas);
+             std::vector<DB::Schema::Ptr>& schemas, uint32_t timeout) {
+  _request(err, patterns, schemas, timeout);
 
   if(!err && schemas.empty()) {
     err = Error::COLUMN_SCHEMA_MISSING;
@@ -111,9 +113,10 @@ Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
 }
 
 std::vector<DB::Schema::Ptr>
-Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns) {
+Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
+             uint32_t timeout) {
   std::vector<DB::Schema::Ptr> schemas;
-  get(err, patterns, schemas);
+  get(err, patterns, schemas, timeout);
   return schemas;
 }
 
@@ -134,43 +137,46 @@ void Schemas::set(const std::vector<DB::Schema::Ptr>& schemas) {
 }
 
 void Schemas::_request(int& err, cid_t cid,
-                       DB::Schema::Ptr& schema) {
+                       DB::Schema::Ptr& schema,
+                       uint32_t timeout) {
   switch(_clients->flags) {
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
     case Clients::Flag::BROKER:
       return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
-        cid, 300000, _clients->shared(), err, schema);
+        cid, timeout, _clients->shared(), err, schema);
     default:
       return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-        cid, 300000, _clients->shared(), err, schema);
+        cid, timeout, _clients->shared(), err, schema);
   }
 }
 
 void Schemas::_request(int& err, const std::string& name,
-                       DB::Schema::Ptr& schema) {
+                       DB::Schema::Ptr& schema,
+                       uint32_t timeout) {
   switch(_clients->flags) {
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
     case Clients::Flag::BROKER:
       return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
-        name, 300000, _clients->shared(), err, schema);
+        name, timeout, _clients->shared(), err, schema);
     default:
       return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-        name, 300000, _clients->shared(), err, schema);
+        name, timeout, _clients->shared(), err, schema);
   }
 }
 
 void Schemas::_request(int& err,
                        const DB::Schemas::SelectorPatterns& patterns,
-                       std::vector<DB::Schema::Ptr>& schemas) {
+                       std::vector<DB::Schema::Ptr>& schemas,
+                       uint32_t timeout) {
   Comm::Protocol::Mngr::Params::ColumnListReq params(patterns);
   switch(_clients->flags) {
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
     case Clients::Flag::BROKER:
       return Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
-        params, 300000, _clients->shared(), err, schemas);
+        params, timeout, _clients->shared(), err, schemas);
     default:
       return Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
-        params, 300000, _clients->shared(), err, schemas);
+        params, timeout, _clients->shared(), err, schemas);
   }
 }
 
