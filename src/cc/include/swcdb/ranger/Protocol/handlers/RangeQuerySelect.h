@@ -15,49 +15,64 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Handler {
 
 
-void range_query_select(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  int err = Error::OK;
-  Params::RangeQuerySelectReq params;
-  Ranger::RangePtr range;
+struct RangeQuerySelect {
+  Comm::ConnHandlerPtr conn;
+  Comm::Event::Ptr     ev;
 
-  try {
-    const uint8_t *ptr = ev->data.base;
-    size_t remain = ev->data.size;
-    params.decode(&ptr, &remain);
+  SWC_CAN_INLINE
+  RangeQuerySelect(const Comm::ConnHandlerPtr& conn,
+                   const Comm::Event::Ptr& ev) noexcept
+                  : conn(conn), ev(ev) {
+  }
 
-    range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
+  void operator()() {
+    if(ev->expired())
+      return;
 
-    if(!err) {
-      if(!range || !range->is_loaded()) {
-        err = Error::RGR_NOT_LOADED_RANGE;
+    int err = Error::OK;
+    Params::RangeQuerySelectReq params;
+    Ranger::RangePtr range;
 
-      } else if(range->cfg->range_type == DB::Types::Range::DATA &&
-                Env::Rgr::res().is_low_mem_state() &&
-                Env::Rgr::scan_reserved_bytes()) {
-        err = Error::SERVER_MEMORY_LOW;
+    try {
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
+      params.decode(&ptr, &remain);
+
+      range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
+
+      if(!err) {
+        if(!range || !range->is_loaded()) {
+          err = Error::RGR_NOT_LOADED_RANGE;
+
+        } else if(range->cfg->range_type == DB::Types::Range::DATA &&
+                  Env::Rgr::res().is_low_mem_state() &&
+                  Env::Rgr::scan_reserved_bytes()) {
+          err = Error::SERVER_MEMORY_LOW;
+        }
       }
+
+    } catch(...) {
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+      SWC_LOG_OUT(LOG_ERROR,
+        SWC_LOG_OSTREAM << e;
+        ev->print(SWC_LOG_OSTREAM << "\n\t");
+      );
+      err = e.code();
     }
 
-  } catch(...) {
-    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR,
-      SWC_LOG_OSTREAM << e;
-      ev->print(SWC_LOG_OSTREAM << "\n\t");
-    );
-    err = e.code();
+    if(err) {
+      Params::RangeQuerySelectRsp rsp(err);
+      conn->send_response(Buffers::make(ev, rsp));
+    } else {
+      range->scan(Ranger::Callback::RangeQuerySelect::Ptr(
+        new Ranger::Callback::RangeQuerySelect(
+          conn, ev, std::move(params.interval), range)
+      ));
+    }
+
   }
 
-  if(err) {
-    Params::RangeQuerySelectRsp rsp(err);
-    conn->send_response(Buffers::make(ev, rsp));
-  } else {
-    range->scan(Ranger::Callback::RangeQuerySelect::Ptr(
-      new Ranger::Callback::RangeQuerySelect(
-        conn, ev, std::move(params.interval), range)
-    ));
-  }
-
-}
+};
 
 
 }}}}}

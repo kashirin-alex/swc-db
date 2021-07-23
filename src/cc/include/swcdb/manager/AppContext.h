@@ -137,10 +137,8 @@ class AppContext final : public Comm::AppContext {
     switch(ev->header.command) {
 
       case Comm::Protocol::Mngr::Command::MNGR_STATE:
-        Env::Mngr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Mngr::Handler::mngr_state(conn, ev);
-        });
+        Env::Mngr::post(
+          Comm::Protocol::Mngr::Handler::MngrState(conn, ev));
         break;
 
       case Comm::Protocol::Mngr::Command::MNGR_ACTIVE:
@@ -152,10 +150,8 @@ class AppContext final : public Comm::AppContext {
             break;
 
       case Comm::Protocol::Mngr::Command::COLUMN_UPDATE:
-        Env::Mngr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Mngr::Handler::column_update(conn, ev);
-        });
+        Env::Mngr::post(
+          Comm::Protocol::Mngr::Handler::ColumnUpdate(conn, ev));
         break;
 
       case Comm::Protocol::Mngr::Command::COLUMN_GET:
@@ -171,17 +167,13 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Protocol::Mngr::Command::RGR_MNG_ID:
-        Env::Mngr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Mngr::Handler::rgr_mng_id(conn, ev);
-        });
+        Env::Mngr::post(
+          Comm::Protocol::Mngr::Handler::RgrMngId(conn, ev));
         break;
 
       case Comm::Protocol::Mngr::Command::RGR_UPDATE:
-        Env::Mngr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Mngr::Handler::rgr_update(conn, ev);
-        });
+        Env::Mngr::post(
+          Comm::Protocol::Mngr::Handler::RgrUpdate(conn, ev));
         break;
 
       case Comm::Protocol::Mngr::Command::RGR_GET:
@@ -189,10 +181,8 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Protocol::Mngr::Command::RANGE_CREATE:
-        Env::Mngr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Mngr::Handler::range_create(conn, ev);
-        });
+        Env::Mngr::post(
+          Comm::Protocol::Mngr::Handler::RangeCreate(conn, ev));
         break;
 
       case Comm::Protocol::Mngr::Command::RANGE_UNLOADED:
@@ -200,17 +190,13 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Protocol::Mngr::Command::RANGE_REMOVE:
-        Env::Mngr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Mngr::Handler::range_remove(conn, ev);
-        });
+        Env::Mngr::post(
+          Comm::Protocol::Mngr::Handler::RangeRemove(conn, ev));
         break;
 
       case Comm::Protocol::Mngr::Command::REPORT:
-        Env::Mngr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Mngr::Handler::report(conn, ev);
-        });
+        Env::Mngr::post(
+          Comm::Protocol::Mngr::Handler::Report(conn, ev));
         break;
 
       case Comm::Protocol::Mngr::Command::DO_ECHO:

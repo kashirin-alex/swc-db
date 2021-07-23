@@ -14,122 +14,99 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Rgr { namespace Handler {
 
 
-void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
-  int err = Error::OK;
-  Buffers::Ptr cbp;
+struct Report {
+  Comm::ConnHandlerPtr conn;
+  Comm::Event::Ptr     ev;
 
-  try {
+  SWC_CAN_INLINE
+  Report(const Comm::ConnHandlerPtr& conn,
+         const Comm::Event::Ptr& ev) noexcept
+        : conn(conn), ev(ev) {
+  }
 
-    const uint8_t *ptr = ev->data.base;
-    size_t remain = ev->data.size;
+  void operator()() {
+    if(ev->expired())
+      return;
 
-    switch(
-      Params::Report::Function(Serialization::decode_i8(&ptr, &remain))) {
+    int err = Error::OK;
+    Buffers::Ptr cbp;
 
-      case Params::Report::Function::RESOURCES: {
-        cbp = Buffers::make(
-          ev,
-          Params::Report::RspRes(
-            Env::Rgr::res().available_mem_mb(),
-            Env::Rgr::res().available_cpu_mhz(),
-            Env::Rgr::in_process_ranges()
-          ),
-          4
-        );
-        cbp->append_i32(err);
-        goto send_response;
-      }
+    try {
 
-      case Params::Report::Function::CIDS: {
-        Params::Report::RspCids rsp_params;
-        Env::Rgr::columns()->get_cids(rsp_params.cids);
+      const uint8_t *ptr = ev->data.base;
+      size_t remain = ev->data.size;
 
-        cbp = Buffers::make(ev, rsp_params, 4);
-        cbp->append_i32(err);
-        goto send_response;
-      }
+      switch(
+        Params::Report::Function(Serialization::decode_i8(&ptr, &remain))) {
 
-      case Params::Report::Function::COLUMN_RIDS: {
-        Params::Report::ReqColumn params;
-        params.decode(&ptr, &remain);
-        auto col = Env::Rgr::columns()->get_column(params.cid);
-        if(!col) {
-          err = Error::COLUMN_NOT_EXISTS;
-          goto send_error;
+        case Params::Report::Function::RESOURCES: {
+          cbp = Buffers::make(
+            ev,
+            Params::Report::RspRes(
+              Env::Rgr::res().available_mem_mb(),
+              Env::Rgr::res().available_cpu_mhz(),
+              Env::Rgr::in_process_ranges()
+            ),
+            4
+          );
+          cbp->append_i32(err);
+          goto send_response;
         }
 
-        Params::Report::RspColumnRids rsp_params;
-        col->get_rids(rsp_params.rids);
+        case Params::Report::Function::CIDS: {
+          Params::Report::RspCids rsp_params;
+          Env::Rgr::columns()->get_cids(rsp_params.cids);
 
-        cbp = Buffers::make(ev, rsp_params, 4);
-        cbp->append_i32(err);
-        goto send_response;
-      }
-
-      case Params::Report::Function::COLUMN_RANGES: {
-        Params::Report::ReqColumn params;
-        params.decode(&ptr, &remain);
-
-        auto rgr_data = Env::Rgr::rgr_data();
-        rgrid_t rgrid;
-        if(!(rgrid = rgr_data->rgrid)) {
-          err = Error::RGR_NOT_READY;
-          goto send_error;
+          cbp = Buffers::make(ev, rsp_params, 4);
+          cbp->append_i32(err);
+          goto send_response;
         }
 
-        auto col = Env::Rgr::columns()->get_column(params.cid);
-        if(!col) {
-          err = Error::COLUMN_NOT_EXISTS;
-          goto send_error;
+        case Params::Report::Function::COLUMN_RIDS: {
+          Params::Report::ReqColumn params;
+          params.decode(&ptr, &remain);
+          auto col = Env::Rgr::columns()->get_column(params.cid);
+          if(!col) {
+            err = Error::COLUMN_NOT_EXISTS;
+            goto send_error;
+          }
+
+          Params::Report::RspColumnRids rsp_params;
+          col->get_rids(rsp_params.rids);
+
+          cbp = Buffers::make(ev, rsp_params, 4);
+          cbp->append_i32(err);
+          goto send_response;
         }
 
-        Params::Report::RspColumnsRanges rsp_params(
-          rgrid, rgr_data->endpoints);
+        case Params::Report::Function::COLUMN_RANGES: {
+          Params::Report::ReqColumn params;
+          params.decode(&ptr, &remain);
 
-        auto c = new Params::Report::RspColumnsRanges::Column();
-        rsp_params.columns.push_back(c);
-        c->cid = col->cfg->cid;
-        c->col_seq = col->cfg->key_seq;
-        c->mem_bytes = 0;
+          auto rgr_data = Env::Rgr::rgr_data();
+          rgrid_t rgrid;
+          if(!(rgrid = rgr_data->rgrid)) {
+            err = Error::RGR_NOT_READY;
+            goto send_error;
+          }
 
-        Ranger::RangePtr range;
-        rid_t last_rid = 0;
-        for(size_t ridx = 0; (range=col->get_next(last_rid, ridx)); ++ridx) {
-          auto r = new Params::Report::RspColumnsRanges::Range(c->col_seq);
-          c->ranges.push_back(r);
-          c->mem_bytes += range->blocks.size_bytes_total(true);
-          r->rid = range->rid;
-          range->get_interval(r->interval);
-        }
+          auto col = Env::Rgr::columns()->get_column(params.cid);
+          if(!col) {
+            err = Error::COLUMN_NOT_EXISTS;
+            goto send_error;
+          }
 
-        cbp = Buffers::make(ev, rsp_params, 4);
-        cbp->append_i32(err);
-        goto send_response;
-      }
+          Params::Report::RspColumnsRanges rsp_params(
+            rgrid, rgr_data->endpoints);
 
-      case Params::Report::Function::COLUMNS_RANGES: {
-
-        auto rgr_data = Env::Rgr::rgr_data();
-        rgrid_t rgrid;
-        if(!(rgrid = rgr_data->rgrid)) {
-          err = Error::RGR_NOT_READY;
-          goto send_error;
-        }
-
-        Params::Report::RspColumnsRanges rsp_params(
-          rgrid, rgr_data->endpoints);
-
-        Ranger::ColumnPtr col;
-        Ranger::RangePtr range;
-        auto& columns = *Env::Rgr::columns();
-        cid_t last_cid = 0;
-        rid_t last_rid = 0;
-        for(size_t cidx=0; (col=columns.get_next(last_cid, cidx)); ++cidx) {
           auto c = new Params::Report::RspColumnsRanges::Column();
           rsp_params.columns.push_back(c);
           c->cid = col->cfg->cid;
           c->col_seq = col->cfg->key_seq;
           c->mem_bytes = 0;
+
+          Ranger::RangePtr range;
+          rid_t last_rid = 0;
           for(size_t ridx=0; (range=col->get_next(last_rid, ridx)); ++ridx) {
             auto r = new Params::Report::RspColumnsRanges::Range(c->col_seq);
             c->ranges.push_back(r);
@@ -137,35 +114,74 @@ void report(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
             r->rid = range->rid;
             range->get_interval(r->interval);
           }
+
+          cbp = Buffers::make(ev, rsp_params, 4);
+          cbp->append_i32(err);
+          goto send_response;
         }
 
-        cbp = Buffers::make(ev, rsp_params, 4);
-        cbp->append_i32(err);
-        goto send_response;
+        case Params::Report::Function::COLUMNS_RANGES: {
+
+          auto rgr_data = Env::Rgr::rgr_data();
+          rgrid_t rgrid;
+          if(!(rgrid = rgr_data->rgrid)) {
+            err = Error::RGR_NOT_READY;
+            goto send_error;
+          }
+
+          Params::Report::RspColumnsRanges rsp_params(
+            rgrid, rgr_data->endpoints);
+
+          Ranger::ColumnPtr col;
+          Ranger::RangePtr range;
+          auto& columns = *Env::Rgr::columns();
+          cid_t last_cid = 0;
+          rid_t last_rid = 0;
+          for(size_t cidx=0;(col=columns.get_next(last_cid, cidx));++cidx) {
+            auto c = new Params::Report::RspColumnsRanges::Column();
+            rsp_params.columns.push_back(c);
+            c->cid = col->cfg->cid;
+            c->col_seq = col->cfg->key_seq;
+            c->mem_bytes = 0;
+            for(size_t ridx=0;(range=col->get_next(last_rid, ridx));++ridx) {
+              auto r = new Params::Report::RspColumnsRanges::Range(
+                c->col_seq);
+              c->ranges.push_back(r);
+              c->mem_bytes += range->blocks.size_bytes_total(true);
+              r->rid = range->rid;
+              range->get_interval(r->interval);
+            }
+          }
+
+          cbp = Buffers::make(ev, rsp_params, 4);
+          cbp->append_i32(err);
+          goto send_response;
+        }
+
+        default: {
+          err = Error::NOT_IMPLEMENTED;
+          break;
+        }
+
       }
 
-      default: {
-        err = Error::NOT_IMPLEMENTED;
-        break;
-      }
-
+    } catch(...) {
+      const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
+      SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
+      err = e.code();
     }
 
-  } catch(...) {
-    const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
-    SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
-    err = e.code();
+
+    send_error:
+      cbp = Buffers::make(ev, 4);
+      cbp->append_i32(err);
+
+
+    send_response:
+      conn->send_response(cbp);
   }
 
-
-  send_error:
-    cbp = Buffers::make(ev, 4);
-    cbp->append_i32(err);
-
-
-  send_response:
-    conn->send_response(cbp);
-}
+};
 
 
 }}}}}

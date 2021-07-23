@@ -180,10 +180,8 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Protocol::Rgr::Command::RANGE_LOAD:
-        Env::Rgr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Rgr::Handler::range_load(conn, ev);
-        });
+        Env::Rgr::post(
+          Comm::Protocol::Rgr::Handler::RangeLoad(conn, ev));
         break;
 
       case Comm::Protocol::Rgr::Command::RANGE_UNLOAD:
@@ -191,10 +189,8 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Protocol::Rgr::Command::RANGE_LOCATE:
-        Env::Rgr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Rgr::Handler::range_locate(conn, ev);
-        });
+        Env::Rgr::post(
+          Comm::Protocol::Rgr::Handler::RangeLocate(conn, ev));
         break;
 
       case Comm::Protocol::Rgr::Command::RANGE_QUERY_UPDATE:
@@ -202,17 +198,13 @@ class AppContext final : public Comm::AppContext {
         break;
 
       case Comm::Protocol::Rgr::Command::RANGE_QUERY_SELECT:
-        Env::Rgr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Rgr::Handler::range_query_select(conn, ev);
-        });
+        Env::Rgr::post(
+          Comm::Protocol::Rgr::Handler::RangeQuerySelect(conn, ev));
         break;
 
       case Comm::Protocol::Rgr::Command::REPORT:
-        Env::Rgr::post([conn, ev]() {
-          if(!ev->expired())
-            Comm::Protocol::Rgr::Handler::report(conn, ev);
-        });
+        Env::Rgr::post(
+          Comm::Protocol::Rgr::Handler::Report(conn, ev));
         break;
 
       //&Comm::Protocol::Rgr::Handler::debug,
