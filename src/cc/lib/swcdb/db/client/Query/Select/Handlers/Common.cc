@@ -117,14 +117,20 @@ void Common::wait() {
 }
 
 void Common::send_result() {
-  (m_dispatcher_io ? m_dispatcher_io : clients->get_io())->post(
-    [hdlr = std::dynamic_pointer_cast<Common>(shared_from_this())](){
+  struct Task {
+    Ptr hdlr;
+    SWC_CAN_INLINE
+    Task(const Ptr& hdlr) noexcept : hdlr(hdlr) { }
+    void operator()() {
       hdlr->m_cb(hdlr);
 
       Core::ScopedLock lock(hdlr->m_mutex);
       hdlr->m_sending_result.stop();
       hdlr->m_cv.notify_all();
-    });
+    }
+  };
+  (m_dispatcher_io ? m_dispatcher_io : clients->get_io())
+    ->post(Task(std::dynamic_pointer_cast<Common>(shared_from_this())));
 }
 
 
