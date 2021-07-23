@@ -30,16 +30,32 @@ namespace SWC { namespace Broker {
 
 class AppContext final : public Comm::AppContext {
 
-  // in-order of Protocol::Bkr::Command
-  static constexpr const Comm::AppHandler_t handlers[] = {
-    &Comm::Protocol::Common::Handler::not_implemented,
-    &Comm::Protocol::Bkr::Handler::column_get,
-    &Comm::Protocol::Bkr::Handler::column_list,
-    &Comm::Protocol::Bkr::Handler::column_compact,
-    &Comm::Protocol::Bkr::Handler::column_mng,
-    &Comm::Protocol::Bkr::Handler::cells_update,
-    &Comm::Protocol::Bkr::Handler::cells_select,
+  struct CommandHandler {
+    // in-order of Protocol::Bkr::Command
+    static constexpr const Comm::AppHandler_t handlers[] = {
+      &Comm::Protocol::Common::Handler::not_implemented,
+      &Comm::Protocol::Bkr::Handler::column_get,
+      &Comm::Protocol::Bkr::Handler::column_list,
+      &Comm::Protocol::Bkr::Handler::column_compact,
+      &Comm::Protocol::Bkr::Handler::column_mng,
+      &Comm::Protocol::Bkr::Handler::cells_update,
+      &Comm::Protocol::Bkr::Handler::cells_select,
+    };
+    Comm::ConnHandlerPtr conn;
+    Comm::Event::Ptr     ev;
+    SWC_CAN_INLINE
+    CommandHandler(const Comm::ConnHandlerPtr& conn,
+                   const Comm::Event::Ptr& ev) noexcept
+                : conn(conn), ev(ev) {
+      Env::Bkr::in_process(1);
+    }
+    void operator()() {
+      ev->expired() || !conn->is_open()
+        ? Env::Bkr::processed()
+        : handlers[ev->header.command](conn, ev);
+    }
   };
+
 
   public:
 
@@ -137,12 +153,7 @@ class AppContext final : public Comm::AppContext {
         m_metrics->net->error(conn);
 
     } else {
-      Env::Bkr::in_process(1);
-      Env::Bkr::post([conn, ev]() {
-        ev->expired() || !conn->is_open()
-          ? Env::Bkr::processed()
-          : handlers[ev->header.command](conn, ev);
-      });
+      Env::Bkr::post(CommandHandler(conn, ev));
       if(m_metrics)
         m_metrics->net->command(conn, ev->header.command);
     }

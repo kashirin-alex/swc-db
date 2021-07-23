@@ -42,33 +42,49 @@ namespace SWC { namespace FsBroker {
 
 class AppContext final : public Comm::AppContext {
 
-  // in-order of Protocol::FsBroker::Coomand
-  static constexpr const Comm::AppHandler_t handlers[] = {
-    &Comm::Protocol::Common::Handler::not_implemented,
-    &Comm::Protocol::FsBroker::Handler::open,
-    &Comm::Protocol::FsBroker::Handler::create,
-    &Comm::Protocol::FsBroker::Handler::close,
-    &Comm::Protocol::FsBroker::Handler::read,
-    &Comm::Protocol::FsBroker::Handler::append,
-    &Comm::Protocol::FsBroker::Handler::seek,
-    &Comm::Protocol::FsBroker::Handler::remove,
-    &Comm::Protocol::FsBroker::Handler::length,
-    &Comm::Protocol::FsBroker::Handler::pread,
-    &Comm::Protocol::FsBroker::Handler::mkdirs,
-    &Comm::Protocol::FsBroker::Handler::flush,
-    &Comm::Protocol::FsBroker::Handler::rmdir,
-    &Comm::Protocol::FsBroker::Handler::readdir,
-    &Comm::Protocol::FsBroker::Handler::exists,
-    &Comm::Protocol::FsBroker::Handler::rename,
-    &Comm::Protocol::FsBroker::Handler::sync,
-    &Comm::Protocol::FsBroker::Handler::write,
-    &Comm::Protocol::FsBroker::Handler::read_all,
-    &Comm::Protocol::FsBroker::Handler::combi_pread
+  struct CommandHandler {
+    // in-order of Protocol::FsBroker::Coomand
+    static constexpr const Comm::AppHandler_t handlers[] = {
+      &Comm::Protocol::Common::Handler::not_implemented,
+      &Comm::Protocol::FsBroker::Handler::open,
+      &Comm::Protocol::FsBroker::Handler::create,
+      &Comm::Protocol::FsBroker::Handler::close,
+      &Comm::Protocol::FsBroker::Handler::read,
+      &Comm::Protocol::FsBroker::Handler::append,
+      &Comm::Protocol::FsBroker::Handler::seek,
+      &Comm::Protocol::FsBroker::Handler::remove,
+      &Comm::Protocol::FsBroker::Handler::length,
+      &Comm::Protocol::FsBroker::Handler::pread,
+      &Comm::Protocol::FsBroker::Handler::mkdirs,
+      &Comm::Protocol::FsBroker::Handler::flush,
+      &Comm::Protocol::FsBroker::Handler::rmdir,
+      &Comm::Protocol::FsBroker::Handler::readdir,
+      &Comm::Protocol::FsBroker::Handler::exists,
+      &Comm::Protocol::FsBroker::Handler::rename,
+      &Comm::Protocol::FsBroker::Handler::sync,
+      &Comm::Protocol::FsBroker::Handler::write,
+      &Comm::Protocol::FsBroker::Handler::read_all,
+      &Comm::Protocol::FsBroker::Handler::combi_pread
 
-    //&Comm::Protocol::FsBroker::Handler::debug,
-    //&Comm::Protocol::FsBroker::Handler::status,
-    //&Comm::Protocol::FsBroker::Handler::shutdown
+      //&Comm::Protocol::FsBroker::Handler::debug,
+      //&Comm::Protocol::FsBroker::Handler::status,
+      //&Comm::Protocol::FsBroker::Handler::shutdown
+    };
+    Comm::ConnHandlerPtr conn;
+    Comm::Event::Ptr     ev;
+    SWC_CAN_INLINE
+    CommandHandler(const Comm::ConnHandlerPtr& conn,
+                   const Comm::Event::Ptr& ev) noexcept
+                  : conn(conn), ev(ev) {
+      Env::FsBroker::in_process(1);
+    }
+    void operator()() {
+      if(!ev->expired() && conn->is_open())
+        handlers[ev->header.command](conn, ev);
+      Env::FsBroker::in_process(-1);
+    }
   };
+
 
   public:
 
@@ -164,12 +180,7 @@ class AppContext final : public Comm::AppContext {
         m_metrics->net->error(conn);
 
     } else {
-      Env::FsBroker::in_process(1);
-      Env::IoCtx::post([conn, ev]() {
-        if(!ev->expired() && conn->is_open())
-          handlers[ev->header.command](conn, ev);
-        Env::FsBroker::in_process(-1);
-      });
+      Env::IoCtx::post(CommandHandler(conn, ev));
       if(m_metrics)
         m_metrics->net->command(conn, ev->header.command);
     }
