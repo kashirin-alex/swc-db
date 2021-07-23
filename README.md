@@ -1,5 +1,5 @@
 
-[<img src="docs/logo-big.svg" alt="SWC-DB" style="padding:0 15%;max-width:70%;" />](docs/logo-big.svg)
+![SWC-DB](header.svg)
 
 ## SWC-DB© (_Super Wide Column Database_) - DBMS
 
