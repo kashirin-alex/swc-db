@@ -10,7 +10,7 @@ repository: "kashirin-alex/swc-db"
 encoding: utf-8
 breadcrumbs: true
 
-logo: logo-big.svg
+logo: logo.svg
 favicon: favicon.svg
 
 author: Alex Kashirin &lt;kashirin.alex@gmail.com&gt; <br/> SWC-DB© License details at &lt;https://github.com/kashirin-alex/swc-db/#license&gt;
