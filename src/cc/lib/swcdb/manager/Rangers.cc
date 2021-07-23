@@ -526,8 +526,14 @@ void Rangers::assign_ranges() {
   if(!Env::Mngr::mngd_columns()->expected_ready())
     return schedule_check(5000);
 
+  struct Task {
+    Rangers* ptr;
+    SWC_CAN_INLINE
+    Task(Rangers* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->assign_ranges_run(); }
+  };
   if(m_run && !m_assign.running())
-    Env::Mngr::post([this]() { assign_ranges_run(); });
+    Env::Mngr::post(Task(this));
 }
 
 void Rangers::assign_ranges_run() {
@@ -643,14 +649,19 @@ void Rangers::health_check_columns() {
   if(ts - m_columns_check_ts < cfg_column_health_chkers_delay->get()) {
     schedule_check(cfg_column_health_chkers_delay->get());
   } else {
+    struct Task {
+      ColumnHealthCheck::Ptr ptr;
+      SWC_CAN_INLINE
+      Task(const ColumnHealthCheck::Ptr& ptr) noexcept : ptr(ptr) { }
+      void operator()() { ptr->run(); }
+    };
     m_columns_check_ts = ts;
     uint32_t intval = cfg_column_health_chk->get();
     for(Column::Ptr col;
         m_columns_check.size() < size_t(cfg_column_health_chkers->get()) &&
         (col = Env::Mngr::columns()->get_need_health_check(ts, intval)); ) {
-      Env::Mngr::post(
-        [chk=m_columns_check.emplace_back(
-          new ColumnHealthCheck(col, ts, intval))]() { chk->run(); });
+      Env::Mngr::post(Task(m_columns_check.emplace_back(
+        new ColumnHealthCheck(col, ts, intval))));
     }
   }
   m_mutex_columns_check.unlock(support);

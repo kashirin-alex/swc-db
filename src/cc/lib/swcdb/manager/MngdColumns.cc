@@ -175,8 +175,14 @@ void MngdColumns::require_sync() {
 
 SWC_CAN_INLINE
 void MngdColumns::action(const ColumnReq::Ptr& req) {
+  struct Task {
+    MngdColumns* ptr;
+    SWC_CAN_INLINE
+    Task(MngdColumns* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->run_actions(); }
+  };
   if(m_actions.push_and_is_1st(req))
-    Env::Mngr::post([this]() { run_actions(); });
+    Env::Mngr::post(Task(this));
 }
 
 void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
@@ -442,27 +448,41 @@ bool MngdColumns::initialize() {
   int32_t vol = entries.size()/pending.available() + 1;
   auto it = entries.cbegin();
   FS::IdEntries_t::const_iterator it_to;
+
+  struct Task {
+    Core::Semaphore*                pending;
+    FS::IdEntries_t::const_iterator it_begin;
+    FS::IdEntries_t::const_iterator it_end;
+    uint8_t                         replicas;
+    SWC_CAN_INLINE
+    Task(Core::Semaphore* pending,
+         FS::IdEntries_t::const_iterator it_begin,
+         FS::IdEntries_t::const_iterator it_end,
+         uint8_t replicas) noexcept
+        : pending(pending),
+          it_begin(it_begin), it_end(it_end),
+          replicas(replicas) {
+    }
+    void operator()() {
+      DB::Schema::Ptr schema;
+      int err;
+      for(cid_t cid; it_begin != it_end; ++it_begin) {
+        cid = *it_begin;
+        SWC_LOGF(LOG_DEBUG, "Schema Loading cid=%lu", cid);
+        schema = Common::Files::Schema::load(err=Error::OK, cid, replicas);
+        if(!err)
+          Env::Mngr::schemas()->add(err, schema);
+        else
+          SWC_LOGF(LOG_ERROR, "Schema cid=%lu err=%d(%s)",
+                   cid, err, Error::get_text(err));
+      }
+      pending->release();
+    }
+  };
   do {
     pending.acquire();
     it_to = entries.cend() - it > vol ? (it + vol) : entries.cend();
-    Env::Mngr::post(
-      [&pending,
-       entries=FS::IdEntries_t(it, it_to),
-       replicas=cfg_schema_replication->get()]() {
-        DB::Schema::Ptr schema;
-        int err;
-        for(cid_t cid : entries) {
-          SWC_LOGF(LOG_DEBUG, "Schema Loading cid=%lu", cid);
-          schema = Common::Files::Schema::load(err=Error::OK, cid, replicas);
-          if(!err)
-            Env::Mngr::schemas()->add(err, schema);
-          else
-            SWC_LOGF(LOG_ERROR, "Schema cid=%lu err=%d(%s)",
-                     cid, err, Error::get_text(err));
-        }
-        pending.release();
-      }
-    );
+    Env::Mngr::post(Task(&pending, it, it_to, cfg_schema_replication->get()));
     it += it_to - it;
   } while(it_to != entries.cend());
 
