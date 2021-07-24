@@ -66,7 +66,7 @@ class Column final :
 
   private:
 
-  void run_mng_req(const Callback::ManageBase::Ptr& req);
+  struct TaskRunMngReq;
 
   void load(const Callback::RangeLoad::Ptr& req);
 

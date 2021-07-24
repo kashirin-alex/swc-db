@@ -47,7 +47,13 @@ void BlockLoader::loaded_blk() {
       return;
     m_processing = true;
   }
-  Env::Rgr::post([this](){ load_cellstores_cells(); });
+  struct Task {
+    BlockLoader* ptr;
+    SWC_CAN_INLINE
+    Task(BlockLoader* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->load_cellstores_cells(); }
+  };
+  Env::Rgr::post(Task(this));
 }
 
 SWC_CAN_INLINE
@@ -143,7 +149,13 @@ void BlockLoader::loaded_frag(const CommitLog::Fragment::Ptr& frag) {
       return;
     m_processing = true;
   }
-  Env::Rgr::post([this](){ load_log_cells(); });
+  struct Task {
+    BlockLoader* ptr;
+    SWC_CAN_INLINE
+    Task(BlockLoader* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->load_log_cells(); }
+  };
+  Env::Rgr::post(Task(this));
 }
 
 SWC_CAN_INLINE
@@ -176,8 +188,15 @@ void BlockLoader::load_log_cells() {
     }
     frag->load_cells(err = Error::OK, block);
     count_fragments.fetch_add(1);
-    if(more && !m_check_log.running())
-      Env::Rgr::post([this](){ load_log(false, true); });
+    if(more && !m_check_log.running()) {
+      struct Task {
+        BlockLoader* ptr;
+        SWC_CAN_INLINE
+        Task(BlockLoader* ptr) noexcept : ptr(ptr) { }
+        void operator()() { ptr->load_log(false, true); }
+      };
+      Env::Rgr::post(Task(this));
+    }
   }
 
   if(!m_check_log.running())

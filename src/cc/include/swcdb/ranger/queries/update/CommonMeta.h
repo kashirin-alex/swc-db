@@ -30,11 +30,15 @@ class CommonMeta : public BaseMeta {
   virtual ~CommonMeta() { }
 
   virtual void response(int err=Error::OK) override {
+    struct Task {
+      Ptr hdlr;
+      SWC_CAN_INLINE
+      Task(Ptr&& hdlr) noexcept : hdlr(std::move(hdlr)) { }
+      void operator()() { hdlr->cb(hdlr); }
+    };
     if(is_last_rsp(err)) {
       Env::Rgr::post(
-        [hdlr=std::dynamic_pointer_cast<CommonMeta>(shared_from_this())](){
-          hdlr->cb(hdlr);
-      });
+        Task(std::dynamic_pointer_cast<CommonMeta>(shared_from_this())));
     }
   }
 

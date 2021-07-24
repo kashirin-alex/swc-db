@@ -321,7 +321,13 @@ void CompactRange::response(int& err) {
   );
 
   if(err) {
-    Env::Rgr::maintenance_post([ptr=shared()](){ ptr->quit(); });
+    struct Task {
+      Ptr ptr;
+      SWC_CAN_INLINE
+      Task(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+      void operator()() { ptr->quit(); }
+    };
+    Env::Rgr::maintenance_post(Task(shared()));
     return;
   }
 
@@ -363,8 +369,14 @@ void CompactRange::response(int& err) {
     in_block = new InBlock(range->cfg->key_seq);
   }
 
+  struct NextTask {
+    Ptr ptr;
+    SWC_CAN_INLINE
+    NextTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    void operator()() { ptr->process_interval(); }
+  };
   if(m_q_intval.push_and_is_1st(in_block))
-    Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_interval(); });
+    Env::Rgr::maintenance_post(NextTask(shared()));
 
   if(m_stopped || is_last)
     return;
@@ -492,13 +504,25 @@ void CompactRange::request_more() {
        range->blocks.release(sz * blk_size) < sz * blk_size))) {
     return;
   }
+
+  struct Task {
+    Ptr ptr;
+    SWC_CAN_INLINE
+    Task(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    void operator()() { ptr->range->scan_internal(ptr->get_req_scan()); }
+  };
   if(!m_get.running())
-    Env::Rgr::maintenance_post(
-      [ptr=shared()](){ ptr->range->scan_internal(ptr->get_req_scan()); });
+    Env::Rgr::maintenance_post(Task(shared()));
 }
 
 SWC_CAN_INLINE
 void CompactRange::process_interval() {
+  struct NextTask {
+    Ptr ptr;
+    SWC_CAN_INLINE
+    NextTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    void operator()() { ptr->process_encode(); }
+  };
   Time::Measure_ns t_measure;
   _do: {
     auto in_block(m_q_intval.front());
@@ -509,7 +533,7 @@ void CompactRange::process_interval() {
     bool more = m_q_intval.pop_and_more() && !m_stopped;
     in_block->_other = nullptr;
     if(m_q_encode.push_and_is_1st(in_block))
-      Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_encode(); });
+      Env::Rgr::maintenance_post(NextTask(shared()));
     if(more)
       goto _do;
   }
@@ -519,6 +543,12 @@ void CompactRange::process_interval() {
 
 SWC_CAN_INLINE
 void CompactRange::process_encode() {
+  struct NextTask {
+    Ptr ptr;
+    SWC_CAN_INLINE
+    NextTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    void operator()() { ptr->process_write(); }
+  };
   Time::Measure_ns t_measure;
   _do: {
     auto in_block(m_q_encode.front());
@@ -529,7 +559,7 @@ void CompactRange::process_encode() {
     bool more = m_q_encode.pop_and_more() && !m_stopped;
     in_block->_other = nullptr;
     if(m_q_write.push_and_is_1st(in_block))
-      Env::Rgr::maintenance_post([ptr=shared()](){ ptr->process_write(); });
+      Env::Rgr::maintenance_post(NextTask(shared()));
     if(more)
       goto _do;
   }
@@ -803,6 +833,16 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
   );
 }
 
+
+template<bool clear>
+struct CompactRange::TaskFinished {
+  Ptr ptr;
+  SWC_CAN_INLINE
+  TaskFinished(const Ptr& ptr) noexcept : ptr(ptr) { }
+  void operator()() { ptr->finished(clear); }
+};
+
+
 void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   ColumnPtr col = Env::Rgr::columns()->get_column(range->cfg->cid);
   if(!col || col->removing())
@@ -926,19 +966,25 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
           ptr->range->cfg->cid, ptr->range->rid, t_measure.elapsed());
           ptr->cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
       );
-      Env::Rgr::maintenance_post([ptr](){ ptr->finished(true); });
+      Env::Rgr::maintenance_post(TaskFinished<true>(ptr));
     }
   ));
 }
 
 void CompactRange::apply_new(bool clear) {
   int err = Error::OK;
-  range->apply_new(err, cellstores, fragments_old,
-    Query::Update::CommonMeta::make(
-      range,
-      [clear, ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
-        Env::Rgr::maintenance_post([clear, ptr](){ ptr->finished(clear); });
-    })
+  Query::Update::CommonMeta::Cb_t cb;
+  if(clear)
+    cb = [ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
+            Env::Rgr::maintenance_post(TaskFinished<true>(ptr));
+          };
+  else
+    cb = [ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
+            Env::Rgr::maintenance_post(TaskFinished<false>(ptr));
+          };
+  range->apply_new(
+    err, cellstores, fragments_old,
+    Query::Update::CommonMeta::make(range, std::move(cb))
   );
   if(err)
     return quit();

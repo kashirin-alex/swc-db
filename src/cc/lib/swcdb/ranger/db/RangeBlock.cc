@@ -145,11 +145,17 @@ bool Block::includes_end(const DB::Specs::Interval& spec) const {
 
 SWC_CAN_INLINE
 void Block::preload() {
-  Env::Rgr::post([this](){
-    scan(ReqScanBlockLoader::Ptr(
-      new ReqScanBlockLoader(blocks->range->cfg->block_size())
-    ));
-  });
+  struct Task {
+    Block* blk;
+    SWC_CAN_INLINE
+    Task(Block* blk) noexcept : blk(blk) { }
+    void operator()() {
+      blk->scan(ReqScanBlockLoader::Ptr(
+        new ReqScanBlockLoader(blk->blocks->range->cfg->block_size())
+      ));
+    }
+  };
+  Env::Rgr::post(Task(this));
 }
 
 SWC_CAN_INLINE
@@ -300,10 +306,18 @@ void Block::loader_loaded() {
         break;
       }
       default: {
+        struct Task {
+          Block*        blk;
+          ReqScan::Ptr  req;
+          SWC_CAN_INLINE
+          Task(Block* blk, ReqScan::Ptr&& req) noexcept
+              : blk(blk), req(std::move(req)) { }
+          void operator()() { blk->_scan(req); }
+        };
         if(!m_loader->error) {
           q.req->profile.add_block_load(
             q.ts, m_loader->count_cs_blocks, m_loader->count_fragments);
-          Env::Rgr::post([this, req=q.req]() { _scan(req); } );
+          Env::Rgr::post(Task(this, std::move(q.req)));
           break;
         }
         blocks->processing_decrement();

@@ -124,7 +124,13 @@ bool Read::load(BlockLoader* loader) {
 
 SWC_CAN_INLINE
 void Read::load() {
-  Env::Rgr::post([this](){ load_open(Error::OK); });
+  struct Task {
+    Read* ptr;
+    SWC_CAN_INLINE
+    Task(Read* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->load_open(Error::OK); }
+  };
+  Env::Rgr::post(Task(this));
 }
 
 SWC_CAN_INLINE
@@ -249,8 +255,17 @@ void Read::load_open(int err) {
 
   cellstore->smartfd->valid()
     ? Env::FsInterface::fs()->pread(
-        [this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
-          Env::Rgr::post([this, err, buffer](){ load_read(err, buffer); });
+        [ptr=this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+          struct Task {
+            Read*             ptr;
+            int               err;
+            StaticBuffer::Ptr buffer;
+            SWC_CAN_INLINE
+            Task(Read* ptr, int err, const StaticBuffer::Ptr& buffer) noexcept
+                : ptr(ptr), err(err), buffer(buffer) { }
+            void operator()() { ptr->load_read(err, buffer); }
+          };
+          Env::Rgr::post(Task(ptr, err, buffer));
         },
         cellstore->smartfd, header.offset_data, header.size_enc
       )
@@ -308,7 +323,13 @@ void Read::load_finish(int err) {
     m_err = err;
   }
 
-  Env::Rgr::post([this](){ cellstore->_run_queued(); });
+  struct Task {
+    Read* ptr;
+    SWC_CAN_INLINE
+    Task(Read* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->cellstore->_run_queued(); }
+  };
+  Env::Rgr::post(Task(this));
 
   for(BlockLoader* loader;;) {
     {

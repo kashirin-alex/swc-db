@@ -46,11 +46,14 @@ void CheckMeta::response(int err) {
   }
   profile.finished();
 
+  struct Task {
+    Ptr hdlr;
+    SWC_CAN_INLINE
+    Task(Ptr&& hdlr) noexcept : hdlr(std::move(hdlr)) { }
+    void operator()() { hdlr->range->check_meta(hdlr); }
+  };
   Env::Rgr::post(
-    [hdlr=std::dynamic_pointer_cast<CheckMeta>(shared_from_this())]() {
-      hdlr->range->check_meta(hdlr);
-    }
-  );
+    Task(std::dynamic_pointer_cast<CheckMeta>(shared_from_this())));
 }
 
 

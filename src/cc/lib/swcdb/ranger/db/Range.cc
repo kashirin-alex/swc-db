@@ -38,10 +38,15 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
   virtual ~MetaRegOnLoadReq() { }
 
   virtual void response(int err=Error::OK) override {
+    struct Task {
+      Ptr ptr;
+      SWC_CAN_INLINE
+      Task(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+      void operator()() { ptr->callback(); }
+    };
     if(is_last_rsp(err)) {
-      Env::Rgr::post(
-        [h=std::dynamic_pointer_cast<MetaRegOnLoadReq>(shared_from_this())]
-        (){ h->callback(); });
+      Env::Rgr::post(Task(
+        std::dynamic_pointer_cast<MetaRegOnLoadReq>(shared_from_this())));
     }
   }
 
@@ -70,6 +75,21 @@ const char* to_string(Range::State state) noexcept {
   }
 }
 
+
+struct Range::TaskRunQueueScan {
+  RangePtr ptr;
+  SWC_CAN_INLINE
+  TaskRunQueueScan(RangePtr&& ptr) noexcept : ptr(std::move(ptr)) { }
+  void operator()() { ptr->_run_scan_queue(); }
+};
+
+struct Range::TaskRunQueueAdd {
+  RangePtr ptr;
+  SWC_CAN_INLINE
+  TaskRunQueueAdd(RangePtr& ptr) noexcept : ptr(ptr) { }
+  TaskRunQueueAdd(RangePtr&& ptr) noexcept : ptr(std::move(ptr)) { }
+  void operator()() { ptr->_run_add_queue(); }
+};
 
 
 SWC_CAN_INLINE
@@ -238,36 +258,51 @@ void Range::scan(const ReqScan::Ptr& req) {
     Core::ScopedLock lock(m_mutex);
     if(m_compacting == COMPACT_APPLYING) {
       m_q_run_scan = true;
-      if(req)
-        m_q_scan.push_and_is_1st(req);
+      m_q_scan.push(req);
       return;
     }
     blocks.processing_increment();
- }
-
- if(req) {
-  blocks.scan(std::move(req));
-
- } else {
-    int err;
-    ReqScan::Ptr qreq;
-    do {
-      if(!(qreq = std::move(m_q_scan.front()))->expired()) {
-        state(err = Error::OK);
-        if(err) {
-          qreq->response(err);
-        } else {
-          blocks.processing_increment();
-          Env::Rgr::post(
-            [qreq, ptr=shared_from_this()]() {
-              ptr->blocks.scan(std::move(qreq));
-              ptr->blocks.processing_decrement();
-            }
-          );
-        }
-      }
-    } while(m_q_scan.pop_and_more());
   }
+  blocks.scan(std::move(req));
+  blocks.processing_decrement();
+}
+
+void Range::_run_scan_queue() {
+  {
+    Core::ScopedLock lock(m_mutex);
+    if(m_compacting == COMPACT_APPLYING) {
+      m_q_run_scan = true;
+      return;
+    }
+    blocks.processing_increment();
+  }
+  
+  struct Task {
+    RangePtr     ptr;
+    ReqScan::Ptr req;
+    SWC_CAN_INLINE
+    Task(RangePtr&& ptr, ReqScan::Ptr&& req) noexcept
+        : ptr(std::move(ptr)), req(std::move(req)) {
+      ptr->blocks.processing_increment();
+    }
+    void operator()() { 
+      ptr->blocks.scan(std::move(req));
+      ptr->blocks.processing_decrement();
+    }
+  };
+
+  int err;
+  ReqScan::Ptr req;
+  do {
+    if(!(req = std::move(m_q_scan.front()))->expired()) {
+      state(err = Error::OK);
+      if(err) {
+        req->response(err);
+      } else {
+        Env::Rgr::post(Task(shared_from_this(), std::move(req)));
+      }
+    }
+  } while(m_q_scan.pop_and_more());
   blocks.processing_decrement();
 }
 
@@ -431,7 +466,7 @@ void Range::compacting(uint8_t state) {
   if(do_q_run_add)
     run_add_queue();
   if(do_q_run_scan)
-    Env::Rgr::post([ptr=shared_from_this()](){ ptr->scan(nullptr); });
+    Env::Rgr::post(TaskRunQueueScan(shared_from_this()));
 }
 
 bool Range::compacting_ifnot_applying(uint8_t state) {
@@ -452,7 +487,7 @@ bool Range::compacting_ifnot_applying(uint8_t state) {
   if(do_q_run_add)
     run_add_queue();
   if(do_q_run_scan)
-    Env::Rgr::post([ptr=shared_from_this()](){ ptr->scan(nullptr); });
+    Env::Rgr::post(TaskRunQueueScan(shared_from_this()));
   return true;
 }
 
@@ -892,7 +927,7 @@ bool Range::wait(uint8_t from_state, bool incr) {
 
 void Range::run_add_queue() {
   if(m_adding.fetch_add(1) < Env::Rgr::get()->cfg_req_add_concurrency->get())
-    Env::Rgr::post([ptr=shared_from_this()](){ ptr->_run_add_queue(); });
+    Env::Rgr::post(TaskRunQueueAdd(shared_from_this()));
   else
     m_adding.fetch_sub(1);
 }
@@ -926,7 +961,7 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
 
   virtual void callback() override {
     range->blocks.processing_decrement();
-    Env::Rgr::post([r=range](){ r->_run_add_queue(); });
+    Env::Rgr::post(TaskRunQueueAdd(range));
     if(!req->rsp.err && error() != Error::SERVER_SHUTTING_DOWN)
       req->rsp.err = error();
     req->response();

@@ -77,6 +77,13 @@ class Splitter final {
 
   private:
 
+  struct TaskSplit {
+    Splitter* ptr;
+    SWC_CAN_INLINE
+    TaskSplit(Splitter* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->split(); }
+  };
+
   void loaded(const Fragment::Ptr& frag) {
     int err;
     if(!frag->loaded(err)) {
@@ -90,10 +97,11 @@ class Splitter final {
       frag->processing_decrement();
 
     } else if(m_splitting.push_and_is_1st(frag)) {
-      Env::Rgr::post([this]() { split(); });
+      Env::Rgr::post(TaskSplit(this));
     }
   }
 
+  SWC_CAN_INLINE
   void split() {
     int err;
     bool more;

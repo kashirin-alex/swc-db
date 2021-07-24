@@ -29,6 +29,9 @@ class Range final : public std::enable_shared_from_this<Range> {
   class MetaRegOnLoadReq;
   class MetaRegOnAddReq;
 
+  struct TaskRunQueueScan;
+  struct TaskRunQueueAdd;
+
   public:
 
   static constexpr const char CELLSTORES_BAK_DIR[]  = "cs_bak";
@@ -165,6 +168,8 @@ class Range final : public std::enable_shared_from_this<Range> {
                  const DB::Cell::Key* old_key_begin=nullptr);
 
   bool wait(uint8_t from_state=COMPACT_CHECKING, bool incr=false);
+
+  void _run_scan_queue();
 
   void run_add_queue();
 

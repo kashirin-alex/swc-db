@@ -82,6 +82,9 @@ class CompactRange final : public ReqScan {
 
   bool completion();
 
+  template<bool clear>
+  struct TaskFinished;
+
   void finished(bool clear);
 
 

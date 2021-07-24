@@ -278,9 +278,24 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     Env::FsInterface::fs()->write(
       [frag=ptr(), blk_replicas, blksz, buff_write, sem]
       (int err, const FS::SmartFd::Ptr&) {
-        Env::Rgr::post([=](){
-          frag->write(err, blk_replicas, blksz, buff_write, sem);
-        });
+        struct Task {
+          Fragment::Ptr     frag;
+          StaticBuffer::Ptr buff_write;
+          Core::Semaphore*  sem;
+          int64_t           blksz;
+          int               err;
+          uint8_t           blk_replicas;
+          SWC_CAN_INLINE
+          Task(const Fragment::Ptr& frag, uint8_t blk_replicas, int64_t blksz,
+               const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem,
+               int err) noexcept
+               : frag(frag), buff_write(buff_write), sem(sem),
+                 blksz(blksz), err(err), blk_replicas(blk_replicas) { }
+          void operator()() {
+            frag->write(err, blk_replicas, blksz, buff_write, sem);
+          }
+        };
+        Env::Rgr::post(Task(frag, blk_replicas, blksz, buff_write, sem, err));
       },
       m_smartfd, blk_replicas, blksz, *buff_write.get()
     );
@@ -305,11 +320,30 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     m_state.store(err ? State::NONE : State::LOADED);
     m_err = err;
   }
-  if(keep)
-    Env::Rgr::post([frag=ptr()](){ frag->run_queued(); });
-  else
+
+  if(keep) {
+    struct Task {
+      Fragment::Ptr frag;
+      SWC_CAN_INLINE
+      Task(Fragment::Ptr&& frag) noexcept : frag(std::move(frag)) { }
+      void operator()() { frag->run_queued(); }
+    };
+    Env::Rgr::post(Task(ptr()));
+  } else {
     release();
+  }
 }
+
+struct Fragment::TaskLoadRead {
+  Fragment::Ptr     frag;
+  int               err;
+  StaticBuffer::Ptr buffer;
+  SWC_CAN_INLINE
+  TaskLoadRead(const Fragment::Ptr& frag, int err,
+               const StaticBuffer::Ptr& buffer) noexcept
+                : frag(frag), err(err), buffer(buffer) { }
+  void operator()() { frag->load_read(err, buffer); }
+};
 
 void Fragment::load(Fragment::LoadCb_t&& cb) {
   m_processing.fetch_add(1);
@@ -323,16 +357,21 @@ void Fragment::load(Fragment::LoadCb_t&& cb) {
   switch(at) {
     case State::NONE: {
       Env::Rgr::res().more_mem_usage(size_plain);
-      Env::Rgr::post([frag=ptr()](){
-        Env::FsInterface::fs()->combi_pread(
-          [frag](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
-            Env::Rgr::post([frag, err, buffer](){
-              frag->load_read(err, buffer);
-            });
-          },
-          frag->m_smartfd, frag->offset_data, frag->size_enc
-        );
-      });
+      struct Task {
+        Fragment::Ptr frag;
+        SWC_CAN_INLINE
+        Task(Fragment::Ptr&& frag) noexcept : frag(std::move(frag)) { }
+        void operator()() { 
+          Env::FsInterface::fs()->combi_pread(
+            [frag=frag]
+            (int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+              Env::Rgr::post(TaskLoadRead(frag, err, buffer));
+            },
+            frag->m_smartfd, frag->offset_data, frag->size_enc
+          );
+        }
+      };
+      Env::Rgr::post(Task(ptr()));
       return;
     }
     case State::WRITING:
@@ -588,9 +627,7 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
       Env::FsInterface::fs()->combi_pread(
         [frag=ptr()]
         (int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
-          Env::Rgr::post([frag, err, buffer](){
-            frag->load_read(err, buffer);
-          });
+          Env::Rgr::post(TaskLoadRead(frag, err, buffer));
         },
         m_smartfd, offset_data, size_enc
       );

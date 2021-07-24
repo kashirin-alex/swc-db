@@ -152,6 +152,8 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   private:
 
+  struct TaskLoadRead;
+
   void load_read(int err, const StaticBuffer::Ptr& buffer);
 
   void load_finish(int err);

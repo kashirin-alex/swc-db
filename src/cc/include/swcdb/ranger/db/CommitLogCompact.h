@@ -36,6 +36,8 @@ class Compact final {
 
     private:
 
+    struct TaskLoadedFrag;
+  
     void load();
 
     void loaded(const Fragment::Ptr& frag);

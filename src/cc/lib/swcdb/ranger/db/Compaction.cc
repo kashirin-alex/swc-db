@@ -195,13 +195,20 @@ uint8_t Compaction::compact(const RangePtr& range) {
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s",
            range->cfg->cid, range->rid, need.c_str());
 
-  CompactRange::Ptr req(new CompactRange(this, range, cs_size, blk_size));
+  struct Task {
+    CompactRange::Ptr req;
+    SWC_CAN_INLINE
+    Task(CompactRange* req) noexcept : req(req) { }
+    void operator()() { req->initialize(); }
+  };
+
+  Task task(new CompactRange(this, range, cs_size, blk_size));
   {
     Core::ScopedLock lock(m_mutex);
-    m_compacting.push_back(req);
+    m_compacting.push_back(task.req);
   }
   uint8_t running = m_running.add_rslt(1);
-  Env::Rgr::maintenance_post([req](){ req->initialize(); } );
+  Env::Rgr::maintenance_post(std::move(task));
   return running;
 }
 
@@ -228,7 +235,13 @@ SWC_CAN_INLINE
 void Compaction::compacted() {
   uint8_t ran = m_running.fetch_sub(1);
   if(ran == cfg_max_range->get()) {
-    Env::Rgr::maintenance_post([this](){ run(false); });
+    struct Task {
+      Compaction* ptr;
+      SWC_CAN_INLINE
+      Task(Compaction* ptr) noexcept : ptr(ptr) { }
+      void operator()() { ptr->run(false); }
+    };
+    Env::Rgr::maintenance_post(Task(this));
 
   } else if(ran == 1) {
     if(stopped()) {

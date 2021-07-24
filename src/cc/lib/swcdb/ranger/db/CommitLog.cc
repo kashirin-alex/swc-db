@@ -49,6 +49,16 @@ void Fragments::schema_update() {
   );
 }
 
+
+namespace {
+struct TaskCommitNewFragment {
+  Fragments* ptr;
+  SWC_CAN_INLINE
+  TaskCommitNewFragment(Fragments* ptr) noexcept : ptr(ptr) { }
+  void operator()() { ptr->commit_new_fragment(); }
+};
+}
+
 SWC_CAN_INLINE
 void Fragments::add(const DB::Cells::Cell& cell) {
   {
@@ -60,7 +70,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
       return;
   }
   if(!m_commit.running())
-    Env::Rgr::post([this](){ commit_new_fragment(); });
+    Env::Rgr::post(TaskCommitNewFragment(this));
 }
 
 void Fragments::commit_new_fragment(bool finalize) {

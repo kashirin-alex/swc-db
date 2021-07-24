@@ -109,20 +109,6 @@ void Column::compact() {
 }
 
 
-void Column::add_managing(const Callback::ManageBase::Ptr& req) {
-  if(m_q_mng.activating(req))
-    Env::Rgr::post(
-      [req, ptr=shared_from_this()](){ ptr->run_mng_req(req); } );
-}
-
-void Column::run_mng_queue() {
-  Callback::ManageBase::Ptr req;
-  if(!m_q_mng.deactivating(&req))
-    Env::Rgr::post(
-      [req, ptr=shared_from_this()](){ ptr->run_mng_req(req); } );
-}
-
-
 SWC_CAN_INLINE
 size_t Column::release(size_t bytes) {
   if(m_release.running())
@@ -223,34 +209,44 @@ void Column::internal_delete(rid_t rid) {
 }
 
 
-void Column::run_mng_req(const Callback::ManageBase::Ptr& req) {
-  switch(req->action) {
+struct Column::TaskRunMngReq {
+  ColumnPtr                 ptr;
+  Callback::ManageBase::Ptr req;
+  SWC_CAN_INLINE
+  TaskRunMngReq(ColumnPtr&& ptr, Callback::ManageBase::Ptr&& req)
+                noexcept : ptr(std::move(ptr)), req(std::move(req)) {
+  }
+  TaskRunMngReq(ColumnPtr&& ptr, const Callback::ManageBase::Ptr& req)
+                noexcept : ptr(std::move(ptr)), req(req) {
+  }
+  void operator()() {
+    switch(req->action) {
     case Callback::ManageBase::RANGE_LOAD: {
-      load(
+      ptr->load(
         std::dynamic_pointer_cast<Callback::RangeLoad>(req));
       break;
     }
 
     case Callback::ManageBase::RANGE_UNLOAD: {
-      unload(
+      ptr->unload(
         std::dynamic_pointer_cast<Callback::RangeUnload>(req));
       break;
     }
 
     case Callback::ManageBase::RANGE_UNLOAD_INTERNAL: {
-      unload(
+      ptr->unload(
         std::dynamic_pointer_cast<Callback::RangeUnloadInternal>(req));
       break;
     }
 
     case Callback::ManageBase::COLUMNS_UNLOAD: {
-      unload_all(
+      ptr->unload_all(
         std::dynamic_pointer_cast<Callback::ColumnsUnload>(req));
       break;
     }
 
     case Callback::ManageBase::COLUMN_DELETE: {
-      remove(
+      ptr->remove(
         std::dynamic_pointer_cast<Callback::ColumnDelete>(req));
       break;
     }
@@ -261,8 +257,21 @@ void Column::run_mng_req(const Callback::ManageBase::Ptr& req) {
       break;
     }
     */
+    }
   }
+};
+
+void Column::add_managing(const Callback::ManageBase::Ptr& req) {
+  if(m_q_mng.activating(req))
+    Env::Rgr::post(TaskRunMngReq(shared_from_this(), req));
 }
+
+void Column::run_mng_queue() {
+  Callback::ManageBase::Ptr req;
+  if(!m_q_mng.deactivating(&req))
+    Env::Rgr::post(TaskRunMngReq(shared_from_this(), std::move(req)));
+}
+
 
 void Column::load(const Callback::RangeLoad::Ptr& req) {
   if(req->expired(1000))
