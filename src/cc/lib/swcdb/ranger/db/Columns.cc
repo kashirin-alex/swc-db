@@ -158,14 +158,18 @@ size_t Columns::release(size_t bytes) {
   if(m_release.running())
     return 0;
 
-  ColumnPtr col;
+  ColumnPtr col = nullptr;
   const_iterator it;
   size_t released = 0;
   for(size_t offset = 0; ; ++offset) {
     {
       Core::MutexSptd::scope lock(m_mutex);
-      it = cbegin();
-      for(size_t i=0; i<offset && it != cend(); ++it, ++i);
+      if(col && (it = find(col->cfg->cid)) != cend()) {
+        ++it;
+      } else {
+        it = cbegin();
+        for(size_t i=0; i < offset && it != cend(); ++it, ++i);
+      }
       if(it == cend())
         break;
       if(!DB::Types::SystemColumn::is_data(it->first))
