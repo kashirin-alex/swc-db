@@ -24,7 +24,7 @@ void MngrActive::run_within(uint32_t t_ms) {
   struct TimerTask {
     DispatchHandler::Ptr ptr;
     SWC_CAN_INLINE
-    TimerTask(const DispatchHandler::Ptr& ptr) noexcept : ptr(ptr) { }
+    TimerTask(DispatchHandler::Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->run();

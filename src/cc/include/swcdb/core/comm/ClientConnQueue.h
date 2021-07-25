@@ -95,7 +95,7 @@ class ConnQueue :
 
   void set(const ConnHandlerPtr& conn);
 
-  void delay(const ReqBase::Ptr& req);
+  void delay(ReqBase::Ptr&& req);
 
   void print(std::ostream& out);
 

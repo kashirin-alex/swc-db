@@ -15,7 +15,7 @@ namespace SWC { namespace Ranger {
 //! The SWC-DB CommitLog C++ namespace 'SWC::Ranger::CommitLog'
 namespace CommitLog {
 
-  
+
 class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   /* file-format:
@@ -28,8 +28,8 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   public:
 
-  typedef std::shared_ptr<Fragment>       Ptr;
-  typedef std::function<void(const Ptr&)> LoadCb_t;
+  typedef std::shared_ptr<Fragment>  Ptr;
+  typedef std::function<void(Ptr&&)> LoadCb_t;
 
   static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;

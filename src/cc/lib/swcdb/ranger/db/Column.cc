@@ -216,9 +216,6 @@ struct Column::TaskRunMngReq {
   TaskRunMngReq(ColumnPtr&& ptr, Callback::ManageBase::Ptr&& req)
                 noexcept : ptr(std::move(ptr)), req(std::move(req)) {
   }
-  TaskRunMngReq(ColumnPtr&& ptr, const Callback::ManageBase::Ptr& req)
-                noexcept : ptr(std::move(ptr)), req(req) {
-  }
   void operator()() {
     switch(req->action) {
     case Callback::ManageBase::RANGE_LOAD: {
@@ -261,14 +258,14 @@ struct Column::TaskRunMngReq {
   }
 };
 
-void Column::add_managing(const Callback::ManageBase::Ptr& req) {
-  if(m_q_mng.activating(req))
-    Env::Rgr::post(TaskRunMngReq(shared_from_this(), req));
+void Column::add_managing(Callback::ManageBase::Ptr&& req) {
+  if(m_q_mng.activating(std::move(req)))
+    Env::Rgr::post(TaskRunMngReq(shared_from_this(), std::move(req)));
 }
 
 void Column::run_mng_queue() {
   Callback::ManageBase::Ptr req;
-  if(!m_q_mng.deactivating(&req))
+  if(!m_q_mng.deactivating(req))
     Env::Rgr::post(TaskRunMngReq(shared_from_this(), std::move(req)));
 }
 

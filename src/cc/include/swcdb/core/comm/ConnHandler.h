@@ -212,9 +212,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   void read() noexcept;
 
-  void recv_buffers(const Event::Ptr& ev);
+  void recv_buffers(Event::Ptr&& ev);
 
-  void received(const Event::Ptr& ev) noexcept;
+  void received(Event::Ptr&& ev) noexcept;
 
   SWC_CAN_INLINE
   void do_close_recv() noexcept {
@@ -223,7 +223,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     do_close();
   }
 
-  void run_pending(const Event::Ptr& ev);
+  void run_pending(Event::Ptr&& ev);
 
   struct PendingHash {
     SWC_CAN_INLINE

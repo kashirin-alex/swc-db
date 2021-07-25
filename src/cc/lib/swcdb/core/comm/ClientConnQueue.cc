@@ -98,7 +98,7 @@ void ConnQueue::set(const ConnHandlerPtr& conn) {
   exec_queue();
 }
 
-void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
+void ConnQueue::delay(ConnQueue::ReqBase::Ptr&& req) {
   if(!cfg_again_delay_ms)
     return put(req);
 
@@ -110,12 +110,12 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
 
   struct TimerTask {
     ConnQueue*                    queue;
-    ConnQueue::ReqBase::Ptr       req;
+    ReqBase::Ptr                  req;
     asio::high_resolution_timer*  tm;
     SWC_CAN_INLINE
-    TimerTask(ConnQueue* queue, const ConnQueue::ReqBase::Ptr& req,
+    TimerTask(ConnQueue* queue, ReqBase::Ptr&& req,
               asio::high_resolution_timer* tm) noexcept
-              : queue(queue), req(req), tm(tm) {
+              : queue(queue), req(std::move(req)), tm(tm) {
     }
     void operator()(const asio::error_code& ec) {
       if(ec == asio::error::operation_aborted) {
@@ -130,7 +130,7 @@ void ConnQueue::delay(const ConnQueue::ReqBase::Ptr& req) {
       delete tm;
     }
   };
-  tm->async_wait(TimerTask(this, req, tm));
+  tm->async_wait(TimerTask(this, std::move(req), tm));
 }
 
 void ConnQueue::print(std::ostream& out) {
@@ -157,7 +157,7 @@ void ConnQueue::exec_queue() {
   struct Task {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
-    Task(const ConnQueuePtr& queue) noexcept : queue(queue) { }
+    Task(ConnQueuePtr&& queue) noexcept : queue(std::move(queue)) { }
     void operator()() { queue->run_queue(); }
   };
   m_ioctx->post(Task(shared_from_this()));
@@ -226,7 +226,7 @@ void ConnQueue::schedule_close(bool closing) {
   struct TimerTask {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
-    TimerTask(const ConnQueuePtr& queue) noexcept : queue(queue) { }
+    TimerTask(ConnQueuePtr&& queue) noexcept : queue(std::move(queue)) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted){
         queue->schedule_close(true);

@@ -45,7 +45,7 @@ class Column final :
 
   void compact();
 
-  void add_managing(const Callback::ManageBase::Ptr& req);
+  void add_managing(Callback::ManageBase::Ptr&& req);
 
   void run_mng_queue();
 

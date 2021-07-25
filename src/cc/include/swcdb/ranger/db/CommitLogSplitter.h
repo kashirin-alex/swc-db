@@ -59,7 +59,7 @@ class Splitter final {
 
       } else {
         m_sem.acquire();
-        frag->load([this] (const Fragment::Ptr& frag) { loaded(frag); });
+        frag->load([this](Fragment::Ptr&& frag){ loaded(std::move(frag)); });
         ++splitted;
         ++it;
       }
@@ -77,14 +77,7 @@ class Splitter final {
 
   private:
 
-  struct TaskSplit {
-    Splitter* ptr;
-    SWC_CAN_INLINE
-    TaskSplit(Splitter* ptr) noexcept : ptr(ptr) { }
-    void operator()() { ptr->split(); }
-  };
-
-  void loaded(const Fragment::Ptr& frag) {
+  void loaded(Fragment::Ptr&& frag) {
     int err;
     if(!frag->loaded(err)) {
       SWC_LOG_OUT(LOG_WARN,
@@ -93,11 +86,17 @@ class Splitter final {
         frag->print(SWC_LOG_OSTREAM << ' ');
       );
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      frag->load([this] (const Fragment::Ptr& frag) { loaded(frag); });
+      frag->load([this](Fragment::Ptr&& frag){ loaded(std::move(frag)); });
       frag->processing_decrement();
 
-    } else if(m_splitting.push_and_is_1st(frag)) {
-      Env::Rgr::post(TaskSplit(this));
+    } else if(m_splitting.push_and_is_1st(std::move(frag))) {
+      struct Task {
+        Splitter* ptr;
+        SWC_CAN_INLINE
+        Task(Splitter* ptr) noexcept : ptr(ptr) { }
+        void operator()() { ptr->split(); }
+      };
+      Env::Rgr::post(Task(this));
     }
   }
 

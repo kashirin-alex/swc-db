@@ -56,7 +56,7 @@ class BlockLoader final {
 
   void load_log(bool is_final, bool is_more=false);
 
-  void loaded_frag(const CommitLog::Fragment::Ptr& frag);
+  void loaded_frag(CommitLog::Fragment::Ptr&& frag);
 
   void load_log_cells();
 

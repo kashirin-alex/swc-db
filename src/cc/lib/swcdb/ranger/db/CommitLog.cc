@@ -50,15 +50,6 @@ void Fragments::schema_update() {
 }
 
 
-namespace {
-struct TaskCommitNewFragment {
-  Fragments* ptr;
-  SWC_CAN_INLINE
-  TaskCommitNewFragment(Fragments* ptr) noexcept : ptr(ptr) { }
-  void operator()() { ptr->commit_new_fragment(); }
-};
-}
-
 SWC_CAN_INLINE
 void Fragments::add(const DB::Cells::Cell& cell) {
   {
@@ -69,8 +60,15 @@ void Fragments::add(const DB::Cells::Cell& cell) {
     if(++m_roll_chk ? !Env::Rgr::res().is_low_mem_state() : !_need_roll())
       return;
   }
-  if(!m_commit.running())
-    Env::Rgr::post(TaskCommitNewFragment(this));
+  if(!m_commit.running()) {
+    struct Task {
+      Fragments* ptr;
+      SWC_CAN_INLINE
+      Task(Fragments* ptr) noexcept : ptr(ptr) { }
+      void operator()() { ptr->commit_new_fragment(); }
+    };
+    Env::Rgr::post(Task(this));
+  }
 }
 
 void Fragments::commit_new_fragment(bool finalize) {

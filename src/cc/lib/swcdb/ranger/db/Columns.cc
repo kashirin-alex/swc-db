@@ -94,7 +94,9 @@ void Columns::load_range(const DB::SchemaPrimitives& schema,
       err = Error::SERVER_SHUTTING_DOWN;
     }
   }
-  err ? req->response(err) : col->add_managing(req);
+  err
+    ? req->response(err)
+    : col->add_managing(Callback::ManageBase::Ptr(req));
 }
 
 bool Columns::unload(cid_t cid_begin, cid_t cid_end,

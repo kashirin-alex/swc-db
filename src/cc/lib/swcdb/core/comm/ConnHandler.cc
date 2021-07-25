@@ -79,7 +79,7 @@ void ConnHandler::print(std::ostream& out) const {
 void ConnHandler::write_or_queue(ConnHandler::Outgoing&& outgoing) {
   outgoing.cbuf->prepare(get_encoder());
 
-  if(m_outgoing.activating(outgoing))
+  if(m_outgoing.activating(std::move(outgoing)))
     write(outgoing);
 }
 
@@ -95,8 +95,8 @@ struct ConnHandler::Sender_noAck final {
   ConnHandlerPtr        conn;
   Buffers::Ptr          cbuf;
   SWC_CAN_INLINE
-  Sender_noAck(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf) noexcept
-              : conn(conn), cbuf(cbuf) {
+  Sender_noAck(ConnHandlerPtr&& conn, const Buffers::Ptr& cbuf) noexcept
+              : conn(std::move(conn)), cbuf(cbuf) {
   }
   void operator()(const asio::error_code& ec, uint32_t bytes) {
     if(ec) {
@@ -115,14 +115,9 @@ struct ConnHandler::Sender_Ack final {
   Buffers::Ptr          cbuf;
   DispatchHandler::Ptr  hdlr;
   SWC_CAN_INLINE
-  Sender_Ack(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf,
+  Sender_Ack(ConnHandlerPtr&& conn, const Buffers::Ptr& cbuf,
              DispatchHandler::Ptr&& hdlr) noexcept
-              : conn(conn), cbuf(cbuf), hdlr(std::move(hdlr)) {
-  }
-  SWC_CAN_INLINE
-  Sender_Ack(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf,
-             const DispatchHandler::Ptr& hdlr) noexcept
-              : conn(conn), cbuf(cbuf), hdlr(hdlr) {
+            : conn(std::move(conn)), cbuf(cbuf), hdlr(std::move(hdlr)) {
   }
   void operator()(const asio::error_code& ec, uint32_t bytes) {
     if(!ec)
@@ -199,16 +194,15 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       struct TimerTask {
         ConnHandlerPtr        conn;
         Buffers::Ptr          cbuf;
-        TimerTask(const ConnHandlerPtr& conn, const Buffers::Ptr& cbuf)
-                  noexcept : conn(conn), cbuf(cbuf) {
-        }
+        TimerTask(ConnHandlerPtr&& conn, const Buffers::Ptr& cbuf)
+                  noexcept : conn(std::move(conn)), cbuf(cbuf) { }
         void operator()(const asio::error_code& ec) {
           if(ec == asio::error::operation_aborted)
             return;
           auto ev = Event::make(Error::REQUEST_TIMEOUT);
           ev->header.initialize_from_request(cbuf->header);
           ev->header.flags &= Header::FLAG_REQUEST_MASK;
-          conn->run_pending(ev);
+          conn->run_pending(std::move(ev));
         }
       };
       timer->async_wait(TimerTask(ptr(), cbuf));
@@ -229,8 +223,8 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
 struct ConnHandler::Receiver_HeaderPrefix final {
   ConnHandlerPtr  conn;
   SWC_CAN_INLINE
-  Receiver_HeaderPrefix(const ConnHandlerPtr& conn)
-                        noexcept : conn(conn) { }
+  Receiver_HeaderPrefix(ConnHandlerPtr&& conn) noexcept
+                        : conn(std::move(conn)) { }
   void operator()(const asio::error_code& ec, size_t filled);
 };
 
@@ -238,8 +232,8 @@ struct ConnHandler::Receiver_Header final {
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
   SWC_CAN_INLINE
-  Receiver_Header(const ConnHandlerPtr& conn, const Event::Ptr& ev)
-                  noexcept : conn(conn), ev(ev) { }
+  Receiver_Header(const ConnHandlerPtr& conn, Event::Ptr&& ev) noexcept
+                 : conn(conn), ev(std::move(ev)) { }
   void operator()(asio::error_code ec, size_t filled);
 };
 
@@ -247,8 +241,8 @@ struct ConnHandler::Receiver_Buffer final {
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
   SWC_CAN_INLINE
-  Receiver_Buffer(const ConnHandlerPtr& conn, const Event::Ptr& ev)
-                  noexcept : conn(conn), ev(ev) { }
+  Receiver_Buffer(ConnHandlerPtr&& conn, Event::Ptr&& ev) noexcept
+                  : conn(std::move(conn)), ev(std::move(ev)) { }
   void operator()(asio::error_code ec, size_t filled);
 };
 
@@ -272,10 +266,11 @@ void ConnHandler::Receiver_HeaderPrefix::operator()(
              filled);
     return conn->do_close_recv();
   }
+  filled = ev->header.header_len - Header::PREFIX_LENGTH;
   conn->do_async_read(
     conn->_buf_header + Header::PREFIX_LENGTH,
-    ev->header.header_len - Header::PREFIX_LENGTH,
-    Receiver_Header(conn, ev)
+    filled,
+    Receiver_Header(conn, std::move(ev))
   );
 }
 
@@ -300,9 +295,9 @@ void ConnHandler::Receiver_Header::operator()(
              ev->header.header_len);
     conn->do_close_recv();
   } else if(ev->header.buffers) {
-    conn->recv_buffers(ev);
+    conn->recv_buffers(std::move(ev));
   } else {
-    conn->received(ev);
+    conn->received(std::move(ev));
   }
 }
 
@@ -333,9 +328,9 @@ void ConnHandler::Receiver_Buffer::operator()(asio::error_code ec,
     conn->do_close_recv();
   } else if(ev->header.buffers == bool(ev->data.size) +
                                   bool(ev->data_ext.size)) {
-    conn->received(ev);
+    conn->received(std::move(ev));
   } else {
-    conn->recv_buffers(ev);
+    conn->recv_buffers(std::move(ev));
   }
 }
 
@@ -351,7 +346,7 @@ void ConnHandler::read() noexcept {
   }
 }
 
-void ConnHandler::recv_buffers(const Event::Ptr& ev) {
+void ConnHandler::recv_buffers(Event::Ptr&& ev) {
   StaticBuffer* buffer;
   size_t remain;
   if(!ev->data.size) {
@@ -364,22 +359,22 @@ void ConnHandler::recv_buffers(const Event::Ptr& ev) {
   buffer->reallocate(remain);
   do_async_read(
     buffer->base, remain,
-    Receiver_Buffer(ptr(), ev)
+    Receiver_Buffer(ptr(), std::move(ev))
   );
 }
 
-void ConnHandler::received(const Event::Ptr& ev) noexcept {
+void ConnHandler::received(Event::Ptr&& ev) noexcept {
   if(ev->header.flags & Header::FLAG_REQUEST_BIT)
     ev->received();
 
   try {
-    run_pending(ev);
+    run_pending(std::move(ev));
   } catch(...) {
     try {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR,
         print(SWC_LOG_OSTREAM << ' ');
-        ev->print(SWC_LOG_OSTREAM << ' ');
+        if(ev) ev->print(SWC_LOG_OSTREAM << ' ');
         SWC_LOG_OSTREAM << ' ' << e;
       );
     } catch(...) { }
@@ -419,7 +414,7 @@ void ConnHandler::disconnected() noexcept {
   }
 }
 
-void ConnHandler::run_pending(const Event::Ptr& ev) {
+void ConnHandler::run_pending(Event::Ptr&& ev) {
   Pending pending;
   if(ev->header.id && !(ev->header.flags & Header::FLAG_REQUEST_BIT)) {
     bool partial = ev->header.flags & Header::FLAG_RESPONSE_PARTIAL_BIT;
@@ -440,14 +435,13 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
   }
 
   if(pending.hdlr) {
-    struct PendingHandler {
+    struct Task {
       ConnHandlerPtr        conn;
       DispatchHandler::Ptr  hdlr;
       Event::Ptr            ev;
-      PendingHandler(const ConnHandlerPtr& conn,
-                     const DispatchHandler::Ptr& hdlr,
-                     const Event::Ptr& ev) noexcept
-                    : conn(conn), hdlr(hdlr), ev(ev) {
+      Task(ConnHandlerPtr&& conn, DispatchHandler::Ptr&& hdlr,
+           Event::Ptr&& ev) noexcept
+          : conn(std::move(conn)), hdlr(std::move(hdlr)), ev(std::move(ev)) {
       }
       void operator()() {
         if(!ev->error && ev->header.buffers)
@@ -457,26 +451,22 @@ void ConnHandler::run_pending(const Event::Ptr& ev) {
     };
     asio::post(
       socket_layer()->get_executor(),
-      PendingHandler(ptr(), pending.hdlr, ev)
+      Task(ptr(), std::move(pending.hdlr), std::move(ev))
     );
 
   } else {
-    struct AppCtxHandler {
+    struct Task {
       ConnHandlerPtr        conn;
       Event::Ptr            ev;
-      AppCtxHandler(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
-                    : conn(conn), ev(ev) {
-      }
+      Task(ConnHandlerPtr&& conn, Event::Ptr&& ev) noexcept
+          : conn(std::move(conn)), ev(std::move(ev)) { }
       void operator()() {
         if(!ev->error && ev->header.buffers)
           ev->decode_buffers();
         conn->app_ctx->handle(conn, ev);
       }
     };
-    asio::post(
-      socket_layer()->get_executor(),
-      AppCtxHandler(ptr(), ev)
-    );
+    asio::post(socket_layer()->get_executor(), Task(ptr(), std::move(ev)));
   }
 }
 

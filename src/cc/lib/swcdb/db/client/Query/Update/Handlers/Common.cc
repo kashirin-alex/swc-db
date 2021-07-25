@@ -53,7 +53,7 @@ void Common::response(int err) {
     struct Task {
       Ptr hdlr;
       SWC_CAN_INLINE
-      Task(const Ptr& hdlr) noexcept : hdlr(hdlr) { }
+      Task(Ptr&& hdlr) noexcept : hdlr(std::move(hdlr)) { }
       void operator()() {
         hdlr->m_cb(hdlr);
 

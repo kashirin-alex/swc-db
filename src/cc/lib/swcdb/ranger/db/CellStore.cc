@@ -312,7 +312,7 @@ void Read::load_cells(BlockLoader* loader) {
 SWC_CAN_INLINE
 void Read::_run_queued() {
   Block::Read::Ptr blk = nullptr;
-  m_queue.deactivating(&blk) ? _release_fd() : blk->load();
+  m_queue.deactivating(blk) ? _release_fd() : blk->load();
 }
 
 SWC_CAN_INLINE

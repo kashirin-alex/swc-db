@@ -100,20 +100,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
   }
 
   SWC_CAN_INLINE
-  bool deactivating(ItemT* item) {
-    MutexSptd::scope lock(m_mutex);
-    if(QBase::empty()) {
-      m_state = false;
-    } else {
-      *item = QBase::front();
-      QBase::pop();
-    }
-    return !m_state;
-  }
-
-
-  SWC_CAN_INLINE
-  bool activating(ItemT& item) {
+  bool activating(ItemT&& item) {
     MutexSptd::scope lock(m_mutex);
     if(m_state) {
       QBase::push(std::move(item));

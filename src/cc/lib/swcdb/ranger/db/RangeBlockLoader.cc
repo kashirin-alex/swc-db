@@ -114,8 +114,9 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
       }
       for(auto it=m_f_selected.cbegin() + offset;
           it != m_f_selected.cend(); ++it) {
-        (*it)->load([this](const CommitLog::Fragment::Ptr& frag) {
-          loaded_frag(frag); });
+        (*it)->load([this](CommitLog::Fragment::Ptr&& frag) {
+          loaded_frag(std::move(frag));
+        });
         (*it)->processing_decrement();
       }
     }
@@ -140,11 +141,11 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
   goto check_more;
 }
 
-void BlockLoader::loaded_frag(const CommitLog::Fragment::Ptr& frag) {
+void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr&& frag) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     if(frag)
-      m_fragments.push(frag);
+      m_fragments.push(std::move(frag));
     if(m_processing || !m_cs_blocks.empty())
       return;
     m_processing = true;
@@ -170,7 +171,7 @@ void BlockLoader::load_log_cells() {
         m_processing = false;
         break;
       }
-      frag = m_fragments.front();
+      frag = std::move(m_fragments.front());
       m_fragments.pop();
       more = m_logs == preload;
       if((loaded = frag->loaded()))
@@ -181,8 +182,9 @@ void BlockLoader::load_log_cells() {
       SWC_LOG_OUT(LOG_WARN,
         frag->print(SWC_LOG_OSTREAM << "Fragment not-loaded, load-again ");
       );
-      frag->load([this](const CommitLog::Fragment::Ptr& frag){
-        loaded_frag(frag); });
+      frag->load([this](CommitLog::Fragment::Ptr&& frag){
+        loaded_frag(std::move(frag));
+      });
       frag->processing_decrement();
       continue;
     }

@@ -475,9 +475,9 @@ void CompactRange::progress_check_timer() {
     return;
   m_chk_timer.expires_after(std::chrono::milliseconds(median));
   struct TimerTask {
-    CompactRange::Ptr ptr;
+    Ptr ptr;
     SWC_CAN_INLINE
-    TimerTask(const CompactRange::Ptr& ptr) noexcept : ptr(ptr) { }
+    TimerTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->progress_check_timer();
@@ -838,7 +838,7 @@ template<bool clear>
 struct CompactRange::TaskFinished {
   Ptr ptr;
   SWC_CAN_INLINE
-  TaskFinished(const Ptr& ptr) noexcept : ptr(ptr) { }
+  TaskFinished(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
   void operator()() { ptr->finished(clear); }
 };
 
@@ -960,13 +960,13 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
   range->expand_and_align(true, Query::Update::CommonMeta::make(
     range,
     [t_measure, ptr=shared()]
-    (const Query::Update::CommonMeta::Ptr&) {
+    (const Query::Update::CommonMeta::Ptr&) mutable {
       SWC_LOG_OUT(LOG_INFO,
         SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%luns new-end=",
           ptr->range->cfg->cid, ptr->range->rid, t_measure.elapsed());
           ptr->cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
       );
-      Env::Rgr::maintenance_post(TaskFinished<true>(ptr));
+      Env::Rgr::maintenance_post(TaskFinished<true>(std::move(ptr)));
     }
   ));
 }
@@ -974,14 +974,15 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
 void CompactRange::apply_new(bool clear) {
   int err = Error::OK;
   Query::Update::CommonMeta::Cb_t cb;
-  if(clear)
-    cb = [ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
-            Env::Rgr::maintenance_post(TaskFinished<true>(ptr));
-          };
-  else
-    cb = [ptr=shared()] (const Query::Update::CommonMeta::Ptr&) {
-            Env::Rgr::maintenance_post(TaskFinished<false>(ptr));
-          };
+  if(clear) {
+    cb = [ptr=shared()] (const Query::Update::CommonMeta::Ptr&) mutable {
+      Env::Rgr::maintenance_post(TaskFinished<true>(std::move(ptr)));
+    };
+  } else {
+    cb = [ptr=shared()] (const Query::Update::CommonMeta::Ptr&) mutable {
+      Env::Rgr::maintenance_post(TaskFinished<false>(std::move(ptr)));
+    };
+  }
   range->apply_new(
     err, cellstores, fragments_old,
     Query::Update::CommonMeta::make(range, std::move(cb))

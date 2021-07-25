@@ -25,10 +25,10 @@ void ColumnsUnload::run() {
   if(m_cols.empty()) {
     complete();
   } else {
-    auto req = std::dynamic_pointer_cast<ManageBase>(shared_from_this());
     Core::MutexSptd::scope lock(m_mutex);
     for(auto& col : m_cols)
-      col->add_managing(req);
+      col->add_managing(
+        std::dynamic_pointer_cast<ManageBase>(shared_from_this()));
   }
 }
 
