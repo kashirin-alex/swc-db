@@ -63,6 +63,15 @@ extern SWC_MALLOC_ATTRIBS
 extern SWC_MALLOC_ATTRIBS
   void operator delete[](void* ptr, size_t sz) noexcept;
 
+extern SWC_MALLOC_ATTRIBS
+  void operator delete(void* ptr, std::align_val_t al) noexcept;
+extern SWC_MALLOC_ATTRIBS
+  void operator delete[](void* ptr, std::align_val_t al) noexcept;
+extern SWC_MALLOC_ATTRIBS
+  void operator delete(void* ptr, size_t sz, std::align_val_t al) noexcept;
+extern SWC_MALLOC_ATTRIBS
+  void operator delete[](void* ptr, size_t sz, std::align_val_t al) noexcept;
+
 
 
 SWC_MALLOC_ATTRIBS
@@ -148,6 +157,31 @@ SWC_MALLOC_ATTRIBS
 void operator delete[](void* ptr, size_t ) noexcept {
   //printf("Malloc using delete[] size=%lu\n", sz);
   ::operator delete(ptr);
+}
+
+
+SWC_MALLOC_ATTRIBS
+void operator delete(void* ptr, std::align_val_t) noexcept {
+  //printf("Malloc using align-delete\n");
+  std::free(ptr);
+}
+
+SWC_MALLOC_ATTRIBS
+void operator delete[](void* ptr, std::align_val_t al) noexcept {
+  //printf("Malloc using delete[]\n");
+  ::operator delete(ptr, al);
+}
+
+SWC_MALLOC_ATTRIBS
+void operator delete(void* ptr, size_t, std::align_val_t al) noexcept {
+  //printf("Malloc using delete size=%lu\n", sz);
+  ::operator delete(ptr, al);
+}
+
+SWC_MALLOC_ATTRIBS
+void operator delete[](void* ptr, size_t, std::align_val_t al) noexcept {
+  //printf("Malloc using delete[] size=%lu\n", sz);
+  ::operator delete(ptr, al);
 }
 
 

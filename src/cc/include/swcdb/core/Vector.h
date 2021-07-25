@@ -471,12 +471,6 @@ class Vector {
     pointer data = _move(_allocate_uinitialized(sz), data_prev, size_prev);
     _deallocate(data_prev, size_prev);
     return data;
-    //return static_cast<pointer>(
-    //  std::realloc(data_prev, sizeof(value_type) * sz));
-    //std::allocator<value_type> alloc;
-    //pointer data = _move(alloc.allocate(sz), data_prev, size_prev);
-    //_deallocate(data_prev, size_prev);
-    //return data;
   }
 
   template<typename... ArgsT>
@@ -535,10 +529,10 @@ class Vector {
 
   SWC_CAN_INLINE
   static void _deallocate(pointer data, size_t) {
-    ::operator delete(data);
-    //std::free(data);
-    //std::allocator<value_type> alloc;
-    //alloc.deallocate(data, sz);
+    ::operator delete(
+      data,
+      std::align_val_t(std::alignment_of<value_type>::value)
+    );
   }
 
 
