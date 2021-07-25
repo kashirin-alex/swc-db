@@ -281,8 +281,8 @@ void Range::_run_scan_queue() {
     RangePtr     ptr;
     ReqScan::Ptr req;
     SWC_CAN_INLINE
-    Task(RangePtr&& ptr, ReqScan::Ptr&& req) noexcept
-        : ptr(std::move(ptr)), req(std::move(req)) {
+    Task(RangePtr&& _ptr, ReqScan::Ptr&& req) noexcept
+        : ptr(std::move(_ptr)), req(std::move(req)) {
       ptr->blocks.processing_increment();
     }
     void operator()() {
