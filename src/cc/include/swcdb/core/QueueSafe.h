@@ -40,11 +40,26 @@ class QueueSafe : private std::queue<ItemT> {
   }
 
   SWC_CAN_INLINE
+  void push(ItemT&& item) {
+    MutexSptd::scope lock(m_mutex);
+    QBase::push(std::move(item));
+  }
+
+  SWC_CAN_INLINE
   bool push_and_is_1st(const ItemT& item) {
     bool chk;
     MutexSptd::scope lock(m_mutex);
     chk = QBase::empty();
     QBase::push(item);
+    return chk;
+  }
+
+  SWC_CAN_INLINE
+  bool push_and_is_1st(ItemT&& item) {
+    bool chk;
+    MutexSptd::scope lock(m_mutex);
+    chk = QBase::empty();
+    QBase::push(std::move(item));
     return chk;
   }
 
@@ -78,7 +93,7 @@ class QueueSafe : private std::queue<ItemT> {
     MutexSptd::scope lock(m_mutex);
     if(QBase::empty())
       return false;
-    *item = QBase::front();
+    *item = std::move(QBase::front());
     QBase::pop();
     return true;
   }

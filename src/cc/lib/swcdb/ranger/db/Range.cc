@@ -86,7 +86,7 @@ struct Range::TaskRunQueueScan {
 struct Range::TaskRunQueueAdd {
   RangePtr ptr;
   SWC_CAN_INLINE
-  TaskRunQueueAdd(RangePtr& ptr) noexcept : ptr(ptr) { }
+  TaskRunQueueAdd(const RangePtr& ptr) noexcept : ptr(ptr) { }
   TaskRunQueueAdd(RangePtr&& ptr) noexcept : ptr(std::move(ptr)) { }
   void operator()() { ptr->_run_add_queue(); }
 };
@@ -253,12 +253,12 @@ void Range::add(Callback::RangeQueryUpdate* req) {
   run_add_queue();
 }
 
-void Range::scan(const ReqScan::Ptr& req) {
+void Range::scan(ReqScan::Ptr&& req) {
   {
     Core::ScopedLock lock(m_mutex);
     if(m_compacting == COMPACT_APPLYING) {
       m_q_run_scan = true;
-      m_q_scan.push(req);
+      m_q_scan.push(std::move(req));
       return;
     }
     blocks.processing_increment();
@@ -276,7 +276,7 @@ void Range::_run_scan_queue() {
     }
     blocks.processing_increment();
   }
-  
+
   struct Task {
     RangePtr     ptr;
     ReqScan::Ptr req;
@@ -285,29 +285,28 @@ void Range::_run_scan_queue() {
         : ptr(std::move(ptr)), req(std::move(req)) {
       ptr->blocks.processing_increment();
     }
-    void operator()() { 
+    void operator()() {
       ptr->blocks.scan(std::move(req));
       ptr->blocks.processing_decrement();
     }
   };
 
-  int err;
-  ReqScan::Ptr req;
-  do {
-    if(!(req = std::move(m_q_scan.front()))->expired()) {
-      state(err = Error::OK);
+  for(ReqScan::Ptr req; m_q_scan.pop(&req); ) {
+    if(!req->expired()) {
+      int err = Error::OK;
+      state(err);
       if(err) {
         req->response(err);
       } else {
         Env::Rgr::post(Task(shared_from_this(), std::move(req)));
       }
     }
-  } while(m_q_scan.pop_and_more());
+  }
   blocks.processing_decrement();
 }
 
 SWC_CAN_INLINE
-void Range::scan_internal(const ReqScan::Ptr& req) {
+void Range::scan_internal(ReqScan::Ptr&& req) {
   blocks.scan(std::move(req));
 }
 
