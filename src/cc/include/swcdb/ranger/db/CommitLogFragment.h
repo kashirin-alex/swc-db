@@ -29,7 +29,10 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   public:
 
   typedef std::shared_ptr<Fragment>  Ptr;
-  typedef std::function<void(Ptr&&)> LoadCb_t;
+  struct LoadCallback {
+    virtual ~LoadCallback() { }
+    virtual void loaded(Ptr&& frag) = 0;
+  };
 
   static const uint8_t     HEADER_SIZE = 9;
   static const uint8_t     VERSION = 1;
@@ -113,7 +116,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   void write(int err, uint8_t blk_replicas, int64_t blksz,
              const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
 
-  void load(LoadCb_t&& cb);
+  void load(LoadCallback* cb);
 
   void load_cells(int& err, Ranger::Block::Ptr cells_block);
 
@@ -169,7 +172,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   Core::Atomic<uint32_t>            m_cells_remain;
   FS::SmartFd::Ptr                  m_smartfd;
   StaticBuffer                      m_buffer;
-  std::queue<LoadCb_t>              m_queue;
+  std::queue<LoadCallback*>         m_queue;
 
 };
 

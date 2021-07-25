@@ -13,10 +13,10 @@ namespace SWC { namespace Ranger {
 SWC_CAN_INLINE
 BlockLoader::BlockLoader(Block::Ptr block)
                         : block(block),
-                          preload(
-                            block->blocks->range->cfg->log_fragment_preload()),
                           count_cs_blocks(0), count_fragments(0),
                           error(Error::OK),
+                          preload(
+                            block->blocks->range->cfg->log_fragment_preload()),
                           m_check_log(true), m_processing(false),
                           m_logs(0) {
 }
@@ -114,9 +114,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
       }
       for(auto it=m_f_selected.cbegin() + offset;
           it != m_f_selected.cend(); ++it) {
-        (*it)->load([this](CommitLog::Fragment::Ptr&& frag) {
-          loaded_frag(std::move(frag));
-        });
+        (*it)->load(this);
         (*it)->processing_decrement();
       }
     }
@@ -133,7 +131,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
   }
   if(more) {
     m_check_log.stop();
-    return loaded_frag(nullptr);
+    return loaded(nullptr);
   }
   if(is_final)
     return completion();
@@ -141,7 +139,7 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
   goto check_more;
 }
 
-void BlockLoader::loaded_frag(CommitLog::Fragment::Ptr&& frag) {
+void BlockLoader::loaded(CommitLog::Fragment::Ptr&& frag) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     if(frag)
@@ -182,9 +180,7 @@ void BlockLoader::load_log_cells() {
       SWC_LOG_OUT(LOG_WARN,
         frag->print(SWC_LOG_OSTREAM << "Fragment not-loaded, load-again ");
       );
-      frag->load([this](CommitLog::Fragment::Ptr&& frag){
-        loaded_frag(std::move(frag));
-      });
+      frag->load(this);
       frag->processing_decrement();
       continue;
     }

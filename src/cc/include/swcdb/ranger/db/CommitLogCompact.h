@@ -13,12 +13,12 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 class Compact final {
 
-  class Group final {
+  class Group final : private Fragment::LoadCallback {
     public:
 
     const Time::Measure_ns  ts;
-    const uint8_t           worker;
     Fragments::Vec          read_frags;
+    const uint8_t           worker;
 
     Group(Compact* compact, uint8_t worker);
 
@@ -32,15 +32,13 @@ class Compact final {
 
     void run(bool initial);
 
+    void loaded(Fragment::Ptr&& frag) override;
+
     void finalize();
 
     private:
 
-    struct TaskLoadedFrag;
-  
-    void load();
-
-    void loaded(const Fragment::Ptr& frag);
+    void _loaded(const Fragment::Ptr& frag);
 
     void write();
 

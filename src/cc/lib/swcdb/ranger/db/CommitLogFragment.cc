@@ -346,14 +346,14 @@ struct Fragment::TaskLoadRead {
   void operator()() { frag->load_read(err, buffer); }
 };
 
-void Fragment::load(Fragment::LoadCb_t&& cb) {
+void Fragment::load(Fragment::LoadCallback* cb) {
   m_processing.fetch_add(1);
   auto at(State::NONE);
   {
     Core::MutexSptd::scope lock(m_mutex);
     m_state.compare_exchange_weak(at, State::LOADING);
     if(at != State::LOADED)
-      m_queue.push(std::move(cb));
+      m_queue.push(cb);
   }
   switch(at) {
     case State::NONE: {
@@ -380,7 +380,7 @@ void Fragment::load(Fragment::LoadCb_t&& cb) {
     case State::LOADING:
       return;
     default: // case State::LOADED:
-      return cb(ptr());
+      return cb->loaded(ptr());
   }
 }
 
@@ -688,15 +688,15 @@ void Fragment::load_finish(int err) {
 
 
 void Fragment::run_queued() {
-  for(LoadCb_t cb;;) {
+  for(LoadCallback* cb;;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(m_queue.empty())
         return;
-      cb = std::move(m_queue.front());
+      cb = m_queue.front();
       m_queue.pop();
     }
-    cb(ptr());
+    cb->loaded(ptr());
   }
 }
 

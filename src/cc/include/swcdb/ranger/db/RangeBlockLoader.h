@@ -16,20 +16,20 @@
 namespace SWC { namespace Ranger {
 
 
-class BlockLoader final {
+class BlockLoader final : private CommitLog::Fragment::LoadCallback {
   public:
 
   Block::Ptr           block;
-  const uint8_t        preload;
   Core::Atomic<size_t> count_cs_blocks;
   Core::Atomic<size_t> count_fragments;
-  Core::Atomic<int>    error;
 
   struct ReqQueue {
     ReqScan::Ptr  req;
     const int64_t ts;
   };
   std::queue<ReqQueue> q_req; // synced by Block mutex
+  Core::Atomic<int>    error;
+  const uint8_t        preload;
 
 
   explicit BlockLoader(Block::Ptr block);
@@ -50,13 +50,13 @@ class BlockLoader final {
 
   void loaded_blk();
 
+  void loaded(CommitLog::Fragment::Ptr&& frag) override;
+
   private:
 
   void load_cellstores_cells();
 
   void load_log(bool is_final, bool is_more=false);
-
-  void loaded_frag(CommitLog::Fragment::Ptr&& frag);
 
   void load_log_cells();
 
@@ -64,10 +64,9 @@ class BlockLoader final {
 
 
   Core::StateRunning                        m_check_log;
-
-  Core::MutexSptd                           m_mutex;
   bool                                      m_processing;
   uint8_t                                   m_logs;
+  Core::MutexSptd                           m_mutex;
 
   std::queue<CellStore::Block::Read::Ptr>   m_cs_blocks;
   CommitLog::Fragments::Vec                 m_f_selected;

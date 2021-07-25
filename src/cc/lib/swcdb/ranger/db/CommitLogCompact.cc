@@ -27,15 +27,6 @@ Compact::Group::~Group() {
     Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
 }
 
-struct Compact::Group::TaskLoadedFrag {
-  Group*        g;
-  Fragment::Ptr frag;
-  SWC_CAN_INLINE
-  TaskLoadedFrag(Group* g, Fragment::Ptr&& frag) noexcept
-                : g(g), frag(std::move(frag)) { }
-  void operator()() { g->loaded(frag); }
-};
-
 void Compact::Group::run(bool initial) {
   size_t running;
   if(initial) {
@@ -54,16 +45,26 @@ void Compact::Group::run(bool initial) {
       break;
     }
     running = m_running.add_rslt(1);
-    read_frags[idx]->load([g=this] (Fragment::Ptr&& frag) {
-      Env::Rgr::post(TaskLoadedFrag(g, std::move(frag)));
-    });
+    read_frags[idx]->load(this);
   } while(running < compact->preload);
 
   if(m_finishing.fetch_sub(1) == 1)
     write();
 }
 
-void Compact::Group::loaded(const Fragment::Ptr& frag) {
+void Compact::Group::loaded(Fragment::Ptr&& frag) {
+  struct Task {
+    Group*        g;
+    Fragment::Ptr frag;
+    SWC_CAN_INLINE
+    Task(Group* g, Fragment::Ptr&& frag) noexcept
+        : g(g), frag(std::move(frag)) { }
+    void operator()() { g->_loaded(frag); }
+  };
+  Env::Rgr::post(Task(this, std::move(frag)));
+}
+
+void Compact::Group::_loaded(const Fragment::Ptr& frag) {
   if(compact->log->stopping || error) {
     frag->processing_decrement();
     return run(false);
@@ -77,9 +78,7 @@ void Compact::Group::loaded(const Fragment::Ptr& frag) {
       frag->print(SWC_LOG_OSTREAM << ' ');
     );
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    frag->load([g=this] (Fragment::Ptr&& frag) {
-      Env::Rgr::post(TaskLoadedFrag(g, std::move(frag)));
-    });
+    frag->load(this);
     frag->processing_decrement();
     return;
   }
