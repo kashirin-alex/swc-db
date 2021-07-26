@@ -542,7 +542,7 @@ bool MngdColumns::columns_load() {
     if(!(g->role & DB::Types::MngrRole::COLUMNS))
       continue;
     uint64_t total = 0;
-    for(auto itc = entries.cbegin();
+    for(auto itc = it;
         itc != entries.cend() &&
         (!g->cid_begin || g->cid_begin <= (*itc)->cid) &&
         (!g->cid_end || g->cid_end >= (*itc)->cid); ++itc) {
