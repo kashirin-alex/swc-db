@@ -94,7 +94,7 @@ class MngdColumns final {
   Core::StateRunning     m_columns_load;
 
   Core::MutexSptd        m_mutex_schemas;
-  bool                   m_schemas_set;
+  Core::AtomicBool       m_schemas_set;
 
   Core::MutexSptd        m_mutex_active;
   bool                   m_cid_active;

@@ -40,7 +40,7 @@ void MngdColumns::reset(bool schemas_mngr) {
   if(schemas_mngr) {
     {
       Core::MutexSptd::scope lock(m_mutex_schemas);
-      m_schemas_set = false;
+      m_schemas_set.store(false);
     }
     {
       Core::MutexSptd::scope lock(m_mutex_active);
@@ -56,9 +56,12 @@ void MngdColumns::reset(bool schemas_mngr) {
 SWC_CAN_INLINE
 bool MngdColumns::is_schemas_mngr(int& err) {
   if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) {
-    Core::MutexSptd::scope lock(m_mutex_schemas);
-    if(!m_schemas_set)
-      err = Error::MNGR_NOT_INITIALIZED;
+    if(m_schemas_set) {
+      Core::MutexSptd::scope lock(m_mutex_schemas);
+      if(m_schemas_set)
+        return true;
+    }
+    err = Error::MNGR_NOT_INITIALIZED;
     return true;
   }
   return false;
@@ -489,7 +492,7 @@ bool MngdColumns::initialize() {
   pending.release();
   pending.wait_all();
 
-  m_schemas_set = true;
+  m_schemas_set.store(true);
   return true;
 }
 
@@ -694,6 +697,8 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
     case ColumnMngFunc::INTERNAL_ACK_MODIFY:
       break;
     case ColumnMngFunc::INTERNAL_ACK_DELETE: {
+      if(!err && !m_schemas_set)
+        err = Error::MNGR_NOT_ACTIVE;
       if(err)
         break;
       Core::MutexSptd::scope lock(m_mutex_schemas);
@@ -806,7 +811,7 @@ void MngdColumns::run_actions() {
             req->schema = schema;
           break;
         }
-          default:
+        default:
           err = Error::NOT_IMPLEMENTED;
           break;
       }
