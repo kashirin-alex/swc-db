@@ -27,7 +27,7 @@ void rgr_get(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     if(rsp_params.err)
       goto send_response;
 
-    //if(params.had_err == Error::RGR_NOT_LOADED_RANGE)
+    //if(params.had_err == Error::RGR_NOT_LOADED_RANGE) / tick-check
     //  Env::Mngr::rangers()->need_health_check(col);
 
     Manager::Range::Ptr range;

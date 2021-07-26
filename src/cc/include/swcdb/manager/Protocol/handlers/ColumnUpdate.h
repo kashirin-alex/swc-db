@@ -39,9 +39,12 @@ struct ColumnUpdate {
 
       params.function == Params::ColumnMng::Function::INTERNAL_EXPECT
         ? Env::Mngr::mngd_columns()->set_expect(
-            params.cid_begin, params.cid_end, std::move(params.columns), false)
+            params.cid_begin, params.cid_end, params.total,
+            std::move(params.columns), false
+          )
         : Env::Mngr::mngd_columns()->update_status(
-            params.function, params.schema, params.err, params.id); // +?timeout
+            params.function, params.schema, params.err, params.id
+          ); // +?timeout
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
       SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );

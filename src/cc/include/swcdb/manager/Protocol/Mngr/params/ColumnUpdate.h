@@ -26,11 +26,11 @@ class ColumnUpdate final : public Serializable {
 
   SWC_CAN_INLINE
   ColumnUpdate(ColumnMng::Function function,
-               cid_t cid_begin, cid_t cid_end,
+               cid_t cid_begin, cid_t cid_end, uint64_t total,
                Core::Vector<cid_t>&& columns) noexcept
               : function(function), id(0),
                 columns(std::move(columns)),
-                cid_begin(cid_begin), cid_end(cid_end),
+                cid_begin(cid_begin), cid_end(cid_end), total(total),
                 err(Error::OK) {
   }
 
@@ -40,6 +40,7 @@ class ColumnUpdate final : public Serializable {
     if(function == ColumnMng::Function::INTERNAL_EXPECT) {
       out << " cid-begin=" << cid_begin
           << " cid-end=" << cid_end
+          << " total=" << total
           << " columns=[";
       for(cid_t cid : columns)
         out << cid << ',';
@@ -57,6 +58,7 @@ class ColumnUpdate final : public Serializable {
   Core::Vector<cid_t> columns;
   cid_t               cid_begin;
   cid_t               cid_end;
+  uint64_t            total;
   DB::Schema::Ptr     schema;
   int                 err;
 
@@ -68,6 +70,7 @@ class ColumnUpdate final : public Serializable {
       case ColumnMng::Function::INTERNAL_EXPECT: {
         sz += Serialization::encoded_length_vi64(cid_begin);
         sz += Serialization::encoded_length_vi64(cid_end);
+        sz += Serialization::encoded_length_vi64(total);
         sz += Serialization::encoded_length_vi64(columns.size());
         for(const cid_t cid : columns)
           sz += Serialization::encoded_length_vi64(cid);
@@ -89,6 +92,7 @@ class ColumnUpdate final : public Serializable {
       case ColumnMng::Function::INTERNAL_EXPECT: {
         Serialization::encode_vi64(bufp, cid_begin);
         Serialization::encode_vi64(bufp, cid_end);
+        Serialization::encode_vi64(bufp, total);
         Serialization::encode_vi64(bufp, columns.size());
         for(const cid_t cid : columns)
           Serialization::encode_vi64(bufp, cid);
@@ -109,6 +113,7 @@ class ColumnUpdate final : public Serializable {
       case ColumnMng::Function::INTERNAL_EXPECT: {
         cid_begin = Serialization::decode_vi64(bufp, remainp);
         cid_end = Serialization::decode_vi64(bufp, remainp);
+        total = Serialization::decode_vi64(bufp, remainp);
         columns.clear();
         columns.resize(Serialization::decode_vi64(bufp, remainp));
         for(auto& col : columns)

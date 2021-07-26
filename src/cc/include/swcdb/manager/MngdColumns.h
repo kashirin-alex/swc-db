@@ -55,7 +55,7 @@ class MngdColumns final {
 
   void action(const ColumnReq::Ptr& req);
 
-  void set_expect(cid_t cid_begin, cid_t cid_end,
+  void set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
                   Core::Vector<cid_t>&& columns, bool initial);
 
   void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
@@ -100,9 +100,7 @@ class MngdColumns final {
   bool                   m_cid_active;
   cid_t                  m_cid_begin;
   cid_t                  m_cid_end;
-
-  Core::MutexSptd        m_mutex_expect;
-  bool                   m_expected_ready;
+  uint64_t               m_expected_remain;
   Core::Vector<cid_t>    m_expected_load;
 
   Core::MutexSptd                              m_mutex_actions;
@@ -112,6 +110,7 @@ class MngdColumns final {
   const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
   const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;
 
+  constexpr static uint64_t STATE_COLUMNS_NOT_INITIALIZED = UINT64_MAX;
 };
 
 

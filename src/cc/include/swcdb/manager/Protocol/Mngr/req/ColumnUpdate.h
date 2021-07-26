@@ -29,13 +29,13 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   }
 
   SWC_CAN_INLINE
-  ColumnUpdate(cid_t cid_begin, cid_t cid_end,
+  ColumnUpdate(cid_t cid_begin, cid_t cid_end, uint64_t total,
                Core::Vector<cid_t>&& columns)
               : client::ConnQueue::ReqBase(
                   Buffers::make(
                     Params::ColumnUpdate(
                       Params::ColumnMng::Function::INTERNAL_EXPECT,
-                      cid_begin, cid_end, std::move(columns)
+                      cid_begin, cid_end, total, std::move(columns)
                     ),
                     0,
                     COLUMN_UPDATE, 60000

@@ -23,7 +23,7 @@ MngdColumns::MngdColumns()
     : m_run(true), m_schemas_set(false),
       m_cid_active(false),
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
-      m_expected_ready(false),
+      m_expected_remain(STATE_COLUMNS_NOT_INITIALIZED),
       cfg_schema_replication(
         Env::Config::settings()->get<Config::Property::V_GUINT8>(
           "swc.mngr.schema.replication")),
@@ -92,8 +92,8 @@ bool MngdColumns::active(cid_t& cid_begin, cid_t& cid_end) noexcept {
 
 SWC_CAN_INLINE
 bool MngdColumns::expected_ready() noexcept {
-  Core::MutexSptd::scope lock(m_mutex_expect);
-  return m_expected_ready;
+  Core::MutexSptd::scope lock(m_mutex_active);
+  return m_expected_remain == 0;
 }
 
 void MngdColumns::columns_ready(int& err) {
@@ -101,10 +101,7 @@ void MngdColumns::columns_ready(int& err) {
     Core::MutexSptd::scope lock(m_mutex_active);
     if(!m_cid_active)
       return;
-  }
-  {
-    Core::MutexSptd::scope lock(m_mutex_expect);
-    if(!m_expected_ready) {
+    if(m_expected_remain > 0) {
       err = Error::MNGR_NOT_INITIALIZED;
       return;
     }
@@ -139,11 +136,9 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
       if(!m_cid_active)
         return;
       m_cid_active = false;
+      m_expected_remain = STATE_COLUMNS_NOT_INITIALIZED;
     }
-    {
-      Core::MutexSptd::scope lock(m_mutex_expect);
-      m_expected_ready = false;
-    }
+
     Core::MutexSptd::scope lock(m_mutex_schemas);
     Env::Mngr::columns()->reset();
     if(!Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
@@ -158,6 +153,7 @@ void MngdColumns::change_active(const cid_t cid_begin, const cid_t cid_end,
     m_cid_begin = cid_begin;
     m_cid_end = cid_end;
     m_cid_active = true;
+    m_expected_remain = STATE_COLUMNS_NOT_INITIALIZED;
   }
 
   if(m_run)
@@ -188,7 +184,7 @@ void MngdColumns::action(const ColumnReq::Ptr& req) {
     Env::Mngr::post(Task(this));
 }
 
-void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
+void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
                              Core::Vector<cid_t>&& columns,
                              bool initial) {
   if(!initial &&
@@ -204,7 +200,7 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
     return Env::Mngr::role()->req_mngr_inchain(
       Comm::Protocol::Mngr::Req::ColumnUpdate::Ptr(
         new Comm::Protocol::Mngr::Req::ColumnUpdate(
-          cid_begin, cid_end, std::move(columns))
+          cid_begin, cid_end, total, std::move(columns))
         )
       );
 
@@ -212,17 +208,20 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end,
   {
     int err;
     auto _cols = Env::Mngr::columns();
-    Core::MutexSptd::scope lock(m_mutex_expect);
+    Core::MutexSptd::scope lock(m_mutex_active);
+    if(m_expected_remain == 0 ||
+       m_expected_remain == STATE_COLUMNS_NOT_INITIALIZED)
+      m_expected_remain = total;
     for(auto cid : columns) {
       if(std::find(m_expected_load.cbegin(), m_expected_load.cend(), cid)
                                               == m_expected_load.cend() &&
-         !_cols->get_column(err = Error::OK, cid))
+         !_cols->get_column(err = Error::OK, cid)) {
         m_expected_load.push_back(cid);
+      } else {
+        --m_expected_remain;
+      }
     }
-    if(!(need = m_expected_load.size())) {
-      m_expected_load.shrink_to_fit();
-      m_expected_ready = true;
-    }
+    need = m_expected_remain;
   }
   if(need)
     SWC_LOGF(LOG_DEBUG,
@@ -281,20 +280,18 @@ void MngdColumns::update_status(ColumnMngFunc func,
         if(!schemas_mngr)
           Env::Mngr::schemas()->replace(schema);
         {
-          Core::MutexSptd::scope lock(m_mutex_expect);
-          if(!m_expected_ready) {
+          Core::MutexSptd::scope lock(m_mutex_active);
+          if(!m_expected_load.empty()) {
             auto it = std::find(
               m_expected_load.cbegin(), m_expected_load.cend(), schema->cid);
             if(it != m_expected_load.cend()) {
               m_expected_load.erase(it);
-              if(m_expected_load.empty()) {
+              if(m_expected_load.empty())
                 m_expected_load.shrink_to_fit();
-                m_expected_ready = true;
-              }
               init = true;
-              SWC_LOGF(LOG_DEBUG,
-                "Expected Column(%lu) Loaded remain=%ld",
-                schema->cid, int64_t(m_expected_load.size()));
+              --m_expected_remain;
+              SWC_LOGF(LOG_DEBUG, "Expected Column(%lu) Loaded remain=%lu",
+                                  schema->cid, m_expected_remain);
             }
           }
         }
@@ -544,6 +541,13 @@ bool MngdColumns::columns_load() {
   for(auto& g : groups) {
     if(!(g->role & DB::Types::MngrRole::COLUMNS))
       continue;
+    uint64_t total = 0;
+    for(auto itc = entries.cbegin();
+        itc != entries.cend() &&
+        (!g->cid_begin || g->cid_begin <= (*itc)->cid) &&
+        (!g->cid_end || g->cid_end >= (*itc)->cid); ++itc) {
+      ++total;
+    }
     g_batches = 0;
     Core::Vector<cid_t> columns;
 
@@ -560,9 +564,9 @@ bool MngdColumns::columns_load() {
 
       int64_t sz = columns.size();
       SWC_LOGF(LOG_DEBUG,
-        "Set Expected Columns Load cid(begin=%lu end=%lu) batch=%lu size=%ld",
-        g->cid_begin, g->cid_end, g_batches, sz);
-      set_expect(g->cid_begin, g->cid_end, std::move(columns), true);
+        "Set Expected Columns Load cid(begin=%lu end=%lu) %lu(%ld/%lu)",
+        g->cid_begin, g->cid_end, g_batches, sz, total);
+      set_expect(g->cid_begin, g->cid_end, total, std::move(columns), true);
       columns.clear();
 
       for(; it_batch != it; ++it_batch) {
