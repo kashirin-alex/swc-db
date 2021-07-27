@@ -56,8 +56,14 @@ bool Compaction::available() noexcept {
 
 void Compaction::stop() {
   m_run.store(false);
+  {
+    Core::UniqueLock lock_wait(m_mutex);
+    if(m_schedule.running())
+      m_cv.wait(lock_wait, [this](){ return !m_schedule.running(); });
+    m_check_timer.cancel();
+  }
   uint8_t sz = 0;
-  for(uint8_t n=0; m_running; ++n) {
+  for(uint8_t n=0; ; ++n) {
     CompactRange::Ptr req;
     {
       Core::ScopedLock lock(m_mutex);
@@ -76,9 +82,8 @@ void Compaction::stop() {
   }
   Core::UniqueLock lock_wait(m_mutex);
   m_check_timer.cancel();
-  if(m_running || m_schedule.running())
-    m_cv.wait(lock_wait, [this](){
-      return !m_running && !m_schedule.running();});
+  if(m_running)
+    m_cv.wait(lock_wait, [this](){ return !m_running; });
   m_schedule.stop();
 }
 
@@ -131,8 +136,12 @@ void Compaction::run(bool initial) {
   }
 
   m_schedule.stop();
-  if(initial && !added && !stopped())
+  if(stopped()) {
+    Core::ScopedLock lock(m_mutex);
+    m_cv.notify_all();
+  } else if(initial && !added) {
     schedule();
+  }
 }
 
 uint8_t Compaction::compact(const RangePtr& range) {
@@ -192,6 +201,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
     return 0;
   }
 
+  uint8_t running = m_running.add_rslt(1);
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s",
            range->cfg->cid, range->rid, need.c_str());
 
@@ -207,7 +217,6 @@ uint8_t Compaction::compact(const RangePtr& range) {
     Core::ScopedLock lock(m_mutex);
     m_compacting.push_back(task.req);
   }
-  uint8_t running = m_running.add_rslt(1);
   Env::Rgr::maintenance_post(std::move(task));
   return running;
 }
@@ -223,12 +232,18 @@ void Compaction::compacted(const CompactRange::Ptr req,
   }
 
   range->compacting(Range::COMPACT_NONE);
-  compacted();
-
-  Core::ScopedLock lock(m_mutex);
-  auto it = std::find(m_compacting.cbegin(), m_compacting.cend(), req);
-  if(it != m_compacting.cend())
-    m_compacting.erase(it);
+  bool ok;
+  {
+    Core::ScopedLock lock(m_mutex);
+    auto it = std::find(m_compacting.cbegin(), m_compacting.cend(), req);
+    if((ok = it != m_compacting.cend()))
+      m_compacting.erase(it);
+  }
+  if(ok)
+    compacted();
+  else
+    SWC_LOGF(LOG_WARN, "Ranger compaction track missed(%lu/%lu)",
+             range->cfg->cid, range->rid);
 }
 
 SWC_CAN_INLINE

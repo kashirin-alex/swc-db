@@ -1011,7 +1011,7 @@ bool CompactRange::completion() {
 }
 
 void CompactRange::finished(bool clear) {
-  completion();
+  bool ok = completion();
   profile.finished();
 
   SWC_LOG_OUT(LOG_INFO,
@@ -1026,7 +1026,8 @@ void CompactRange::finished(bool clear) {
   );
 
   range->compact_require(false);
-  compactor->compacted(shared(), range, clear);
+  if(ok)
+    compactor->compacted(shared(), range, clear);
 }
 
 void CompactRange::quit() {
