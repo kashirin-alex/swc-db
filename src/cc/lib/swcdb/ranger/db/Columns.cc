@@ -172,9 +172,9 @@ size_t Columns::release(size_t bytes) {
       }
       if(it == cend())
         break;
+      col = it->second;
       if(!DB::Types::SystemColumn::is_data(it->first))
         continue;
-      col = it->second;
     }
     released += col->release(bytes - released);
     if(released >= bytes)
