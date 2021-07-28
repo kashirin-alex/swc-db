@@ -152,8 +152,12 @@ class RangeLocateScan : public ReqScan {
     SWC_LOG_OUT(LOG_DEBUG,
       SWC_LOG_OSTREAM
         << "Range(" << range->cfg->cid  << '/' << range->rid << ") ";
-      Error::print(SWC_LOG_OSTREAM, err);
+      params.print(SWC_LOG_OSTREAM);
       profile.print(SWC_LOG_OSTREAM << " flags=" << int(flags) << " Locate-");
+      if(params.err) {
+        spec.print(SWC_LOG_OSTREAM << ' ');
+        range_begin.print(SWC_LOG_OSTREAM << " range_begin=");
+      }
     );
 
     if(err == Error::RGR_NOT_LOADED_RANGE)

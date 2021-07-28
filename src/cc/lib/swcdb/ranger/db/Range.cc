@@ -558,8 +558,8 @@ void Range::on_change(bool removal,
     uint24_t fid = 0;
     wfields.add(fid, key_end);
     wfields.add(fid, int64_t(rid));
-    wfields.add(fid, aligned_min);
-    wfields.add(fid, aligned_max);
+    wfields.add(++fid, aligned_min);
+    wfields.add(++fid, aligned_max);
     cell.set_value(wfields.base, wfields.fill(), false);
 
     cell.set_time_order_desc(true);
