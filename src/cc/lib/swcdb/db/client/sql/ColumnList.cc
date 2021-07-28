@@ -117,6 +117,8 @@ void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols,
     if(!col_name.empty()) {
       cols.push_back(get_schema(clients, col_name));
       col_name.clear();
+    } else if(remain && !err && stop[1] != ' ' && is_char(&stop[1])) {
+      break;
     }
   }
 }
