@@ -63,6 +63,8 @@ sort: 3
 |||[Exception](#exception-exception)||
 |||[Schema](#struct-schema)||
 |||[SchemaPattern](#struct-schemapattern)||
+|||[SchemaTagsPatterns](#struct-schematagspatterns)||
+|||[SchemaPatterns](#struct-schemapatterns)||
 |||[SpecSchemas](#struct-specschemas)||
 |||[SpecFlags](#struct-specflags)||
 |||[SpecFraction](#struct-specfraction)||
@@ -318,29 +320,46 @@ The Schema Definition
 | --- | --- | --- | --- | --- | --- |
 |1|cid|```i64```|Column ID |optional||
 |2|col_name|```string```|Column Name |optional||
-|3|col_seq|[```KeySeq```](#enumeration-keyseq)|Column Key Sequence |optional||
-|4|col_type|[```ColumnType```](#enumeration-columntype)|Column Type |optional||
-|5|cell_versions|```i32```|Cell Versions |optional||
-|6|cell_ttl|```i32```|Cell Time to Live |optional||
-|7|blk_encoding|[```EncodingType```](#enumeration-encodingtype)|Block Encoding |optional||
-|8|blk_size|```i32```|Block Size in Bytes |optional||
-|9|blk_cells|```i32```|Number of Cells in Block |optional||
-|10|cs_replication|```i8```|CellStore file Replication |optional||
-|11|cs_size|```i32```|CellStore Size in Bytes |optional||
-|12|cs_max|```i8```|Max CellStores in a Range |optional||
-|13|log_rollout_ratio|```i8```|Write Fragment File on ratio reached |optional||
-|14|log_compact_cointervaling|```i8```|Min. Cointervaling Fragments for Compaction |optional||
-|15|log_fragment_preload|```i8```|Number of Fragment to Preload |optional||
-|16|compact_percent|```i8```|Compact at percent reach |optional||
-|17|revision|```i64```|Schema's revision/id |optional||
+|3|col_tags|list&lt;```string```&gt;|Column Tags |default||
+|4|col_seq|[```KeySeq```](#enumeration-keyseq)|Column Key Sequence |optional||
+|5|col_type|[```ColumnType```](#enumeration-columntype)|Column Type |optional||
+|6|cell_versions|```i32```|Cell Versions |optional||
+|7|cell_ttl|```i32```|Cell Time to Live |optional||
+|8|blk_encoding|[```EncodingType```](#enumeration-encodingtype)|Block Encoding |optional||
+|9|blk_size|```i32```|Block Size in Bytes |optional||
+|10|blk_cells|```i32```|Number of Cells in Block |optional||
+|11|cs_replication|```i8```|CellStore file Replication |optional||
+|12|cs_size|```i32```|CellStore Size in Bytes |optional||
+|13|cs_max|```i8```|Max CellStores in a Range |optional||
+|14|log_rollout_ratio|```i8```|Write Fragment File on ratio reached |optional||
+|15|log_compact_cointervaling|```i8```|Min. Cointervaling Fragments for Compaction |optional||
+|16|log_fragment_preload|```i8```|Number of Fragment to Preload |optional||
+|17|compact_percent|```i8```|Compact at percent reach |optional||
+|18|revision|```i64```|Schema's revision/id |optional||
 
 ### Struct: SchemaPattern
-The Schema Matching Pattern for the SpecSchema patterns 
+The Schema matching Pattern 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
 |1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
-|2|value|```string```|The patern value to match against schema's column name |default||
+|2|value|```string```|The patern value to match against |default||
+
+### Struct: SchemaTagsPatterns
+The Schema Tags patterns for the SchemaPatterns 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply, unsupported PF, RE and Vol. kind |default||
+|2|values|list&lt;[```SchemaPattern```](#struct-schemapattern)&gt;|The tags patterns to match against schema's column tags |default||
+
+### Struct: SchemaPatterns
+The Schema Patterns for the SpecSchemas 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|names|list&lt;[```SchemaPattern```](#struct-schemapattern)&gt;|The Schema patterns for selecting by Column Name |default||
+|2|tags|[```SchemaTagsPatterns```](#struct-schematagspatterns)|The Schema patterns for selecting by Column Tags |default||
 
 ### Struct: SpecSchemas
 The Specs for Schemas for using with list_columns or compact_columns 
@@ -349,7 +368,7 @@ The Specs for Schemas for using with list_columns or compact_columns
 | --- | --- | --- | --- | --- | --- |
 |1|cids|list&lt;```i64```&gt;|The Column IDs |default||
 |2|names|list&lt;```string```&gt;|The Column Names |default||
-|3|patterns|list&lt;[```SchemaPattern```](#struct-schemapattern)&gt;|The Schema's Column Name patterns |default||
+|3|patterns|[```SchemaPatterns```](#struct-schemapatterns)|The Schema's selector patterns |default||
 
 ### Struct: SpecFlags
 The Scan Specifications Flags 

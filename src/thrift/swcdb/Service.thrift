@@ -124,56 +124,59 @@ struct Schema {
   /** Column Name */
   2: optional string        col_name
 
+  /** Column Tags */
+  3: list<string>           col_tags
+
   /** Column Key Sequence */
-  3: optional KeySeq        col_seq
+  4: optional KeySeq        col_seq
 
   /** Column Type */
-  4: optional ColumnType    col_type
+  5: optional ColumnType    col_type
 
 
   /** Cell Versions */
-  5: optional i32           cell_versions
+  6: optional i32           cell_versions
 
   /** Cell Time to Live */
-  6: optional i32           cell_ttl
+  7: optional i32           cell_ttl
 
 
   /** Block Encoding */
-  7: optional EncodingType  blk_encoding
+  8: optional EncodingType  blk_encoding
 
   /** Block Size in Bytes */
-  8: optional i32           blk_size
+  9: optional i32           blk_size
 
   /** Number of Cells in Block */
-  9: optional i32           blk_cells
+  10: optional i32          blk_cells
 
 
   /** CellStore file Replication */
-  10: optional i8            cs_replication
+  11: optional i8           cs_replication
 
   /** CellStore Size in Bytes */
-  11: optional i32          cs_size
+  12: optional i32          cs_size
 
   /** Max CellStores in a Range */
-  12: optional i8           cs_max
+  13: optional i8           cs_max
 
 
   /** Write Fragment File on ratio reached */
-  13: optional i8           log_rollout_ratio
+  14: optional i8           log_rollout_ratio
 
   /** Min. Cointervaling Fragments for Compaction */
-  14: optional i8           log_compact_cointervaling
+  15: optional i8           log_compact_cointervaling
 
   /** Number of Fragment to Preload */
-  15: optional i8           log_fragment_preload
+  16: optional i8           log_fragment_preload
 
 
   /** Compact at percent reach */
-  16: optional i8           compact_percent
+  17: optional i8           compact_percent
 
 
   /** Schema's revision/id */
-  17: optional i64          revision
+  18: optional i64          revision
 }
 
 /** A list-container of Schemas */
@@ -262,15 +265,33 @@ enum Comp {
 }
 
 
-/** The Schema Matching Pattern for the SpecSchema patterns */
+/** The Schema matching Pattern */
 struct SchemaPattern {
   /** Logical comparator to Apply */
   1: Comp   comp
 
-  /** The patern value to match against schema's column name */
+  /** The patern value to match against */
   2: string value
 }
 
+/** The Schema Tags patterns for the SchemaPatterns */
+struct SchemaTagsPatterns {
+  /** Logical comparator to Apply, unsupported PF, RE and Vol. kind */
+  1: Comp   comp
+
+  /** The tags patterns to match against schema's column tags */
+  2: list<SchemaPattern>   values
+}
+
+
+/** The Schema Patterns for the SpecSchemas */
+struct SchemaPatterns {
+  /** The Schema patterns for selecting by Column Name */
+  1: list<SchemaPattern>   names
+
+  /** The Schema patterns for selecting by Column Tags */
+  2: SchemaTagsPatterns    tags
+}
 
 
 /** The Specs for Schemas for using with list_columns or compact_columns */
@@ -281,8 +302,8 @@ struct SpecSchemas {
   /** The Column Names */
   2: list<string>          names
 
-  /** The Schema's Column Name patterns */
-  3: list<SchemaPattern>   patterns
+  /** The Schema's selector patterns */
+  3: SchemaPatterns        patterns
 }
 
 

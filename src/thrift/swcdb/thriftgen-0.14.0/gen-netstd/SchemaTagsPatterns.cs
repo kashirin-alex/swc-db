@@ -30,59 +30,44 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Fraction Cell for results on Fraction of scan
+/// The Schema Tags patterns for the SchemaPatterns
 /// </summary>
-public partial class FCell : TBase
+public partial class SchemaTagsPatterns : TBase
 {
-  private string _c;
-  private long _ts;
-  private byte[] _v;
+  private Comp _comp;
+  private List<SchemaPattern> _values;
 
   /// <summary>
-  /// The Column Name
+  /// Logical comparator to Apply, unsupported PF, RE and Vol. kind
+  /// 
+  /// <seealso cref="global::.Comp"/>
   /// </summary>
-  public string C
+  public Comp Comp
   {
     get
     {
-      return _c;
+      return _comp;
     }
     set
     {
-      __isset.c = true;
-      this._c = value;
+      __isset.comp = true;
+      this._comp = value;
     }
   }
 
   /// <summary>
-  /// The Cell Timestamp
+  /// The tags patterns to match against schema's column tags
   /// </summary>
-  public long Ts
+  public List<SchemaPattern> Values
   {
     get
     {
-      return _ts;
+      return _values;
     }
     set
     {
-      __isset.ts = true;
-      this._ts = value;
-    }
-  }
-
-  /// <summary>
-  /// The Cell Value
-  /// </summary>
-  public byte[] V
-  {
-    get
-    {
-      return _v;
-    }
-    set
-    {
-      __isset.v = true;
-      this._v = value;
+      __isset.values = true;
+      this._values = value;
     }
   }
 
@@ -90,34 +75,28 @@ public partial class FCell : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool c;
-    public bool ts;
-    public bool v;
+    public bool comp;
+    public bool values;
   }
 
-  public FCell()
+  public SchemaTagsPatterns()
   {
   }
 
-  public FCell DeepCopy()
+  public SchemaTagsPatterns DeepCopy()
   {
-    var tmp252 = new FCell();
-    if((C != null) && __isset.c)
+    var tmp10 = new SchemaTagsPatterns();
+    if(__isset.comp)
     {
-      tmp252.C = this.C;
+      tmp10.Comp = this.Comp;
     }
-    tmp252.__isset.c = this.__isset.c;
-    if(__isset.ts)
+    tmp10.__isset.comp = this.__isset.comp;
+    if((Values != null) && __isset.values)
     {
-      tmp252.Ts = this.Ts;
+      tmp10.Values = this.Values.DeepCopy();
     }
-    tmp252.__isset.ts = this.__isset.ts;
-    if((V != null) && __isset.v)
-    {
-      tmp252.V = this.V.ToArray();
-    }
-    tmp252.__isset.v = this.__isset.v;
-    return tmp252;
+    tmp10.__isset.values = this.__isset.values;
+    return tmp10;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -138,9 +117,9 @@ public partial class FCell : TBase
         switch (field.ID)
         {
           case 1:
-            if (field.Type == TType.String)
+            if (field.Type == TType.I32)
             {
-              C = await iprot.ReadStringAsync(cancellationToken);
+              Comp = (Comp)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -148,19 +127,20 @@ public partial class FCell : TBase
             }
             break;
           case 2:
-            if (field.Type == TType.I64)
+            if (field.Type == TType.List)
             {
-              Ts = await iprot.ReadI64Async(cancellationToken);
-            }
-            else
-            {
-              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
-            }
-            break;
-          case 3:
-            if (field.Type == TType.String)
-            {
-              V = await iprot.ReadBinaryAsync(cancellationToken);
+              {
+                TList _list11 = await iprot.ReadListBeginAsync(cancellationToken);
+                Values = new List<SchemaPattern>(_list11.Count);
+                for(int _i12 = 0; _i12 < _list11.Count; ++_i12)
+                {
+                  SchemaPattern _elem13;
+                  _elem13 = new SchemaPattern();
+                  await _elem13.ReadAsync(iprot, cancellationToken);
+                  Values.Add(_elem13);
+                }
+                await iprot.ReadListEndAsync(cancellationToken);
+              }
             }
             else
             {
@@ -188,34 +168,32 @@ public partial class FCell : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var struc = new TStruct("FCell");
+      var struc = new TStruct("SchemaTagsPatterns");
       await oprot.WriteStructBeginAsync(struc, cancellationToken);
       var field = new TField();
-      if((C != null) && __isset.c)
+      if(__isset.comp)
       {
-        field.Name = "c";
-        field.Type = TType.String;
+        field.Name = "comp";
+        field.Type = TType.I32;
         field.ID = 1;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
-        await oprot.WriteStringAsync(C, cancellationToken);
+        await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if(__isset.ts)
+      if((Values != null) && __isset.values)
       {
-        field.Name = "ts";
-        field.Type = TType.I64;
+        field.Name = "values";
+        field.Type = TType.List;
         field.ID = 2;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
-        await oprot.WriteI64Async(Ts, cancellationToken);
-        await oprot.WriteFieldEndAsync(cancellationToken);
-      }
-      if((V != null) && __isset.v)
-      {
-        field.Name = "v";
-        field.Type = TType.String;
-        field.ID = 3;
-        await oprot.WriteFieldBeginAsync(field, cancellationToken);
-        await oprot.WriteBinaryAsync(V, cancellationToken);
+        {
+          await oprot.WriteListBeginAsync(new TList(TType.Struct, Values.Count), cancellationToken);
+          foreach (SchemaPattern _iter14 in Values)
+          {
+            await _iter14.WriteAsync(oprot, cancellationToken);
+          }
+          await oprot.WriteListEndAsync(cancellationToken);
+        }
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       await oprot.WriteFieldStopAsync(cancellationToken);
@@ -229,27 +207,22 @@ public partial class FCell : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is FCell other)) return false;
+    if (!(that is SchemaTagsPatterns other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.c == other.__isset.c) && ((!__isset.c) || (System.Object.Equals(C, other.C))))
-      && ((__isset.ts == other.__isset.ts) && ((!__isset.ts) || (System.Object.Equals(Ts, other.Ts))))
-      && ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))));
+    return ((__isset.comp == other.__isset.comp) && ((!__isset.comp) || (System.Object.Equals(Comp, other.Comp))))
+      && ((__isset.values == other.__isset.values) && ((!__isset.values) || (TCollections.Equals(Values, other.Values))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if((C != null) && __isset.c)
+      if(__isset.comp)
       {
-        hashcode = (hashcode * 397) + C.GetHashCode();
+        hashcode = (hashcode * 397) + Comp.GetHashCode();
       }
-      if(__isset.ts)
+      if((Values != null) && __isset.values)
       {
-        hashcode = (hashcode * 397) + Ts.GetHashCode();
-      }
-      if((V != null) && __isset.v)
-      {
-        hashcode = (hashcode * 397) + V.GetHashCode();
+        hashcode = (hashcode * 397) + TCollections.GetHashCode(Values);
       }
     }
     return hashcode;
@@ -257,25 +230,19 @@ public partial class FCell : TBase
 
   public override string ToString()
   {
-    var sb = new StringBuilder("FCell(");
-    int tmp253 = 0;
-    if((C != null) && __isset.c)
+    var sb = new StringBuilder("SchemaTagsPatterns(");
+    int tmp15 = 0;
+    if(__isset.comp)
     {
-      if(0 < tmp253++) { sb.Append(", "); }
-      sb.Append("C: ");
-      C.ToString(sb);
+      if(0 < tmp15++) { sb.Append(", "); }
+      sb.Append("Comp: ");
+      Comp.ToString(sb);
     }
-    if(__isset.ts)
+    if((Values != null) && __isset.values)
     {
-      if(0 < tmp253++) { sb.Append(", "); }
-      sb.Append("Ts: ");
-      Ts.ToString(sb);
-    }
-    if((V != null) && __isset.v)
-    {
-      if(0 < tmp253++) { sb.Append(", "); }
-      sb.Append("V: ");
-      V.ToString(sb);
+      if(0 < tmp15++) { sb.Append(", "); }
+      sb.Append("Values: ");
+      Values.ToString(sb);
     }
     sb.Append(')');
     return sb.ToString();

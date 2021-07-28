@@ -85,18 +85,18 @@ public partial class SpecValueSerial_LB : TBase
 
   public SpecValueSerial_LB DeepCopy()
   {
-    var tmp84 = new SpecValueSerial_LB();
+    var tmp96 = new SpecValueSerial_LB();
     if(__isset.comp)
     {
-      tmp84.Comp = this.Comp;
+      tmp96.Comp = this.Comp;
     }
-    tmp84.__isset.comp = this.__isset.comp;
+    tmp96.__isset.comp = this.__isset.comp;
     if((V != null) && __isset.v)
     {
-      tmp84.V = this.V.DeepCopy();
+      tmp96.V = this.V.DeepCopy();
     }
-    tmp84.__isset.v = this.__isset.v;
-    return tmp84;
+    tmp96.__isset.v = this.__isset.v;
+    return tmp96;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -130,14 +130,14 @@ public partial class SpecValueSerial_LB : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list85 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<SpecValueSerial_BYTES>(_list85.Count);
-                for(int _i86 = 0; _i86 < _list85.Count; ++_i86)
+                TList _list97 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<SpecValueSerial_BYTES>(_list97.Count);
+                for(int _i98 = 0; _i98 < _list97.Count; ++_i98)
                 {
-                  SpecValueSerial_BYTES _elem87;
-                  _elem87 = new SpecValueSerial_BYTES();
-                  await _elem87.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem87);
+                  SpecValueSerial_BYTES _elem99;
+                  _elem99 = new SpecValueSerial_BYTES();
+                  await _elem99.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem99);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -188,9 +188,9 @@ public partial class SpecValueSerial_LB : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-          foreach (SpecValueSerial_BYTES _iter88 in V)
+          foreach (SpecValueSerial_BYTES _iter100 in V)
           {
-            await _iter88.WriteAsync(oprot, cancellationToken);
+            await _iter100.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -231,16 +231,16 @@ public partial class SpecValueSerial_LB : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValueSerial_LB(");
-    int tmp89 = 0;
+    int tmp101 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp89++) { sb.Append(", "); }
+      if(0 < tmp101++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp89++) { sb.Append(", "); }
+      if(0 < tmp101++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

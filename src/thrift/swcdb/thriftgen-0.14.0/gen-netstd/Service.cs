@@ -1867,13 +1867,13 @@ public partial class Service
 
       public sql_mng_columnArgs DeepCopy()
       {
-        var tmp286 = new sql_mng_columnArgs();
+        var tmp298 = new sql_mng_columnArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp286.Sql = this.Sql;
+          tmp298.Sql = this.Sql;
         }
-        tmp286.__isset.sql = this.__isset.sql;
-        return tmp286;
+        tmp298.__isset.sql = this.__isset.sql;
+        return tmp298;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -1966,10 +1966,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_mng_column_args(");
-        int tmp287 = 0;
+        int tmp299 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp287++) { sb.Append(", "); }
+          if(0 < tmp299++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -2009,13 +2009,13 @@ public partial class Service
 
       public sql_mng_columnResult DeepCopy()
       {
-        var tmp288 = new sql_mng_columnResult();
+        var tmp300 = new sql_mng_columnResult();
         if((E != null) && __isset.e)
         {
-          tmp288.E = (Exception)this.E.DeepCopy();
+          tmp300.E = (Exception)this.E.DeepCopy();
         }
-        tmp288.__isset.e = this.__isset.e;
-        return tmp288;
+        tmp300.__isset.e = this.__isset.e;
+        return tmp300;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -2113,10 +2113,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_mng_column_result(");
-        int tmp289 = 0;
+        int tmp301 = 0;
         if((E != null) && __isset.e)
         {
-          if(0 < tmp289++) { sb.Append(", "); }
+          if(0 < tmp301++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -2159,13 +2159,13 @@ public partial class Service
 
       public sql_list_columnsArgs DeepCopy()
       {
-        var tmp290 = new sql_list_columnsArgs();
+        var tmp302 = new sql_list_columnsArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp290.Sql = this.Sql;
+          tmp302.Sql = this.Sql;
         }
-        tmp290.__isset.sql = this.__isset.sql;
-        return tmp290;
+        tmp302.__isset.sql = this.__isset.sql;
+        return tmp302;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -2258,10 +2258,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_list_columns_args(");
-        int tmp291 = 0;
+        int tmp303 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp291++) { sb.Append(", "); }
+          if(0 < tmp303++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -2316,18 +2316,18 @@ public partial class Service
 
       public sql_list_columnsResult DeepCopy()
       {
-        var tmp292 = new sql_list_columnsResult();
+        var tmp304 = new sql_list_columnsResult();
         if((Success != null) && __isset.success)
         {
-          tmp292.Success = this.Success.DeepCopy();
+          tmp304.Success = this.Success.DeepCopy();
         }
-        tmp292.__isset.success = this.__isset.success;
+        tmp304.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp292.E = (Exception)this.E.DeepCopy();
+          tmp304.E = (Exception)this.E.DeepCopy();
         }
-        tmp292.__isset.e = this.__isset.e;
-        return tmp292;
+        tmp304.__isset.e = this.__isset.e;
+        return tmp304;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -2351,14 +2351,14 @@ public partial class Service
                 if (field.Type == TType.List)
                 {
                   {
-                    TList _list293 = await iprot.ReadListBeginAsync(cancellationToken);
-                    Success = new List<Schema>(_list293.Count);
-                    for(int _i294 = 0; _i294 < _list293.Count; ++_i294)
+                    TList _list305 = await iprot.ReadListBeginAsync(cancellationToken);
+                    Success = new List<Schema>(_list305.Count);
+                    for(int _i306 = 0; _i306 < _list305.Count; ++_i306)
                     {
-                      Schema _elem295;
-                      _elem295 = new Schema();
-                      await _elem295.ReadAsync(iprot, cancellationToken);
-                      Success.Add(_elem295);
+                      Schema _elem307;
+                      _elem307 = new Schema();
+                      await _elem307.ReadAsync(iprot, cancellationToken);
+                      Success.Add(_elem307);
                     }
                     await iprot.ReadListEndAsync(cancellationToken);
                   }
@@ -2414,9 +2414,9 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteListBeginAsync(new TList(TType.Struct, Success.Count), cancellationToken);
-                foreach (Schema _iter296 in Success)
+                foreach (Schema _iter308 in Success)
                 {
-                  await _iter296.WriteAsync(oprot, cancellationToken);
+                  await _iter308.WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteListEndAsync(cancellationToken);
               }
@@ -2470,16 +2470,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_list_columns_result(");
-        int tmp297 = 0;
+        int tmp309 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp297++) { sb.Append(", "); }
+          if(0 < tmp309++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp297++) { sb.Append(", "); }
+          if(0 < tmp309++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -2522,13 +2522,13 @@ public partial class Service
 
       public sql_compact_columnsArgs DeepCopy()
       {
-        var tmp298 = new sql_compact_columnsArgs();
+        var tmp310 = new sql_compact_columnsArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp298.Sql = this.Sql;
+          tmp310.Sql = this.Sql;
         }
-        tmp298.__isset.sql = this.__isset.sql;
-        return tmp298;
+        tmp310.__isset.sql = this.__isset.sql;
+        return tmp310;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -2621,10 +2621,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_compact_columns_args(");
-        int tmp299 = 0;
+        int tmp311 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp299++) { sb.Append(", "); }
+          if(0 < tmp311++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -2679,18 +2679,18 @@ public partial class Service
 
       public sql_compact_columnsResult DeepCopy()
       {
-        var tmp300 = new sql_compact_columnsResult();
+        var tmp312 = new sql_compact_columnsResult();
         if((Success != null) && __isset.success)
         {
-          tmp300.Success = this.Success.DeepCopy();
+          tmp312.Success = this.Success.DeepCopy();
         }
-        tmp300.__isset.success = this.__isset.success;
+        tmp312.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp300.E = (Exception)this.E.DeepCopy();
+          tmp312.E = (Exception)this.E.DeepCopy();
         }
-        tmp300.__isset.e = this.__isset.e;
-        return tmp300;
+        tmp312.__isset.e = this.__isset.e;
+        return tmp312;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -2714,14 +2714,14 @@ public partial class Service
                 if (field.Type == TType.List)
                 {
                   {
-                    TList _list301 = await iprot.ReadListBeginAsync(cancellationToken);
-                    Success = new List<CompactResult>(_list301.Count);
-                    for(int _i302 = 0; _i302 < _list301.Count; ++_i302)
+                    TList _list313 = await iprot.ReadListBeginAsync(cancellationToken);
+                    Success = new List<CompactResult>(_list313.Count);
+                    for(int _i314 = 0; _i314 < _list313.Count; ++_i314)
                     {
-                      CompactResult _elem303;
-                      _elem303 = new CompactResult();
-                      await _elem303.ReadAsync(iprot, cancellationToken);
-                      Success.Add(_elem303);
+                      CompactResult _elem315;
+                      _elem315 = new CompactResult();
+                      await _elem315.ReadAsync(iprot, cancellationToken);
+                      Success.Add(_elem315);
                     }
                     await iprot.ReadListEndAsync(cancellationToken);
                   }
@@ -2777,9 +2777,9 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteListBeginAsync(new TList(TType.Struct, Success.Count), cancellationToken);
-                foreach (CompactResult _iter304 in Success)
+                foreach (CompactResult _iter316 in Success)
                 {
-                  await _iter304.WriteAsync(oprot, cancellationToken);
+                  await _iter316.WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteListEndAsync(cancellationToken);
               }
@@ -2833,16 +2833,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_compact_columns_result(");
-        int tmp305 = 0;
+        int tmp317 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp305++) { sb.Append(", "); }
+          if(0 < tmp317++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp305++) { sb.Append(", "); }
+          if(0 < tmp317++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -2885,13 +2885,13 @@ public partial class Service
 
       public sql_selectArgs DeepCopy()
       {
-        var tmp306 = new sql_selectArgs();
+        var tmp318 = new sql_selectArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp306.Sql = this.Sql;
+          tmp318.Sql = this.Sql;
         }
-        tmp306.__isset.sql = this.__isset.sql;
-        return tmp306;
+        tmp318.__isset.sql = this.__isset.sql;
+        return tmp318;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -2984,10 +2984,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_args(");
-        int tmp307 = 0;
+        int tmp319 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp307++) { sb.Append(", "); }
+          if(0 < tmp319++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -3042,18 +3042,18 @@ public partial class Service
 
       public sql_selectResult DeepCopy()
       {
-        var tmp308 = new sql_selectResult();
+        var tmp320 = new sql_selectResult();
         if((Success != null) && __isset.success)
         {
-          tmp308.Success = (Cells)this.Success.DeepCopy();
+          tmp320.Success = (Cells)this.Success.DeepCopy();
         }
-        tmp308.__isset.success = this.__isset.success;
+        tmp320.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp308.E = (Exception)this.E.DeepCopy();
+          tmp320.E = (Exception)this.E.DeepCopy();
         }
-        tmp308.__isset.e = this.__isset.e;
-        return tmp308;
+        tmp320.__isset.e = this.__isset.e;
+        return tmp320;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -3179,16 +3179,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_result(");
-        int tmp309 = 0;
+        int tmp321 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp309++) { sb.Append(", "); }
+          if(0 < tmp321++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp309++) { sb.Append(", "); }
+          if(0 < tmp321++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -3231,13 +3231,13 @@ public partial class Service
 
       public sql_select_rslt_on_columnArgs DeepCopy()
       {
-        var tmp310 = new sql_select_rslt_on_columnArgs();
+        var tmp322 = new sql_select_rslt_on_columnArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp310.Sql = this.Sql;
+          tmp322.Sql = this.Sql;
         }
-        tmp310.__isset.sql = this.__isset.sql;
-        return tmp310;
+        tmp322.__isset.sql = this.__isset.sql;
+        return tmp322;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -3330,10 +3330,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_rslt_on_column_args(");
-        int tmp311 = 0;
+        int tmp323 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp311++) { sb.Append(", "); }
+          if(0 < tmp323++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -3388,18 +3388,18 @@ public partial class Service
 
       public sql_select_rslt_on_columnResult DeepCopy()
       {
-        var tmp312 = new sql_select_rslt_on_columnResult();
+        var tmp324 = new sql_select_rslt_on_columnResult();
         if((Success != null) && __isset.success)
         {
-          tmp312.Success = this.Success.DeepCopy();
+          tmp324.Success = this.Success.DeepCopy();
         }
-        tmp312.__isset.success = this.__isset.success;
+        tmp324.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp312.E = (Exception)this.E.DeepCopy();
+          tmp324.E = (Exception)this.E.DeepCopy();
         }
-        tmp312.__isset.e = this.__isset.e;
-        return tmp312;
+        tmp324.__isset.e = this.__isset.e;
+        return tmp324;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -3423,16 +3423,16 @@ public partial class Service
                 if (field.Type == TType.Map)
                 {
                   {
-                    TMap _map313 = await iprot.ReadMapBeginAsync(cancellationToken);
-                    Success = new Dictionary<string, ColCells>(_map313.Count);
-                    for(int _i314 = 0; _i314 < _map313.Count; ++_i314)
+                    TMap _map325 = await iprot.ReadMapBeginAsync(cancellationToken);
+                    Success = new Dictionary<string, ColCells>(_map325.Count);
+                    for(int _i326 = 0; _i326 < _map325.Count; ++_i326)
                     {
-                      string _key315;
-                      ColCells _val316;
-                      _key315 = await iprot.ReadStringAsync(cancellationToken);
-                      _val316 = new ColCells();
-                      await _val316.ReadAsync(iprot, cancellationToken);
-                      Success[_key315] = _val316;
+                      string _key327;
+                      ColCells _val328;
+                      _key327 = await iprot.ReadStringAsync(cancellationToken);
+                      _val328 = new ColCells();
+                      await _val328.ReadAsync(iprot, cancellationToken);
+                      Success[_key327] = _val328;
                     }
                     await iprot.ReadMapEndAsync(cancellationToken);
                   }
@@ -3488,10 +3488,10 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteMapBeginAsync(new TMap(TType.String, TType.Struct, Success.Count), cancellationToken);
-                foreach (string _iter317 in Success.Keys)
+                foreach (string _iter329 in Success.Keys)
                 {
-                  await oprot.WriteStringAsync(_iter317, cancellationToken);
-                  await Success[_iter317].WriteAsync(oprot, cancellationToken);
+                  await oprot.WriteStringAsync(_iter329, cancellationToken);
+                  await Success[_iter329].WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteMapEndAsync(cancellationToken);
               }
@@ -3545,16 +3545,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_rslt_on_column_result(");
-        int tmp318 = 0;
+        int tmp330 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp318++) { sb.Append(", "); }
+          if(0 < tmp330++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp318++) { sb.Append(", "); }
+          if(0 < tmp330++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -3597,13 +3597,13 @@ public partial class Service
 
       public sql_select_rslt_on_keyArgs DeepCopy()
       {
-        var tmp319 = new sql_select_rslt_on_keyArgs();
+        var tmp331 = new sql_select_rslt_on_keyArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp319.Sql = this.Sql;
+          tmp331.Sql = this.Sql;
         }
-        tmp319.__isset.sql = this.__isset.sql;
-        return tmp319;
+        tmp331.__isset.sql = this.__isset.sql;
+        return tmp331;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -3696,10 +3696,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_rslt_on_key_args(");
-        int tmp320 = 0;
+        int tmp332 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp320++) { sb.Append(", "); }
+          if(0 < tmp332++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -3754,18 +3754,18 @@ public partial class Service
 
       public sql_select_rslt_on_keyResult DeepCopy()
       {
-        var tmp321 = new sql_select_rslt_on_keyResult();
+        var tmp333 = new sql_select_rslt_on_keyResult();
         if((Success != null) && __isset.success)
         {
-          tmp321.Success = this.Success.DeepCopy();
+          tmp333.Success = this.Success.DeepCopy();
         }
-        tmp321.__isset.success = this.__isset.success;
+        tmp333.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp321.E = (Exception)this.E.DeepCopy();
+          tmp333.E = (Exception)this.E.DeepCopy();
         }
-        tmp321.__isset.e = this.__isset.e;
-        return tmp321;
+        tmp333.__isset.e = this.__isset.e;
+        return tmp333;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -3789,14 +3789,14 @@ public partial class Service
                 if (field.Type == TType.List)
                 {
                   {
-                    TList _list322 = await iprot.ReadListBeginAsync(cancellationToken);
-                    Success = new List<kCells>(_list322.Count);
-                    for(int _i323 = 0; _i323 < _list322.Count; ++_i323)
+                    TList _list334 = await iprot.ReadListBeginAsync(cancellationToken);
+                    Success = new List<kCells>(_list334.Count);
+                    for(int _i335 = 0; _i335 < _list334.Count; ++_i335)
                     {
-                      kCells _elem324;
-                      _elem324 = new kCells();
-                      await _elem324.ReadAsync(iprot, cancellationToken);
-                      Success.Add(_elem324);
+                      kCells _elem336;
+                      _elem336 = new kCells();
+                      await _elem336.ReadAsync(iprot, cancellationToken);
+                      Success.Add(_elem336);
                     }
                     await iprot.ReadListEndAsync(cancellationToken);
                   }
@@ -3852,9 +3852,9 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteListBeginAsync(new TList(TType.Struct, Success.Count), cancellationToken);
-                foreach (kCells _iter325 in Success)
+                foreach (kCells _iter337 in Success)
                 {
-                  await _iter325.WriteAsync(oprot, cancellationToken);
+                  await _iter337.WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteListEndAsync(cancellationToken);
               }
@@ -3908,16 +3908,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_rslt_on_key_result(");
-        int tmp326 = 0;
+        int tmp338 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp326++) { sb.Append(", "); }
+          if(0 < tmp338++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp326++) { sb.Append(", "); }
+          if(0 < tmp338++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -3960,13 +3960,13 @@ public partial class Service
 
       public sql_select_rslt_on_fractionArgs DeepCopy()
       {
-        var tmp327 = new sql_select_rslt_on_fractionArgs();
+        var tmp339 = new sql_select_rslt_on_fractionArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp327.Sql = this.Sql;
+          tmp339.Sql = this.Sql;
         }
-        tmp327.__isset.sql = this.__isset.sql;
-        return tmp327;
+        tmp339.__isset.sql = this.__isset.sql;
+        return tmp339;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -4059,10 +4059,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_rslt_on_fraction_args(");
-        int tmp328 = 0;
+        int tmp340 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp328++) { sb.Append(", "); }
+          if(0 < tmp340++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -4117,18 +4117,18 @@ public partial class Service
 
       public sql_select_rslt_on_fractionResult DeepCopy()
       {
-        var tmp329 = new sql_select_rslt_on_fractionResult();
+        var tmp341 = new sql_select_rslt_on_fractionResult();
         if((Success != null) && __isset.success)
         {
-          tmp329.Success = (FCells)this.Success.DeepCopy();
+          tmp341.Success = (FCells)this.Success.DeepCopy();
         }
-        tmp329.__isset.success = this.__isset.success;
+        tmp341.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp329.E = (Exception)this.E.DeepCopy();
+          tmp341.E = (Exception)this.E.DeepCopy();
         }
-        tmp329.__isset.e = this.__isset.e;
-        return tmp329;
+        tmp341.__isset.e = this.__isset.e;
+        return tmp341;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -4254,16 +4254,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_select_rslt_on_fraction_result(");
-        int tmp330 = 0;
+        int tmp342 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp330++) { sb.Append(", "); }
+          if(0 < tmp342++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp330++) { sb.Append(", "); }
+          if(0 < tmp342++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -4326,18 +4326,18 @@ public partial class Service
 
       public sql_queryArgs DeepCopy()
       {
-        var tmp331 = new sql_queryArgs();
+        var tmp343 = new sql_queryArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp331.Sql = this.Sql;
+          tmp343.Sql = this.Sql;
         }
-        tmp331.__isset.sql = this.__isset.sql;
+        tmp343.__isset.sql = this.__isset.sql;
         if(__isset.rslt)
         {
-          tmp331.Rslt = this.Rslt;
+          tmp343.Rslt = this.Rslt;
         }
-        tmp331.__isset.rslt = this.__isset.rslt;
-        return tmp331;
+        tmp343.__isset.rslt = this.__isset.rslt;
+        return tmp343;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -4454,16 +4454,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_query_args(");
-        int tmp332 = 0;
+        int tmp344 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp332++) { sb.Append(", "); }
+          if(0 < tmp344++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
         if(__isset.rslt)
         {
-          if(0 < tmp332++) { sb.Append(", "); }
+          if(0 < tmp344++) { sb.Append(", "); }
           sb.Append("Rslt: ");
           Rslt.ToString(sb);
         }
@@ -4518,18 +4518,18 @@ public partial class Service
 
       public sql_queryResult DeepCopy()
       {
-        var tmp333 = new sql_queryResult();
+        var tmp345 = new sql_queryResult();
         if((Success != null) && __isset.success)
         {
-          tmp333.Success = (CellsGroup)this.Success.DeepCopy();
+          tmp345.Success = (CellsGroup)this.Success.DeepCopy();
         }
-        tmp333.__isset.success = this.__isset.success;
+        tmp345.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp333.E = (Exception)this.E.DeepCopy();
+          tmp345.E = (Exception)this.E.DeepCopy();
         }
-        tmp333.__isset.e = this.__isset.e;
-        return tmp333;
+        tmp345.__isset.e = this.__isset.e;
+        return tmp345;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -4655,16 +4655,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_query_result(");
-        int tmp334 = 0;
+        int tmp346 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp334++) { sb.Append(", "); }
+          if(0 < tmp346++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp334++) { sb.Append(", "); }
+          if(0 < tmp346++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -4727,18 +4727,18 @@ public partial class Service
 
       public sql_updateArgs DeepCopy()
       {
-        var tmp335 = new sql_updateArgs();
+        var tmp347 = new sql_updateArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp335.Sql = this.Sql;
+          tmp347.Sql = this.Sql;
         }
-        tmp335.__isset.sql = this.__isset.sql;
+        tmp347.__isset.sql = this.__isset.sql;
         if(__isset.updater_id)
         {
-          tmp335.Updater_id = this.Updater_id;
+          tmp347.Updater_id = this.Updater_id;
         }
-        tmp335.__isset.updater_id = this.__isset.updater_id;
-        return tmp335;
+        tmp347.__isset.updater_id = this.__isset.updater_id;
+        return tmp347;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -4855,16 +4855,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_update_args(");
-        int tmp336 = 0;
+        int tmp348 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp336++) { sb.Append(", "); }
+          if(0 < tmp348++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
         if(__isset.updater_id)
         {
-          if(0 < tmp336++) { sb.Append(", "); }
+          if(0 < tmp348++) { sb.Append(", "); }
           sb.Append("Updater_id: ");
           Updater_id.ToString(sb);
         }
@@ -4904,13 +4904,13 @@ public partial class Service
 
       public sql_updateResult DeepCopy()
       {
-        var tmp337 = new sql_updateResult();
+        var tmp349 = new sql_updateResult();
         if((E != null) && __isset.e)
         {
-          tmp337.E = (Exception)this.E.DeepCopy();
+          tmp349.E = (Exception)this.E.DeepCopy();
         }
-        tmp337.__isset.e = this.__isset.e;
-        return tmp337;
+        tmp349.__isset.e = this.__isset.e;
+        return tmp349;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -5008,10 +5008,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("sql_update_result(");
-        int tmp338 = 0;
+        int tmp350 = 0;
         if((E != null) && __isset.e)
         {
-          if(0 < tmp338++) { sb.Append(", "); }
+          if(0 < tmp350++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -5054,13 +5054,13 @@ public partial class Service
 
       public exec_sqlArgs DeepCopy()
       {
-        var tmp339 = new exec_sqlArgs();
+        var tmp351 = new exec_sqlArgs();
         if((Sql != null) && __isset.sql)
         {
-          tmp339.Sql = this.Sql;
+          tmp351.Sql = this.Sql;
         }
-        tmp339.__isset.sql = this.__isset.sql;
-        return tmp339;
+        tmp351.__isset.sql = this.__isset.sql;
+        return tmp351;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -5153,10 +5153,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("exec_sql_args(");
-        int tmp340 = 0;
+        int tmp352 = 0;
         if((Sql != null) && __isset.sql)
         {
-          if(0 < tmp340++) { sb.Append(", "); }
+          if(0 < tmp352++) { sb.Append(", "); }
           sb.Append("Sql: ");
           Sql.ToString(sb);
         }
@@ -5211,18 +5211,18 @@ public partial class Service
 
       public exec_sqlResult DeepCopy()
       {
-        var tmp341 = new exec_sqlResult();
+        var tmp353 = new exec_sqlResult();
         if((Success != null) && __isset.success)
         {
-          tmp341.Success = (Result)this.Success.DeepCopy();
+          tmp353.Success = (Result)this.Success.DeepCopy();
         }
-        tmp341.__isset.success = this.__isset.success;
+        tmp353.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp341.E = (Exception)this.E.DeepCopy();
+          tmp353.E = (Exception)this.E.DeepCopy();
         }
-        tmp341.__isset.e = this.__isset.e;
-        return tmp341;
+        tmp353.__isset.e = this.__isset.e;
+        return tmp353;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -5348,16 +5348,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("exec_sql_result(");
-        int tmp342 = 0;
+        int tmp354 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp342++) { sb.Append(", "); }
+          if(0 < tmp354++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp342++) { sb.Append(", "); }
+          if(0 < tmp354++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -5400,13 +5400,13 @@ public partial class Service
 
       public updater_createArgs DeepCopy()
       {
-        var tmp343 = new updater_createArgs();
+        var tmp355 = new updater_createArgs();
         if(__isset.buffer_size)
         {
-          tmp343.Buffer_size = this.Buffer_size;
+          tmp355.Buffer_size = this.Buffer_size;
         }
-        tmp343.__isset.buffer_size = this.__isset.buffer_size;
-        return tmp343;
+        tmp355.__isset.buffer_size = this.__isset.buffer_size;
+        return tmp355;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -5499,10 +5499,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("updater_create_args(");
-        int tmp344 = 0;
+        int tmp356 = 0;
         if(__isset.buffer_size)
         {
-          if(0 < tmp344++) { sb.Append(", "); }
+          if(0 < tmp356++) { sb.Append(", "); }
           sb.Append("Buffer_size: ");
           Buffer_size.ToString(sb);
         }
@@ -5557,18 +5557,18 @@ public partial class Service
 
       public updater_createResult DeepCopy()
       {
-        var tmp345 = new updater_createResult();
+        var tmp357 = new updater_createResult();
         if(__isset.success)
         {
-          tmp345.Success = this.Success;
+          tmp357.Success = this.Success;
         }
-        tmp345.__isset.success = this.__isset.success;
+        tmp357.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp345.E = (Exception)this.E.DeepCopy();
+          tmp357.E = (Exception)this.E.DeepCopy();
         }
-        tmp345.__isset.e = this.__isset.e;
-        return tmp345;
+        tmp357.__isset.e = this.__isset.e;
+        return tmp357;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -5690,16 +5690,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("updater_create_result(");
-        int tmp346 = 0;
+        int tmp358 = 0;
         if(__isset.success)
         {
-          if(0 < tmp346++) { sb.Append(", "); }
+          if(0 < tmp358++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp346++) { sb.Append(", "); }
+          if(0 < tmp358++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -5742,13 +5742,13 @@ public partial class Service
 
       public updater_closeArgs DeepCopy()
       {
-        var tmp347 = new updater_closeArgs();
+        var tmp359 = new updater_closeArgs();
         if(__isset.id)
         {
-          tmp347.Id = this.Id;
+          tmp359.Id = this.Id;
         }
-        tmp347.__isset.id = this.__isset.id;
-        return tmp347;
+        tmp359.__isset.id = this.__isset.id;
+        return tmp359;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -5841,10 +5841,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("updater_close_args(");
-        int tmp348 = 0;
+        int tmp360 = 0;
         if(__isset.id)
         {
-          if(0 < tmp348++) { sb.Append(", "); }
+          if(0 < tmp360++) { sb.Append(", "); }
           sb.Append("Id: ");
           Id.ToString(sb);
         }
@@ -5884,13 +5884,13 @@ public partial class Service
 
       public updater_closeResult DeepCopy()
       {
-        var tmp349 = new updater_closeResult();
+        var tmp361 = new updater_closeResult();
         if((E != null) && __isset.e)
         {
-          tmp349.E = (Exception)this.E.DeepCopy();
+          tmp361.E = (Exception)this.E.DeepCopy();
         }
-        tmp349.__isset.e = this.__isset.e;
-        return tmp349;
+        tmp361.__isset.e = this.__isset.e;
+        return tmp361;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -5988,10 +5988,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("updater_close_result(");
-        int tmp350 = 0;
+        int tmp362 = 0;
         if((E != null) && __isset.e)
         {
-          if(0 < tmp350++) { sb.Append(", "); }
+          if(0 < tmp362++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -6054,18 +6054,18 @@ public partial class Service
 
       public updateArgs DeepCopy()
       {
-        var tmp351 = new updateArgs();
+        var tmp363 = new updateArgs();
         if((Cells != null) && __isset.cells)
         {
-          tmp351.Cells = this.Cells.DeepCopy();
+          tmp363.Cells = this.Cells.DeepCopy();
         }
-        tmp351.__isset.cells = this.__isset.cells;
+        tmp363.__isset.cells = this.__isset.cells;
         if(__isset.updater_id)
         {
-          tmp351.Updater_id = this.Updater_id;
+          tmp363.Updater_id = this.Updater_id;
         }
-        tmp351.__isset.updater_id = this.__isset.updater_id;
-        return tmp351;
+        tmp363.__isset.updater_id = this.__isset.updater_id;
+        return tmp363;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -6089,26 +6089,26 @@ public partial class Service
                 if (field.Type == TType.Map)
                 {
                   {
-                    TMap _map352 = await iprot.ReadMapBeginAsync(cancellationToken);
-                    Cells = new Dictionary<long, List<UCell>>(_map352.Count);
-                    for(int _i353 = 0; _i353 < _map352.Count; ++_i353)
+                    TMap _map364 = await iprot.ReadMapBeginAsync(cancellationToken);
+                    Cells = new Dictionary<long, List<UCell>>(_map364.Count);
+                    for(int _i365 = 0; _i365 < _map364.Count; ++_i365)
                     {
-                      long _key354;
-                      List<UCell> _val355;
-                      _key354 = await iprot.ReadI64Async(cancellationToken);
+                      long _key366;
+                      List<UCell> _val367;
+                      _key366 = await iprot.ReadI64Async(cancellationToken);
                       {
-                        TList _list356 = await iprot.ReadListBeginAsync(cancellationToken);
-                        _val355 = new List<UCell>(_list356.Count);
-                        for(int _i357 = 0; _i357 < _list356.Count; ++_i357)
+                        TList _list368 = await iprot.ReadListBeginAsync(cancellationToken);
+                        _val367 = new List<UCell>(_list368.Count);
+                        for(int _i369 = 0; _i369 < _list368.Count; ++_i369)
                         {
-                          UCell _elem358;
-                          _elem358 = new UCell();
-                          await _elem358.ReadAsync(iprot, cancellationToken);
-                          _val355.Add(_elem358);
+                          UCell _elem370;
+                          _elem370 = new UCell();
+                          await _elem370.ReadAsync(iprot, cancellationToken);
+                          _val367.Add(_elem370);
                         }
                         await iprot.ReadListEndAsync(cancellationToken);
                       }
-                      Cells[_key354] = _val355;
+                      Cells[_key366] = _val367;
                     }
                     await iprot.ReadMapEndAsync(cancellationToken);
                   }
@@ -6160,14 +6160,14 @@ public partial class Service
             await oprot.WriteFieldBeginAsync(field, cancellationToken);
             {
               await oprot.WriteMapBeginAsync(new TMap(TType.I64, TType.List, Cells.Count), cancellationToken);
-              foreach (long _iter359 in Cells.Keys)
+              foreach (long _iter371 in Cells.Keys)
               {
-                await oprot.WriteI64Async(_iter359, cancellationToken);
+                await oprot.WriteI64Async(_iter371, cancellationToken);
                 {
-                  await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells[_iter359].Count), cancellationToken);
-                  foreach (UCell _iter360 in Cells[_iter359])
+                  await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells[_iter371].Count), cancellationToken);
+                  foreach (UCell _iter372 in Cells[_iter371])
                   {
-                    await _iter360.WriteAsync(oprot, cancellationToken);
+                    await _iter372.WriteAsync(oprot, cancellationToken);
                   }
                   await oprot.WriteListEndAsync(cancellationToken);
                 }
@@ -6220,16 +6220,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("update_args(");
-        int tmp361 = 0;
+        int tmp373 = 0;
         if((Cells != null) && __isset.cells)
         {
-          if(0 < tmp361++) { sb.Append(", "); }
+          if(0 < tmp373++) { sb.Append(", "); }
           sb.Append("Cells: ");
           Cells.ToString(sb);
         }
         if(__isset.updater_id)
         {
-          if(0 < tmp361++) { sb.Append(", "); }
+          if(0 < tmp373++) { sb.Append(", "); }
           sb.Append("Updater_id: ");
           Updater_id.ToString(sb);
         }
@@ -6269,13 +6269,13 @@ public partial class Service
 
       public updateResult DeepCopy()
       {
-        var tmp362 = new updateResult();
+        var tmp374 = new updateResult();
         if((E != null) && __isset.e)
         {
-          tmp362.E = (Exception)this.E.DeepCopy();
+          tmp374.E = (Exception)this.E.DeepCopy();
         }
-        tmp362.__isset.e = this.__isset.e;
-        return tmp362;
+        tmp374.__isset.e = this.__isset.e;
+        return tmp374;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -6373,10 +6373,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("update_result(");
-        int tmp363 = 0;
+        int tmp375 = 0;
         if((E != null) && __isset.e)
         {
-          if(0 < tmp363++) { sb.Append(", "); }
+          if(0 < tmp375++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -6439,18 +6439,18 @@ public partial class Service
 
       public update_serialArgs DeepCopy()
       {
-        var tmp364 = new update_serialArgs();
+        var tmp376 = new update_serialArgs();
         if((Cells != null) && __isset.cells)
         {
-          tmp364.Cells = this.Cells.DeepCopy();
+          tmp376.Cells = this.Cells.DeepCopy();
         }
-        tmp364.__isset.cells = this.__isset.cells;
+        tmp376.__isset.cells = this.__isset.cells;
         if(__isset.updater_id)
         {
-          tmp364.Updater_id = this.Updater_id;
+          tmp376.Updater_id = this.Updater_id;
         }
-        tmp364.__isset.updater_id = this.__isset.updater_id;
-        return tmp364;
+        tmp376.__isset.updater_id = this.__isset.updater_id;
+        return tmp376;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -6474,26 +6474,26 @@ public partial class Service
                 if (field.Type == TType.Map)
                 {
                   {
-                    TMap _map365 = await iprot.ReadMapBeginAsync(cancellationToken);
-                    Cells = new Dictionary<long, List<UCellSerial>>(_map365.Count);
-                    for(int _i366 = 0; _i366 < _map365.Count; ++_i366)
+                    TMap _map377 = await iprot.ReadMapBeginAsync(cancellationToken);
+                    Cells = new Dictionary<long, List<UCellSerial>>(_map377.Count);
+                    for(int _i378 = 0; _i378 < _map377.Count; ++_i378)
                     {
-                      long _key367;
-                      List<UCellSerial> _val368;
-                      _key367 = await iprot.ReadI64Async(cancellationToken);
+                      long _key379;
+                      List<UCellSerial> _val380;
+                      _key379 = await iprot.ReadI64Async(cancellationToken);
                       {
-                        TList _list369 = await iprot.ReadListBeginAsync(cancellationToken);
-                        _val368 = new List<UCellSerial>(_list369.Count);
-                        for(int _i370 = 0; _i370 < _list369.Count; ++_i370)
+                        TList _list381 = await iprot.ReadListBeginAsync(cancellationToken);
+                        _val380 = new List<UCellSerial>(_list381.Count);
+                        for(int _i382 = 0; _i382 < _list381.Count; ++_i382)
                         {
-                          UCellSerial _elem371;
-                          _elem371 = new UCellSerial();
-                          await _elem371.ReadAsync(iprot, cancellationToken);
-                          _val368.Add(_elem371);
+                          UCellSerial _elem383;
+                          _elem383 = new UCellSerial();
+                          await _elem383.ReadAsync(iprot, cancellationToken);
+                          _val380.Add(_elem383);
                         }
                         await iprot.ReadListEndAsync(cancellationToken);
                       }
-                      Cells[_key367] = _val368;
+                      Cells[_key379] = _val380;
                     }
                     await iprot.ReadMapEndAsync(cancellationToken);
                   }
@@ -6545,14 +6545,14 @@ public partial class Service
             await oprot.WriteFieldBeginAsync(field, cancellationToken);
             {
               await oprot.WriteMapBeginAsync(new TMap(TType.I64, TType.List, Cells.Count), cancellationToken);
-              foreach (long _iter372 in Cells.Keys)
+              foreach (long _iter384 in Cells.Keys)
               {
-                await oprot.WriteI64Async(_iter372, cancellationToken);
+                await oprot.WriteI64Async(_iter384, cancellationToken);
                 {
-                  await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells[_iter372].Count), cancellationToken);
-                  foreach (UCellSerial _iter373 in Cells[_iter372])
+                  await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells[_iter384].Count), cancellationToken);
+                  foreach (UCellSerial _iter385 in Cells[_iter384])
                   {
-                    await _iter373.WriteAsync(oprot, cancellationToken);
+                    await _iter385.WriteAsync(oprot, cancellationToken);
                   }
                   await oprot.WriteListEndAsync(cancellationToken);
                 }
@@ -6605,16 +6605,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("update_serial_args(");
-        int tmp374 = 0;
+        int tmp386 = 0;
         if((Cells != null) && __isset.cells)
         {
-          if(0 < tmp374++) { sb.Append(", "); }
+          if(0 < tmp386++) { sb.Append(", "); }
           sb.Append("Cells: ");
           Cells.ToString(sb);
         }
         if(__isset.updater_id)
         {
-          if(0 < tmp374++) { sb.Append(", "); }
+          if(0 < tmp386++) { sb.Append(", "); }
           sb.Append("Updater_id: ");
           Updater_id.ToString(sb);
         }
@@ -6654,13 +6654,13 @@ public partial class Service
 
       public update_serialResult DeepCopy()
       {
-        var tmp375 = new update_serialResult();
+        var tmp387 = new update_serialResult();
         if((E != null) && __isset.e)
         {
-          tmp375.E = (Exception)this.E.DeepCopy();
+          tmp387.E = (Exception)this.E.DeepCopy();
         }
-        tmp375.__isset.e = this.__isset.e;
-        return tmp375;
+        tmp387.__isset.e = this.__isset.e;
+        return tmp387;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -6758,10 +6758,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("update_serial_result(");
-        int tmp376 = 0;
+        int tmp388 = 0;
         if((E != null) && __isset.e)
         {
-          if(0 < tmp376++) { sb.Append(", "); }
+          if(0 < tmp388++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -6824,18 +6824,18 @@ public partial class Service
 
       public mng_columnArgs DeepCopy()
       {
-        var tmp377 = new mng_columnArgs();
+        var tmp389 = new mng_columnArgs();
         if(__isset.func)
         {
-          tmp377.Func = this.Func;
+          tmp389.Func = this.Func;
         }
-        tmp377.__isset.func = this.__isset.func;
+        tmp389.__isset.func = this.__isset.func;
         if((Schema != null) && __isset.schema)
         {
-          tmp377.Schema = (Schema)this.Schema.DeepCopy();
+          tmp389.Schema = (Schema)this.Schema.DeepCopy();
         }
-        tmp377.__isset.schema = this.__isset.schema;
-        return tmp377;
+        tmp389.__isset.schema = this.__isset.schema;
+        return tmp389;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -6953,16 +6953,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("mng_column_args(");
-        int tmp378 = 0;
+        int tmp390 = 0;
         if(__isset.func)
         {
-          if(0 < tmp378++) { sb.Append(", "); }
+          if(0 < tmp390++) { sb.Append(", "); }
           sb.Append("Func: ");
           Func.ToString(sb);
         }
         if((Schema != null) && __isset.schema)
         {
-          if(0 < tmp378++) { sb.Append(", "); }
+          if(0 < tmp390++) { sb.Append(", "); }
           sb.Append("Schema: ");
           Schema.ToString(sb);
         }
@@ -7002,13 +7002,13 @@ public partial class Service
 
       public mng_columnResult DeepCopy()
       {
-        var tmp379 = new mng_columnResult();
+        var tmp391 = new mng_columnResult();
         if((E != null) && __isset.e)
         {
-          tmp379.E = (Exception)this.E.DeepCopy();
+          tmp391.E = (Exception)this.E.DeepCopy();
         }
-        tmp379.__isset.e = this.__isset.e;
-        return tmp379;
+        tmp391.__isset.e = this.__isset.e;
+        return tmp391;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -7106,10 +7106,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("mng_column_result(");
-        int tmp380 = 0;
+        int tmp392 = 0;
         if((E != null) && __isset.e)
         {
-          if(0 < tmp380++) { sb.Append(", "); }
+          if(0 < tmp392++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -7152,13 +7152,13 @@ public partial class Service
 
       public list_columnsArgs DeepCopy()
       {
-        var tmp381 = new list_columnsArgs();
+        var tmp393 = new list_columnsArgs();
         if((Spec != null) && __isset.spec)
         {
-          tmp381.Spec = (SpecSchemas)this.Spec.DeepCopy();
+          tmp393.Spec = (SpecSchemas)this.Spec.DeepCopy();
         }
-        tmp381.__isset.spec = this.__isset.spec;
-        return tmp381;
+        tmp393.__isset.spec = this.__isset.spec;
+        return tmp393;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -7252,10 +7252,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("list_columns_args(");
-        int tmp382 = 0;
+        int tmp394 = 0;
         if((Spec != null) && __isset.spec)
         {
-          if(0 < tmp382++) { sb.Append(", "); }
+          if(0 < tmp394++) { sb.Append(", "); }
           sb.Append("Spec: ");
           Spec.ToString(sb);
         }
@@ -7310,18 +7310,18 @@ public partial class Service
 
       public list_columnsResult DeepCopy()
       {
-        var tmp383 = new list_columnsResult();
+        var tmp395 = new list_columnsResult();
         if((Success != null) && __isset.success)
         {
-          tmp383.Success = this.Success.DeepCopy();
+          tmp395.Success = this.Success.DeepCopy();
         }
-        tmp383.__isset.success = this.__isset.success;
+        tmp395.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp383.E = (Exception)this.E.DeepCopy();
+          tmp395.E = (Exception)this.E.DeepCopy();
         }
-        tmp383.__isset.e = this.__isset.e;
-        return tmp383;
+        tmp395.__isset.e = this.__isset.e;
+        return tmp395;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -7345,14 +7345,14 @@ public partial class Service
                 if (field.Type == TType.List)
                 {
                   {
-                    TList _list384 = await iprot.ReadListBeginAsync(cancellationToken);
-                    Success = new List<Schema>(_list384.Count);
-                    for(int _i385 = 0; _i385 < _list384.Count; ++_i385)
+                    TList _list396 = await iprot.ReadListBeginAsync(cancellationToken);
+                    Success = new List<Schema>(_list396.Count);
+                    for(int _i397 = 0; _i397 < _list396.Count; ++_i397)
                     {
-                      Schema _elem386;
-                      _elem386 = new Schema();
-                      await _elem386.ReadAsync(iprot, cancellationToken);
-                      Success.Add(_elem386);
+                      Schema _elem398;
+                      _elem398 = new Schema();
+                      await _elem398.ReadAsync(iprot, cancellationToken);
+                      Success.Add(_elem398);
                     }
                     await iprot.ReadListEndAsync(cancellationToken);
                   }
@@ -7408,9 +7408,9 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteListBeginAsync(new TList(TType.Struct, Success.Count), cancellationToken);
-                foreach (Schema _iter387 in Success)
+                foreach (Schema _iter399 in Success)
                 {
-                  await _iter387.WriteAsync(oprot, cancellationToken);
+                  await _iter399.WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteListEndAsync(cancellationToken);
               }
@@ -7464,16 +7464,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("list_columns_result(");
-        int tmp388 = 0;
+        int tmp400 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp388++) { sb.Append(", "); }
+          if(0 < tmp400++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp388++) { sb.Append(", "); }
+          if(0 < tmp400++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -7516,13 +7516,13 @@ public partial class Service
 
       public compact_columnsArgs DeepCopy()
       {
-        var tmp389 = new compact_columnsArgs();
+        var tmp401 = new compact_columnsArgs();
         if((Spec != null) && __isset.spec)
         {
-          tmp389.Spec = (SpecSchemas)this.Spec.DeepCopy();
+          tmp401.Spec = (SpecSchemas)this.Spec.DeepCopy();
         }
-        tmp389.__isset.spec = this.__isset.spec;
-        return tmp389;
+        tmp401.__isset.spec = this.__isset.spec;
+        return tmp401;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -7616,10 +7616,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("compact_columns_args(");
-        int tmp390 = 0;
+        int tmp402 = 0;
         if((Spec != null) && __isset.spec)
         {
-          if(0 < tmp390++) { sb.Append(", "); }
+          if(0 < tmp402++) { sb.Append(", "); }
           sb.Append("Spec: ");
           Spec.ToString(sb);
         }
@@ -7674,18 +7674,18 @@ public partial class Service
 
       public compact_columnsResult DeepCopy()
       {
-        var tmp391 = new compact_columnsResult();
+        var tmp403 = new compact_columnsResult();
         if((Success != null) && __isset.success)
         {
-          tmp391.Success = this.Success.DeepCopy();
+          tmp403.Success = this.Success.DeepCopy();
         }
-        tmp391.__isset.success = this.__isset.success;
+        tmp403.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp391.E = (Exception)this.E.DeepCopy();
+          tmp403.E = (Exception)this.E.DeepCopy();
         }
-        tmp391.__isset.e = this.__isset.e;
-        return tmp391;
+        tmp403.__isset.e = this.__isset.e;
+        return tmp403;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -7709,14 +7709,14 @@ public partial class Service
                 if (field.Type == TType.List)
                 {
                   {
-                    TList _list392 = await iprot.ReadListBeginAsync(cancellationToken);
-                    Success = new List<CompactResult>(_list392.Count);
-                    for(int _i393 = 0; _i393 < _list392.Count; ++_i393)
+                    TList _list404 = await iprot.ReadListBeginAsync(cancellationToken);
+                    Success = new List<CompactResult>(_list404.Count);
+                    for(int _i405 = 0; _i405 < _list404.Count; ++_i405)
                     {
-                      CompactResult _elem394;
-                      _elem394 = new CompactResult();
-                      await _elem394.ReadAsync(iprot, cancellationToken);
-                      Success.Add(_elem394);
+                      CompactResult _elem406;
+                      _elem406 = new CompactResult();
+                      await _elem406.ReadAsync(iprot, cancellationToken);
+                      Success.Add(_elem406);
                     }
                     await iprot.ReadListEndAsync(cancellationToken);
                   }
@@ -7772,9 +7772,9 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteListBeginAsync(new TList(TType.Struct, Success.Count), cancellationToken);
-                foreach (CompactResult _iter395 in Success)
+                foreach (CompactResult _iter407 in Success)
                 {
-                  await _iter395.WriteAsync(oprot, cancellationToken);
+                  await _iter407.WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteListEndAsync(cancellationToken);
               }
@@ -7828,16 +7828,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("compact_columns_result(");
-        int tmp396 = 0;
+        int tmp408 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp396++) { sb.Append(", "); }
+          if(0 < tmp408++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp396++) { sb.Append(", "); }
+          if(0 < tmp408++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -7880,13 +7880,13 @@ public partial class Service
 
       public scanArgs DeepCopy()
       {
-        var tmp397 = new scanArgs();
+        var tmp409 = new scanArgs();
         if((Spec != null) && __isset.spec)
         {
-          tmp397.Spec = (SpecScan)this.Spec.DeepCopy();
+          tmp409.Spec = (SpecScan)this.Spec.DeepCopy();
         }
-        tmp397.__isset.spec = this.__isset.spec;
-        return tmp397;
+        tmp409.__isset.spec = this.__isset.spec;
+        return tmp409;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -7980,10 +7980,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_args(");
-        int tmp398 = 0;
+        int tmp410 = 0;
         if((Spec != null) && __isset.spec)
         {
-          if(0 < tmp398++) { sb.Append(", "); }
+          if(0 < tmp410++) { sb.Append(", "); }
           sb.Append("Spec: ");
           Spec.ToString(sb);
         }
@@ -8038,18 +8038,18 @@ public partial class Service
 
       public scanResult DeepCopy()
       {
-        var tmp399 = new scanResult();
+        var tmp411 = new scanResult();
         if((Success != null) && __isset.success)
         {
-          tmp399.Success = (Cells)this.Success.DeepCopy();
+          tmp411.Success = (Cells)this.Success.DeepCopy();
         }
-        tmp399.__isset.success = this.__isset.success;
+        tmp411.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp399.E = (Exception)this.E.DeepCopy();
+          tmp411.E = (Exception)this.E.DeepCopy();
         }
-        tmp399.__isset.e = this.__isset.e;
-        return tmp399;
+        tmp411.__isset.e = this.__isset.e;
+        return tmp411;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -8175,16 +8175,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_result(");
-        int tmp400 = 0;
+        int tmp412 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp400++) { sb.Append(", "); }
+          if(0 < tmp412++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp400++) { sb.Append(", "); }
+          if(0 < tmp412++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -8227,13 +8227,13 @@ public partial class Service
 
       public scan_rslt_on_columnArgs DeepCopy()
       {
-        var tmp401 = new scan_rslt_on_columnArgs();
+        var tmp413 = new scan_rslt_on_columnArgs();
         if((Spec != null) && __isset.spec)
         {
-          tmp401.Spec = (SpecScan)this.Spec.DeepCopy();
+          tmp413.Spec = (SpecScan)this.Spec.DeepCopy();
         }
-        tmp401.__isset.spec = this.__isset.spec;
-        return tmp401;
+        tmp413.__isset.spec = this.__isset.spec;
+        return tmp413;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -8327,10 +8327,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_column_args(");
-        int tmp402 = 0;
+        int tmp414 = 0;
         if((Spec != null) && __isset.spec)
         {
-          if(0 < tmp402++) { sb.Append(", "); }
+          if(0 < tmp414++) { sb.Append(", "); }
           sb.Append("Spec: ");
           Spec.ToString(sb);
         }
@@ -8385,18 +8385,18 @@ public partial class Service
 
       public scan_rslt_on_columnResult DeepCopy()
       {
-        var tmp403 = new scan_rslt_on_columnResult();
+        var tmp415 = new scan_rslt_on_columnResult();
         if((Success != null) && __isset.success)
         {
-          tmp403.Success = this.Success.DeepCopy();
+          tmp415.Success = this.Success.DeepCopy();
         }
-        tmp403.__isset.success = this.__isset.success;
+        tmp415.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp403.E = (Exception)this.E.DeepCopy();
+          tmp415.E = (Exception)this.E.DeepCopy();
         }
-        tmp403.__isset.e = this.__isset.e;
-        return tmp403;
+        tmp415.__isset.e = this.__isset.e;
+        return tmp415;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -8420,16 +8420,16 @@ public partial class Service
                 if (field.Type == TType.Map)
                 {
                   {
-                    TMap _map404 = await iprot.ReadMapBeginAsync(cancellationToken);
-                    Success = new Dictionary<string, ColCells>(_map404.Count);
-                    for(int _i405 = 0; _i405 < _map404.Count; ++_i405)
+                    TMap _map416 = await iprot.ReadMapBeginAsync(cancellationToken);
+                    Success = new Dictionary<string, ColCells>(_map416.Count);
+                    for(int _i417 = 0; _i417 < _map416.Count; ++_i417)
                     {
-                      string _key406;
-                      ColCells _val407;
-                      _key406 = await iprot.ReadStringAsync(cancellationToken);
-                      _val407 = new ColCells();
-                      await _val407.ReadAsync(iprot, cancellationToken);
-                      Success[_key406] = _val407;
+                      string _key418;
+                      ColCells _val419;
+                      _key418 = await iprot.ReadStringAsync(cancellationToken);
+                      _val419 = new ColCells();
+                      await _val419.ReadAsync(iprot, cancellationToken);
+                      Success[_key418] = _val419;
                     }
                     await iprot.ReadMapEndAsync(cancellationToken);
                   }
@@ -8485,10 +8485,10 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteMapBeginAsync(new TMap(TType.String, TType.Struct, Success.Count), cancellationToken);
-                foreach (string _iter408 in Success.Keys)
+                foreach (string _iter420 in Success.Keys)
                 {
-                  await oprot.WriteStringAsync(_iter408, cancellationToken);
-                  await Success[_iter408].WriteAsync(oprot, cancellationToken);
+                  await oprot.WriteStringAsync(_iter420, cancellationToken);
+                  await Success[_iter420].WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteMapEndAsync(cancellationToken);
               }
@@ -8542,16 +8542,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_column_result(");
-        int tmp409 = 0;
+        int tmp421 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp409++) { sb.Append(", "); }
+          if(0 < tmp421++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp409++) { sb.Append(", "); }
+          if(0 < tmp421++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -8594,13 +8594,13 @@ public partial class Service
 
       public scan_rslt_on_keyArgs DeepCopy()
       {
-        var tmp410 = new scan_rslt_on_keyArgs();
+        var tmp422 = new scan_rslt_on_keyArgs();
         if((Spec != null) && __isset.spec)
         {
-          tmp410.Spec = (SpecScan)this.Spec.DeepCopy();
+          tmp422.Spec = (SpecScan)this.Spec.DeepCopy();
         }
-        tmp410.__isset.spec = this.__isset.spec;
-        return tmp410;
+        tmp422.__isset.spec = this.__isset.spec;
+        return tmp422;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -8694,10 +8694,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_key_args(");
-        int tmp411 = 0;
+        int tmp423 = 0;
         if((Spec != null) && __isset.spec)
         {
-          if(0 < tmp411++) { sb.Append(", "); }
+          if(0 < tmp423++) { sb.Append(", "); }
           sb.Append("Spec: ");
           Spec.ToString(sb);
         }
@@ -8752,18 +8752,18 @@ public partial class Service
 
       public scan_rslt_on_keyResult DeepCopy()
       {
-        var tmp412 = new scan_rslt_on_keyResult();
+        var tmp424 = new scan_rslt_on_keyResult();
         if((Success != null) && __isset.success)
         {
-          tmp412.Success = this.Success.DeepCopy();
+          tmp424.Success = this.Success.DeepCopy();
         }
-        tmp412.__isset.success = this.__isset.success;
+        tmp424.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp412.E = (Exception)this.E.DeepCopy();
+          tmp424.E = (Exception)this.E.DeepCopy();
         }
-        tmp412.__isset.e = this.__isset.e;
-        return tmp412;
+        tmp424.__isset.e = this.__isset.e;
+        return tmp424;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -8787,14 +8787,14 @@ public partial class Service
                 if (field.Type == TType.List)
                 {
                   {
-                    TList _list413 = await iprot.ReadListBeginAsync(cancellationToken);
-                    Success = new List<kCells>(_list413.Count);
-                    for(int _i414 = 0; _i414 < _list413.Count; ++_i414)
+                    TList _list425 = await iprot.ReadListBeginAsync(cancellationToken);
+                    Success = new List<kCells>(_list425.Count);
+                    for(int _i426 = 0; _i426 < _list425.Count; ++_i426)
                     {
-                      kCells _elem415;
-                      _elem415 = new kCells();
-                      await _elem415.ReadAsync(iprot, cancellationToken);
-                      Success.Add(_elem415);
+                      kCells _elem427;
+                      _elem427 = new kCells();
+                      await _elem427.ReadAsync(iprot, cancellationToken);
+                      Success.Add(_elem427);
                     }
                     await iprot.ReadListEndAsync(cancellationToken);
                   }
@@ -8850,9 +8850,9 @@ public partial class Service
               await oprot.WriteFieldBeginAsync(field, cancellationToken);
               {
                 await oprot.WriteListBeginAsync(new TList(TType.Struct, Success.Count), cancellationToken);
-                foreach (kCells _iter416 in Success)
+                foreach (kCells _iter428 in Success)
                 {
-                  await _iter416.WriteAsync(oprot, cancellationToken);
+                  await _iter428.WriteAsync(oprot, cancellationToken);
                 }
                 await oprot.WriteListEndAsync(cancellationToken);
               }
@@ -8906,16 +8906,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_key_result(");
-        int tmp417 = 0;
+        int tmp429 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp417++) { sb.Append(", "); }
+          if(0 < tmp429++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp417++) { sb.Append(", "); }
+          if(0 < tmp429++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -8958,13 +8958,13 @@ public partial class Service
 
       public scan_rslt_on_fractionArgs DeepCopy()
       {
-        var tmp418 = new scan_rslt_on_fractionArgs();
+        var tmp430 = new scan_rslt_on_fractionArgs();
         if((Spec != null) && __isset.spec)
         {
-          tmp418.Spec = (SpecScan)this.Spec.DeepCopy();
+          tmp430.Spec = (SpecScan)this.Spec.DeepCopy();
         }
-        tmp418.__isset.spec = this.__isset.spec;
-        return tmp418;
+        tmp430.__isset.spec = this.__isset.spec;
+        return tmp430;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -9058,10 +9058,10 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_fraction_args(");
-        int tmp419 = 0;
+        int tmp431 = 0;
         if((Spec != null) && __isset.spec)
         {
-          if(0 < tmp419++) { sb.Append(", "); }
+          if(0 < tmp431++) { sb.Append(", "); }
           sb.Append("Spec: ");
           Spec.ToString(sb);
         }
@@ -9116,18 +9116,18 @@ public partial class Service
 
       public scan_rslt_on_fractionResult DeepCopy()
       {
-        var tmp420 = new scan_rslt_on_fractionResult();
+        var tmp432 = new scan_rslt_on_fractionResult();
         if((Success != null) && __isset.success)
         {
-          tmp420.Success = (FCells)this.Success.DeepCopy();
+          tmp432.Success = (FCells)this.Success.DeepCopy();
         }
-        tmp420.__isset.success = this.__isset.success;
+        tmp432.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp420.E = (Exception)this.E.DeepCopy();
+          tmp432.E = (Exception)this.E.DeepCopy();
         }
-        tmp420.__isset.e = this.__isset.e;
-        return tmp420;
+        tmp432.__isset.e = this.__isset.e;
+        return tmp432;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -9253,16 +9253,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_fraction_result(");
-        int tmp421 = 0;
+        int tmp433 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp421++) { sb.Append(", "); }
+          if(0 < tmp433++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp421++) { sb.Append(", "); }
+          if(0 < tmp433++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }
@@ -9325,18 +9325,18 @@ public partial class Service
 
       public scan_rslt_onArgs DeepCopy()
       {
-        var tmp422 = new scan_rslt_onArgs();
+        var tmp434 = new scan_rslt_onArgs();
         if((Spec != null) && __isset.spec)
         {
-          tmp422.Spec = (SpecScan)this.Spec.DeepCopy();
+          tmp434.Spec = (SpecScan)this.Spec.DeepCopy();
         }
-        tmp422.__isset.spec = this.__isset.spec;
+        tmp434.__isset.spec = this.__isset.spec;
         if(__isset.rslt)
         {
-          tmp422.Rslt = this.Rslt;
+          tmp434.Rslt = this.Rslt;
         }
-        tmp422.__isset.rslt = this.__isset.rslt;
-        return tmp422;
+        tmp434.__isset.rslt = this.__isset.rslt;
+        return tmp434;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -9454,16 +9454,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_args(");
-        int tmp423 = 0;
+        int tmp435 = 0;
         if((Spec != null) && __isset.spec)
         {
-          if(0 < tmp423++) { sb.Append(", "); }
+          if(0 < tmp435++) { sb.Append(", "); }
           sb.Append("Spec: ");
           Spec.ToString(sb);
         }
         if(__isset.rslt)
         {
-          if(0 < tmp423++) { sb.Append(", "); }
+          if(0 < tmp435++) { sb.Append(", "); }
           sb.Append("Rslt: ");
           Rslt.ToString(sb);
         }
@@ -9521,18 +9521,18 @@ public partial class Service
 
       public scan_rslt_onResult DeepCopy()
       {
-        var tmp424 = new scan_rslt_onResult();
+        var tmp436 = new scan_rslt_onResult();
         if((Success != null) && __isset.success)
         {
-          tmp424.Success = (CellsGroup)this.Success.DeepCopy();
+          tmp436.Success = (CellsGroup)this.Success.DeepCopy();
         }
-        tmp424.__isset.success = this.__isset.success;
+        tmp436.__isset.success = this.__isset.success;
         if((E != null) && __isset.e)
         {
-          tmp424.E = (Exception)this.E.DeepCopy();
+          tmp436.E = (Exception)this.E.DeepCopy();
         }
-        tmp424.__isset.e = this.__isset.e;
-        return tmp424;
+        tmp436.__isset.e = this.__isset.e;
+        return tmp436;
       }
 
       public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -9658,16 +9658,16 @@ public partial class Service
       public override string ToString()
       {
         var sb = new StringBuilder("scan_rslt_on_result(");
-        int tmp425 = 0;
+        int tmp437 = 0;
         if((Success != null) && __isset.success)
         {
-          if(0 < tmp425++) { sb.Append(", "); }
+          if(0 < tmp437++) { sb.Append(", "); }
           sb.Append("Success: ");
           Success.ToString(sb);
         }
         if((E != null) && __isset.e)
         {
-          if(0 < tmp425++) { sb.Append(", "); }
+          if(0 < tmp437++) { sb.Append(", "); }
           sb.Append("E: ");
           E.ToString(sb);
         }

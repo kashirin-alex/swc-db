@@ -36,6 +36,7 @@ public partial class Schema : TBase
 {
   private long _cid;
   private string _col_name;
+  private List<string> _col_tags;
   private KeySeq _col_seq;
   private ColumnType _col_type;
   private int _cell_versions;
@@ -81,6 +82,22 @@ public partial class Schema : TBase
     {
       __isset.col_name = true;
       this._col_name = value;
+    }
+  }
+
+  /// <summary>
+  /// Column Tags
+  /// </summary>
+  public List<string> Col_tags
+  {
+    get
+    {
+      return _col_tags;
+    }
+    set
+    {
+      __isset.col_tags = true;
+      this._col_tags = value;
     }
   }
 
@@ -336,6 +353,7 @@ public partial class Schema : TBase
   {
     public bool cid;
     public bool col_name;
+    public bool col_tags;
     public bool col_seq;
     public bool col_type;
     public bool cell_versions;
@@ -370,6 +388,11 @@ public partial class Schema : TBase
       tmp2.Col_name = this.Col_name;
     }
     tmp2.__isset.col_name = this.__isset.col_name;
+    if((Col_tags != null) && __isset.col_tags)
+    {
+      tmp2.Col_tags = this.Col_tags.DeepCopy();
+    }
+    tmp2.__isset.col_tags = this.__isset.col_tags;
     if(__isset.col_seq)
     {
       tmp2.Col_seq = this.Col_seq;
@@ -486,9 +509,19 @@ public partial class Schema : TBase
             }
             break;
           case 3:
-            if (field.Type == TType.I32)
+            if (field.Type == TType.List)
             {
-              Col_seq = (KeySeq)await iprot.ReadI32Async(cancellationToken);
+              {
+                TList _list3 = await iprot.ReadListBeginAsync(cancellationToken);
+                Col_tags = new List<string>(_list3.Count);
+                for(int _i4 = 0; _i4 < _list3.Count; ++_i4)
+                {
+                  string _elem5;
+                  _elem5 = await iprot.ReadStringAsync(cancellationToken);
+                  Col_tags.Add(_elem5);
+                }
+                await iprot.ReadListEndAsync(cancellationToken);
+              }
             }
             else
             {
@@ -498,7 +531,7 @@ public partial class Schema : TBase
           case 4:
             if (field.Type == TType.I32)
             {
-              Col_type = (ColumnType)await iprot.ReadI32Async(cancellationToken);
+              Col_seq = (KeySeq)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -508,7 +541,7 @@ public partial class Schema : TBase
           case 5:
             if (field.Type == TType.I32)
             {
-              Cell_versions = await iprot.ReadI32Async(cancellationToken);
+              Col_type = (ColumnType)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -518,7 +551,7 @@ public partial class Schema : TBase
           case 6:
             if (field.Type == TType.I32)
             {
-              Cell_ttl = await iprot.ReadI32Async(cancellationToken);
+              Cell_versions = await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -528,7 +561,7 @@ public partial class Schema : TBase
           case 7:
             if (field.Type == TType.I32)
             {
-              Blk_encoding = (EncodingType)await iprot.ReadI32Async(cancellationToken);
+              Cell_ttl = await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -538,7 +571,7 @@ public partial class Schema : TBase
           case 8:
             if (field.Type == TType.I32)
             {
-              Blk_size = await iprot.ReadI32Async(cancellationToken);
+              Blk_encoding = (EncodingType)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -548,7 +581,7 @@ public partial class Schema : TBase
           case 9:
             if (field.Type == TType.I32)
             {
-              Blk_cells = await iprot.ReadI32Async(cancellationToken);
+              Blk_size = await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -556,6 +589,16 @@ public partial class Schema : TBase
             }
             break;
           case 10:
+            if (field.Type == TType.I32)
+            {
+              Blk_cells = await iprot.ReadI32Async(cancellationToken);
+            }
+            else
+            {
+              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
+            }
+            break;
+          case 11:
             if (field.Type == TType.Byte)
             {
               Cs_replication = await iprot.ReadByteAsync(cancellationToken);
@@ -565,7 +608,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 11:
+          case 12:
             if (field.Type == TType.I32)
             {
               Cs_size = await iprot.ReadI32Async(cancellationToken);
@@ -575,7 +618,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 12:
+          case 13:
             if (field.Type == TType.Byte)
             {
               Cs_max = await iprot.ReadByteAsync(cancellationToken);
@@ -585,7 +628,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 13:
+          case 14:
             if (field.Type == TType.Byte)
             {
               Log_rollout_ratio = await iprot.ReadByteAsync(cancellationToken);
@@ -595,7 +638,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 14:
+          case 15:
             if (field.Type == TType.Byte)
             {
               Log_compact_cointervaling = await iprot.ReadByteAsync(cancellationToken);
@@ -605,7 +648,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 15:
+          case 16:
             if (field.Type == TType.Byte)
             {
               Log_fragment_preload = await iprot.ReadByteAsync(cancellationToken);
@@ -615,7 +658,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 16:
+          case 17:
             if (field.Type == TType.Byte)
             {
               Compact_percent = await iprot.ReadByteAsync(cancellationToken);
@@ -625,7 +668,7 @@ public partial class Schema : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 17:
+          case 18:
             if (field.Type == TType.I64)
             {
               Revision = await iprot.ReadI64Async(cancellationToken);
@@ -677,11 +720,27 @@ public partial class Schema : TBase
         await oprot.WriteStringAsync(Col_name, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
+      if((Col_tags != null) && __isset.col_tags)
+      {
+        field.Name = "col_tags";
+        field.Type = TType.List;
+        field.ID = 3;
+        await oprot.WriteFieldBeginAsync(field, cancellationToken);
+        {
+          await oprot.WriteListBeginAsync(new TList(TType.String, Col_tags.Count), cancellationToken);
+          foreach (string _iter6 in Col_tags)
+          {
+            await oprot.WriteStringAsync(_iter6, cancellationToken);
+          }
+          await oprot.WriteListEndAsync(cancellationToken);
+        }
+        await oprot.WriteFieldEndAsync(cancellationToken);
+      }
       if(__isset.col_seq)
       {
         field.Name = "col_seq";
         field.Type = TType.I32;
-        field.ID = 3;
+        field.ID = 4;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async((int)Col_seq, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -690,7 +749,7 @@ public partial class Schema : TBase
       {
         field.Name = "col_type";
         field.Type = TType.I32;
-        field.ID = 4;
+        field.ID = 5;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async((int)Col_type, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -699,7 +758,7 @@ public partial class Schema : TBase
       {
         field.Name = "cell_versions";
         field.Type = TType.I32;
-        field.ID = 5;
+        field.ID = 6;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Cell_versions, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -708,7 +767,7 @@ public partial class Schema : TBase
       {
         field.Name = "cell_ttl";
         field.Type = TType.I32;
-        field.ID = 6;
+        field.ID = 7;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Cell_ttl, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -717,7 +776,7 @@ public partial class Schema : TBase
       {
         field.Name = "blk_encoding";
         field.Type = TType.I32;
-        field.ID = 7;
+        field.ID = 8;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async((int)Blk_encoding, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -726,7 +785,7 @@ public partial class Schema : TBase
       {
         field.Name = "blk_size";
         field.Type = TType.I32;
-        field.ID = 8;
+        field.ID = 9;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Blk_size, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -735,7 +794,7 @@ public partial class Schema : TBase
       {
         field.Name = "blk_cells";
         field.Type = TType.I32;
-        field.ID = 9;
+        field.ID = 10;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Blk_cells, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -744,7 +803,7 @@ public partial class Schema : TBase
       {
         field.Name = "cs_replication";
         field.Type = TType.Byte;
-        field.ID = 10;
+        field.ID = 11;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Cs_replication, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -753,7 +812,7 @@ public partial class Schema : TBase
       {
         field.Name = "cs_size";
         field.Type = TType.I32;
-        field.ID = 11;
+        field.ID = 12;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI32Async(Cs_size, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -762,7 +821,7 @@ public partial class Schema : TBase
       {
         field.Name = "cs_max";
         field.Type = TType.Byte;
-        field.ID = 12;
+        field.ID = 13;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Cs_max, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -771,7 +830,7 @@ public partial class Schema : TBase
       {
         field.Name = "log_rollout_ratio";
         field.Type = TType.Byte;
-        field.ID = 13;
+        field.ID = 14;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Log_rollout_ratio, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -780,7 +839,7 @@ public partial class Schema : TBase
       {
         field.Name = "log_compact_cointervaling";
         field.Type = TType.Byte;
-        field.ID = 14;
+        field.ID = 15;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Log_compact_cointervaling, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -789,7 +848,7 @@ public partial class Schema : TBase
       {
         field.Name = "log_fragment_preload";
         field.Type = TType.Byte;
-        field.ID = 15;
+        field.ID = 16;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Log_fragment_preload, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -798,7 +857,7 @@ public partial class Schema : TBase
       {
         field.Name = "compact_percent";
         field.Type = TType.Byte;
-        field.ID = 16;
+        field.ID = 17;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteByteAsync(Compact_percent, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -807,7 +866,7 @@ public partial class Schema : TBase
       {
         field.Name = "revision";
         field.Type = TType.I64;
-        field.ID = 17;
+        field.ID = 18;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         await oprot.WriteI64Async(Revision, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -827,6 +886,7 @@ public partial class Schema : TBase
     if (ReferenceEquals(this, other)) return true;
     return ((__isset.cid == other.__isset.cid) && ((!__isset.cid) || (System.Object.Equals(Cid, other.Cid))))
       && ((__isset.col_name == other.__isset.col_name) && ((!__isset.col_name) || (System.Object.Equals(Col_name, other.Col_name))))
+      && ((__isset.col_tags == other.__isset.col_tags) && ((!__isset.col_tags) || (TCollections.Equals(Col_tags, other.Col_tags))))
       && ((__isset.col_seq == other.__isset.col_seq) && ((!__isset.col_seq) || (System.Object.Equals(Col_seq, other.Col_seq))))
       && ((__isset.col_type == other.__isset.col_type) && ((!__isset.col_type) || (System.Object.Equals(Col_type, other.Col_type))))
       && ((__isset.cell_versions == other.__isset.cell_versions) && ((!__isset.cell_versions) || (System.Object.Equals(Cell_versions, other.Cell_versions))))
@@ -854,6 +914,10 @@ public partial class Schema : TBase
       if((Col_name != null) && __isset.col_name)
       {
         hashcode = (hashcode * 397) + Col_name.GetHashCode();
+      }
+      if((Col_tags != null) && __isset.col_tags)
+      {
+        hashcode = (hashcode * 397) + TCollections.GetHashCode(Col_tags);
       }
       if(__isset.col_seq)
       {
@@ -922,106 +986,112 @@ public partial class Schema : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("Schema(");
-    int tmp3 = 0;
+    int tmp7 = 0;
     if(__isset.cid)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Cid: ");
       Cid.ToString(sb);
     }
     if((Col_name != null) && __isset.col_name)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Col_name: ");
       Col_name.ToString(sb);
     }
+    if((Col_tags != null) && __isset.col_tags)
+    {
+      if(0 < tmp7++) { sb.Append(", "); }
+      sb.Append("Col_tags: ");
+      Col_tags.ToString(sb);
+    }
     if(__isset.col_seq)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Col_seq: ");
       Col_seq.ToString(sb);
     }
     if(__isset.col_type)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Col_type: ");
       Col_type.ToString(sb);
     }
     if(__isset.cell_versions)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Cell_versions: ");
       Cell_versions.ToString(sb);
     }
     if(__isset.cell_ttl)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Cell_ttl: ");
       Cell_ttl.ToString(sb);
     }
     if(__isset.blk_encoding)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Blk_encoding: ");
       Blk_encoding.ToString(sb);
     }
     if(__isset.blk_size)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Blk_size: ");
       Blk_size.ToString(sb);
     }
     if(__isset.blk_cells)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Blk_cells: ");
       Blk_cells.ToString(sb);
     }
     if(__isset.cs_replication)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Cs_replication: ");
       Cs_replication.ToString(sb);
     }
     if(__isset.cs_size)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Cs_size: ");
       Cs_size.ToString(sb);
     }
     if(__isset.cs_max)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Cs_max: ");
       Cs_max.ToString(sb);
     }
     if(__isset.log_rollout_ratio)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Log_rollout_ratio: ");
       Log_rollout_ratio.ToString(sb);
     }
     if(__isset.log_compact_cointervaling)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Log_compact_cointervaling: ");
       Log_compact_cointervaling.ToString(sb);
     }
     if(__isset.log_fragment_preload)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Log_fragment_preload: ");
       Log_fragment_preload.ToString(sb);
     }
     if(__isset.compact_percent)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Compact_percent: ");
       Compact_percent.ToString(sb);
     }
     if(__isset.revision)
     {
-      if(0 < tmp3++) { sb.Append(", "); }
+      if(0 < tmp7++) { sb.Append(", "); }
       sb.Append("Revision: ");
       Revision.ToString(sb);
     }

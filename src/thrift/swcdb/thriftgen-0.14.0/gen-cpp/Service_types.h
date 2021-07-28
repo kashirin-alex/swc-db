@@ -430,6 +430,10 @@ class Schema;
 
 class SchemaPattern;
 
+class SchemaTagsPatterns;
+
+class SchemaPatterns;
+
 class SpecSchemas;
 
 class SpecFlags;
@@ -569,9 +573,10 @@ void swap(Exception &a, Exception &b);
 std::ostream& operator<<(std::ostream& out, const Exception& obj);
 
 typedef struct _Schema__isset {
-  _Schema__isset() : cid(false), col_name(false), col_seq(false), col_type(false), cell_versions(false), cell_ttl(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_replication(false), cs_size(false), cs_max(false), log_rollout_ratio(false), log_compact_cointervaling(false), log_fragment_preload(false), compact_percent(false), revision(false) {}
+  _Schema__isset() : cid(false), col_name(false), col_tags(false), col_seq(false), col_type(false), cell_versions(false), cell_ttl(false), blk_encoding(false), blk_size(false), blk_cells(false), cs_replication(false), cs_size(false), cs_max(false), log_rollout_ratio(false), log_compact_cointervaling(false), log_fragment_preload(false), compact_percent(false), revision(false) {}
   bool cid :1;
   bool col_name :1;
+  bool col_tags :1;
   bool col_seq :1;
   bool col_type :1;
   bool cell_versions :1;
@@ -628,6 +633,10 @@ class Schema : public virtual ::apache::thrift::TBase {
    * Column Name
    */
   std::string col_name;
+  /**
+   * Column Tags
+   */
+  std::vector<std::string>  col_tags;
   /**
    * Column Key Sequence
    * 
@@ -701,6 +710,8 @@ class Schema : public virtual ::apache::thrift::TBase {
 
   void __set_col_name(const std::string& val);
 
+  void __set_col_tags(const std::vector<std::string> & val);
+
   void __set_col_seq(const KeySeq::type val);
 
   void __set_col_type(const ColumnType::type val);
@@ -740,6 +751,8 @@ class Schema : public virtual ::apache::thrift::TBase {
     if (__isset.col_name != rhs.__isset.col_name)
       return false;
     else if (__isset.col_name && !(col_name == rhs.col_name))
+      return false;
+    if (!(col_tags == rhs.col_tags))
       return false;
     if (__isset.col_seq != rhs.__isset.col_seq)
       return false;
@@ -826,7 +839,7 @@ typedef struct _SchemaPattern__isset {
 } _SchemaPattern__isset;
 
 /**
- * The Schema Matching Pattern for the SpecSchema patterns
+ * The Schema matching Pattern
  */
 class SchemaPattern : public virtual ::apache::thrift::TBase {
  public:
@@ -848,7 +861,7 @@ class SchemaPattern : public virtual ::apache::thrift::TBase {
    */
   Comp::type comp;
   /**
-   * The patern value to match against schema's column name
+   * The patern value to match against
    */
   std::string value;
 
@@ -882,6 +895,127 @@ void swap(SchemaPattern &a, SchemaPattern &b);
 
 std::ostream& operator<<(std::ostream& out, const SchemaPattern& obj);
 
+typedef struct _SchemaTagsPatterns__isset {
+  _SchemaTagsPatterns__isset() : comp(false), values(false) {}
+  bool comp :1;
+  bool values :1;
+} _SchemaTagsPatterns__isset;
+
+/**
+ * The Schema Tags patterns for the SchemaPatterns
+ */
+class SchemaTagsPatterns : public virtual ::apache::thrift::TBase {
+ public:
+
+  SchemaTagsPatterns(const SchemaTagsPatterns&);
+  SchemaTagsPatterns(SchemaTagsPatterns&&) noexcept;
+  SchemaTagsPatterns& operator=(const SchemaTagsPatterns&);
+  SchemaTagsPatterns& operator=(SchemaTagsPatterns&&) noexcept;
+  SchemaTagsPatterns() noexcept
+                     : comp(static_cast<Comp::type>(0)) {
+  }
+
+  virtual ~SchemaTagsPatterns() noexcept;
+  /**
+   * Logical comparator to Apply, unsupported PF, RE and Vol. kind
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  /**
+   * The tags patterns to match against schema's column tags
+   */
+  std::vector<SchemaPattern>  values;
+
+  _SchemaTagsPatterns__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_values(const std::vector<SchemaPattern> & val);
+
+  bool operator == (const SchemaTagsPatterns & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(values == rhs.values))
+      return false;
+    return true;
+  }
+  bool operator != (const SchemaTagsPatterns &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SchemaTagsPatterns & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SchemaTagsPatterns &a, SchemaTagsPatterns &b);
+
+std::ostream& operator<<(std::ostream& out, const SchemaTagsPatterns& obj);
+
+typedef struct _SchemaPatterns__isset {
+  _SchemaPatterns__isset() : names(false), tags(false) {}
+  bool names :1;
+  bool tags :1;
+} _SchemaPatterns__isset;
+
+/**
+ * The Schema Patterns for the SpecSchemas
+ */
+class SchemaPatterns : public virtual ::apache::thrift::TBase {
+ public:
+
+  SchemaPatterns(const SchemaPatterns&);
+  SchemaPatterns(SchemaPatterns&&) noexcept;
+  SchemaPatterns& operator=(const SchemaPatterns&);
+  SchemaPatterns& operator=(SchemaPatterns&&) noexcept;
+  SchemaPatterns() noexcept {
+  }
+
+  virtual ~SchemaPatterns() noexcept;
+  /**
+   * The Schema patterns for selecting by Column Name
+   */
+  std::vector<SchemaPattern>  names;
+  /**
+   * The Schema patterns for selecting by Column Tags
+   */
+  SchemaTagsPatterns tags;
+
+  _SchemaPatterns__isset __isset;
+
+  void __set_names(const std::vector<SchemaPattern> & val);
+
+  void __set_tags(const SchemaTagsPatterns& val);
+
+  bool operator == (const SchemaPatterns & rhs) const
+  {
+    if (!(names == rhs.names))
+      return false;
+    if (!(tags == rhs.tags))
+      return false;
+    return true;
+  }
+  bool operator != (const SchemaPatterns &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SchemaPatterns & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SchemaPatterns &a, SchemaPatterns &b);
+
+std::ostream& operator<<(std::ostream& out, const SchemaPatterns& obj);
+
 typedef struct _SpecSchemas__isset {
   _SpecSchemas__isset() : cids(false), names(false), patterns(false) {}
   bool cids :1;
@@ -912,9 +1046,9 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
    */
   std::vector<std::string>  names;
   /**
-   * The Schema's Column Name patterns
+   * The Schema's selector patterns
    */
-  std::vector<SchemaPattern>  patterns;
+  SchemaPatterns patterns;
 
   _SpecSchemas__isset __isset;
 
@@ -922,7 +1056,7 @@ class SpecSchemas : public virtual ::apache::thrift::TBase {
 
   void __set_names(const std::vector<std::string> & val);
 
-  void __set_patterns(const std::vector<SchemaPattern> & val);
+  void __set_patterns(const SchemaPatterns& val);
 
   bool operator == (const SpecSchemas & rhs) const
   {

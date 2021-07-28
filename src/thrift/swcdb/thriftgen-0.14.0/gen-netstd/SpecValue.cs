@@ -85,18 +85,18 @@ public partial class SpecValue : TBase
 
   public SpecValue DeepCopy()
   {
-    var tmp36 = new SpecValue();
+    var tmp48 = new SpecValue();
     if(__isset.comp)
     {
-      tmp36.Comp = this.Comp;
+      tmp48.Comp = this.Comp;
     }
-    tmp36.__isset.comp = this.__isset.comp;
+    tmp48.__isset.comp = this.__isset.comp;
     if((V != null) && __isset.v)
     {
-      tmp36.V = this.V.ToArray();
+      tmp48.V = this.V.ToArray();
     }
-    tmp36.__isset.v = this.__isset.v;
-    return tmp36;
+    tmp48.__isset.v = this.__isset.v;
+    return tmp48;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -213,16 +213,16 @@ public partial class SpecValue : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValue(");
-    int tmp37 = 0;
+    int tmp49 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp37++) { sb.Append(", "); }
+      if(0 < tmp49++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp37++) { sb.Append(", "); }
+      if(0 < tmp49++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

@@ -101,23 +101,23 @@ public partial class CCellSerial : TBase
 
   public CCellSerial DeepCopy()
   {
-    var tmp198 = new CCellSerial();
+    var tmp210 = new CCellSerial();
     if((K != null) && __isset.k)
     {
-      tmp198.K = this.K.DeepCopy();
+      tmp210.K = this.K.DeepCopy();
     }
-    tmp198.__isset.k = this.__isset.k;
+    tmp210.__isset.k = this.__isset.k;
     if(__isset.ts)
     {
-      tmp198.Ts = this.Ts;
+      tmp210.Ts = this.Ts;
     }
-    tmp198.__isset.ts = this.__isset.ts;
+    tmp210.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp198.V = this.V.DeepCopy();
+      tmp210.V = this.V.DeepCopy();
     }
-    tmp198.__isset.v = this.__isset.v;
-    return tmp198;
+    tmp210.__isset.v = this.__isset.v;
+    return tmp210;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -141,13 +141,13 @@ public partial class CCellSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list199 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list199.Count);
-                for(int _i200 = 0; _i200 < _list199.Count; ++_i200)
+                TList _list211 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list211.Count);
+                for(int _i212 = 0; _i212 < _list211.Count; ++_i212)
                 {
-                  byte[] _elem201;
-                  _elem201 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem201);
+                  byte[] _elem213;
+                  _elem213 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem213);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -171,14 +171,14 @@ public partial class CCellSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list202 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<CellValueSerial>(_list202.Count);
-                for(int _i203 = 0; _i203 < _list202.Count; ++_i203)
+                TList _list214 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<CellValueSerial>(_list214.Count);
+                for(int _i215 = 0; _i215 < _list214.Count; ++_i215)
                 {
-                  CellValueSerial _elem204;
-                  _elem204 = new CellValueSerial();
-                  await _elem204.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem204);
+                  CellValueSerial _elem216;
+                  _elem216 = new CellValueSerial();
+                  await _elem216.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem216);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -220,9 +220,9 @@ public partial class CCellSerial : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter205 in K)
+          foreach (byte[] _iter217 in K)
           {
-            await oprot.WriteBinaryAsync(_iter205, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter217, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -245,9 +245,9 @@ public partial class CCellSerial : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-          foreach (CellValueSerial _iter206 in V)
+          foreach (CellValueSerial _iter218 in V)
           {
-            await _iter206.WriteAsync(oprot, cancellationToken);
+            await _iter218.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -293,22 +293,22 @@ public partial class CCellSerial : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("CCellSerial(");
-    int tmp207 = 0;
+    int tmp219 = 0;
     if((K != null) && __isset.k)
     {
-      if(0 < tmp207++) { sb.Append(", "); }
+      if(0 < tmp219++) { sb.Append(", "); }
       sb.Append("K: ");
       K.ToString(sb);
     }
     if(__isset.ts)
     {
-      if(0 < tmp207++) { sb.Append(", "); }
+      if(0 < tmp219++) { sb.Append(", "); }
       sb.Append("Ts: ");
       Ts.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp207++) { sb.Append(", "); }
+      if(0 < tmp219++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

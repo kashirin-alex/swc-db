@@ -220,6 +220,7 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
 void set(const DB::Schema::Ptr& dbschema, Schema& schema) {
   schema.__set_cid(dbschema->cid);
   schema.__set_col_name(dbschema->col_name);
+  schema.__set_col_tags(dbschema->tags);
 
   schema.__set_col_seq(
     KeySeq::type(uint8_t(dbschema->col_seq)));
@@ -252,6 +253,7 @@ void set(const Schema& schema, DB::Schema::Ptr& dbschema) {
     dbschema->cid = schema.cid;
   if(schema.__isset.col_name)
     dbschema->col_name = schema.col_name;
+  dbschema->tags = schema.col_tags;
 
   if(schema.__isset.col_seq)
     dbschema->col_seq = DB::Types::KeySeq(uint8_t(schema.col_seq));

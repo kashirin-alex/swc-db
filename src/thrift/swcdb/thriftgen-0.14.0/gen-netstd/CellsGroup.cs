@@ -119,28 +119,28 @@ public partial class CellsGroup : TBase
 
   public CellsGroup DeepCopy()
   {
-    var tmp263 = new CellsGroup();
+    var tmp275 = new CellsGroup();
     if((Cells != null) && __isset.cells)
     {
-      tmp263.Cells = (Cells)this.Cells.DeepCopy();
+      tmp275.Cells = (Cells)this.Cells.DeepCopy();
     }
-    tmp263.__isset.cells = this.__isset.cells;
+    tmp275.__isset.cells = this.__isset.cells;
     if((Ccells != null) && __isset.ccells)
     {
-      tmp263.Ccells = this.Ccells.DeepCopy();
+      tmp275.Ccells = this.Ccells.DeepCopy();
     }
-    tmp263.__isset.ccells = this.__isset.ccells;
+    tmp275.__isset.ccells = this.__isset.ccells;
     if((Kcells != null) && __isset.kcells)
     {
-      tmp263.Kcells = this.Kcells.DeepCopy();
+      tmp275.Kcells = this.Kcells.DeepCopy();
     }
-    tmp263.__isset.kcells = this.__isset.kcells;
+    tmp275.__isset.kcells = this.__isset.kcells;
     if((Fcells != null) && __isset.fcells)
     {
-      tmp263.Fcells = (FCells)this.Fcells.DeepCopy();
+      tmp275.Fcells = (FCells)this.Fcells.DeepCopy();
     }
-    tmp263.__isset.fcells = this.__isset.fcells;
-    return tmp263;
+    tmp275.__isset.fcells = this.__isset.fcells;
+    return tmp275;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -175,16 +175,16 @@ public partial class CellsGroup : TBase
             if (field.Type == TType.Map)
             {
               {
-                TMap _map264 = await iprot.ReadMapBeginAsync(cancellationToken);
-                Ccells = new Dictionary<string, ColCells>(_map264.Count);
-                for(int _i265 = 0; _i265 < _map264.Count; ++_i265)
+                TMap _map276 = await iprot.ReadMapBeginAsync(cancellationToken);
+                Ccells = new Dictionary<string, ColCells>(_map276.Count);
+                for(int _i277 = 0; _i277 < _map276.Count; ++_i277)
                 {
-                  string _key266;
-                  ColCells _val267;
-                  _key266 = await iprot.ReadStringAsync(cancellationToken);
-                  _val267 = new ColCells();
-                  await _val267.ReadAsync(iprot, cancellationToken);
-                  Ccells[_key266] = _val267;
+                  string _key278;
+                  ColCells _val279;
+                  _key278 = await iprot.ReadStringAsync(cancellationToken);
+                  _val279 = new ColCells();
+                  await _val279.ReadAsync(iprot, cancellationToken);
+                  Ccells[_key278] = _val279;
                 }
                 await iprot.ReadMapEndAsync(cancellationToken);
               }
@@ -198,14 +198,14 @@ public partial class CellsGroup : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list268 = await iprot.ReadListBeginAsync(cancellationToken);
-                Kcells = new List<kCells>(_list268.Count);
-                for(int _i269 = 0; _i269 < _list268.Count; ++_i269)
+                TList _list280 = await iprot.ReadListBeginAsync(cancellationToken);
+                Kcells = new List<kCells>(_list280.Count);
+                for(int _i281 = 0; _i281 < _list280.Count; ++_i281)
                 {
-                  kCells _elem270;
-                  _elem270 = new kCells();
-                  await _elem270.ReadAsync(iprot, cancellationToken);
-                  Kcells.Add(_elem270);
+                  kCells _elem282;
+                  _elem282 = new kCells();
+                  await _elem282.ReadAsync(iprot, cancellationToken);
+                  Kcells.Add(_elem282);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -267,10 +267,10 @@ public partial class CellsGroup : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteMapBeginAsync(new TMap(TType.String, TType.Struct, Ccells.Count), cancellationToken);
-          foreach (string _iter271 in Ccells.Keys)
+          foreach (string _iter283 in Ccells.Keys)
           {
-            await oprot.WriteStringAsync(_iter271, cancellationToken);
-            await Ccells[_iter271].WriteAsync(oprot, cancellationToken);
+            await oprot.WriteStringAsync(_iter283, cancellationToken);
+            await Ccells[_iter283].WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteMapEndAsync(cancellationToken);
         }
@@ -284,9 +284,9 @@ public partial class CellsGroup : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Kcells.Count), cancellationToken);
-          foreach (kCells _iter272 in Kcells)
+          foreach (kCells _iter284 in Kcells)
           {
-            await _iter272.WriteAsync(oprot, cancellationToken);
+            await _iter284.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -346,28 +346,28 @@ public partial class CellsGroup : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("CellsGroup(");
-    int tmp273 = 0;
+    int tmp285 = 0;
     if((Cells != null) && __isset.cells)
     {
-      if(0 < tmp273++) { sb.Append(", "); }
+      if(0 < tmp285++) { sb.Append(", "); }
       sb.Append("Cells: ");
       Cells.ToString(sb);
     }
     if((Ccells != null) && __isset.ccells)
     {
-      if(0 < tmp273++) { sb.Append(", "); }
+      if(0 < tmp285++) { sb.Append(", "); }
       sb.Append("Ccells: ");
       Ccells.ToString(sb);
     }
     if((Kcells != null) && __isset.kcells)
     {
-      if(0 < tmp273++) { sb.Append(", "); }
+      if(0 < tmp285++) { sb.Append(", "); }
       sb.Append("Kcells: ");
       Kcells.ToString(sb);
     }
     if((Fcells != null) && __isset.fcells)
     {
-      if(0 < tmp273++) { sb.Append(", "); }
+      if(0 < tmp285++) { sb.Append(", "); }
       sb.Append("Fcells: ");
       Fcells.ToString(sb);
     }

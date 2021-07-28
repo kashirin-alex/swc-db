@@ -137,33 +137,33 @@ public partial class SpecFlags : TBase
 
   public SpecFlags DeepCopy()
   {
-    var tmp20 = new SpecFlags();
+    var tmp32 = new SpecFlags();
     if(__isset.limit)
     {
-      tmp20.Limit = this.Limit;
+      tmp32.Limit = this.Limit;
     }
-    tmp20.__isset.limit = this.__isset.limit;
+    tmp32.__isset.limit = this.__isset.limit;
     if(__isset.offset)
     {
-      tmp20.Offset = this.Offset;
+      tmp32.Offset = this.Offset;
     }
-    tmp20.__isset.offset = this.__isset.offset;
+    tmp32.__isset.offset = this.__isset.offset;
     if(__isset.max_versions)
     {
-      tmp20.Max_versions = this.Max_versions;
+      tmp32.Max_versions = this.Max_versions;
     }
-    tmp20.__isset.max_versions = this.__isset.max_versions;
+    tmp32.__isset.max_versions = this.__isset.max_versions;
     if(__isset.max_buffer)
     {
-      tmp20.Max_buffer = this.Max_buffer;
+      tmp32.Max_buffer = this.Max_buffer;
     }
-    tmp20.__isset.max_buffer = this.__isset.max_buffer;
+    tmp32.__isset.max_buffer = this.__isset.max_buffer;
     if(__isset.options)
     {
-      tmp20.Options = this.Options;
+      tmp32.Options = this.Options;
     }
-    tmp20.__isset.options = this.__isset.options;
-    return tmp20;
+    tmp32.__isset.options = this.__isset.options;
+    return tmp32;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -352,34 +352,34 @@ public partial class SpecFlags : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecFlags(");
-    int tmp21 = 0;
+    int tmp33 = 0;
     if(__isset.limit)
     {
-      if(0 < tmp21++) { sb.Append(", "); }
+      if(0 < tmp33++) { sb.Append(", "); }
       sb.Append("Limit: ");
       Limit.ToString(sb);
     }
     if(__isset.offset)
     {
-      if(0 < tmp21++) { sb.Append(", "); }
+      if(0 < tmp33++) { sb.Append(", "); }
       sb.Append("Offset: ");
       Offset.ToString(sb);
     }
     if(__isset.max_versions)
     {
-      if(0 < tmp21++) { sb.Append(", "); }
+      if(0 < tmp33++) { sb.Append(", "); }
       sb.Append("Max_versions: ");
       Max_versions.ToString(sb);
     }
     if(__isset.max_buffer)
     {
-      if(0 < tmp21++) { sb.Append(", "); }
+      if(0 < tmp33++) { sb.Append(", "); }
       sb.Append("Max_buffer: ");
       Max_buffer.ToString(sb);
     }
     if(__isset.options)
     {
-      if(0 < tmp21++) { sb.Append(", "); }
+      if(0 < tmp33++) { sb.Append(", "); }
       sb.Append("Options: ");
       Options.ToString(sb);
     }

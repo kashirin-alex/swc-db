@@ -15,21 +15,22 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
 
   private static final org.apache.thrift.protocol.TField CID_FIELD_DESC = new org.apache.thrift.protocol.TField("cid", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField COL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("col_name", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField COL_SEQ_FIELD_DESC = new org.apache.thrift.protocol.TField("col_seq", org.apache.thrift.protocol.TType.I32, (short)3);
-  private static final org.apache.thrift.protocol.TField COL_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("col_type", org.apache.thrift.protocol.TType.I32, (short)4);
-  private static final org.apache.thrift.protocol.TField CELL_VERSIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("cell_versions", org.apache.thrift.protocol.TType.I32, (short)5);
-  private static final org.apache.thrift.protocol.TField CELL_TTL_FIELD_DESC = new org.apache.thrift.protocol.TField("cell_ttl", org.apache.thrift.protocol.TType.I32, (short)6);
-  private static final org.apache.thrift.protocol.TField BLK_ENCODING_FIELD_DESC = new org.apache.thrift.protocol.TField("blk_encoding", org.apache.thrift.protocol.TType.I32, (short)7);
-  private static final org.apache.thrift.protocol.TField BLK_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("blk_size", org.apache.thrift.protocol.TType.I32, (short)8);
-  private static final org.apache.thrift.protocol.TField BLK_CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("blk_cells", org.apache.thrift.protocol.TType.I32, (short)9);
-  private static final org.apache.thrift.protocol.TField CS_REPLICATION_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_replication", org.apache.thrift.protocol.TType.BYTE, (short)10);
-  private static final org.apache.thrift.protocol.TField CS_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_size", org.apache.thrift.protocol.TType.I32, (short)11);
-  private static final org.apache.thrift.protocol.TField CS_MAX_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_max", org.apache.thrift.protocol.TType.BYTE, (short)12);
-  private static final org.apache.thrift.protocol.TField LOG_ROLLOUT_RATIO_FIELD_DESC = new org.apache.thrift.protocol.TField("log_rollout_ratio", org.apache.thrift.protocol.TType.BYTE, (short)13);
-  private static final org.apache.thrift.protocol.TField LOG_COMPACT_COINTERVALING_FIELD_DESC = new org.apache.thrift.protocol.TField("log_compact_cointervaling", org.apache.thrift.protocol.TType.BYTE, (short)14);
-  private static final org.apache.thrift.protocol.TField LOG_FRAGMENT_PRELOAD_FIELD_DESC = new org.apache.thrift.protocol.TField("log_fragment_preload", org.apache.thrift.protocol.TType.BYTE, (short)15);
-  private static final org.apache.thrift.protocol.TField COMPACT_PERCENT_FIELD_DESC = new org.apache.thrift.protocol.TField("compact_percent", org.apache.thrift.protocol.TType.BYTE, (short)16);
-  private static final org.apache.thrift.protocol.TField REVISION_FIELD_DESC = new org.apache.thrift.protocol.TField("revision", org.apache.thrift.protocol.TType.I64, (short)17);
+  private static final org.apache.thrift.protocol.TField COL_TAGS_FIELD_DESC = new org.apache.thrift.protocol.TField("col_tags", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField COL_SEQ_FIELD_DESC = new org.apache.thrift.protocol.TField("col_seq", org.apache.thrift.protocol.TType.I32, (short)4);
+  private static final org.apache.thrift.protocol.TField COL_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("col_type", org.apache.thrift.protocol.TType.I32, (short)5);
+  private static final org.apache.thrift.protocol.TField CELL_VERSIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("cell_versions", org.apache.thrift.protocol.TType.I32, (short)6);
+  private static final org.apache.thrift.protocol.TField CELL_TTL_FIELD_DESC = new org.apache.thrift.protocol.TField("cell_ttl", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField BLK_ENCODING_FIELD_DESC = new org.apache.thrift.protocol.TField("blk_encoding", org.apache.thrift.protocol.TType.I32, (short)8);
+  private static final org.apache.thrift.protocol.TField BLK_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("blk_size", org.apache.thrift.protocol.TType.I32, (short)9);
+  private static final org.apache.thrift.protocol.TField BLK_CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("blk_cells", org.apache.thrift.protocol.TType.I32, (short)10);
+  private static final org.apache.thrift.protocol.TField CS_REPLICATION_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_replication", org.apache.thrift.protocol.TType.BYTE, (short)11);
+  private static final org.apache.thrift.protocol.TField CS_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_size", org.apache.thrift.protocol.TType.I32, (short)12);
+  private static final org.apache.thrift.protocol.TField CS_MAX_FIELD_DESC = new org.apache.thrift.protocol.TField("cs_max", org.apache.thrift.protocol.TType.BYTE, (short)13);
+  private static final org.apache.thrift.protocol.TField LOG_ROLLOUT_RATIO_FIELD_DESC = new org.apache.thrift.protocol.TField("log_rollout_ratio", org.apache.thrift.protocol.TType.BYTE, (short)14);
+  private static final org.apache.thrift.protocol.TField LOG_COMPACT_COINTERVALING_FIELD_DESC = new org.apache.thrift.protocol.TField("log_compact_cointervaling", org.apache.thrift.protocol.TType.BYTE, (short)15);
+  private static final org.apache.thrift.protocol.TField LOG_FRAGMENT_PRELOAD_FIELD_DESC = new org.apache.thrift.protocol.TField("log_fragment_preload", org.apache.thrift.protocol.TType.BYTE, (short)16);
+  private static final org.apache.thrift.protocol.TField COMPACT_PERCENT_FIELD_DESC = new org.apache.thrift.protocol.TField("compact_percent", org.apache.thrift.protocol.TType.BYTE, (short)17);
+  private static final org.apache.thrift.protocol.TField REVISION_FIELD_DESC = new org.apache.thrift.protocol.TField("revision", org.apache.thrift.protocol.TType.I64, (short)18);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SchemaStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SchemaTupleSchemeFactory();
@@ -42,6 +43,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
    * Column Name
    */
   public @org.apache.thrift.annotation.Nullable java.lang.String col_name; // optional
+  /**
+   * Column Tags
+   */
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> col_tags; // required
   /**
    * Column Key Sequence
    * 
@@ -120,71 +125,75 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
      */
     COL_NAME((short)2, "col_name"),
     /**
+     * Column Tags
+     */
+    COL_TAGS((short)3, "col_tags"),
+    /**
      * Column Key Sequence
      * 
      * @see KeySeq
      */
-    COL_SEQ((short)3, "col_seq"),
+    COL_SEQ((short)4, "col_seq"),
     /**
      * Column Type
      * 
      * @see ColumnType
      */
-    COL_TYPE((short)4, "col_type"),
+    COL_TYPE((short)5, "col_type"),
     /**
      * Cell Versions
      */
-    CELL_VERSIONS((short)5, "cell_versions"),
+    CELL_VERSIONS((short)6, "cell_versions"),
     /**
      * Cell Time to Live
      */
-    CELL_TTL((short)6, "cell_ttl"),
+    CELL_TTL((short)7, "cell_ttl"),
     /**
      * Block Encoding
      * 
      * @see EncodingType
      */
-    BLK_ENCODING((short)7, "blk_encoding"),
+    BLK_ENCODING((short)8, "blk_encoding"),
     /**
      * Block Size in Bytes
      */
-    BLK_SIZE((short)8, "blk_size"),
+    BLK_SIZE((short)9, "blk_size"),
     /**
      * Number of Cells in Block
      */
-    BLK_CELLS((short)9, "blk_cells"),
+    BLK_CELLS((short)10, "blk_cells"),
     /**
      * CellStore file Replication
      */
-    CS_REPLICATION((short)10, "cs_replication"),
+    CS_REPLICATION((short)11, "cs_replication"),
     /**
      * CellStore Size in Bytes
      */
-    CS_SIZE((short)11, "cs_size"),
+    CS_SIZE((short)12, "cs_size"),
     /**
      * Max CellStores in a Range
      */
-    CS_MAX((short)12, "cs_max"),
+    CS_MAX((short)13, "cs_max"),
     /**
      * Write Fragment File on ratio reached
      */
-    LOG_ROLLOUT_RATIO((short)13, "log_rollout_ratio"),
+    LOG_ROLLOUT_RATIO((short)14, "log_rollout_ratio"),
     /**
      * Min. Cointervaling Fragments for Compaction
      */
-    LOG_COMPACT_COINTERVALING((short)14, "log_compact_cointervaling"),
+    LOG_COMPACT_COINTERVALING((short)15, "log_compact_cointervaling"),
     /**
      * Number of Fragment to Preload
      */
-    LOG_FRAGMENT_PRELOAD((short)15, "log_fragment_preload"),
+    LOG_FRAGMENT_PRELOAD((short)16, "log_fragment_preload"),
     /**
      * Compact at percent reach
      */
-    COMPACT_PERCENT((short)16, "compact_percent"),
+    COMPACT_PERCENT((short)17, "compact_percent"),
     /**
      * Schema's revision/id
      */
-    REVISION((short)17, "revision");
+    REVISION((short)18, "revision");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -204,35 +213,37 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
           return CID;
         case 2: // COL_NAME
           return COL_NAME;
-        case 3: // COL_SEQ
+        case 3: // COL_TAGS
+          return COL_TAGS;
+        case 4: // COL_SEQ
           return COL_SEQ;
-        case 4: // COL_TYPE
+        case 5: // COL_TYPE
           return COL_TYPE;
-        case 5: // CELL_VERSIONS
+        case 6: // CELL_VERSIONS
           return CELL_VERSIONS;
-        case 6: // CELL_TTL
+        case 7: // CELL_TTL
           return CELL_TTL;
-        case 7: // BLK_ENCODING
+        case 8: // BLK_ENCODING
           return BLK_ENCODING;
-        case 8: // BLK_SIZE
+        case 9: // BLK_SIZE
           return BLK_SIZE;
-        case 9: // BLK_CELLS
+        case 10: // BLK_CELLS
           return BLK_CELLS;
-        case 10: // CS_REPLICATION
+        case 11: // CS_REPLICATION
           return CS_REPLICATION;
-        case 11: // CS_SIZE
+        case 12: // CS_SIZE
           return CS_SIZE;
-        case 12: // CS_MAX
+        case 13: // CS_MAX
           return CS_MAX;
-        case 13: // LOG_ROLLOUT_RATIO
+        case 14: // LOG_ROLLOUT_RATIO
           return LOG_ROLLOUT_RATIO;
-        case 14: // LOG_COMPACT_COINTERVALING
+        case 15: // LOG_COMPACT_COINTERVALING
           return LOG_COMPACT_COINTERVALING;
-        case 15: // LOG_FRAGMENT_PRELOAD
+        case 16: // LOG_FRAGMENT_PRELOAD
           return LOG_FRAGMENT_PRELOAD;
-        case 16: // COMPACT_PERCENT
+        case 17: // COMPACT_PERCENT
           return COMPACT_PERCENT;
-        case 17: // REVISION
+        case 18: // REVISION
           return REVISION;
         default:
           return null;
@@ -297,6 +308,9 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.COL_NAME, new org.apache.thrift.meta_data.FieldMetaData("col_name", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.COL_TAGS, new org.apache.thrift.meta_data.FieldMetaData("col_tags", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.COL_SEQ, new org.apache.thrift.meta_data.FieldMetaData("col_seq", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, KeySeq.class)));
     tmpMap.put(_Fields.COL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("col_type", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -334,6 +348,13 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
   public Schema() {
   }
 
+  public Schema(
+    java.util.List<java.lang.String> col_tags)
+  {
+    this();
+    this.col_tags = col_tags;
+  }
+
   /**
    * Performs a deep copy on <i>other</i>.
    */
@@ -342,6 +363,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     this.cid = other.cid;
     if (other.isSetCol_name()) {
       this.col_name = other.col_name;
+    }
+    if (other.isSetCol_tags()) {
+      java.util.List<java.lang.String> __this__col_tags = new java.util.ArrayList<java.lang.String>(other.col_tags);
+      this.col_tags = __this__col_tags;
     }
     if (other.isSetCol_seq()) {
       this.col_seq = other.col_seq;
@@ -375,6 +400,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     setCidIsSet(false);
     this.cid = 0;
     this.col_name = null;
+    this.col_tags = null;
     this.col_seq = null;
     this.col_type = null;
     setCell_versionsIsSet(false);
@@ -461,6 +487,53 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
   public void setCol_nameIsSet(boolean value) {
     if (!value) {
       this.col_name = null;
+    }
+  }
+
+  public int getCol_tagsSize() {
+    return (this.col_tags == null) ? 0 : this.col_tags.size();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Iterator<java.lang.String> getCol_tagsIterator() {
+    return (this.col_tags == null) ? null : this.col_tags.iterator();
+  }
+
+  public void addToCol_tags(java.lang.String elem) {
+    if (this.col_tags == null) {
+      this.col_tags = new java.util.ArrayList<java.lang.String>();
+    }
+    this.col_tags.add(elem);
+  }
+
+  /**
+   * Column Tags
+   */
+  @org.apache.thrift.annotation.Nullable
+  public java.util.List<java.lang.String> getCol_tags() {
+    return this.col_tags;
+  }
+
+  /**
+   * Column Tags
+   */
+  public Schema setCol_tags(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> col_tags) {
+    this.col_tags = col_tags;
+    return this;
+  }
+
+  public void unsetCol_tags() {
+    this.col_tags = null;
+  }
+
+  /** Returns true if field col_tags is set (has been assigned a value) and false otherwise */
+  public boolean isSetCol_tags() {
+    return this.col_tags != null;
+  }
+
+  public void setCol_tagsIsSet(boolean value) {
+    if (!value) {
+      this.col_tags = null;
     }
   }
 
@@ -935,6 +1008,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       }
       break;
 
+    case COL_TAGS:
+      if (value == null) {
+        unsetCol_tags();
+      } else {
+        setCol_tags((java.util.List<java.lang.String>)value);
+      }
+      break;
+
     case COL_SEQ:
       if (value == null) {
         unsetCol_seq();
@@ -1067,6 +1148,9 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     case COL_NAME:
       return getCol_name();
 
+    case COL_TAGS:
+      return getCol_tags();
+
     case COL_SEQ:
       return getCol_seq();
 
@@ -1127,6 +1211,8 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       return isSetCid();
     case COL_NAME:
       return isSetCol_name();
+    case COL_TAGS:
+      return isSetCol_tags();
     case COL_SEQ:
       return isSetCol_seq();
     case COL_TYPE:
@@ -1189,6 +1275,15 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       if (!(this_present_col_name && that_present_col_name))
         return false;
       if (!this.col_name.equals(that.col_name))
+        return false;
+    }
+
+    boolean this_present_col_tags = true && this.isSetCol_tags();
+    boolean that_present_col_tags = true && that.isSetCol_tags();
+    if (this_present_col_tags || that_present_col_tags) {
+      if (!(this_present_col_tags && that_present_col_tags))
+        return false;
+      if (!this.col_tags.equals(that.col_tags))
         return false;
     }
 
@@ -1342,6 +1437,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     if (isSetCol_name())
       hashCode = hashCode * 8191 + col_name.hashCode();
 
+    hashCode = hashCode * 8191 + ((isSetCol_tags()) ? 131071 : 524287);
+    if (isSetCol_tags())
+      hashCode = hashCode * 8191 + col_tags.hashCode();
+
     hashCode = hashCode * 8191 + ((isSetCol_seq()) ? 131071 : 524287);
     if (isSetCol_seq())
       hashCode = hashCode * 8191 + col_seq.getValue();
@@ -1429,6 +1528,16 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     }
     if (isSetCol_name()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.col_name, other.col_name);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCol_tags(), other.isSetCol_tags());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCol_tags()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.col_tags, other.col_tags);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1619,6 +1728,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       }
       first = false;
     }
+    if (!first) sb.append(", ");
+    sb.append("col_tags:");
+    if (this.col_tags == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.col_tags);
+    }
+    first = false;
     if (isSetCol_seq()) {
       if (!first) sb.append(", ");
       sb.append("col_seq:");
@@ -1782,7 +1899,25 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // COL_SEQ
+          case 3: // COL_TAGS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
+                struct.col_tags = new java.util.ArrayList<java.lang.String>(_list0.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1;
+                for (int _i2 = 0; _i2 < _list0.size; ++_i2)
+                {
+                  _elem1 = iprot.readString();
+                  struct.col_tags.add(_elem1);
+                }
+                iprot.readListEnd();
+              }
+              struct.setCol_tagsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // COL_SEQ
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.col_seq = org.swcdb.thrift.gen.KeySeq.findByValue(iprot.readI32());
               struct.setCol_seqIsSet(true);
@@ -1790,7 +1925,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // COL_TYPE
+          case 5: // COL_TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.col_type = org.swcdb.thrift.gen.ColumnType.findByValue(iprot.readI32());
               struct.setCol_typeIsSet(true);
@@ -1798,7 +1933,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // CELL_VERSIONS
+          case 6: // CELL_VERSIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.cell_versions = iprot.readI32();
               struct.setCell_versionsIsSet(true);
@@ -1806,7 +1941,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // CELL_TTL
+          case 7: // CELL_TTL
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.cell_ttl = iprot.readI32();
               struct.setCell_ttlIsSet(true);
@@ -1814,7 +1949,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // BLK_ENCODING
+          case 8: // BLK_ENCODING
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.blk_encoding = org.swcdb.thrift.gen.EncodingType.findByValue(iprot.readI32());
               struct.setBlk_encodingIsSet(true);
@@ -1822,7 +1957,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 8: // BLK_SIZE
+          case 9: // BLK_SIZE
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.blk_size = iprot.readI32();
               struct.setBlk_sizeIsSet(true);
@@ -1830,7 +1965,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 9: // BLK_CELLS
+          case 10: // BLK_CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.blk_cells = iprot.readI32();
               struct.setBlk_cellsIsSet(true);
@@ -1838,7 +1973,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 10: // CS_REPLICATION
+          case 11: // CS_REPLICATION
             if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
               struct.cs_replication = iprot.readByte();
               struct.setCs_replicationIsSet(true);
@@ -1846,7 +1981,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 11: // CS_SIZE
+          case 12: // CS_SIZE
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.cs_size = iprot.readI32();
               struct.setCs_sizeIsSet(true);
@@ -1854,7 +1989,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 12: // CS_MAX
+          case 13: // CS_MAX
             if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
               struct.cs_max = iprot.readByte();
               struct.setCs_maxIsSet(true);
@@ -1862,7 +1997,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 13: // LOG_ROLLOUT_RATIO
+          case 14: // LOG_ROLLOUT_RATIO
             if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
               struct.log_rollout_ratio = iprot.readByte();
               struct.setLog_rollout_ratioIsSet(true);
@@ -1870,7 +2005,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 14: // LOG_COMPACT_COINTERVALING
+          case 15: // LOG_COMPACT_COINTERVALING
             if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
               struct.log_compact_cointervaling = iprot.readByte();
               struct.setLog_compact_cointervalingIsSet(true);
@@ -1878,7 +2013,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 15: // LOG_FRAGMENT_PRELOAD
+          case 16: // LOG_FRAGMENT_PRELOAD
             if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
               struct.log_fragment_preload = iprot.readByte();
               struct.setLog_fragment_preloadIsSet(true);
@@ -1886,7 +2021,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 16: // COMPACT_PERCENT
+          case 17: // COMPACT_PERCENT
             if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
               struct.compact_percent = iprot.readByte();
               struct.setCompact_percentIsSet(true);
@@ -1894,7 +2029,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 17: // REVISION
+          case 18: // REVISION
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.revision = iprot.readI64();
               struct.setRevisionIsSet(true);
@@ -1928,6 +2063,18 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
           oprot.writeString(struct.col_name);
           oprot.writeFieldEnd();
         }
+      }
+      if (struct.col_tags != null) {
+        oprot.writeFieldBegin(COL_TAGS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.col_tags.size()));
+          for (java.lang.String _iter3 : struct.col_tags)
+          {
+            oprot.writeString(_iter3);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
       }
       if (struct.col_seq != null) {
         if (struct.isSetCol_seq()) {
@@ -2034,57 +2181,69 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       if (struct.isSetCol_name()) {
         optionals.set(1);
       }
-      if (struct.isSetCol_seq()) {
+      if (struct.isSetCol_tags()) {
         optionals.set(2);
       }
-      if (struct.isSetCol_type()) {
+      if (struct.isSetCol_seq()) {
         optionals.set(3);
       }
-      if (struct.isSetCell_versions()) {
+      if (struct.isSetCol_type()) {
         optionals.set(4);
       }
-      if (struct.isSetCell_ttl()) {
+      if (struct.isSetCell_versions()) {
         optionals.set(5);
       }
-      if (struct.isSetBlk_encoding()) {
+      if (struct.isSetCell_ttl()) {
         optionals.set(6);
       }
-      if (struct.isSetBlk_size()) {
+      if (struct.isSetBlk_encoding()) {
         optionals.set(7);
       }
-      if (struct.isSetBlk_cells()) {
+      if (struct.isSetBlk_size()) {
         optionals.set(8);
       }
-      if (struct.isSetCs_replication()) {
+      if (struct.isSetBlk_cells()) {
         optionals.set(9);
       }
-      if (struct.isSetCs_size()) {
+      if (struct.isSetCs_replication()) {
         optionals.set(10);
       }
-      if (struct.isSetCs_max()) {
+      if (struct.isSetCs_size()) {
         optionals.set(11);
       }
-      if (struct.isSetLog_rollout_ratio()) {
+      if (struct.isSetCs_max()) {
         optionals.set(12);
       }
-      if (struct.isSetLog_compact_cointervaling()) {
+      if (struct.isSetLog_rollout_ratio()) {
         optionals.set(13);
       }
-      if (struct.isSetLog_fragment_preload()) {
+      if (struct.isSetLog_compact_cointervaling()) {
         optionals.set(14);
       }
-      if (struct.isSetCompact_percent()) {
+      if (struct.isSetLog_fragment_preload()) {
         optionals.set(15);
       }
-      if (struct.isSetRevision()) {
+      if (struct.isSetCompact_percent()) {
         optionals.set(16);
       }
-      oprot.writeBitSet(optionals, 17);
+      if (struct.isSetRevision()) {
+        optionals.set(17);
+      }
+      oprot.writeBitSet(optionals, 18);
       if (struct.isSetCid()) {
         oprot.writeI64(struct.cid);
       }
       if (struct.isSetCol_name()) {
         oprot.writeString(struct.col_name);
+      }
+      if (struct.isSetCol_tags()) {
+        {
+          oprot.writeI32(struct.col_tags.size());
+          for (java.lang.String _iter4 : struct.col_tags)
+          {
+            oprot.writeString(_iter4);
+          }
+        }
       }
       if (struct.isSetCol_seq()) {
         oprot.writeI32(struct.col_seq.getValue());
@@ -2136,7 +2295,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Schema struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(17);
+      java.util.BitSet incoming = iprot.readBitSet(18);
       if (incoming.get(0)) {
         struct.cid = iprot.readI64();
         struct.setCidIsSet(true);
@@ -2146,62 +2305,75 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         struct.setCol_nameIsSet(true);
       }
       if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list5 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.col_tags = new java.util.ArrayList<java.lang.String>(_list5.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem6;
+          for (int _i7 = 0; _i7 < _list5.size; ++_i7)
+          {
+            _elem6 = iprot.readString();
+            struct.col_tags.add(_elem6);
+          }
+        }
+        struct.setCol_tagsIsSet(true);
+      }
+      if (incoming.get(3)) {
         struct.col_seq = org.swcdb.thrift.gen.KeySeq.findByValue(iprot.readI32());
         struct.setCol_seqIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         struct.col_type = org.swcdb.thrift.gen.ColumnType.findByValue(iprot.readI32());
         struct.setCol_typeIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.cell_versions = iprot.readI32();
         struct.setCell_versionsIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.cell_ttl = iprot.readI32();
         struct.setCell_ttlIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(7)) {
         struct.blk_encoding = org.swcdb.thrift.gen.EncodingType.findByValue(iprot.readI32());
         struct.setBlk_encodingIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(8)) {
         struct.blk_size = iprot.readI32();
         struct.setBlk_sizeIsSet(true);
       }
-      if (incoming.get(8)) {
+      if (incoming.get(9)) {
         struct.blk_cells = iprot.readI32();
         struct.setBlk_cellsIsSet(true);
       }
-      if (incoming.get(9)) {
+      if (incoming.get(10)) {
         struct.cs_replication = iprot.readByte();
         struct.setCs_replicationIsSet(true);
       }
-      if (incoming.get(10)) {
+      if (incoming.get(11)) {
         struct.cs_size = iprot.readI32();
         struct.setCs_sizeIsSet(true);
       }
-      if (incoming.get(11)) {
+      if (incoming.get(12)) {
         struct.cs_max = iprot.readByte();
         struct.setCs_maxIsSet(true);
       }
-      if (incoming.get(12)) {
+      if (incoming.get(13)) {
         struct.log_rollout_ratio = iprot.readByte();
         struct.setLog_rollout_ratioIsSet(true);
       }
-      if (incoming.get(13)) {
+      if (incoming.get(14)) {
         struct.log_compact_cointervaling = iprot.readByte();
         struct.setLog_compact_cointervalingIsSet(true);
       }
-      if (incoming.get(14)) {
+      if (incoming.get(15)) {
         struct.log_fragment_preload = iprot.readByte();
         struct.setLog_fragment_preloadIsSet(true);
       }
-      if (incoming.get(15)) {
+      if (incoming.get(16)) {
         struct.compact_percent = iprot.readByte();
         struct.setCompact_percentIsSet(true);
       }
-      if (incoming.get(16)) {
+      if (incoming.get(17)) {
         struct.revision = iprot.readI64();
         struct.setRevisionIsSet(true);
       }

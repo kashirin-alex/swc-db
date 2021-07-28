@@ -101,23 +101,23 @@ public partial class Result : TBase
 
   public Result DeepCopy()
   {
-    var tmp276 = new Result();
+    var tmp288 = new Result();
     if((Schemas != null) && __isset.schemas)
     {
-      tmp276.Schemas = this.Schemas.DeepCopy();
+      tmp288.Schemas = this.Schemas.DeepCopy();
     }
-    tmp276.__isset.schemas = this.__isset.schemas;
+    tmp288.__isset.schemas = this.__isset.schemas;
     if((Cells != null) && __isset.cells)
     {
-      tmp276.Cells = (Cells)this.Cells.DeepCopy();
+      tmp288.Cells = (Cells)this.Cells.DeepCopy();
     }
-    tmp276.__isset.cells = this.__isset.cells;
+    tmp288.__isset.cells = this.__isset.cells;
     if((Compact != null) && __isset.compact)
     {
-      tmp276.Compact = this.Compact.DeepCopy();
+      tmp288.Compact = this.Compact.DeepCopy();
     }
-    tmp276.__isset.compact = this.__isset.compact;
-    return tmp276;
+    tmp288.__isset.compact = this.__isset.compact;
+    return tmp288;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -141,14 +141,14 @@ public partial class Result : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list277 = await iprot.ReadListBeginAsync(cancellationToken);
-                Schemas = new List<Schema>(_list277.Count);
-                for(int _i278 = 0; _i278 < _list277.Count; ++_i278)
+                TList _list289 = await iprot.ReadListBeginAsync(cancellationToken);
+                Schemas = new List<Schema>(_list289.Count);
+                for(int _i290 = 0; _i290 < _list289.Count; ++_i290)
                 {
-                  Schema _elem279;
-                  _elem279 = new Schema();
-                  await _elem279.ReadAsync(iprot, cancellationToken);
-                  Schemas.Add(_elem279);
+                  Schema _elem291;
+                  _elem291 = new Schema();
+                  await _elem291.ReadAsync(iprot, cancellationToken);
+                  Schemas.Add(_elem291);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -173,14 +173,14 @@ public partial class Result : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list280 = await iprot.ReadListBeginAsync(cancellationToken);
-                Compact = new List<CompactResult>(_list280.Count);
-                for(int _i281 = 0; _i281 < _list280.Count; ++_i281)
+                TList _list292 = await iprot.ReadListBeginAsync(cancellationToken);
+                Compact = new List<CompactResult>(_list292.Count);
+                for(int _i293 = 0; _i293 < _list292.Count; ++_i293)
                 {
-                  CompactResult _elem282;
-                  _elem282 = new CompactResult();
-                  await _elem282.ReadAsync(iprot, cancellationToken);
-                  Compact.Add(_elem282);
+                  CompactResult _elem294;
+                  _elem294 = new CompactResult();
+                  await _elem294.ReadAsync(iprot, cancellationToken);
+                  Compact.Add(_elem294);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -222,9 +222,9 @@ public partial class Result : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Schemas.Count), cancellationToken);
-          foreach (Schema _iter283 in Schemas)
+          foreach (Schema _iter295 in Schemas)
           {
-            await _iter283.WriteAsync(oprot, cancellationToken);
+            await _iter295.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -247,9 +247,9 @@ public partial class Result : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Compact.Count), cancellationToken);
-          foreach (CompactResult _iter284 in Compact)
+          foreach (CompactResult _iter296 in Compact)
           {
-            await _iter284.WriteAsync(oprot, cancellationToken);
+            await _iter296.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -295,22 +295,22 @@ public partial class Result : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("Result(");
-    int tmp285 = 0;
+    int tmp297 = 0;
     if((Schemas != null) && __isset.schemas)
     {
-      if(0 < tmp285++) { sb.Append(", "); }
+      if(0 < tmp297++) { sb.Append(", "); }
       sb.Append("Schemas: ");
       Schemas.ToString(sb);
     }
     if((Cells != null) && __isset.cells)
     {
-      if(0 < tmp285++) { sb.Append(", "); }
+      if(0 < tmp297++) { sb.Append(", "); }
       sb.Append("Cells: ");
       Cells.ToString(sb);
     }
     if((Compact != null) && __isset.compact)
     {
-      if(0 < tmp285++) { sb.Append(", "); }
+      if(0 < tmp297++) { sb.Append(", "); }
       sb.Append("Compact: ");
       Compact.ToString(sb);
     }

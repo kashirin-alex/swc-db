@@ -15,7 +15,7 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
 
   private static final org.apache.thrift.protocol.TField CIDS_FIELD_DESC = new org.apache.thrift.protocol.TField("cids", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("names", org.apache.thrift.protocol.TType.LIST, (short)2);
-  private static final org.apache.thrift.protocol.TField PATTERNS_FIELD_DESC = new org.apache.thrift.protocol.TField("patterns", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField PATTERNS_FIELD_DESC = new org.apache.thrift.protocol.TField("patterns", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecSchemasStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecSchemasTupleSchemeFactory();
@@ -29,9 +29,9 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
    */
   public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> names; // required
   /**
-   * The Schema's Column Name patterns
+   * The Schema's selector patterns
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> patterns; // required
+  public @org.apache.thrift.annotation.Nullable SchemaPatterns patterns; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -44,7 +44,7 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
      */
     NAMES((short)2, "names"),
     /**
-     * The Schema's Column Name patterns
+     * The Schema's selector patterns
      */
     PATTERNS((short)3, "patterns");
 
@@ -119,8 +119,7 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.PATTERNS, new org.apache.thrift.meta_data.FieldMetaData("patterns", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SchemaPattern.class))));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SchemaPatterns.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecSchemas.class, metaDataMap);
   }
@@ -131,7 +130,7 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
   public SpecSchemas(
     java.util.List<java.lang.Long> cids,
     java.util.List<java.lang.String> names,
-    java.util.List<SchemaPattern> patterns)
+    SchemaPatterns patterns)
   {
     this();
     this.cids = cids;
@@ -152,11 +151,7 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
       this.names = __this__names;
     }
     if (other.isSetPatterns()) {
-      java.util.List<SchemaPattern> __this__patterns = new java.util.ArrayList<SchemaPattern>(other.patterns.size());
-      for (SchemaPattern other_element : other.patterns) {
-        __this__patterns.add(new SchemaPattern(other_element));
-      }
-      this.patterns = __this__patterns;
+      this.patterns = new SchemaPatterns(other.patterns);
     }
   }
 
@@ -265,34 +260,18 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
     }
   }
 
-  public int getPatternsSize() {
-    return (this.patterns == null) ? 0 : this.patterns.size();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<SchemaPattern> getPatternsIterator() {
-    return (this.patterns == null) ? null : this.patterns.iterator();
-  }
-
-  public void addToPatterns(SchemaPattern elem) {
-    if (this.patterns == null) {
-      this.patterns = new java.util.ArrayList<SchemaPattern>();
-    }
-    this.patterns.add(elem);
-  }
-
   /**
-   * The Schema's Column Name patterns
+   * The Schema's selector patterns
    */
   @org.apache.thrift.annotation.Nullable
-  public java.util.List<SchemaPattern> getPatterns() {
+  public SchemaPatterns getPatterns() {
     return this.patterns;
   }
 
   /**
-   * The Schema's Column Name patterns
+   * The Schema's selector patterns
    */
-  public SpecSchemas setPatterns(@org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> patterns) {
+  public SpecSchemas setPatterns(@org.apache.thrift.annotation.Nullable SchemaPatterns patterns) {
     this.patterns = patterns;
     return this;
   }
@@ -334,7 +313,7 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
       if (value == null) {
         unsetPatterns();
       } else {
-        setPatterns((java.util.List<SchemaPattern>)value);
+        setPatterns((SchemaPatterns)value);
       }
       break;
 
@@ -525,6 +504,9 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
+    if (patterns != null) {
+      patterns.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -564,13 +546,13 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
           case 1: // CIDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-                struct.cids = new java.util.ArrayList<java.lang.Long>(_list0.size);
-                long _elem1;
-                for (int _i2 = 0; _i2 < _list0.size; ++_i2)
+                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                struct.cids = new java.util.ArrayList<java.lang.Long>(_list24.size);
+                long _elem25;
+                for (int _i26 = 0; _i26 < _list24.size; ++_i26)
                 {
-                  _elem1 = iprot.readI64();
-                  struct.cids.add(_elem1);
+                  _elem25 = iprot.readI64();
+                  struct.cids.add(_elem25);
                 }
                 iprot.readListEnd();
               }
@@ -582,13 +564,13 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
           case 2: // NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list3 = iprot.readListBegin();
-                struct.names = new java.util.ArrayList<java.lang.String>(_list3.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem4;
-                for (int _i5 = 0; _i5 < _list3.size; ++_i5)
+                org.apache.thrift.protocol.TList _list27 = iprot.readListBegin();
+                struct.names = new java.util.ArrayList<java.lang.String>(_list27.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem28;
+                for (int _i29 = 0; _i29 < _list27.size; ++_i29)
                 {
-                  _elem4 = iprot.readString();
-                  struct.names.add(_elem4);
+                  _elem28 = iprot.readString();
+                  struct.names.add(_elem28);
                 }
                 iprot.readListEnd();
               }
@@ -598,19 +580,9 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
             }
             break;
           case 3: // PATTERNS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list6 = iprot.readListBegin();
-                struct.patterns = new java.util.ArrayList<SchemaPattern>(_list6.size);
-                @org.apache.thrift.annotation.Nullable SchemaPattern _elem7;
-                for (int _i8 = 0; _i8 < _list6.size; ++_i8)
-                {
-                  _elem7 = new SchemaPattern();
-                  _elem7.read(iprot);
-                  struct.patterns.add(_elem7);
-                }
-                iprot.readListEnd();
-              }
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.patterns = new SchemaPatterns();
+              struct.patterns.read(iprot);
               struct.setPatternsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -635,9 +607,9 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
         oprot.writeFieldBegin(CIDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.cids.size()));
-          for (long _iter9 : struct.cids)
+          for (long _iter30 : struct.cids)
           {
-            oprot.writeI64(_iter9);
+            oprot.writeI64(_iter30);
           }
           oprot.writeListEnd();
         }
@@ -647,9 +619,9 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
         oprot.writeFieldBegin(NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.names.size()));
-          for (java.lang.String _iter10 : struct.names)
+          for (java.lang.String _iter31 : struct.names)
           {
-            oprot.writeString(_iter10);
+            oprot.writeString(_iter31);
           }
           oprot.writeListEnd();
         }
@@ -657,14 +629,7 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
       }
       if (struct.patterns != null) {
         oprot.writeFieldBegin(PATTERNS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.patterns.size()));
-          for (SchemaPattern _iter11 : struct.patterns)
-          {
-            _iter11.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
+        struct.patterns.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -698,29 +663,23 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
       if (struct.isSetCids()) {
         {
           oprot.writeI32(struct.cids.size());
-          for (long _iter12 : struct.cids)
+          for (long _iter32 : struct.cids)
           {
-            oprot.writeI64(_iter12);
+            oprot.writeI64(_iter32);
           }
         }
       }
       if (struct.isSetNames()) {
         {
           oprot.writeI32(struct.names.size());
-          for (java.lang.String _iter13 : struct.names)
+          for (java.lang.String _iter33 : struct.names)
           {
-            oprot.writeString(_iter13);
+            oprot.writeString(_iter33);
           }
         }
       }
       if (struct.isSetPatterns()) {
-        {
-          oprot.writeI32(struct.patterns.size());
-          for (SchemaPattern _iter14 : struct.patterns)
-          {
-            _iter14.write(oprot);
-          }
-        }
+        struct.patterns.write(oprot);
       }
     }
 
@@ -730,42 +689,33 @@ public class SpecSchemas implements org.apache.thrift.TBase<SpecSchemas, SpecSch
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list15 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
-          struct.cids = new java.util.ArrayList<java.lang.Long>(_list15.size);
-          long _elem16;
-          for (int _i17 = 0; _i17 < _list15.size; ++_i17)
+          org.apache.thrift.protocol.TList _list34 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
+          struct.cids = new java.util.ArrayList<java.lang.Long>(_list34.size);
+          long _elem35;
+          for (int _i36 = 0; _i36 < _list34.size; ++_i36)
           {
-            _elem16 = iprot.readI64();
-            struct.cids.add(_elem16);
+            _elem35 = iprot.readI64();
+            struct.cids.add(_elem35);
           }
         }
         struct.setCidsIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list18 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.names = new java.util.ArrayList<java.lang.String>(_list18.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem19;
-          for (int _i20 = 0; _i20 < _list18.size; ++_i20)
+          org.apache.thrift.protocol.TList _list37 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.names = new java.util.ArrayList<java.lang.String>(_list37.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem38;
+          for (int _i39 = 0; _i39 < _list37.size; ++_i39)
           {
-            _elem19 = iprot.readString();
-            struct.names.add(_elem19);
+            _elem38 = iprot.readString();
+            struct.names.add(_elem38);
           }
         }
         struct.setNamesIsSet(true);
       }
       if (incoming.get(2)) {
-        {
-          org.apache.thrift.protocol.TList _list21 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.patterns = new java.util.ArrayList<SchemaPattern>(_list21.size);
-          @org.apache.thrift.annotation.Nullable SchemaPattern _elem22;
-          for (int _i23 = 0; _i23 < _list21.size; ++_i23)
-          {
-            _elem22 = new SchemaPattern();
-            _elem22.read(iprot);
-            struct.patterns.add(_elem22);
-          }
-        }
+        struct.patterns = new SchemaPatterns();
+        struct.patterns.read(iprot);
         struct.setPatternsIsSet(true);
       }
     }

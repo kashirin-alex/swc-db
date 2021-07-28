@@ -36,7 +36,7 @@ public partial class SpecSchemas : TBase
 {
   private List<long> _cids;
   private List<string> _names;
-  private List<SchemaPattern> _patterns;
+  private SchemaPatterns _patterns;
 
   /// <summary>
   /// The Column IDs
@@ -71,9 +71,9 @@ public partial class SpecSchemas : TBase
   }
 
   /// <summary>
-  /// The Schema's Column Name patterns
+  /// The Schema's selector patterns
   /// </summary>
-  public List<SchemaPattern> Patterns
+  public SchemaPatterns Patterns
   {
     get
     {
@@ -101,23 +101,23 @@ public partial class SpecSchemas : TBase
 
   public SpecSchemas DeepCopy()
   {
-    var tmp6 = new SpecSchemas();
+    var tmp22 = new SpecSchemas();
     if((Cids != null) && __isset.cids)
     {
-      tmp6.Cids = this.Cids.DeepCopy();
+      tmp22.Cids = this.Cids.DeepCopy();
     }
-    tmp6.__isset.cids = this.__isset.cids;
+    tmp22.__isset.cids = this.__isset.cids;
     if((Names != null) && __isset.names)
     {
-      tmp6.Names = this.Names.DeepCopy();
+      tmp22.Names = this.Names.DeepCopy();
     }
-    tmp6.__isset.names = this.__isset.names;
+    tmp22.__isset.names = this.__isset.names;
     if((Patterns != null) && __isset.patterns)
     {
-      tmp6.Patterns = this.Patterns.DeepCopy();
+      tmp22.Patterns = (SchemaPatterns)this.Patterns.DeepCopy();
     }
-    tmp6.__isset.patterns = this.__isset.patterns;
-    return tmp6;
+    tmp22.__isset.patterns = this.__isset.patterns;
+    return tmp22;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -141,13 +141,13 @@ public partial class SpecSchemas : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list7 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cids = new List<long>(_list7.Count);
-                for(int _i8 = 0; _i8 < _list7.Count; ++_i8)
+                TList _list23 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cids = new List<long>(_list23.Count);
+                for(int _i24 = 0; _i24 < _list23.Count; ++_i24)
                 {
-                  long _elem9;
-                  _elem9 = await iprot.ReadI64Async(cancellationToken);
-                  Cids.Add(_elem9);
+                  long _elem25;
+                  _elem25 = await iprot.ReadI64Async(cancellationToken);
+                  Cids.Add(_elem25);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -161,13 +161,13 @@ public partial class SpecSchemas : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list10 = await iprot.ReadListBeginAsync(cancellationToken);
-                Names = new List<string>(_list10.Count);
-                for(int _i11 = 0; _i11 < _list10.Count; ++_i11)
+                TList _list26 = await iprot.ReadListBeginAsync(cancellationToken);
+                Names = new List<string>(_list26.Count);
+                for(int _i27 = 0; _i27 < _list26.Count; ++_i27)
                 {
-                  string _elem12;
-                  _elem12 = await iprot.ReadStringAsync(cancellationToken);
-                  Names.Add(_elem12);
+                  string _elem28;
+                  _elem28 = await iprot.ReadStringAsync(cancellationToken);
+                  Names.Add(_elem28);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -178,20 +178,10 @@ public partial class SpecSchemas : TBase
             }
             break;
           case 3:
-            if (field.Type == TType.List)
+            if (field.Type == TType.Struct)
             {
-              {
-                TList _list13 = await iprot.ReadListBeginAsync(cancellationToken);
-                Patterns = new List<SchemaPattern>(_list13.Count);
-                for(int _i14 = 0; _i14 < _list13.Count; ++_i14)
-                {
-                  SchemaPattern _elem15;
-                  _elem15 = new SchemaPattern();
-                  await _elem15.ReadAsync(iprot, cancellationToken);
-                  Patterns.Add(_elem15);
-                }
-                await iprot.ReadListEndAsync(cancellationToken);
-              }
+              Patterns = new SchemaPatterns();
+              await Patterns.ReadAsync(iprot, cancellationToken);
             }
             else
             {
@@ -230,9 +220,9 @@ public partial class SpecSchemas : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.I64, Cids.Count), cancellationToken);
-          foreach (long _iter16 in Cids)
+          foreach (long _iter29 in Cids)
           {
-            await oprot.WriteI64Async(_iter16, cancellationToken);
+            await oprot.WriteI64Async(_iter29, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -246,9 +236,9 @@ public partial class SpecSchemas : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Names.Count), cancellationToken);
-          foreach (string _iter17 in Names)
+          foreach (string _iter30 in Names)
           {
-            await oprot.WriteStringAsync(_iter17, cancellationToken);
+            await oprot.WriteStringAsync(_iter30, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -257,17 +247,10 @@ public partial class SpecSchemas : TBase
       if((Patterns != null) && __isset.patterns)
       {
         field.Name = "patterns";
-        field.Type = TType.List;
+        field.Type = TType.Struct;
         field.ID = 3;
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
-        {
-          await oprot.WriteListBeginAsync(new TList(TType.Struct, Patterns.Count), cancellationToken);
-          foreach (SchemaPattern _iter18 in Patterns)
-          {
-            await _iter18.WriteAsync(oprot, cancellationToken);
-          }
-          await oprot.WriteListEndAsync(cancellationToken);
-        }
+        await Patterns.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       await oprot.WriteFieldStopAsync(cancellationToken);
@@ -285,7 +268,7 @@ public partial class SpecSchemas : TBase
     if (ReferenceEquals(this, other)) return true;
     return ((__isset.cids == other.__isset.cids) && ((!__isset.cids) || (TCollections.Equals(Cids, other.Cids))))
       && ((__isset.names == other.__isset.names) && ((!__isset.names) || (TCollections.Equals(Names, other.Names))))
-      && ((__isset.patterns == other.__isset.patterns) && ((!__isset.patterns) || (TCollections.Equals(Patterns, other.Patterns))));
+      && ((__isset.patterns == other.__isset.patterns) && ((!__isset.patterns) || (System.Object.Equals(Patterns, other.Patterns))));
   }
 
   public override int GetHashCode() {
@@ -301,7 +284,7 @@ public partial class SpecSchemas : TBase
       }
       if((Patterns != null) && __isset.patterns)
       {
-        hashcode = (hashcode * 397) + TCollections.GetHashCode(Patterns);
+        hashcode = (hashcode * 397) + Patterns.GetHashCode();
       }
     }
     return hashcode;
@@ -310,22 +293,22 @@ public partial class SpecSchemas : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecSchemas(");
-    int tmp19 = 0;
+    int tmp31 = 0;
     if((Cids != null) && __isset.cids)
     {
-      if(0 < tmp19++) { sb.Append(", "); }
+      if(0 < tmp31++) { sb.Append(", "); }
       sb.Append("Cids: ");
       Cids.ToString(sb);
     }
     if((Names != null) && __isset.names)
     {
-      if(0 < tmp19++) { sb.Append(", "); }
+      if(0 < tmp31++) { sb.Append(", "); }
       sb.Append("Names: ");
       Names.ToString(sb);
     }
     if((Patterns != null) && __isset.patterns)
     {
-      if(0 < tmp19++) { sb.Append(", "); }
+      if(0 < tmp31++) { sb.Append(", "); }
       sb.Append("Patterns: ");
       Patterns.ToString(sb);
     }

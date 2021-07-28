@@ -85,18 +85,18 @@ public partial class SpecValueSerial : TBase
 
   public SpecValueSerial DeepCopy()
   {
-    var tmp92 = new SpecValueSerial();
+    var tmp104 = new SpecValueSerial();
     if(__isset.comp)
     {
-      tmp92.Comp = this.Comp;
+      tmp104.Comp = this.Comp;
     }
-    tmp92.__isset.comp = this.__isset.comp;
+    tmp104.__isset.comp = this.__isset.comp;
     if((Fields != null) && __isset.fields)
     {
-      tmp92.Fields = this.Fields.DeepCopy();
+      tmp104.Fields = this.Fields.DeepCopy();
     }
-    tmp92.__isset.fields = this.__isset.fields;
-    return tmp92;
+    tmp104.__isset.fields = this.__isset.fields;
+    return tmp104;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -130,14 +130,14 @@ public partial class SpecValueSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list93 = await iprot.ReadListBeginAsync(cancellationToken);
-                Fields = new List<SpecValueSerialField>(_list93.Count);
-                for(int _i94 = 0; _i94 < _list93.Count; ++_i94)
+                TList _list105 = await iprot.ReadListBeginAsync(cancellationToken);
+                Fields = new List<SpecValueSerialField>(_list105.Count);
+                for(int _i106 = 0; _i106 < _list105.Count; ++_i106)
                 {
-                  SpecValueSerialField _elem95;
-                  _elem95 = new SpecValueSerialField();
-                  await _elem95.ReadAsync(iprot, cancellationToken);
-                  Fields.Add(_elem95);
+                  SpecValueSerialField _elem107;
+                  _elem107 = new SpecValueSerialField();
+                  await _elem107.ReadAsync(iprot, cancellationToken);
+                  Fields.Add(_elem107);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -188,9 +188,9 @@ public partial class SpecValueSerial : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Fields.Count), cancellationToken);
-          foreach (SpecValueSerialField _iter96 in Fields)
+          foreach (SpecValueSerialField _iter108 in Fields)
           {
-            await _iter96.WriteAsync(oprot, cancellationToken);
+            await _iter108.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -231,16 +231,16 @@ public partial class SpecValueSerial : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValueSerial(");
-    int tmp97 = 0;
+    int tmp109 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp97++) { sb.Append(", "); }
+      if(0 < tmp109++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if((Fields != null) && __isset.fields)
     {
-      if(0 < tmp97++) { sb.Append(", "); }
+      if(0 < tmp109++) { sb.Append(", "); }
       sb.Append("Fields: ");
       Fields.ToString(sb);
     }

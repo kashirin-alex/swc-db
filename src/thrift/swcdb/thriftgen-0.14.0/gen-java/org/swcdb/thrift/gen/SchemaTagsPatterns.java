@@ -8,40 +8,40 @@ package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 /**
- * The Specifications of LIST_BYTES(LB) Serial Value Field
+ * The Schema Tags patterns for the SchemaPatterns
  */
-public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSerial_LB, SpecValueSerial_LB._Fields>, java.io.Serializable, Cloneable, Comparable<SpecValueSerial_LB> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecValueSerial_LB");
+public class SchemaTagsPatterns implements org.apache.thrift.TBase<SchemaTagsPatterns, SchemaTagsPatterns._Fields>, java.io.Serializable, Cloneable, Comparable<SchemaTagsPatterns> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SchemaTagsPatterns");
 
   private static final org.apache.thrift.protocol.TField COMP_FIELD_DESC = new org.apache.thrift.protocol.TField("comp", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField VALUES_FIELD_DESC = new org.apache.thrift.protocol.TField("values", org.apache.thrift.protocol.TType.LIST, (short)2);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecValueSerial_LBStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecValueSerial_LBTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SchemaTagsPatternsStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SchemaTagsPatternsTupleSchemeFactory();
 
   /**
-   * Logical comparator to Apply
+   * Logical comparator to Apply, unsupported PF, RE and Vol. kind
    * 
    * @see Comp
    */
   public @org.apache.thrift.annotation.Nullable Comp comp; // required
   /**
-   * The List of Bytes to match against the value field
+   * The tags patterns to match against schema's column tags
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<SpecValueSerial_BYTES> v; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> values; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * Logical comparator to Apply
+     * Logical comparator to Apply, unsupported PF, RE and Vol. kind
      * 
      * @see Comp
      */
     COMP((short)1, "comp"),
     /**
-     * The List of Bytes to match against the value field
+     * The tags patterns to match against schema's column tags
      */
-    V((short)2, "v");
+    VALUES((short)2, "values");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -59,8 +59,8 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
       switch(fieldId) {
         case 1: // COMP
           return COMP;
-        case 2: // V
-          return V;
+        case 2: // VALUES
+          return VALUES;
         default:
           return null;
       }
@@ -107,53 +107,53 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.COMP, new org.apache.thrift.meta_data.FieldMetaData("comp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, Comp.class)));
-    tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.VALUES, new org.apache.thrift.meta_data.FieldMetaData("values", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SpecValueSerial_BYTES.class))));
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SchemaPattern.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecValueSerial_LB.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SchemaTagsPatterns.class, metaDataMap);
   }
 
-  public SpecValueSerial_LB() {
+  public SchemaTagsPatterns() {
   }
 
-  public SpecValueSerial_LB(
+  public SchemaTagsPatterns(
     Comp comp,
-    java.util.List<SpecValueSerial_BYTES> v)
+    java.util.List<SchemaPattern> values)
   {
     this();
     this.comp = comp;
-    this.v = v;
+    this.values = values;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public SpecValueSerial_LB(SpecValueSerial_LB other) {
+  public SchemaTagsPatterns(SchemaTagsPatterns other) {
     if (other.isSetComp()) {
       this.comp = other.comp;
     }
-    if (other.isSetV()) {
-      java.util.List<SpecValueSerial_BYTES> __this__v = new java.util.ArrayList<SpecValueSerial_BYTES>(other.v.size());
-      for (SpecValueSerial_BYTES other_element : other.v) {
-        __this__v.add(new SpecValueSerial_BYTES(other_element));
+    if (other.isSetValues()) {
+      java.util.List<SchemaPattern> __this__values = new java.util.ArrayList<SchemaPattern>(other.values.size());
+      for (SchemaPattern other_element : other.values) {
+        __this__values.add(new SchemaPattern(other_element));
       }
-      this.v = __this__v;
+      this.values = __this__values;
     }
   }
 
-  public SpecValueSerial_LB deepCopy() {
-    return new SpecValueSerial_LB(this);
+  public SchemaTagsPatterns deepCopy() {
+    return new SchemaTagsPatterns(this);
   }
 
   @Override
   public void clear() {
     this.comp = null;
-    this.v = null;
+    this.values = null;
   }
 
   /**
-   * Logical comparator to Apply
+   * Logical comparator to Apply, unsupported PF, RE and Vol. kind
    * 
    * @see Comp
    */
@@ -163,11 +163,11 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
   }
 
   /**
-   * Logical comparator to Apply
+   * Logical comparator to Apply, unsupported PF, RE and Vol. kind
    * 
    * @see Comp
    */
-  public SpecValueSerial_LB setComp(@org.apache.thrift.annotation.Nullable Comp comp) {
+  public SchemaTagsPatterns setComp(@org.apache.thrift.annotation.Nullable Comp comp) {
     this.comp = comp;
     return this;
   }
@@ -187,50 +187,50 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
     }
   }
 
-  public int getVSize() {
-    return (this.v == null) ? 0 : this.v.size();
+  public int getValuesSize() {
+    return (this.values == null) ? 0 : this.values.size();
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<SpecValueSerial_BYTES> getVIterator() {
-    return (this.v == null) ? null : this.v.iterator();
+  public java.util.Iterator<SchemaPattern> getValuesIterator() {
+    return (this.values == null) ? null : this.values.iterator();
   }
 
-  public void addToV(SpecValueSerial_BYTES elem) {
-    if (this.v == null) {
-      this.v = new java.util.ArrayList<SpecValueSerial_BYTES>();
+  public void addToValues(SchemaPattern elem) {
+    if (this.values == null) {
+      this.values = new java.util.ArrayList<SchemaPattern>();
     }
-    this.v.add(elem);
+    this.values.add(elem);
   }
 
   /**
-   * The List of Bytes to match against the value field
+   * The tags patterns to match against schema's column tags
    */
   @org.apache.thrift.annotation.Nullable
-  public java.util.List<SpecValueSerial_BYTES> getV() {
-    return this.v;
+  public java.util.List<SchemaPattern> getValues() {
+    return this.values;
   }
 
   /**
-   * The List of Bytes to match against the value field
+   * The tags patterns to match against schema's column tags
    */
-  public SpecValueSerial_LB setV(@org.apache.thrift.annotation.Nullable java.util.List<SpecValueSerial_BYTES> v) {
-    this.v = v;
+  public SchemaTagsPatterns setValues(@org.apache.thrift.annotation.Nullable java.util.List<SchemaPattern> values) {
+    this.values = values;
     return this;
   }
 
-  public void unsetV() {
-    this.v = null;
+  public void unsetValues() {
+    this.values = null;
   }
 
-  /** Returns true if field v is set (has been assigned a value) and false otherwise */
-  public boolean isSetV() {
-    return this.v != null;
+  /** Returns true if field values is set (has been assigned a value) and false otherwise */
+  public boolean isSetValues() {
+    return this.values != null;
   }
 
-  public void setVIsSet(boolean value) {
+  public void setValuesIsSet(boolean value) {
     if (!value) {
-      this.v = null;
+      this.values = null;
     }
   }
 
@@ -244,11 +244,11 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
       }
       break;
 
-    case V:
+    case VALUES:
       if (value == null) {
-        unsetV();
+        unsetValues();
       } else {
-        setV((java.util.List<SpecValueSerial_BYTES>)value);
+        setValues((java.util.List<SchemaPattern>)value);
       }
       break;
 
@@ -261,8 +261,8 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
     case COMP:
       return getComp();
 
-    case V:
-      return getV();
+    case VALUES:
+      return getValues();
 
     }
     throw new java.lang.IllegalStateException();
@@ -277,20 +277,20 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
     switch (field) {
     case COMP:
       return isSetComp();
-    case V:
-      return isSetV();
+    case VALUES:
+      return isSetValues();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof SpecValueSerial_LB)
-      return this.equals((SpecValueSerial_LB)that);
+    if (that instanceof SchemaTagsPatterns)
+      return this.equals((SchemaTagsPatterns)that);
     return false;
   }
 
-  public boolean equals(SpecValueSerial_LB that) {
+  public boolean equals(SchemaTagsPatterns that) {
     if (that == null)
       return false;
     if (this == that)
@@ -305,12 +305,12 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
         return false;
     }
 
-    boolean this_present_v = true && this.isSetV();
-    boolean that_present_v = true && that.isSetV();
-    if (this_present_v || that_present_v) {
-      if (!(this_present_v && that_present_v))
+    boolean this_present_values = true && this.isSetValues();
+    boolean that_present_values = true && that.isSetValues();
+    if (this_present_values || that_present_values) {
+      if (!(this_present_values && that_present_values))
         return false;
-      if (!this.v.equals(that.v))
+      if (!this.values.equals(that.values))
         return false;
     }
 
@@ -325,15 +325,15 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
     if (isSetComp())
       hashCode = hashCode * 8191 + comp.getValue();
 
-    hashCode = hashCode * 8191 + ((isSetV()) ? 131071 : 524287);
-    if (isSetV())
-      hashCode = hashCode * 8191 + v.hashCode();
+    hashCode = hashCode * 8191 + ((isSetValues()) ? 131071 : 524287);
+    if (isSetValues())
+      hashCode = hashCode * 8191 + values.hashCode();
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(SpecValueSerial_LB other) {
+  public int compareTo(SchemaTagsPatterns other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -350,12 +350,12 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetV(), other.isSetV());
+    lastComparison = java.lang.Boolean.compare(isSetValues(), other.isSetValues());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetV()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.v, other.v);
+    if (isSetValues()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.values, other.values);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -378,7 +378,7 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecValueSerial_LB(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("SchemaTagsPatterns(");
     boolean first = true;
 
     sb.append("comp:");
@@ -389,11 +389,11 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("v:");
-    if (this.v == null) {
+    sb.append("values:");
+    if (this.values == null) {
       sb.append("null");
     } else {
-      sb.append(this.v);
+      sb.append(this.values);
     }
     first = false;
     sb.append(")");
@@ -421,15 +421,15 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
     }
   }
 
-  private static class SpecValueSerial_LBStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-    public SpecValueSerial_LBStandardScheme getScheme() {
-      return new SpecValueSerial_LBStandardScheme();
+  private static class SchemaTagsPatternsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+    public SchemaTagsPatternsStandardScheme getScheme() {
+      return new SchemaTagsPatternsStandardScheme();
     }
   }
 
-  private static class SpecValueSerial_LBStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecValueSerial_LB> {
+  private static class SchemaTagsPatternsStandardScheme extends org.apache.thrift.scheme.StandardScheme<SchemaTagsPatterns> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecValueSerial_LB struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, SchemaTagsPatterns struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -447,21 +447,21 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // V
+          case 2: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<SpecValueSerial_BYTES>(_list120.size);
-                @org.apache.thrift.annotation.Nullable SpecValueSerial_BYTES _elem121;
-                for (int _i122 = 0; _i122 < _list120.size; ++_i122)
+                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
+                struct.values = new java.util.ArrayList<SchemaPattern>(_list8.size);
+                @org.apache.thrift.annotation.Nullable SchemaPattern _elem9;
+                for (int _i10 = 0; _i10 < _list8.size; ++_i10)
                 {
-                  _elem121 = new SpecValueSerial_BYTES();
-                  _elem121.read(iprot);
-                  struct.v.add(_elem121);
+                  _elem9 = new SchemaPattern();
+                  _elem9.read(iprot);
+                  struct.values.add(_elem9);
                 }
                 iprot.readListEnd();
               }
-              struct.setVIsSet(true);
+              struct.setValuesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -477,7 +477,7 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecValueSerial_LB struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, SchemaTagsPatterns struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -486,13 +486,13 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
         oprot.writeI32(struct.comp.getValue());
         oprot.writeFieldEnd();
       }
-      if (struct.v != null) {
-        oprot.writeFieldBegin(V_FIELD_DESC);
+      if (struct.values != null) {
+        oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (SpecValueSerial_BYTES _iter123 : struct.v)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.values.size()));
+          for (SchemaPattern _iter11 : struct.values)
           {
-            _iter123.write(oprot);
+            _iter11.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -504,41 +504,41 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
 
   }
 
-  private static class SpecValueSerial_LBTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-    public SpecValueSerial_LBTupleScheme getScheme() {
-      return new SpecValueSerial_LBTupleScheme();
+  private static class SchemaTagsPatternsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+    public SchemaTagsPatternsTupleScheme getScheme() {
+      return new SchemaTagsPatternsTupleScheme();
     }
   }
 
-  private static class SpecValueSerial_LBTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecValueSerial_LB> {
+  private static class SchemaTagsPatternsTupleScheme extends org.apache.thrift.scheme.TupleScheme<SchemaTagsPatterns> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, SpecValueSerial_LB struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, SchemaTagsPatterns struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetComp()) {
         optionals.set(0);
       }
-      if (struct.isSetV()) {
+      if (struct.isSetValues()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
       if (struct.isSetComp()) {
         oprot.writeI32(struct.comp.getValue());
       }
-      if (struct.isSetV()) {
+      if (struct.isSetValues()) {
         {
-          oprot.writeI32(struct.v.size());
-          for (SpecValueSerial_BYTES _iter124 : struct.v)
+          oprot.writeI32(struct.values.size());
+          for (SchemaPattern _iter12 : struct.values)
           {
-            _iter124.write(oprot);
+            _iter12.write(oprot);
           }
         }
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, SpecValueSerial_LB struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, SchemaTagsPatterns struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
@@ -547,17 +547,17 @@ public class SpecValueSerial_LB implements org.apache.thrift.TBase<SpecValueSeri
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list125 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<SpecValueSerial_BYTES>(_list125.size);
-          @org.apache.thrift.annotation.Nullable SpecValueSerial_BYTES _elem126;
-          for (int _i127 = 0; _i127 < _list125.size; ++_i127)
+          org.apache.thrift.protocol.TList _list13 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.values = new java.util.ArrayList<SchemaPattern>(_list13.size);
+          @org.apache.thrift.annotation.Nullable SchemaPattern _elem14;
+          for (int _i15 = 0; _i15 < _list13.size; ++_i15)
           {
-            _elem126 = new SpecValueSerial_BYTES();
-            _elem126.read(iprot);
-            struct.v.add(_elem126);
+            _elem14 = new SchemaPattern();
+            _elem14.read(iprot);
+            struct.values.add(_elem14);
           }
         }
-        struct.setVIsSet(true);
+        struct.setValuesIsSet(true);
       }
     }
   }

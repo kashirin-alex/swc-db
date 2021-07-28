@@ -83,18 +83,18 @@ public partial class CompactResult : TBase
 
   public CompactResult DeepCopy()
   {
-    var tmp274 = new CompactResult();
+    var tmp286 = new CompactResult();
     if(__isset.cid)
     {
-      tmp274.Cid = this.Cid;
+      tmp286.Cid = this.Cid;
     }
-    tmp274.__isset.cid = this.__isset.cid;
+    tmp286.__isset.cid = this.__isset.cid;
     if(__isset.err)
     {
-      tmp274.Err = this.Err;
+      tmp286.Err = this.Err;
     }
-    tmp274.__isset.err = this.__isset.err;
-    return tmp274;
+    tmp286.__isset.err = this.__isset.err;
+    return tmp286;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -211,16 +211,16 @@ public partial class CompactResult : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("CompactResult(");
-    int tmp275 = 0;
+    int tmp287 = 0;
     if(__isset.cid)
     {
-      if(0 < tmp275++) { sb.Append(", "); }
+      if(0 < tmp287++) { sb.Append(", "); }
       sb.Append("Cid: ");
       Cid.ToString(sb);
     }
     if(__isset.err)
     {
-      if(0 < tmp275++) { sb.Append(", "); }
+      if(0 < tmp287++) { sb.Append(", "); }
       sb.Append("Err: ");
       Err.ToString(sb);
     }

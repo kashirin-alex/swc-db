@@ -85,18 +85,18 @@ public partial class SpecValueSerial_KEY : TBase
 
   public SpecValueSerial_KEY DeepCopy()
   {
-    var tmp72 = new SpecValueSerial_KEY();
+    var tmp84 = new SpecValueSerial_KEY();
     if(__isset.seq)
     {
-      tmp72.Seq = this.Seq;
+      tmp84.Seq = this.Seq;
     }
-    tmp72.__isset.seq = this.__isset.seq;
+    tmp84.__isset.seq = this.__isset.seq;
     if((V != null) && __isset.v)
     {
-      tmp72.V = this.V.DeepCopy();
+      tmp84.V = this.V.DeepCopy();
     }
-    tmp72.__isset.v = this.__isset.v;
-    return tmp72;
+    tmp84.__isset.v = this.__isset.v;
+    return tmp84;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -130,14 +130,14 @@ public partial class SpecValueSerial_KEY : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list73 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<SpecFraction>(_list73.Count);
-                for(int _i74 = 0; _i74 < _list73.Count; ++_i74)
+                TList _list85 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<SpecFraction>(_list85.Count);
+                for(int _i86 = 0; _i86 < _list85.Count; ++_i86)
                 {
-                  SpecFraction _elem75;
-                  _elem75 = new SpecFraction();
-                  await _elem75.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem75);
+                  SpecFraction _elem87;
+                  _elem87 = new SpecFraction();
+                  await _elem87.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem87);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -188,9 +188,9 @@ public partial class SpecValueSerial_KEY : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-          foreach (SpecFraction _iter76 in V)
+          foreach (SpecFraction _iter88 in V)
           {
-            await _iter76.WriteAsync(oprot, cancellationToken);
+            await _iter88.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -231,16 +231,16 @@ public partial class SpecValueSerial_KEY : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecValueSerial_KEY(");
-    int tmp77 = 0;
+    int tmp89 = 0;
     if(__isset.seq)
     {
-      if(0 < tmp77++) { sb.Append(", "); }
+      if(0 < tmp89++) { sb.Append(", "); }
       sb.Append("Seq: ");
       Seq.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp77++) { sb.Append(", "); }
+      if(0 < tmp89++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

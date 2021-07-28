@@ -1170,13 +1170,13 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
           case 1: // RANGE_BEGIN
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
-                struct.range_begin = new java.util.ArrayList<java.nio.ByteBuffer>(_list120.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem121;
-                for (int _i122 = 0; _i122 < _list120.size; ++_i122)
+                org.apache.thrift.protocol.TList _list136 = iprot.readListBegin();
+                struct.range_begin = new java.util.ArrayList<java.nio.ByteBuffer>(_list136.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem137;
+                for (int _i138 = 0; _i138 < _list136.size; ++_i138)
                 {
-                  _elem121 = iprot.readBinary();
-                  struct.range_begin.add(_elem121);
+                  _elem137 = iprot.readBinary();
+                  struct.range_begin.add(_elem137);
                 }
                 iprot.readListEnd();
               }
@@ -1188,13 +1188,13 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
           case 2: // RANGE_END
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list123 = iprot.readListBegin();
-                struct.range_end = new java.util.ArrayList<java.nio.ByteBuffer>(_list123.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem124;
-                for (int _i125 = 0; _i125 < _list123.size; ++_i125)
+                org.apache.thrift.protocol.TList _list139 = iprot.readListBegin();
+                struct.range_end = new java.util.ArrayList<java.nio.ByteBuffer>(_list139.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem140;
+                for (int _i141 = 0; _i141 < _list139.size; ++_i141)
                 {
-                  _elem124 = iprot.readBinary();
-                  struct.range_end.add(_elem124);
+                  _elem140 = iprot.readBinary();
+                  struct.range_end.add(_elem140);
                 }
                 iprot.readListEnd();
               }
@@ -1206,13 +1206,13 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
           case 3: // OFFSET_KEY
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list126 = iprot.readListBegin();
-                struct.offset_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list126.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem127;
-                for (int _i128 = 0; _i128 < _list126.size; ++_i128)
+                org.apache.thrift.protocol.TList _list142 = iprot.readListBegin();
+                struct.offset_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list142.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem143;
+                for (int _i144 = 0; _i144 < _list142.size; ++_i144)
                 {
-                  _elem127 = iprot.readBinary();
-                  struct.offset_key.add(_elem127);
+                  _elem143 = iprot.readBinary();
+                  struct.offset_key.add(_elem143);
                 }
                 iprot.readListEnd();
               }
@@ -1232,14 +1232,14 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
           case 5: // KEY_INTERVALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list129 = iprot.readListBegin();
-                struct.key_intervals = new java.util.ArrayList<SpecKeyInterval>(_list129.size);
-                @org.apache.thrift.annotation.Nullable SpecKeyInterval _elem130;
-                for (int _i131 = 0; _i131 < _list129.size; ++_i131)
+                org.apache.thrift.protocol.TList _list145 = iprot.readListBegin();
+                struct.key_intervals = new java.util.ArrayList<SpecKeyInterval>(_list145.size);
+                @org.apache.thrift.annotation.Nullable SpecKeyInterval _elem146;
+                for (int _i147 = 0; _i147 < _list145.size; ++_i147)
                 {
-                  _elem130 = new SpecKeyInterval();
-                  _elem130.read(iprot);
-                  struct.key_intervals.add(_elem130);
+                  _elem146 = new SpecKeyInterval();
+                  _elem146.read(iprot);
+                  struct.key_intervals.add(_elem146);
                 }
                 iprot.readListEnd();
               }
@@ -1251,14 +1251,14 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
           case 6: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list132 = iprot.readListBegin();
-                struct.values = new java.util.ArrayList<SpecValueSerial>(_list132.size);
-                @org.apache.thrift.annotation.Nullable SpecValueSerial _elem133;
-                for (int _i134 = 0; _i134 < _list132.size; ++_i134)
+                org.apache.thrift.protocol.TList _list148 = iprot.readListBegin();
+                struct.values = new java.util.ArrayList<SpecValueSerial>(_list148.size);
+                @org.apache.thrift.annotation.Nullable SpecValueSerial _elem149;
+                for (int _i150 = 0; _i150 < _list148.size; ++_i150)
                 {
-                  _elem133 = new SpecValueSerial();
-                  _elem133.read(iprot);
-                  struct.values.add(_elem133);
+                  _elem149 = new SpecValueSerial();
+                  _elem149.read(iprot);
+                  struct.values.add(_elem149);
                 }
                 iprot.readListEnd();
               }
@@ -1313,9 +1313,9 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
         oprot.writeFieldBegin(RANGE_BEGIN_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.range_begin.size()));
-          for (java.nio.ByteBuffer _iter135 : struct.range_begin)
+          for (java.nio.ByteBuffer _iter151 : struct.range_begin)
           {
-            oprot.writeBinary(_iter135);
+            oprot.writeBinary(_iter151);
           }
           oprot.writeListEnd();
         }
@@ -1325,9 +1325,9 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
         oprot.writeFieldBegin(RANGE_END_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.range_end.size()));
-          for (java.nio.ByteBuffer _iter136 : struct.range_end)
+          for (java.nio.ByteBuffer _iter152 : struct.range_end)
           {
-            oprot.writeBinary(_iter136);
+            oprot.writeBinary(_iter152);
           }
           oprot.writeListEnd();
         }
@@ -1337,9 +1337,9 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
         oprot.writeFieldBegin(OFFSET_KEY_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.offset_key.size()));
-          for (java.nio.ByteBuffer _iter137 : struct.offset_key)
+          for (java.nio.ByteBuffer _iter153 : struct.offset_key)
           {
-            oprot.writeBinary(_iter137);
+            oprot.writeBinary(_iter153);
           }
           oprot.writeListEnd();
         }
@@ -1354,9 +1354,9 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
         oprot.writeFieldBegin(KEY_INTERVALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.key_intervals.size()));
-          for (SpecKeyInterval _iter138 : struct.key_intervals)
+          for (SpecKeyInterval _iter154 : struct.key_intervals)
           {
-            _iter138.write(oprot);
+            _iter154.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1366,9 +1366,9 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.values.size()));
-          for (SpecValueSerial _iter139 : struct.values)
+          for (SpecValueSerial _iter155 : struct.values)
           {
-            _iter139.write(oprot);
+            _iter155.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1444,27 +1444,27 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
       if (struct.isSetRange_begin()) {
         {
           oprot.writeI32(struct.range_begin.size());
-          for (java.nio.ByteBuffer _iter140 : struct.range_begin)
+          for (java.nio.ByteBuffer _iter156 : struct.range_begin)
           {
-            oprot.writeBinary(_iter140);
+            oprot.writeBinary(_iter156);
           }
         }
       }
       if (struct.isSetRange_end()) {
         {
           oprot.writeI32(struct.range_end.size());
-          for (java.nio.ByteBuffer _iter141 : struct.range_end)
+          for (java.nio.ByteBuffer _iter157 : struct.range_end)
           {
-            oprot.writeBinary(_iter141);
+            oprot.writeBinary(_iter157);
           }
         }
       }
       if (struct.isSetOffset_key()) {
         {
           oprot.writeI32(struct.offset_key.size());
-          for (java.nio.ByteBuffer _iter142 : struct.offset_key)
+          for (java.nio.ByteBuffer _iter158 : struct.offset_key)
           {
-            oprot.writeBinary(_iter142);
+            oprot.writeBinary(_iter158);
           }
         }
       }
@@ -1474,18 +1474,18 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
       if (struct.isSetKey_intervals()) {
         {
           oprot.writeI32(struct.key_intervals.size());
-          for (SpecKeyInterval _iter143 : struct.key_intervals)
+          for (SpecKeyInterval _iter159 : struct.key_intervals)
           {
-            _iter143.write(oprot);
+            _iter159.write(oprot);
           }
         }
       }
       if (struct.isSetValues()) {
         {
           oprot.writeI32(struct.values.size());
-          for (SpecValueSerial _iter144 : struct.values)
+          for (SpecValueSerial _iter160 : struct.values)
           {
-            _iter144.write(oprot);
+            _iter160.write(oprot);
           }
         }
       }
@@ -1506,39 +1506,39 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
       java.util.BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list145 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.range_begin = new java.util.ArrayList<java.nio.ByteBuffer>(_list145.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem146;
-          for (int _i147 = 0; _i147 < _list145.size; ++_i147)
+          org.apache.thrift.protocol.TList _list161 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.range_begin = new java.util.ArrayList<java.nio.ByteBuffer>(_list161.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem162;
+          for (int _i163 = 0; _i163 < _list161.size; ++_i163)
           {
-            _elem146 = iprot.readBinary();
-            struct.range_begin.add(_elem146);
+            _elem162 = iprot.readBinary();
+            struct.range_begin.add(_elem162);
           }
         }
         struct.setRange_beginIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list148 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.range_end = new java.util.ArrayList<java.nio.ByteBuffer>(_list148.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem149;
-          for (int _i150 = 0; _i150 < _list148.size; ++_i150)
+          org.apache.thrift.protocol.TList _list164 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.range_end = new java.util.ArrayList<java.nio.ByteBuffer>(_list164.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem165;
+          for (int _i166 = 0; _i166 < _list164.size; ++_i166)
           {
-            _elem149 = iprot.readBinary();
-            struct.range_end.add(_elem149);
+            _elem165 = iprot.readBinary();
+            struct.range_end.add(_elem165);
           }
         }
         struct.setRange_endIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list151 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.offset_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list151.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem152;
-          for (int _i153 = 0; _i153 < _list151.size; ++_i153)
+          org.apache.thrift.protocol.TList _list167 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.offset_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list167.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem168;
+          for (int _i169 = 0; _i169 < _list167.size; ++_i169)
           {
-            _elem152 = iprot.readBinary();
-            struct.offset_key.add(_elem152);
+            _elem168 = iprot.readBinary();
+            struct.offset_key.add(_elem168);
           }
         }
         struct.setOffset_keyIsSet(true);
@@ -1549,28 +1549,28 @@ public class SpecIntervalSerial implements org.apache.thrift.TBase<SpecIntervalS
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list154 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.key_intervals = new java.util.ArrayList<SpecKeyInterval>(_list154.size);
-          @org.apache.thrift.annotation.Nullable SpecKeyInterval _elem155;
-          for (int _i156 = 0; _i156 < _list154.size; ++_i156)
+          org.apache.thrift.protocol.TList _list170 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.key_intervals = new java.util.ArrayList<SpecKeyInterval>(_list170.size);
+          @org.apache.thrift.annotation.Nullable SpecKeyInterval _elem171;
+          for (int _i172 = 0; _i172 < _list170.size; ++_i172)
           {
-            _elem155 = new SpecKeyInterval();
-            _elem155.read(iprot);
-            struct.key_intervals.add(_elem155);
+            _elem171 = new SpecKeyInterval();
+            _elem171.read(iprot);
+            struct.key_intervals.add(_elem171);
           }
         }
         struct.setKey_intervalsIsSet(true);
       }
       if (incoming.get(5)) {
         {
-          org.apache.thrift.protocol.TList _list157 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.values = new java.util.ArrayList<SpecValueSerial>(_list157.size);
-          @org.apache.thrift.annotation.Nullable SpecValueSerial _elem158;
-          for (int _i159 = 0; _i159 < _list157.size; ++_i159)
+          org.apache.thrift.protocol.TList _list173 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.values = new java.util.ArrayList<SpecValueSerial>(_list173.size);
+          @org.apache.thrift.annotation.Nullable SpecValueSerial _elem174;
+          for (int _i175 = 0; _i175 < _list173.size; ++_i175)
           {
-            _elem158 = new SpecValueSerial();
-            _elem158.read(iprot);
-            struct.values.add(_elem158);
+            _elem174 = new SpecValueSerial();
+            _elem174.read(iprot);
+            struct.values.add(_elem174);
           }
         }
         struct.setValuesIsSet(true);

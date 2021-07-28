@@ -8,7 +8,7 @@ package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 /**
- * The Schema Matching Pattern for the SpecSchema patterns
+ * The Schema matching Pattern
  */
 public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, SchemaPattern._Fields>, java.io.Serializable, Cloneable, Comparable<SchemaPattern> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SchemaPattern");
@@ -26,7 +26,7 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
    */
   public @org.apache.thrift.annotation.Nullable Comp comp; // required
   /**
-   * The patern value to match against schema's column name
+   * The patern value to match against
    */
   public @org.apache.thrift.annotation.Nullable java.lang.String value; // required
 
@@ -39,7 +39,7 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
      */
     COMP((short)1, "comp"),
     /**
-     * The patern value to match against schema's column name
+     * The patern value to match against
      */
     VALUE((short)2, "value");
 
@@ -183,7 +183,7 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
   }
 
   /**
-   * The patern value to match against schema's column name
+   * The patern value to match against
    */
   @org.apache.thrift.annotation.Nullable
   public java.lang.String getValue() {
@@ -191,7 +191,7 @@ public class SchemaPattern implements org.apache.thrift.TBase<SchemaPattern, Sch
   }
 
   /**
-   * The patern value to match against schema's column name
+   * The patern value to match against
    */
   public SchemaPattern setValue(@org.apache.thrift.annotation.Nullable java.lang.String value) {
     this.value = value;

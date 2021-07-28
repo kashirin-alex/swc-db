@@ -213,7 +213,7 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id) {
       hdlr->commit_or_wait();
     } else {
-      hdlr->commit();
+      hdlr->commit_if_need();
       hdlr->wait();
     }
     if((err = hdlr->error()))
@@ -433,7 +433,7 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id) {
       hdlr->commit_or_wait();
     } else {
-      hdlr->commit();
+      hdlr->commit_if_need();
       hdlr->wait();
     }
     if((err = hdlr->error()))
@@ -522,7 +522,7 @@ class AppHandler final : virtual public BrokerIf {
     if(updater_id) {
       hdlr->commit_or_wait();
     } else {
-      hdlr->commit();
+      hdlr->commit_if_need();
       hdlr->wait();
     }
     if((err = hdlr->error()))
@@ -620,14 +620,29 @@ class AppHandler final : virtual public BrokerIf {
   void get_schemas(int& err, const SpecSchemas& spec,
                    std::vector<DB::Schema::Ptr>& dbschemas) {
     auto clients = Env::Clients::get();
-    if(!spec.patterns.empty()) {
-      // !spec.patterns.names.empty() ||  !spec.patterns.tags.empty()
+    bool has_patterns = !spec.patterns.names.empty() ||
+                        !spec.patterns.tags.values.empty() ||
+                        !spec.patterns.tags.comp != Comp::NONE;
+    if(has_patterns) {
       DB::Schemas::SelectorPatterns dbpatterns;
-      dbpatterns.names.reserve(spec.patterns.size());
-      for(auto& pattern : spec.patterns) {
-        dbpatterns.names.emplace_back(
-          Condition::Comp(uint8_t(pattern.comp)), pattern.value);
+      if(!spec.patterns.names.empty()) {
+        dbpatterns.names.reserve(spec.patterns.names.size());
+        for(auto& pattern : spec.patterns.names) {
+          dbpatterns.names.emplace_back(
+            Condition::Comp(uint8_t(pattern.comp)), pattern.value);
+        }
       }
+      if(!spec.patterns.tags.values.empty() ||
+         !spec.patterns.tags.comp != Comp::NONE) {
+        dbpatterns.tags.reserve(spec.patterns.tags.values.size());
+        dbpatterns.tags.comp = spec.patterns.tags.comp == Comp::NONE
+          ? Condition::Comp::EQ : Condition::Comp(spec.patterns.tags.comp);
+        for(auto& pattern : spec.patterns.tags.values) {
+          dbpatterns.tags.emplace_back(
+            Condition::Comp(uint8_t(pattern.comp)), pattern.value);
+        }
+      }
+
       clients->get_schema(err, dbpatterns, dbschemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)
         Converter::exception(
@@ -656,7 +671,7 @@ class AppHandler final : virtual public BrokerIf {
       dbschemas.push_back(schema);
     }
 
-    if(spec.patterns.empty() && dbschemas.empty()) { // get all schemas
+    if(!has_patterns && dbschemas.empty()) { // get all schemas
       Comm::Protocol::Mngr::Req::ColumnList_Sync::request(
         Comm::Protocol::Mngr::Params::ColumnListReq(), 300000,
         clients, err, dbschemas

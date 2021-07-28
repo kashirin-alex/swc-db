@@ -101,23 +101,23 @@ public partial class CCell : TBase
 
   public CCell DeepCopy()
   {
-    var tmp192 = new CCell();
+    var tmp204 = new CCell();
     if((K != null) && __isset.k)
     {
-      tmp192.K = this.K.DeepCopy();
+      tmp204.K = this.K.DeepCopy();
     }
-    tmp192.__isset.k = this.__isset.k;
+    tmp204.__isset.k = this.__isset.k;
     if(__isset.ts)
     {
-      tmp192.Ts = this.Ts;
+      tmp204.Ts = this.Ts;
     }
-    tmp192.__isset.ts = this.__isset.ts;
+    tmp204.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp192.V = this.V.ToArray();
+      tmp204.V = this.V.ToArray();
     }
-    tmp192.__isset.v = this.__isset.v;
-    return tmp192;
+    tmp204.__isset.v = this.__isset.v;
+    return tmp204;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -141,13 +141,13 @@ public partial class CCell : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list193 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list193.Count);
-                for(int _i194 = 0; _i194 < _list193.Count; ++_i194)
+                TList _list205 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list205.Count);
+                for(int _i206 = 0; _i206 < _list205.Count; ++_i206)
                 {
-                  byte[] _elem195;
-                  _elem195 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem195);
+                  byte[] _elem207;
+                  _elem207 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem207);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -209,9 +209,9 @@ public partial class CCell : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter196 in K)
+          foreach (byte[] _iter208 in K)
           {
-            await oprot.WriteBinaryAsync(_iter196, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter208, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -275,22 +275,22 @@ public partial class CCell : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("CCell(");
-    int tmp197 = 0;
+    int tmp209 = 0;
     if((K != null) && __isset.k)
     {
-      if(0 < tmp197++) { sb.Append(", "); }
+      if(0 < tmp209++) { sb.Append(", "); }
       sb.Append("K: ");
       K.ToString(sb);
     }
     if(__isset.ts)
     {
-      if(0 < tmp197++) { sb.Append(", "); }
+      if(0 < tmp209++) { sb.Append(", "); }
       sb.Append("Ts: ");
       Ts.ToString(sb);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp197++) { sb.Append(", "); }
+      if(0 < tmp209++) { sb.Append(", "); }
       sb.Append("V: ");
       V.ToString(sb);
     }

@@ -101,23 +101,23 @@ public partial class kCells : TBase
 
   public kCells DeepCopy()
   {
-    var tmp226 = new kCells();
+    var tmp238 = new kCells();
     if((K != null) && __isset.k)
     {
-      tmp226.K = this.K.DeepCopy();
+      tmp238.K = this.K.DeepCopy();
     }
-    tmp226.__isset.k = this.__isset.k;
+    tmp238.__isset.k = this.__isset.k;
     if((Cells != null) && __isset.cells)
     {
-      tmp226.Cells = this.Cells.DeepCopy();
+      tmp238.Cells = this.Cells.DeepCopy();
     }
-    tmp226.__isset.cells = this.__isset.cells;
+    tmp238.__isset.cells = this.__isset.cells;
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      tmp226.Serial_cells = this.Serial_cells.DeepCopy();
+      tmp238.Serial_cells = this.Serial_cells.DeepCopy();
     }
-    tmp226.__isset.serial_cells = this.__isset.serial_cells;
-    return tmp226;
+    tmp238.__isset.serial_cells = this.__isset.serial_cells;
+    return tmp238;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -141,13 +141,13 @@ public partial class kCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list227 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list227.Count);
-                for(int _i228 = 0; _i228 < _list227.Count; ++_i228)
+                TList _list239 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list239.Count);
+                for(int _i240 = 0; _i240 < _list239.Count; ++_i240)
                 {
-                  byte[] _elem229;
-                  _elem229 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem229);
+                  byte[] _elem241;
+                  _elem241 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem241);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -161,14 +161,14 @@ public partial class kCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list230 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<KCell>(_list230.Count);
-                for(int _i231 = 0; _i231 < _list230.Count; ++_i231)
+                TList _list242 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<KCell>(_list242.Count);
+                for(int _i243 = 0; _i243 < _list242.Count; ++_i243)
                 {
-                  KCell _elem232;
-                  _elem232 = new KCell();
-                  await _elem232.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem232);
+                  KCell _elem244;
+                  _elem244 = new KCell();
+                  await _elem244.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem244);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -182,14 +182,14 @@ public partial class kCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list233 = await iprot.ReadListBeginAsync(cancellationToken);
-                Serial_cells = new List<KCellSerial>(_list233.Count);
-                for(int _i234 = 0; _i234 < _list233.Count; ++_i234)
+                TList _list245 = await iprot.ReadListBeginAsync(cancellationToken);
+                Serial_cells = new List<KCellSerial>(_list245.Count);
+                for(int _i246 = 0; _i246 < _list245.Count; ++_i246)
                 {
-                  KCellSerial _elem235;
-                  _elem235 = new KCellSerial();
-                  await _elem235.ReadAsync(iprot, cancellationToken);
-                  Serial_cells.Add(_elem235);
+                  KCellSerial _elem247;
+                  _elem247 = new KCellSerial();
+                  await _elem247.ReadAsync(iprot, cancellationToken);
+                  Serial_cells.Add(_elem247);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -231,9 +231,9 @@ public partial class kCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter236 in K)
+          foreach (byte[] _iter248 in K)
           {
-            await oprot.WriteBinaryAsync(_iter236, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter248, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -247,9 +247,9 @@ public partial class kCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (KCell _iter237 in Cells)
+          foreach (KCell _iter249 in Cells)
           {
-            await _iter237.WriteAsync(oprot, cancellationToken);
+            await _iter249.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -263,9 +263,9 @@ public partial class kCells : TBase
         await oprot.WriteFieldBeginAsync(field, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Serial_cells.Count), cancellationToken);
-          foreach (KCellSerial _iter238 in Serial_cells)
+          foreach (KCellSerial _iter250 in Serial_cells)
           {
-            await _iter238.WriteAsync(oprot, cancellationToken);
+            await _iter250.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -311,22 +311,22 @@ public partial class kCells : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("kCells(");
-    int tmp239 = 0;
+    int tmp251 = 0;
     if((K != null) && __isset.k)
     {
-      if(0 < tmp239++) { sb.Append(", "); }
+      if(0 < tmp251++) { sb.Append(", "); }
       sb.Append("K: ");
       K.ToString(sb);
     }
     if((Cells != null) && __isset.cells)
     {
-      if(0 < tmp239++) { sb.Append(", "); }
+      if(0 < tmp251++) { sb.Append(", "); }
       sb.Append("Cells: ");
       Cells.ToString(sb);
     }
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      if(0 < tmp239++) { sb.Append(", "); }
+      if(0 < tmp251++) { sb.Append(", "); }
       sb.Append("Serial_cells: ");
       Serial_cells.ToString(sb);
     }

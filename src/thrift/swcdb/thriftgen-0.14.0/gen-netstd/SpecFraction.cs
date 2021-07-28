@@ -85,18 +85,18 @@ public partial class SpecFraction : TBase
 
   public SpecFraction DeepCopy()
   {
-    var tmp22 = new SpecFraction();
+    var tmp34 = new SpecFraction();
     if(__isset.comp)
     {
-      tmp22.Comp = this.Comp;
+      tmp34.Comp = this.Comp;
     }
-    tmp22.__isset.comp = this.__isset.comp;
+    tmp34.__isset.comp = this.__isset.comp;
     if((F != null) && __isset.f)
     {
-      tmp22.F = this.F.ToArray();
+      tmp34.F = this.F.ToArray();
     }
-    tmp22.__isset.f = this.__isset.f;
-    return tmp22;
+    tmp34.__isset.f = this.__isset.f;
+    return tmp34;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -213,16 +213,16 @@ public partial class SpecFraction : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecFraction(");
-    int tmp23 = 0;
+    int tmp35 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp23++) { sb.Append(", "); }
+      if(0 < tmp35++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if((F != null) && __isset.f)
     {
-      if(0 < tmp23++) { sb.Append(", "); }
+      if(0 < tmp35++) { sb.Append(", "); }
       sb.Append("F: ");
       F.ToString(sb);
     }

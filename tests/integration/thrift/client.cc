@@ -269,6 +269,7 @@ void sql_create_test_column(Client& client, uint32_t cell_versions=1) {
     client.sql_mng_column(
       "create column(name='"+column_name(c)+"' "
                     "cell_versions="+std::to_string(cell_versions)+
+                    " tags=[" + std::to_string(c % 2) + "]" +
                     ")");
   }
 }
@@ -459,6 +460,7 @@ void spec_create_test_column(Client& client, uint32_t cell_versions=1,
   Schema schema;
   for(auto c=1; c <= num_columns; ++c) {
     schema.__set_col_name(column_name(c));
+    schema.__set_col_tags({std::to_string(c % 2)});
     schema.__set_cell_versions(cell_versions);
     if(serial)
       schema.__set_col_type(ColumnType::type::SERIAL);
@@ -487,7 +489,7 @@ void spec_list_columns(Client& client) {
   std::cout << std::endl << "test: spec_list_columns: " << std::endl;
 
   SpecSchemas spec;
-  auto& pattern = spec.patterns.emplace_back();
+  auto& pattern = spec.patterns.names.emplace_back();
   pattern.value = column_pre;
   pattern.comp = Comp::PF;
 
@@ -495,6 +497,22 @@ void spec_list_columns(Client& client) {
   client.list_columns(schemas, spec);
 
   assert(schemas.size() == num_columns);
+  std::cout << std::endl << "schemas.size=" << schemas.size() << std::endl;
+  for(auto& schema : schemas) {
+    schema.printTo(std::cout << " ");
+    std::cout << std::endl;
+  }
+
+  spec.patterns.names.clear();
+  spec.patterns.tags.comp = Comp::SBS;
+  auto& tmp = spec.patterns.tags.values.emplace_back();
+  tmp.value = "0";
+  tmp.comp = Comp::EQ;
+
+  schemas.clear();
+  client.list_columns(schemas, spec);
+
+  assert(schemas.size() == num_columns / 2);
   std::cout << std::endl << "schemas.size=" << schemas.size() << std::endl;
   for(auto& schema : schemas) {
     schema.printTo(std::cout << " ");

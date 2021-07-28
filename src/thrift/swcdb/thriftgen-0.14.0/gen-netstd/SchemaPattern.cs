@@ -30,7 +30,7 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Schema Matching Pattern for the SpecSchema patterns
+/// The Schema matching Pattern
 /// </summary>
 public partial class SchemaPattern : TBase
 {
@@ -56,7 +56,7 @@ public partial class SchemaPattern : TBase
   }
 
   /// <summary>
-  /// The patern value to match against schema's column name
+  /// The patern value to match against
   /// </summary>
   public string Value
   {
@@ -85,18 +85,18 @@ public partial class SchemaPattern : TBase
 
   public SchemaPattern DeepCopy()
   {
-    var tmp4 = new SchemaPattern();
+    var tmp8 = new SchemaPattern();
     if(__isset.comp)
     {
-      tmp4.Comp = this.Comp;
+      tmp8.Comp = this.Comp;
     }
-    tmp4.__isset.comp = this.__isset.comp;
+    tmp8.__isset.comp = this.__isset.comp;
     if((Value != null) && __isset.@value)
     {
-      tmp4.Value = this.Value;
+      tmp8.Value = this.Value;
     }
-    tmp4.__isset.@value = this.__isset.@value;
-    return tmp4;
+    tmp8.__isset.@value = this.__isset.@value;
+    return tmp8;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -213,16 +213,16 @@ public partial class SchemaPattern : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SchemaPattern(");
-    int tmp5 = 0;
+    int tmp9 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp5++) { sb.Append(", "); }
+      if(0 < tmp9++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if((Value != null) && __isset.@value)
     {
-      if(0 < tmp5++) { sb.Append(", "); }
+      if(0 < tmp9++) { sb.Append(", "); }
       sb.Append("Value: ");
       Value.ToString(sb);
     }

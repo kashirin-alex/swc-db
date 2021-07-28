@@ -553,14 +553,14 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
           case 1: // COLUMNS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list168 = iprot.readListBegin();
-                struct.columns = new java.util.ArrayList<SpecColumn>(_list168.size);
-                @org.apache.thrift.annotation.Nullable SpecColumn _elem169;
-                for (int _i170 = 0; _i170 < _list168.size; ++_i170)
+                org.apache.thrift.protocol.TList _list184 = iprot.readListBegin();
+                struct.columns = new java.util.ArrayList<SpecColumn>(_list184.size);
+                @org.apache.thrift.annotation.Nullable SpecColumn _elem185;
+                for (int _i186 = 0; _i186 < _list184.size; ++_i186)
                 {
-                  _elem169 = new SpecColumn();
-                  _elem169.read(iprot);
-                  struct.columns.add(_elem169);
+                  _elem185 = new SpecColumn();
+                  _elem185.read(iprot);
+                  struct.columns.add(_elem185);
                 }
                 iprot.readListEnd();
               }
@@ -572,14 +572,14 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
           case 2: // COLUMNS_SERIAL
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list171 = iprot.readListBegin();
-                struct.columns_serial = new java.util.ArrayList<SpecColumnSerial>(_list171.size);
-                @org.apache.thrift.annotation.Nullable SpecColumnSerial _elem172;
-                for (int _i173 = 0; _i173 < _list171.size; ++_i173)
+                org.apache.thrift.protocol.TList _list187 = iprot.readListBegin();
+                struct.columns_serial = new java.util.ArrayList<SpecColumnSerial>(_list187.size);
+                @org.apache.thrift.annotation.Nullable SpecColumnSerial _elem188;
+                for (int _i189 = 0; _i189 < _list187.size; ++_i189)
                 {
-                  _elem172 = new SpecColumnSerial();
-                  _elem172.read(iprot);
-                  struct.columns_serial.add(_elem172);
+                  _elem188 = new SpecColumnSerial();
+                  _elem188.read(iprot);
+                  struct.columns_serial.add(_elem188);
                 }
                 iprot.readListEnd();
               }
@@ -616,9 +616,9 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
         oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.columns.size()));
-          for (SpecColumn _iter174 : struct.columns)
+          for (SpecColumn _iter190 : struct.columns)
           {
-            _iter174.write(oprot);
+            _iter190.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -628,9 +628,9 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
         oprot.writeFieldBegin(COLUMNS_SERIAL_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.columns_serial.size()));
-          for (SpecColumnSerial _iter175 : struct.columns_serial)
+          for (SpecColumnSerial _iter191 : struct.columns_serial)
           {
-            _iter175.write(oprot);
+            _iter191.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -674,18 +674,18 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
       if (struct.isSetColumns()) {
         {
           oprot.writeI32(struct.columns.size());
-          for (SpecColumn _iter176 : struct.columns)
+          for (SpecColumn _iter192 : struct.columns)
           {
-            _iter176.write(oprot);
+            _iter192.write(oprot);
           }
         }
       }
       if (struct.isSetColumns_serial()) {
         {
           oprot.writeI32(struct.columns_serial.size());
-          for (SpecColumnSerial _iter177 : struct.columns_serial)
+          for (SpecColumnSerial _iter193 : struct.columns_serial)
           {
-            _iter177.write(oprot);
+            _iter193.write(oprot);
           }
         }
       }
@@ -700,28 +700,28 @@ public class SpecScan implements org.apache.thrift.TBase<SpecScan, SpecScan._Fie
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list178 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.columns = new java.util.ArrayList<SpecColumn>(_list178.size);
-          @org.apache.thrift.annotation.Nullable SpecColumn _elem179;
-          for (int _i180 = 0; _i180 < _list178.size; ++_i180)
+          org.apache.thrift.protocol.TList _list194 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.columns = new java.util.ArrayList<SpecColumn>(_list194.size);
+          @org.apache.thrift.annotation.Nullable SpecColumn _elem195;
+          for (int _i196 = 0; _i196 < _list194.size; ++_i196)
           {
-            _elem179 = new SpecColumn();
-            _elem179.read(iprot);
-            struct.columns.add(_elem179);
+            _elem195 = new SpecColumn();
+            _elem195.read(iprot);
+            struct.columns.add(_elem195);
           }
         }
         struct.setColumnsIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list181 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.columns_serial = new java.util.ArrayList<SpecColumnSerial>(_list181.size);
-          @org.apache.thrift.annotation.Nullable SpecColumnSerial _elem182;
-          for (int _i183 = 0; _i183 < _list181.size; ++_i183)
+          org.apache.thrift.protocol.TList _list197 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.columns_serial = new java.util.ArrayList<SpecColumnSerial>(_list197.size);
+          @org.apache.thrift.annotation.Nullable SpecColumnSerial _elem198;
+          for (int _i199 = 0; _i199 < _list197.size; ++_i199)
           {
-            _elem182 = new SpecColumnSerial();
-            _elem182.read(iprot);
-            struct.columns_serial.add(_elem182);
+            _elem198 = new SpecColumnSerial();
+            _elem198.read(iprot);
+            struct.columns_serial.add(_elem198);
           }
         }
         struct.setColumns_serialIsSet(true);

@@ -85,18 +85,18 @@ public partial class SpecTimestamp : TBase
 
   public SpecTimestamp DeepCopy()
   {
-    var tmp24 = new SpecTimestamp();
+    var tmp36 = new SpecTimestamp();
     if(__isset.comp)
     {
-      tmp24.Comp = this.Comp;
+      tmp36.Comp = this.Comp;
     }
-    tmp24.__isset.comp = this.__isset.comp;
+    tmp36.__isset.comp = this.__isset.comp;
     if(__isset.ts)
     {
-      tmp24.Ts = this.Ts;
+      tmp36.Ts = this.Ts;
     }
-    tmp24.__isset.ts = this.__isset.ts;
-    return tmp24;
+    tmp36.__isset.ts = this.__isset.ts;
+    return tmp36;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -213,16 +213,16 @@ public partial class SpecTimestamp : TBase
   public override string ToString()
   {
     var sb = new StringBuilder("SpecTimestamp(");
-    int tmp25 = 0;
+    int tmp37 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp25++) { sb.Append(", "); }
+      if(0 < tmp37++) { sb.Append(", "); }
       sb.Append("Comp: ");
       Comp.ToString(sb);
     }
     if(__isset.ts)
     {
-      if(0 < tmp25++) { sb.Append(", "); }
+      if(0 < tmp37++) { sb.Append(", "); }
       sb.Append("Ts: ");
       Ts.ToString(sb);
     }
