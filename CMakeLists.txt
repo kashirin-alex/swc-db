@@ -28,6 +28,8 @@ if(VERSION_MISC_SUFFIX)
 endif()
 
 set(SWCDB_VERSION ${VERSION_STRING})
+set(SWCDB_LICENSE_URL
+    "https://github.com/kashirin-alex/swc-db/blob/v${VERSION_STRING}/LICENSE")
 
 set(SWCDB_COPYRIGHT
   "# SWC-DB (c) Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>\\n"
@@ -42,7 +44,7 @@ set(SWCDB_COPYRIGHT
   "# \\n"
   "# You should have received a copy of the GNU General Public License\\n"
   "# along with this program.\\n"
-  "# If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.\\n"
+  "# If not, see <${SWCDB_LICENSE_URL}>.\\n"
 )
 string(CONCAT SWCDB_COPYRIGHT ${SWCDB_COPYRIGHT})
 
