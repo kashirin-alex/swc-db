@@ -622,7 +622,7 @@ class AppHandler final : virtual public BrokerIf {
     auto clients = Env::Clients::get();
     bool has_patterns = !spec.patterns.names.empty() ||
                         !spec.patterns.tags.values.empty() ||
-                        !spec.patterns.tags.comp != Comp::NONE;
+                        spec.patterns.tags.comp != Comp::NONE;
     if(has_patterns) {
       DB::Schemas::SelectorPatterns dbpatterns;
       if(!spec.patterns.names.empty()) {
@@ -633,7 +633,7 @@ class AppHandler final : virtual public BrokerIf {
         }
       }
       if(!spec.patterns.tags.values.empty() ||
-         !spec.patterns.tags.comp != Comp::NONE) {
+         spec.patterns.tags.comp != Comp::NONE) {
         dbpatterns.tags.reserve(spec.patterns.tags.values.size());
         dbpatterns.tags.comp = spec.patterns.tags.comp == Comp::NONE
           ? Condition::Comp::EQ : Condition::Comp(spec.patterns.tags.comp);
