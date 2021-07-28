@@ -39,7 +39,9 @@ void ColumnList_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
       SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );
       err = e.code();
     }
-  } else if(err == Error::REQUEST_TIMEOUT) {
+  } else if(err == Error::REQUEST_TIMEOUT &&
+            !get_clients()->stopping() &&
+            valid()) {
     SWC_LOG_OUT(LOG_INFO, Error::print(SWC_LOG_OSTREAM, err); );
     request_again();
     return;

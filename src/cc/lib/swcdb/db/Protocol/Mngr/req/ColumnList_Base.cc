@@ -44,12 +44,15 @@ void ColumnList_Base::handle(ConnHandlerPtr, const Event::Ptr& ev) {
     }
     case Error::MNGR_NOT_INITIALIZED :
     case Error::REQUEST_TIMEOUT: {
-      SWC_LOG_OUT(LOG_INFO, Error::print(SWC_LOG_OSTREAM, err); );
-      request_again();
-      return;
+      if(!get_clients()->stopping() && valid()) {
+        SWC_LOG_OUT(LOG_INFO, Error::print(SWC_LOG_OSTREAM, err); );
+        request_again();
+        return;
+      }
+      break;
     }
     default:
-      return;
+      break;
   }
   callback(err, rsp);
 }
