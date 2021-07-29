@@ -114,7 +114,7 @@ size_t Column::release(size_t bytes) {
   if(m_release.running())
     return 0;
 
-  RangePtr range;
+  RangePtr range = nullptr;
   const_iterator it;
   size_t released = 0;
   for(size_t offset = 0; ; ++offset) {
@@ -122,8 +122,12 @@ size_t Column::release(size_t bytes) {
       Core::MutexSptd::scope lock(m_mutex);
       if(cfg->deleting)
         break;
-      it = cbegin();
-      for(size_t i=0; i<offset && it != cend(); ++it, ++i);
+      if(range && (it = find(range->rid)) != cend()) {
+        ++it;
+      } else {
+        it = cbegin();
+        for(size_t i=0; i<offset && it != cend(); ++it, ++i);
+      }
       if(it == cend())
         break;
       range = it->second;

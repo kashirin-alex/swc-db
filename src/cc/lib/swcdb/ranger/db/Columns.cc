@@ -170,11 +170,12 @@ size_t Columns::release(size_t bytes) {
         it = cbegin();
         for(size_t i=0; i < offset && it != cend(); ++it, ++i);
       }
+      for(;it != cend() &&
+           !DB::Types::SystemColumn::is_data(it->first);
+           ++it);
       if(it == cend())
         break;
       col = it->second;
-      if(!DB::Types::SystemColumn::is_data(it->first))
-        continue;
     }
     released += col->release(bytes - released);
     if(released >= bytes)
