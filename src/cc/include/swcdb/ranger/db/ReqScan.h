@@ -14,7 +14,7 @@
 namespace SWC { namespace Ranger {
 
 
-#define SWC_SCAN_RSVD_BUFFS 4
+#define SWC_SCAN_RSVD_BUFFS 2
 // 4 == (blk + cs-blk + fragments) + intermediate-buffers
 
 

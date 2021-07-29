@@ -8,7 +8,84 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-    
+    added SWC_FS_* Log & Stats for FileSystem::default_{write,combi_p/read}
+    added STL Core::Vector<T, SizeT, GROW_SZ>
+    added STL Core::VectorsVector<VectorsT, VectorT, SIZE, GROW, SPLIT>
+    added 'Experimental'(not-used) classes Core::{Arrray/sArray/sVector}
+    added support of operators {new,delete}/[] for align_val_t nothrow_t&
+    changed private/inner/non-API std::vector<> types to Core::Vector<T>
+    added possible std::vector optimizations (reserve/emplace_back/list-init)
+    removed Common::Params::{HostEndPoints,ColumnsInterval,ColumnId,ColRangeId}
+    added Config::Property::Value::V_GUINT16
+    changed cfg swc.mngr.ranges.assign.Rgr.remove.failures to G_INT16
+    changed ThriftBroker app-ctx std::vector<AppHandler::Ptr> to std::set
+    changed DB::Cells::Mutable 'buckets' to Container _container
+    added DB::Cells::Mutable::IteratorT get<T>{(Interval),(Key, ..offset)}
+    removed size_t DB::Cells::Mutable::_narrow(..)
+    added applicable constexpr source-wide excl. related on new/delete/memcpy
+    added Core::VectorsVector<> test(test_big_vector) and basic std::map test
+    fixed ZLIB Core::Encoder leak - Reset changed to End stream
+    added Env::Bkr::is_accepting() to Handlers-request valid() state
+    added G_INT32 configuration-property 'swc.mngr.column.health.checks.delay'
+    added Range load "revision" state in Manager/Ranger/client-RangeLocators
+    added int64_t Protocol::Mngr::Params::RgrGetRsp::revision
+    added int64_t Protocol::Rgr::Params::RangeLoaded::revision
+    added int64_t Protocol::Rgr::Params::RangeLocateReq::revision
+    added flag Protocol::Rgr::Params::RangeLocateReq::HAVE_REVISION
+    changed Protocol::Mngr::Handler::rgr_get rsp. with full range_{begin,end}
+    added G_INT32 configuration-property 'swc.client.Mngr.range.master.expiry'
+    added class client::Managers::MasterRangesCache
+    added MasterRangesCache client::Clients::master_ranges_cache
+    added Clients::mngr_cache_{get_(read,write},set,remove}_master(....)
+    changed client::CachedRangers to Map non-pointer entry value
+    renamed Mngr::Params::RgrMngId::Flag::'RS_' enums to 'RGR_'
+    added Manager preload Columns SYS_STATS & SYS_DEFINE_LEXIC
+    fixed Manager RangersResources timestamp by milliseconds instead nanos
+    added Env::Rgr::m_in_process_ranges,in_process_ranges(,size_t)
+    changed Env::Rgr::in_process(..) in Ranger::Range to 'in_process_ranges'
+    changed algorithms process Conditions SBS and SPS
+    fixed Cell::Serial::Value::Field_LIST_{INT64,BYTES} GT/GE require all True
+    added Core::Vector<Field*> Serial::Value::Fields::_fields_ptr
+    added Core::Vector<bool> Serial::Value::Field_LIST_{INT64,BYTES}::_found
+    added allocate _fields_ptr at Fields::Fields(ptr, len)
+    added allocate _found for SPS/SBS at Field_LIST_{INT64,BYTES}(bufp, remp)
+    added Specs/Cell SERIAL value support for empty LIST_{INT64,BYTES}
+    added DB::SchemaPrimitives + derived by DB::Schema & storage/serial order
+    changed Ranger work with DB::SchemaPrimitives (RangeLoad & ColumnUpdate)
+    removed Protocol::Rgr::Params::RangeLoad::cid
+    added DB::Schema::Tags tags
+    added DB::Schemas:: struct SelectorPatterns (consist names and tags)
+    added DB::Schemas::matching support for SelectorPatterns::tags
+    added Tags Comp[Comp'expr',...] SQL syntax support in Column-Selector
+    added schema's column Tags support in Thrift Service
+    added timeout-ms ARG for client::Clients::get_schema(..)
+    added Core::QueueSafe<ItemT>::{push,push_and_is_1st}(ItemT&& item)
+    removed bool Core::QueueSafeStated::deactivating(ItemT* item)
+    changed Ranger Fragment::m_queue to ::queue<LoadCallback*>
+    changed Ranger Fragment::load(..) to ARG (LoadCallback* cb);
+    changed Ranger CommitLog::Splitter extends Fragment::LoadCallback
+    changed Ranger CommitLog::Compact::Group extends Fragment::LoadCallback
+    changed Ranger Range::BlockLoader extends Fragment::LoadCallback
+    fixed Ranger _run_scan_queue with possible parallel execution
+    added request_again on MNGR_NOT_INITIALIZED in req. Mngr Column{List,Get}
+    fixed Manager expected columns to load completion (req. with uint64 total)
+    changed Manager MngdColumns::m_expected_ready to m_expected_remain uint64
+    removed Manager MngdColumns::m_mutex_expect and synced with m_mutex_active
+    changed SWCDB-COPYRIGHT notice with github url Tag version LICENSE file
+    added unique-fid for aligned_{min,max} field in Meta-Range serial-value
+    fixed columns access on index in Manager and Ranger at many(+100K) columns
+    changed proto Mngr::Req::ColumnList<> to buffered 1000-columns completion
+    fixed Ranger compaction completion - decr. on-found & stop owns run-state
+    changed lambda handlers in Comm::ConnHandler to added sub-classes:
+        ConnHandler:: Sender_{noAck,Ack},Receiver_{HeaderPrefix,Header,Buffer}
+    added overloaders ConnHandler::do_async_write(Sender_***)
+    added overloaders ConnHandler::do_async_read(Receiver_***)
+    changed ConnHandler::run_pending(ev) before next read()
+    changed FsBroker & Broker app-ctx handlers to CommandHandler::operator()()
+    added Ranger & Manager dedicated-handlers for commands posted on IO
+    changed lambda accept to Acceptor::{Plain,Mixed} + operator()(ec,sock)
+    changed source-wide timer lambda handlers to TimerTask::operator()(...)
+    changed source-wide io-post lambda handlers to "Handler"::operator()(...)
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.3...master)
 ******
