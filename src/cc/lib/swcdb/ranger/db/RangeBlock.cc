@@ -28,22 +28,22 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_versions(),
                   blocks->range->cfg->cell_ttl(),
                   blocks->range->cfg->column_type())),
+              m_releasable_bytes(0),
               m_key_end(interval.key_end),
               m_processing(0), m_state(state), m_loader(nullptr) {
-  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 SWC_CAN_INLINE
 Block::~Block() {
-  Env::Rgr::res().less_mem_usage(
-    size_of() +
-    (m_cells.empty() ? 0 : m_cells.size_of_internal())
-  );
+  if(m_releasable_bytes &&
+     DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
+    Env::Rgr::res().less_mem_releasable(m_releasable_bytes);
+  }
 }
 
 SWC_CAN_INLINE
 size_t Block::size_of() const noexcept {
-  return sizeof(*this);
+  return sizeof(*this) + sizeof(Ptr);
 }
 
 SWC_CAN_INLINE
@@ -146,13 +146,16 @@ bool Block::includes_end(const DB::Specs::Interval& spec) const {
 SWC_CAN_INLINE
 void Block::preload() {
   struct Task {
-    Block* blk;
+    Block*   blk;
+    uint32_t sz;
     SWC_CAN_INLINE
-    Task(Block* blk) noexcept : blk(blk) { }
+    Task(Block* blk) noexcept
+        : blk(blk), sz(blk->blocks->range->cfg->block_size()) {
+      Env::Rgr::res().more_mem_future(sz);
+    }
     void operator()() {
-      blk->scan(ReqScanBlockLoader::Ptr(
-        new ReqScanBlockLoader(blk->blocks->range->cfg->block_size())
-      ));
+      blk->scan(ReqScanBlockLoader::Ptr(new ReqScanBlockLoader(sz)));
+      Env::Rgr::res().less_mem_future(sz);
     }
   };
   Env::Rgr::post(Task(this));
@@ -165,9 +168,7 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 
   if(loaded()) {
     Core::ScopedLock lock(m_mutex);
-    ssize_t sz = m_cells.size_of_internal();
     m_cells.add_raw(cell);
-    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     splitter();
   }
   return true;
@@ -175,27 +176,21 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 
 SWC_CAN_INLINE
 void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
-  if(vec_cells.empty()) {
+  if(!vec_cells.empty()) {
+    Core::ScopedLock lock(m_mutex);
+    for(auto cells : vec_cells) {
+      if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
+         break;
+      splitter();
+    }
+    if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
+      ssize_t sz = m_cells.size_of_internal();
+      Env::Rgr::res().adj_mem_releasable(sz - m_releasable_bytes.exchange(sz));
+    }
+  }
+  {
     Core::MutexSptd::scope lock(m_mutex_state);
     m_state.store(State::LOADED);
-
-  } else {
-    ssize_t sz;
-    {
-      Core::ScopedLock lock(m_mutex);
-      sz = m_cells.size_of_internal();
-      for(auto cells : vec_cells) {
-        if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
-          break;
-        splitter();
-      }
-      {
-        Core::MutexSptd::scope lock(m_mutex_state);
-        m_state.store(State::LOADED);
-      }
-      sz = ssize_t(m_cells.size_of_internal()) - sz;
-    }
-    Env::Rgr::res().adj_mem_usage(sz);
   }
 }
 
@@ -213,7 +208,6 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     synced = false;
   else if(!synced && m_cells.empty())
     synced = true;
-  ssize_t sz = m_cells.size_of_internal();
 
   try { for(DB::Cells::Cell cell; remain; ++count) {
 
@@ -236,13 +230,9 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       ? m_cells.add_sorted(cell)
       : m_cells.add_raw(cell, &offset_hint);
 
-    if(!(++added % 1000)) {
-      Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
-      if(splitter()) {
-        was_splitted = true;
-        offset_hint = 0;
-      }
-      sz = m_cells.size_of_internal();
+    if(!(++added % 1000) && splitter()) {
+      was_splitted = true;
+      offset_hint = 0;
     }
 
   } } catch(...) {
@@ -255,7 +245,10 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       e.print(SWC_LOG_OSTREAM << ' ');
     );
   }
-  Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
+  if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
+    ssize_t sz = m_cells.size_of_internal();
+    Env::Rgr::res().adj_mem_releasable(sz - m_releasable_bytes.exchange(sz));
+  }
   return added;
 }
 
@@ -349,19 +342,23 @@ Block::Ptr Block::_split(bool loaded) {
     blocks,
     loaded ? State::LOADED : State::NONE
   );
-  ssize_t sz = loaded ? 0 : m_cells.size_of_internal();
   if(!m_cells.split(blk->m_cells, loaded)) {
     delete blk;
     return nullptr;
   }
   {
     Core::MutexAtomic::scope lock(m_mutex_intval);
-    blk->m_key_end.copy(m_key_end);
+    blk->m_key_end.move(m_key_end);
     m_key_end.copy(m_cells.back().key);
   }
-  if(sz)
-    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
 
+  if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
+    if(loaded)
+      blk->m_releasable_bytes.store(blk->m_cells.size_of_internal());
+    ssize_t sz = m_cells.size_of_internal();
+    Env::Rgr::res().adj_mem_releasable(
+      (sz - m_releasable_bytes.exchange(sz)) + blk->m_releasable_bytes);
+  }
   _add(blk);
   return blk;
 }
@@ -385,15 +382,15 @@ size_t Block::release() {
       auto at(State::LOADED);
       if(!m_loader && !m_processing &&
          m_state.compare_exchange_weak(at, State::NONE)) {
-        released += m_cells.size_of_internal();
+        released += m_releasable_bytes.exchange(0);
         m_cells.free();
       }
       m_mutex_state.unlock(support);
     }
     m_mutex.unlock();
   }
-  if(released)
-    Env::Rgr::res().less_mem_usage(released);
+  if(released && DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
+    Env::Rgr::res().less_mem_releasable(released);
   return released;
 }
 

@@ -99,23 +99,33 @@ class Resources final {
   }
 
   SWC_CAN_INLINE
-  void adj_mem_usage(ssize_t sz) noexcept {
-    mem.adj_mem_usage(sz);
+  void more_mem_future(size_t sz) noexcept {
+    mem.more_mem_future(sz);
   }
 
   SWC_CAN_INLINE
-  void more_mem_usage(size_t sz) noexcept {
-    mem.more_mem_usage(sz);
+  void less_mem_future(size_t sz) noexcept {
+    mem.less_mem_future(sz);
+  }
+
+  SWC_CAN_INLINE
+  void more_mem_releasable(size_t sz) noexcept {
+    mem.more_mem_releasable(sz);
+  }
+
+  SWC_CAN_INLINE
+  void less_mem_releasable(size_t sz) noexcept {
+    mem.less_mem_releasable(sz);
+  }
+
+  SWC_CAN_INLINE
+  void adj_mem_releasable(ssize_t sz) noexcept {
+    mem.adj_mem_releasable(sz);
   }
 
   SWC_CAN_INLINE
   uint32_t available_mem_mb() const noexcept {
     return mem.available_mem_mb();
-  }
-
-  SWC_CAN_INLINE
-  void less_mem_usage(size_t sz) noexcept {
-    mem.less_mem_usage(sz);
   }
 
   SWC_CAN_INLINE

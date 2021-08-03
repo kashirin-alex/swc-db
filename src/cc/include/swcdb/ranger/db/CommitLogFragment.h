@@ -109,8 +109,6 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   Ptr ptr();
 
-  size_t size_of() const noexcept;
-
   const std::string& get_filepath() const noexcept;
 
   void write(int err, uint8_t blk_replicas, int64_t blksz,

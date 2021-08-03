@@ -39,18 +39,9 @@ class RangeQuerySelect : public ReqScan {
     if spec.range_end > range : spec.range_end.free()
     SWC_LOG_OUT(LOG_INFO, spec.print(SWC_LOG_OSTREAM); );
     */
-
-    Env::Rgr::res().more_mem_usage(size_of());
   }
 
-  virtual ~RangeQuerySelect() {
-    Env::Rgr::res().less_mem_usage(size_of());
-  }
-
-  SWC_CAN_INLINE
-  size_t size_of() const {
-    return sizeof(*this) + sizeof(Ptr) + spec.size_of_internal();
-  }
+  virtual ~RangeQuerySelect() { }
 
   SWC_CAN_INLINE
   void ensure_size() {
@@ -81,29 +72,26 @@ class RangeQuerySelect : public ReqScan {
     ensure_size();
     auto sz = cells.fill();
     cell.write(cells, only_keys);
-    profile.add_cell((sz = cells.fill() - sz));
-    Env::Rgr::res().more_mem_usage(sz);
+    profile.add_cell(cells.fill() - sz);
     return !reached_limits();
   }
 
   void response(int &err) override {
+    auto bytes_used = cells.size;
     if(!err) {
       if(Env::Rgr::is_shuttingdown())
         err = Error::SERVER_SHUTTING_DOWN;
       else if(range->deleted())
         err = Error::COLUMN_MARKED_REMOVED;
     }
-    if(err == Error::COLUMN_MARKED_REMOVED) {
-      Env::Rgr::res().less_mem_usage(cells.fill());
+    if(err == Error::COLUMN_MARKED_REMOVED)
       cells.free();
-    }
 
     Comm::Protocol::Rgr::Params::RangeQuerySelectRsp params(
       err, err ? false : reached_limits(), offset);
 
     Comm::Buffers::Ptr cbp;
     if(!cells.empty()) {
-      Env::Rgr::res().less_mem_usage(cells.fill());
       StaticBuffer sndbuf(cells);
       cbp = Comm::Buffers::make(m_ev, params, sndbuf);
     } else {
@@ -116,6 +104,7 @@ class RangeQuerySelect : public ReqScan {
       SWC_LOG_OSTREAM
         << "Range(" << range->cfg->cid  << '/' << range->rid << ") ";
       Error::print(SWC_LOG_OSTREAM, err);
+      SWC_LOG_OSTREAM << " used-bytes=" << bytes_used;
       profile.print(SWC_LOG_OSTREAM << " Select-");
     );
 

@@ -91,7 +91,7 @@ class Read final {
 
   ~Read();
 
-  size_t size_of() const;
+  // size_t size_of() const noexcept;
 
   const std::string& filepath() const;
 

@@ -21,12 +21,6 @@ Compact::Group::Group(Compact* compact, uint8_t worker)
                         ) {
 }
 
-SWC_CAN_INLINE
-Compact::Group::~Group() {
-  if(!m_cells.empty())
-    Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
-}
-
 void Compact::Group::run(bool initial) {
   size_t running;
   if(initial) {
@@ -83,16 +77,14 @@ void Compact::Group::_loaded(const Fragment::Ptr& frag) {
     return;
   }
 
-  ssize_t adj_sz;
+  Env::Rgr::res().more_mem_future(frag->size_bytes());
   {
     Core::MutexSptd::scope lock(m_mutex);
-    size_t sz = m_cells.size_of_internal();
     frag->load_cells(err, m_cells);
-    adj_sz = ssize_t(m_cells.size_of_internal()) - sz;
     m_remove.push_back(frag);
   }
-  Env::Rgr::res().adj_mem_usage(adj_sz);
   frag->release();
+  Env::Rgr::res().less_mem_future(frag->size_bytes());
   run(false);
 }
 
@@ -100,7 +92,6 @@ void Compact::Group::write() {
   Core::Semaphore sem(5);
   size_t total_cells_count = 0;
   int err;
-  ssize_t sz;
   uint32_t cells_count;
   if(compact->log->stopping || error || m_cells.empty())
     goto finished_write;
@@ -109,13 +100,11 @@ void Compact::Group::write() {
     DynamicBuffer cells;
     DB::Cells::Interval interval(m_cells.key_seq);
     StaticBuffer::Ptr buff_write(new StaticBuffer());
-    sz = m_cells.size_of_internal();
     m_cells.write_and_free(
       cells, cells_count = 0, interval,
       compact->log->range->cfg->block_size(),
       compact->log->range->cfg->block_cells()
     );
-    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
     total_cells_count += cells_count;
 
     auto frag = Fragment::make_write(

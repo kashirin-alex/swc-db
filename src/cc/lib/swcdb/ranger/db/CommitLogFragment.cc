@@ -160,7 +160,6 @@ Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
   if(err)
     return nullptr;
 
-  Env::Rgr::res().more_mem_usage(size_plain);
   auto frag = new Fragment(
     smartfd,
     version, std::move(interval),
@@ -236,28 +235,19 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     m_processing(m_state == State::WRITING),
                     m_cells_remain(cells_count),
                     m_smartfd(smartfd) {
-  Env::Rgr::res().more_mem_usage(size_of());
+  if(m_state != State::NONE)
+    Env::Rgr::res().more_mem_releasable(size_plain);
 }
 
 SWC_CAN_INLINE
 Fragment::~Fragment() {
-  Env::Rgr::res().less_mem_usage(
-    size_of() +
-    (m_buffer.size && m_state == State::NONE ? 0 : size_plain)
-  );
+  if(m_state == State::LOADED && !m_marked_removed)
+    Env::Rgr::res().less_mem_releasable(size_plain);
 }
 
 SWC_CAN_INLINE
 Fragment::Ptr Fragment::ptr() {
   return shared_from_this();
-}
-
-SWC_CAN_INLINE
-size_t Fragment::size_of() const noexcept {
-  return sizeof(*this)
-        + interval.size_of_internal()
-        + sizeof(*m_smartfd.get())
-      ;
 }
 
 SWC_CAN_INLINE
@@ -311,7 +301,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 
   if(err) {
     m_buffer.free();
-    Env::Rgr::res().less_mem_usage(size_plain);
+    Env::Rgr::res().less_mem_releasable(size_plain);
   }
 
   bool keep;
@@ -357,7 +347,8 @@ void Fragment::load(Fragment::LoadCallback* cb) {
   }
   switch(at) {
     case State::NONE: {
-      Env::Rgr::res().more_mem_usage(size_plain);
+      //Env::Rgr::res().more_mem_future(size_plain);
+      Env::Rgr::res().more_mem_releasable(size_plain);
       struct Task {
         Ptr frag;
         SWC_CAN_INLINE
@@ -496,7 +487,7 @@ size_t Fragment::release() {
     if(!m_processing && !marked_removed() && m_queue.empty()) {
       auto at(State::LOADED);
       if(m_state.compare_exchange_weak(at, State::NONE)) {
-        released += m_buffer.size;
+        released += size_plain;
         m_buffer.free();
         m_cells_remain.store(cells_count);
       }
@@ -504,7 +495,7 @@ size_t Fragment::release() {
     m_mutex.unlock(support);
   }
   if(released)
-    Env::Rgr::res().less_mem_usage(size_plain);
+    Env::Rgr::res().less_mem_releasable(size_plain);
   return released;
 }
 
@@ -558,8 +549,13 @@ bool Fragment::marked_removed() const noexcept {
 
 bool Fragment::mark_removed() noexcept {
   bool do_remove = !m_marked_removed.exchange(true);
-  Core::MutexSptd::scope lock(m_mutex);
-  m_state.store(State::LOADED);
+  State state;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    state = m_state.exchange(State::LOADED);
+  }
+  if(do_remove && state != State::NONE)
+    Env::Rgr::res().less_mem_releasable(size_plain);
   return do_remove;
 }
 
@@ -671,19 +667,27 @@ void Fragment::load_finish(int err) {
       print(SWC_LOG_OSTREAM << ' ');
     );
 
-  if(m_marked_removed || err) {
+  if(m_marked_removed) {
     m_buffer.free();
-    Env::Rgr::res().less_mem_usage(size_plain);
-    if(m_marked_removed || err == Error::FS_PATH_NOT_FOUND)
+  } else {
+    if(err == Error::FS_PATH_NOT_FOUND) {
+      m_buffer.free();
       err = Error::OK;
-  }
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    m_state.store(err ? State::NONE : State::LOADED);
-    m_err = err;
+    }
+    bool _marked_removed;
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      if(!(_marked_removed = m_state == State::LOADED))
+        m_state.store(err ? State::NONE : State::LOADED);
+      m_err = err;
+    }
+    if(err && !_marked_removed)
+      Env::Rgr::res().less_mem_releasable(size_plain);
   }
 
   run_queued();
+
+  //Env::Rgr::res().less_mem_future(size_plain);
 }
 
 

@@ -158,29 +158,44 @@ size_t Columns::release(size_t bytes) {
   if(m_release.running())
     return 0;
 
-  ColumnPtr col = nullptr;
-  const_iterator it;
   size_t released = 0;
-  for(size_t offset = 0; ; ++offset) {
-    {
-      Core::MutexSptd::scope lock(m_mutex);
-      if(col && (it = find(col->cfg->cid)) != cend()) {
-        ++it;
-      } else {
-        it = cbegin();
-        for(size_t i=0; i < offset && it != cend(); ++it, ++i);
+  uint8_t level = 0;
+  /* Release-Levels:
+    0: cellstores
+    1: fragments
+    2: blocks (only data-columns)
+    3: commit-log
+    ![4: blocks-structure (only data-columns)]
+  */
+  do {
+    SWC_LOGF(LOG_DEBUG, "Columns::release bytes=%lu level=%u released=%lu",
+                        bytes, level, released);
+    ColumnPtr col = nullptr;
+    const_iterator it;
+    for(size_t offset = 0; ; ++offset) {
+      {
+        Core::MutexSptd::scope lock(m_mutex);
+        if(col && (it = find(col->cfg->cid)) != cend()) {
+          ++it;
+        } else {
+          it = cbegin();
+          for(size_t i=0; i < offset && it != cend(); ++it, ++i);
+        }
+        if(level == 2) {
+          for(; it != cend() &&
+                !DB::Types::SystemColumn::is_data(it->first);
+                ++it);
+        }
+        if(it == cend())
+          break;
+        col = it->second;
       }
-      for(;it != cend() &&
-           !DB::Types::SystemColumn::is_data(it->first);
-           ++it);
-      if(it == cend())
+      released += col->release(bytes - released, level);
+      if(released >= bytes)
         break;
-      col = it->second;
     }
-    released += col->release(bytes - released);
-    if(released >= bytes)
-      break;
-  }
+  } while(released < bytes && ++level < 4);
+
   m_release.stop();
   return released;
 }

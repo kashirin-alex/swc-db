@@ -81,7 +81,6 @@ Read::Read(Header&& header) noexcept
             m_state(header.size_plain ? State::NONE : State::LOADED),
             m_err(Error::OK), m_cells_remain(header.cells_count),
             m_processing(0) {
-  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 SWC_CAN_INLINE
@@ -90,15 +89,16 @@ void Read::init(CellStore::Read* _cellstore) noexcept {
 }
 
 Read::~Read() {
-  Env::Rgr::res().less_mem_usage(
-    size_of() +
-    (m_buffer.size && m_state == State::NONE ? 0 : header.size_plain)
-  );
+  if(m_state == State::LOADED)
+    Env::Rgr::res().less_mem_releasable(header.size_plain);
 }
 
+/*
 size_t Read::size_of() const noexcept {
-  return sizeof(*this) + header.interval.size_of_internal();
+  return sizeof(*this) + sizeof(Ptr) +
+         header.interval.size_of_internal();
 }
+*/
 
 SWC_CAN_INLINE
 bool Read::load(BlockLoader* loader) {
@@ -111,9 +111,11 @@ bool Read::load(BlockLoader* loader) {
       m_queue.push(loader);
   }
   switch(at) {
-    case State::NONE:
-      Env::Rgr::res().more_mem_usage(header.size_plain);
+    case State::NONE: {
+      //Env::Rgr::res().more_mem_future(header.size_plain);
+      Env::Rgr::res().more_mem_releasable(header.size_plain);
       return true;
+    }
     case State::LOADING:
       return false;
     default: //case State::LOADED:
@@ -167,14 +169,14 @@ size_t Read::release() {
     State at = State::LOADED;
     if(m_queue.empty() && !m_processing &&
        m_state.compare_exchange_weak(at, State::NONE)) {
-      released += m_buffer.size;
+      released += header.size_plain;
       m_buffer.free();
       m_cells_remain.store(header.cells_count);
     }
     m_mutex.unlock(support);
   }
   if(released)
-    Env::Rgr::res().less_mem_usage(header.size_plain);
+    Env::Rgr::res().less_mem_releasable(header.size_plain);
   return released;
 }
 
@@ -314,7 +316,6 @@ void Read::load_finish(int err) {
       err = Error::OK;
 
     m_buffer.free();
-    Env::Rgr::res().less_mem_usage(header.size_plain);
   }
 
   {
@@ -322,6 +323,8 @@ void Read::load_finish(int err) {
     m_state.store(err ? State::NONE : State::LOADED);
     m_err = err;
   }
+  if(err)
+    Env::Rgr::res().less_mem_releasable(header.size_plain);
 
   struct Task {
     Read* ptr;
@@ -341,6 +344,8 @@ void Read::load_finish(int err) {
     }
     loader->loaded_blk();
   }
+
+  //Env::Rgr::res().less_mem_future(header.size_plain);
 }
 
 
@@ -348,21 +353,7 @@ void Read::load_finish(int err) {
 
 
 SWC_CAN_INLINE
-Write::Write(Header&& header) noexcept
-            : header(std::move(header)), released(false) {
-  Env::Rgr::res().more_mem_usage(
-    sizeof(Write::Ptr) + sizeof(Write)
-    + header.interval.size_of_internal()
-  );
-}
-
-Write::~Write() {
-  Env::Rgr::res().less_mem_usage(
-    sizeof(Write::Ptr) + sizeof(Write)
-    + header.interval.size_of_internal()
-    + (released ? 0 : header.size_enc)
-  );
-}
+Write::Write(Header&& header) noexcept : header(std::move(header)) { }
 
 SWC_CAN_INLINE
 void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
@@ -379,7 +370,6 @@ void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
   } else {
     header.size_enc = len_enc;
   }
-  Env::Rgr::res().more_mem_usage(header.size_enc);
 
   uint8_t* ptr = output.base;
   header.encode(&ptr);

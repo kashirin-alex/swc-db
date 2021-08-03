@@ -27,8 +27,6 @@ class Column final :
 
   ~Column();
 
-  size_t size_of() const noexcept;
-
   size_t ranges_count() noexcept;
 
   bool removing() noexcept;
@@ -49,7 +47,7 @@ class Column final :
 
   void run_mng_queue();
 
-  size_t release(size_t bytes=0);
+  size_t release(size_t bytes, uint8_t level);
 
   void print(std::ostream& out, bool minimal=true);
 

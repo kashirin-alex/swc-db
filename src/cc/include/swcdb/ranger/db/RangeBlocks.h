@@ -76,7 +76,9 @@ class Blocks final {
 
   size_t size_bytes_total(bool only_loaded=false);
 
-  size_t release(size_t bytes=0);
+  size_t release(size_t bytes);
+
+  size_t release(size_t bytes, uint8_t level);
 
   void reset_blocks();
 

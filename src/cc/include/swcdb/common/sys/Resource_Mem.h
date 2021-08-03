@@ -18,6 +18,12 @@
 #elif defined MIMALLOC
 #include <mimalloc.h>
 
+#elif defined JEMALLOC
+#include <jemalloc/jemalloc.h>
+
+#else
+#include <malloc.h>
+
 #endif
 
 
@@ -26,9 +32,12 @@ namespace SWC { namespace System {
 
 
 class Mem {
-  static const uint32_t FAIL_MS   = 10;
-  static const uint32_t URGENT_MS = 100;
-  static const uint32_t MAX_MS    = 5000;
+  static const uint32_t FAIL_MS           = 10;
+  static const uint32_t BASE_MS           = 300;
+  static const uint32_t URGENT_MS         = 100;
+  static const uint32_t MAX_MS            = 5000;
+  static const uint32_t RELEASE_NORMAL_MS = 500;
+  static const uint32_t RELEASE_URGENT_MS = 200;
 
   public:
   typedef Mem*                          Ptr;
@@ -40,9 +49,12 @@ class Mem {
   Core::Atomic<size_t>   free;
   Core::Atomic<size_t>   used;
   Core::Atomic<size_t>   used_reg;
+  Core::Atomic<size_t>   used_releasable;
+  Core::Atomic<size_t>   used_future;
   Core::Atomic<size_t>   total;
   Core::Atomic<size_t>   allowed;
   Core::Atomic<size_t>   reserved;
+  Core::Atomic<size_t>   mem_buff_ms;
 
   Mem(Config::Property::V_GINT32::Ptr ram_percent_allowed,
       Config::Property::V_GINT32::Ptr ram_percent_reserved,
@@ -52,10 +64,12 @@ class Mem {
       : cfg_percent_allowed(ram_percent_allowed),
         cfg_percent_reserved(ram_percent_reserved),
         cfg_release_rate(ram_release_rate),
-        free(0), used(0), used_reg(0), total(0), allowed(0), reserved(0),
+        free(0), used(0), used_reg(0), used_releasable(0), used_future(0),
+        total(0), allowed(0), reserved(0), mem_buff_ms(0),
         notifier(notifier), release_call(std::move(release_call)),
         page_size(sysconf(_SC_PAGE_SIZE)),
-        stat_chk(0), ts_low_state(0) {
+        chk_stat_ts(0), chk_statm_ts(0), chk_low_state_ts(0),
+        chk_release_ts(0) {
 
     #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
@@ -68,13 +82,43 @@ class Mem {
 
   uint64_t check(uint64_t ts) noexcept {
     try {
-      uint64_t ms = _check(ts);
-      release();
-      return ms;
+      if(ts >= (chk_stat_ts + (is_low_mem_state() ? URGENT_MS
+                                                  : MAX_MS))) {
+        _check_malloc(ts);
+        if(!_check_stat())
+          return FAIL_MS;
+        chk_stat_ts = ts;
+      }
+
+      if(ts >= (chk_statm_ts + (is_low_mem_state() ? URGENT_MS
+                                                   : mem_buff_ms))) {
+        _check_malloc(ts);
+        if(!_check_statm())
+          return FAIL_MS;
+        chk_statm_ts = ts;
+      }
+
+      if(ts >= (chk_release_ts + (is_low_mem_state() ? RELEASE_URGENT_MS
+                                                     : RELEASE_NORMAL_MS))) {
+        _check_malloc(ts);
+        _release();
+        chk_release_ts = ts;
+      }
+
+      _check_malloc(ts);
+
+      if(is_low_mem_state() && chk_low_state_ts <= ts) {
+        chk_low_state_ts = ts + 10000;
+        SWC_LOG_OUT(
+          LOG_WARN,
+          print(SWC_LOG_OSTREAM << "Low-Memory state ");
+        );
+      }
     } catch(...) {
       SWC_LOG_CURRENT_EXCEPTION("");
       return FAIL_MS;
     }
+    return BASE_MS;
   }
 
 
@@ -85,126 +129,143 @@ class Mem {
 
   SWC_CAN_INLINE
   size_t need_ram() const noexcept {
-    return is_low_mem_state()
-            ? used_reg.load()
-            : (used > allowed
-                ? used - allowed
-                : (used_reg > allowed
-                    ? used_reg - allowed
-                    : 0
-                  )
-              );
+    ssize_t need = reserved;
+    need -= free;
+    if(need < 0) {
+      need = used;
+      need -= allowed;
+      if(need < 0) {
+        need = used_reg;
+        need += used_future;
+        need -= allowed;
+        if(need < 0)
+          return 0;
+      }
+    }
+    ssize_t _releasable = used_releasable;
+    return _releasable > need ? need : _releasable;
   }
 
   SWC_CAN_INLINE
   size_t avail_ram() const noexcept {
-    return !is_low_mem_state() && allowed > used_reg
-            ? (allowed > used ? allowed - used_reg : 0)
-            : 0;
+    if(is_low_mem_state() || used > allowed)
+      return 0;
+    ssize_t _allowed = allowed;
+    _allowed -= used_reg;
+    _allowed -= used_future;
+    return _allowed > 0 ? _allowed : 0;
   }
 
   SWC_CAN_INLINE
   bool need_ram(uint32_t sz) const noexcept {
-    return is_low_mem_state() || free < sz * 2 ||
-           (used_reg + sz > allowed || used + sz > allowed);
+    return is_low_mem_state() ||
+           free < (sz * 2) ||
+           (used_reg + used_future + sz) > allowed ||
+           (used + sz) > allowed;
   }
 
-  SWC_CAN_INLINE
-  void adj_mem_usage(ssize_t sz) noexcept {
-    if(sz) {
-      m_mutex.lock();
-      if(sz < 0 && used_reg < size_t(-sz))
-        used_reg.store(0);
-      else
-        used_reg.fetch_add(sz);
-      m_mutex.unlock();
-    }
-  }
 
   SWC_CAN_INLINE
-  void more_mem_usage(size_t sz) noexcept {
-    if(sz) {
-      m_mutex.lock();
+  void more_mem_future(size_t sz) noexcept {
+    used_future.fetch_add(sz);
+  }
+  SWC_CAN_INLINE
+  void less_mem_future(size_t sz) noexcept {
+    size_t was = used_future.fetch_sub(sz);
+    if(sz > was)
+      SWC_LOGF(LOG_WARN, "less_mem_future OVERFLOW was=%lu less=%lu",
+                          was, sz);
+  }
+
+
+  SWC_CAN_INLINE
+  void more_mem_releasable(size_t sz) noexcept {
+    used_releasable.fetch_add(sz);
+    used_reg.fetch_add(sz);
+  }
+  SWC_CAN_INLINE
+  void less_mem_releasable(size_t sz) noexcept {
+    size_t was = used_releasable.fetch_sub(sz);
+    if(sz > was)
+      SWC_LOGF(LOG_WARN, "less_mem_releasable OVERFLOW was=%lu less=%lu",
+                          was, sz);
+  }
+  SWC_CAN_INLINE
+  void adj_mem_releasable(ssize_t sz) noexcept {
+    size_t was = used_releasable.fetch_add(sz);
+    if(sz > 0)
       used_reg.fetch_add(sz);
-      m_mutex.unlock();
-    }
+    else if(sz < 0 && size_t(-sz) > was)
+      SWC_LOGF(LOG_WARN, "adj_mem_releasable OVERFLOW was=%lu adj=%ld",
+                          was, sz);
   }
+
 
   SWC_CAN_INLINE
   uint32_t available_mem_mb() const noexcept {
     return (total - reserved) / 1024 / 1024;
   }
 
-  SWC_CAN_INLINE
-  void less_mem_usage(size_t sz) noexcept {
-    if(sz) {
-      m_mutex.lock();
-      if(used_reg < sz)
-        used_reg.store(0);
-      else
-        used_reg.fetch_sub(sz);
-      m_mutex.unlock();
-    }
-  }
-
   void print(std::ostream& out, size_t base = 1048576) const {
     out << "Res(total=" << (total/base)
-            << " free=" << (free/base)
-            << " used=" << (used_reg/base) << '/' << (used/base)
-            << " allowed=" << (allowed/base)
-            << " reserved=" << (reserved/base) << ')';
+        << " free=" << (free/base)
+        << " bytes-used=" << used_releasable << '/' << used_reg << '/' << used
+        << " allowed=" << (allowed/base)
+        << " reserved=" << (reserved/base) << ')';
   }
 
   private:
 
-  uint64_t _check(uint64_t ts) {
+  bool _check_stat() {
     if(notifier)
-      notifier->rss_used_reg(used_reg.load());
+      notifier->rss_used_reg(used_reg);
+    std::ifstream buffer("/proc/meminfo");
+    if(!buffer.is_open())
+      return false;
 
-    if(!total || !free || !stat_chk ||
-       stat_chk + (is_low_mem_state() ? URGENT_MS : MAX_MS) <= ts) {
-      std::ifstream buffer("/proc/meminfo");
-      if(!buffer.is_open())
-        return FAIL_MS;
+    size_t sz = 0;
+    std::string tmp;
+    uint8_t looking(2);
+    Core::Atomic<size_t>* metric(nullptr);
+    do {
+      buffer >> tmp;
+      if(tmp.length() == 9 &&
+         Condition::str_eq(tmp.c_str(), "MemTotal:", 9)) {
+        metric = &total;
+      } else
+      if(tmp.length() == 13 &&
+         Condition::str_eq(tmp.c_str(), "MemAvailable:", 13)) {
+        metric = &free;
+      }
+      if(metric) {
+        buffer >> sz >> tmp;
+        metric->store(
+          sz * (tmp.front() == 'k'
+                ? 1024
+                : (tmp.front() == 'm' ? 1048576 : 0))
+        );
+        metric = nullptr;
+        --looking;
+      }
+    } while (looking && !buffer.eof());
+    buffer.close();
 
-      size_t sz = 0;
-      std::string tmp;
-      uint8_t looking(2);
-      Core::Atomic<size_t>* metric(nullptr);
-      do {
-        buffer >> tmp;
-        if(tmp.length() == 9 &&
-           Condition::str_eq(tmp.c_str(), "MemTotal:", 9)) {
-          metric = &total;
-        } else
-        if(tmp.length() == 13 &&
-           Condition::str_eq(tmp.c_str(), "MemAvailable:", 13)) {
-          metric = &free;
-        }
-        if(metric) {
-          buffer >> sz >> tmp;
-          metric->store(
-            sz * (tmp.front() == 'k'
-                  ? 1024
-                  : (tmp.front() == 'm' ? 1048576 : 0))
-          );
-          metric = nullptr;
-          --looking;
-        }
-      } while (looking && !buffer.eof());
-      buffer.close();
+    size_t _allowed = (total/100) * cfg_percent_allowed->get();
+    allowed.store(_allowed);
+    reserved.store((total/100) * cfg_percent_reserved->get());
 
-      allowed.store((total/100) * cfg_percent_allowed->get());
-      reserved.store((total/100) * cfg_percent_reserved->get());
+    _allowed /= 3000;
+    mem_buff_ms.store(_allowed > MAX_MS ? MAX_MS : _allowed);
 
-      stat_chk = ts;
-      if(notifier)
-        notifier->rss_free(free.load());
-    }
+    if(notifier)
+      notifier->rss_free(free);
+    return true;
+  }
 
+  bool _check_statm() {
     std::ifstream buffer("/proc/self/statm");
     if(!buffer.is_open())
-      return FAIL_MS;
+      return false;
     size_t sz = 0, rss = 0;
     buffer >> sz >> rss;
     buffer.close();
@@ -212,31 +273,85 @@ class Mem {
     used.store(used > allowed || used > rss ? (used + rss) / 2 : rss);
     if(notifier)
       notifier->rss_used(rss);
-
-    if(is_low_mem_state()) {
-      if(ts_low_state + 10000 < ts) {
-        ts_low_state = ts;
-        SWC_LOG_OUT(LOG_WARN, print(SWC_LOG_OSTREAM << "Low-Memory state "););
-      }
-      return URGENT_MS;
-    }
-    uint64_t ms = allowed / 3000; // ~= mem-bw-buffer
-    return ms > MAX_MS ? MAX_MS : ms;
+    return true;
   }
 
-  void release() {
-    size_t bytes = 0;
-    if(is_low_mem_state() || (bytes = need_ram())) {
-      if(release_call) {
-        size_t released_bytes = release_call(bytes);
-        SWC_LOG_OUT(LOG_DEBUG,
-          print(SWC_LOG_OSTREAM);
-          SWC_LOG_OSTREAM
-            << " mem-released=" << released_bytes << '/' << bytes;
-        );
-      }
+  bool _check_malloc(uint64_t ts) {
+    size_t bytes;
+    #if defined TCMALLOC_MINIMAL || defined TCMALLOC
+      // without metadata_bytes
+      if(!MallocExtension::instance()->GetNumericProperty(
+        "generic.current_allocated_bytes", &bytes))
+          return false;
+      /*
+      MallocExtension::TCMallocStats stats;
+      MallocExtension::instance()->ExtractStats(&stats, nullptr, nullptr, nullptr);
+      bytes = stats.pageheap.system_bytes;
+      bytes += stats.metadata_bytes;
+      // bytes =~ rss
+      bytes -= stats.thread_bytes;
+      bytes -= stats.central_bytes;
+      bytes -= stats.transfer_bytes;
+      bytes -= stats.pageheap.free_bytes;
+      bytes -= stats.pageheap.unmapped_bytes;
+      */
 
-      #if defined TCMALLOC_MINIMAL || defined TCMALLOC
+    /*
+    #elif defined MIMALLOC
+      auto h = mi_heap_get_default();
+      stats = h->tld->stats;
+    */
+
+    #elif defined JEMALLOC
+      if(mallctl("epoch", NULL, NULL, &ts, sizeof(ts)))
+        return false;
+      size_t _bytes;
+      size_t sz = sizeof(size_t);
+      if(mallctl("stats.active", &_bytes, &sz, NULL, 0))
+        return false;
+      bytes = _bytes;
+      /*
+      if(mallctl("stats.metadata", &_bytes, &sz, NULL, 0))
+        return false;
+      bytes += _bytes;
+      */
+
+    #else
+      #if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 33
+        #define SWC_MALLINFO ::mallinfo2();
+        struct mallinfo2 mi;
+      #else
+        #define SWC_MALLINFO ::mallinfo();
+        struct mallinfo mi;
+        static_assert(
+          sizeof(mi.uordblks) == sizeof(size_t),
+          "Unsupported mallinfo size-type"
+        );
+      #endif
+      mi = SWC_MALLINFO;
+      bytes = mi.uordblks;
+      #undef SWC_MALLINFO
+    #endif
+
+    used_reg.store(bytes);
+    (void)ts;
+    return true;
+  }
+
+  void _release() {
+    size_t bytes = release_call ? need_ram() : 0;
+    if(!bytes && !is_low_mem_state())
+      return;
+
+    if(bytes) {
+      size_t released = release_call(bytes);
+      SWC_LOG_OUT(LOG_DEBUG,
+        print(SWC_LOG_OSTREAM);
+        SWC_LOG_OSTREAM << " mem-released=" << released << '/' << bytes;
+      );
+    }
+
+    #if defined TCMALLOC_MINIMAL || defined TCMALLOC
       if(used > allowed || is_low_mem_state()) {
         auto inst = MallocExtension::instance();
         inst->SetMemoryReleaseRate(cfg_release_rate->get());
@@ -244,20 +359,36 @@ class Mem {
         inst->SetMemoryReleaseRate(release_rate_default);
       }
 
-      #elif defined MIMALLOC
+    #elif defined MIMALLOC
       if(used > allowed || is_low_mem_state()) {
         mi_collect(true);
       }
-      #endif
-    }
+
+    #elif defined JEMALLOC
+      // ... 
+
+    #else
+      ssize_t keep = reserved;
+      keep -= free;
+      if(keep > 0) {
+        keep = allowed - keep;
+      } else if(used > allowed) {
+        keep = allowed;
+      }
+      if(used > allowed || is_low_mem_state())
+        ::malloc_trim(keep > 0 ? keep : 0);
+
+    #endif
   }
 
   Notifier*           notifier;
   const ReleaseCall_t release_call;
   uint32_t            page_size;
-  uint64_t            stat_chk;
-  uint64_t            ts_low_state;
-  Core::MutexAtomic   m_mutex;
+
+  uint64_t            chk_stat_ts;
+  uint64_t            chk_statm_ts;
+  uint64_t            chk_low_state_ts;
+  uint64_t            chk_release_ts;
 
   #if defined TCMALLOC_MINIMAL || defined TCMALLOC
   double release_rate_default;

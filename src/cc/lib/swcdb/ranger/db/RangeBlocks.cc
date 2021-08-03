@@ -54,7 +54,7 @@ void Blocks::load(int& err) {
 void Blocks::unload() {
   wait_processing();
   processing_increment();
-  commitlog.commit_new_fragment(true);
+  commitlog.commit_finalize();
   Core::MutexSptd::scope lock(m_mutex);
 
   commitlog.unload();
@@ -294,18 +294,69 @@ size_t Blocks::size_bytes_total(bool only_loaded) {
 }
 
 size_t Blocks::release(size_t bytes) {
-  size_t released = cellstores.release(bytes);
-  if(released < bytes) {
-    released += commitlog.release(bytes - released);
-    bool support;
-    if(released < bytes && m_mutex.try_full_lock(support)) {
-      for(Block::Ptr blk=m_block; blk; blk=blk->next) {
-        released += blk->release();
-        if(released >= bytes)
-          break;
-      }
-      m_mutex.unlock(support);
+  size_t released;
+  if((released = release(bytes, 0)) < bytes &&
+     (released += release(bytes, 1)) < bytes &&
+     DB::Types::SystemColumn::is_data(range->cfg->cid)) {
+      released += release(bytes, 2);
+      /* with new fragments commit
+      if(!DB::Types::SystemColumn::is_data(range->cfg->cid) ||
+         (released += release(bytes, 2)) < bytes)
+        released += release(bytes, 3);
+      */
+  }
+  return released;
+}
+
+size_t Blocks::release(size_t bytes, uint8_t level) {
+  size_t released;
+  switch(level) {
+    case 0: {
+      released = cellstores.release(bytes);
+      break;
     }
+    case 1: {
+      released = commitlog.release(bytes);
+      break;
+    }
+    case 2: {
+      released = 0;
+      bool support;
+      if(m_mutex.try_full_lock(support)) {
+        for(Block::Ptr blk=m_block; blk; blk=blk->next) {
+          released += blk->release();
+          if(released >= bytes)
+            break;
+        }
+        m_mutex.unlock(support);
+      }
+      break;
+    }
+    case 3: {
+      released = commitlog.commit_release();
+      break;
+    }
+    /*
+    case 4: {
+      released = 0;
+      bool support;
+      if(m_mutex.try_full_lock(support)) {
+        if(!_processing()) {
+          processing_increment();
+          if(!range->compacting()) {
+            released += ... ;
+            _clear();
+          }
+          processing_decrement();
+        }
+        m_mutex.unlock(support);
+      }
+      break;
+    }
+    */
+    default:
+      released = 0;
+      break;
   }
   return released;
 }

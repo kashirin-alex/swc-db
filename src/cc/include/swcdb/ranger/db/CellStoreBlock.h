@@ -61,7 +61,7 @@ class Read final {
 
   ~Read();
 
-  size_t size_of() const noexcept;
+  //size_t size_of() const noexcept;
 
   bool load(BlockLoader* loader);
 
@@ -112,15 +112,12 @@ class Write final {
 
   Write(Header&& header) noexcept;
 
-  ~Write();
-
   static void encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
                      Header& header);
 
   void print(std::ostream& out) const;
 
   const Header  header;
-  bool          released;
 
 };
 

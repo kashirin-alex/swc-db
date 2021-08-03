@@ -144,8 +144,8 @@ class RangeSplit final {
       splitter.run();
       range->blocks.commitlog.remove(err, fragments_old);
 
-      range->blocks.commitlog.commit_new_fragment(true);
-      new_range->blocks.commitlog.commit_new_fragment(true);
+      range->blocks.commitlog.commit_finalize();
+      new_range->blocks.commitlog.commit_finalize();
     }
 
     std::promise<void>  r_promise;

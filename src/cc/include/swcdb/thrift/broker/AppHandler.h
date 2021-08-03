@@ -370,10 +370,14 @@ class AppHandler final : virtual public BrokerIf {
         it != m_updaters.cend();
         it = m_updaters.find(++id)
     );
-    m_updaters[id] = client::Query::Update::Handlers::Common::make(
-      Env::Clients::get());
+    auto& hdlr = m_updaters[id] =
+      client::Query::Update::Handlers::Common::make(
+        Env::Clients::get());
     if(buffer_size)
-      m_updaters[id]->buff_sz.store(buffer_size);
+      hdlr->buff_sz.store(buffer_size);
+
+    Env::ThriftBroker::res().more_mem_releasable(
+      sizeof(hdlr) + sizeof(*hdlr.get()));
     return id;
   }
 
@@ -389,6 +393,8 @@ class AppHandler final : virtual public BrokerIf {
       m_updaters.erase(it);
     }
     updater_close(hdlr);
+    Env::ThriftBroker::res().less_mem_releasable(
+      sizeof(hdlr) + sizeof(*hdlr.get()));
   }
 
   /* UPDATE */
@@ -567,6 +573,8 @@ class AppHandler final : virtual public BrokerIf {
         hdlr = it->second;
       }
       try { updater_close(hdlr); } catch(...) {}
+      Env::ThriftBroker::res().less_mem_releasable(
+        sizeof(hdlr) + sizeof(*hdlr.get()));
     }
   }
 

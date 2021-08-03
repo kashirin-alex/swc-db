@@ -14,17 +14,10 @@ SWC_CAN_INLINE
 Column::Column(const cid_t cid, const DB::SchemaPrimitives& schema)
               : cfg(new ColumnCfg(cid, schema)) {
   Env::Rgr::in_process(1);
-  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 Column::~Column() {
-  Env::Rgr::res().less_mem_usage(size_of());
   Env::Rgr::in_process(-1);
-}
-
-SWC_CAN_INLINE
-size_t Column::size_of() const noexcept {
-  return sizeof(*this) + sizeof(ColumnPtr);
 }
 
 size_t Column::ranges_count() noexcept {
@@ -110,7 +103,7 @@ void Column::compact() {
 
 
 SWC_CAN_INLINE
-size_t Column::release(size_t bytes) {
+size_t Column::release(size_t bytes, uint8_t level) {
   if(m_release.running())
     return 0;
 
@@ -134,7 +127,7 @@ size_t Column::release(size_t bytes) {
     }
     if(!range->is_loaded() || range->compacting())
       continue;
-    released += range->blocks.release(bytes - released);
+    released += range->blocks.release(bytes - released, level);
     if(released >= bytes)
       break;
   }

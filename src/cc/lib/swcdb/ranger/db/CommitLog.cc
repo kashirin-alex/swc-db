@@ -16,33 +16,26 @@ static const uint8_t MAX_FRAGMENTS_NARROW = 20;
 
 SWC_CAN_INLINE
 Fragments::Fragments(const DB::Types::KeySeq key_seq)
-                    : stopping(false), m_cells(key_seq), m_roll_chk(0),
+                    : stopping(false), m_cells(key_seq),
                       m_compacting(false), m_deleting(false),
-                      m_sem(5), m_last_id(0) {
+                      m_sem(5), m_last_id(0), m_releasable_bytes(0) {
+}
+
+Fragments::~Fragments() {
+  Env::Rgr::res().less_mem_releasable(m_releasable_bytes);
 }
 
 SWC_CAN_INLINE
 void Fragments::init(const RangePtr& for_range) {
-
   range = for_range;
-
-  m_cells.configure(
-    range->cfg->block_cells()*2,
-    range->cfg->cell_versions(),
-    range->cfg->cell_ttl(),
-    range->cfg->column_type()
-  );
+  schema_update();
 }
 
-Fragments::~Fragments() {
-  if(!m_cells.empty())
-    Env::Rgr::res().less_mem_usage(m_cells.size_of_internal());
-}
-
+SWC_CAN_INLINE
 void Fragments::schema_update() {
   Core::ScopedLock lock(m_mutex_cells);
   m_cells.configure(
-    range->cfg->block_cells()*2,
+    range->cfg->block_cells() * 2,
     range->cfg->cell_versions(),
     range->cfg->cell_ttl(),
     range->cfg->column_type()
@@ -52,45 +45,65 @@ void Fragments::schema_update() {
 
 SWC_CAN_INLINE
 void Fragments::add(const DB::Cells::Cell& cell) {
-  {
-    Core::ScopedLock lock(m_mutex_cells);
-    ssize_t sz = m_cells.size_of_internal();
-    m_cells.add_raw(cell);
-    Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal()) - sz);
-    if(++m_roll_chk ? !Env::Rgr::res().is_low_mem_state() : !_need_roll())
-      return;
-  }
-  if(!m_commit.running()) {
-    struct Task {
-      Fragments* ptr;
-      SWC_CAN_INLINE
-      Task(Fragments* ptr) noexcept : ptr(ptr) { }
-      void operator()() { ptr->commit_new_fragment(); }
-    };
-    Env::Rgr::post(Task(this));
-  }
+  Core::ScopedLock lock(m_mutex_cells);
+  m_cells.add_raw(cell);
 }
 
-void Fragments::commit_new_fragment(bool finalize) {
-  if(finalize) {
+void Fragments::commit() {
+  if(m_commit.running())
+    return;
+  bool run;
+  {
+    Core::SharedLock lock(m_mutex_cells);
+    ssize_t sz = m_cells.size_of_internal();
+    Env::Rgr::res().adj_mem_releasable(sz - m_releasable_bytes.exchange(sz));
+    run = _need_roll();
+  }
+  if(!run)
+    return m_commit.stop();
+
+  struct Task {
+    Fragments* ptr;
+    SWC_CAN_INLINE
+    Task(Fragments* ptr) noexcept : ptr(ptr) { }
+    void operator()() { ptr->_commit(false); }
+  };
+  Env::Rgr::post(Task(this));
+}
+
+size_t Fragments::commit_release() {
+  if(!m_releasable_bytes || !m_mutex.try_lock())
+    return 0;
+  bool ok = !m_compacting && !m_commit.running();
+  m_mutex.unlock();
+  return ok ? _commit(true) : 0;
+}
+
+void Fragments::commit_finalize() {
+  {
     Core::UniqueLock lock_wait(m_mutex);
-    if(m_compacting || m_commit.running())
+    if(m_compacting || m_commit.running()) {
       m_cv.wait(lock_wait, [this] {
         return !m_compacting && !m_commit.running(); });
-  }
-
-  Fragment::Ptr frag;
-  for(int err; ;) {
-    if(finalize) {
-      Core::SharedLock lock2(m_mutex_cells);
-      if(m_cells.empty())
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+  }
+  _commit(true);
+}
+
+size_t Fragments::_commit(bool finalize) {
+  Fragment::Ptr frag;
+  size_t released_bytes = 0;
+  ssize_t releasable;
+  uint32_t block_size;
+  for(int err; ;) {
     {
       Core::SharedLock lock2(m_mutex_cells);
       if(m_cells.empty() || (!finalize && !_need_roll()))
         break;
     }
+
+    block_size = range->cfg->block_size();
+    Env::Rgr::res().more_mem_future(block_size);
 
     StaticBuffer::Ptr buff_write(new StaticBuffer());
     {
@@ -101,33 +114,32 @@ void Fragments::commit_new_fragment(bool finalize) {
       size_t nxt_id = _next_id();
       {
         Core::ScopedLock lock2(m_mutex_cells);
-        ssize_t sz = m_cells.size_of_internal();
         m_cells.write_and_free(
           cells, cells_count, interval,
-          range->cfg->block_size(), range->cfg->block_cells());
-        Env::Rgr::res().adj_mem_usage(ssize_t(m_cells.size_of_internal())-sz);
+          block_size, range->cfg->block_cells());
         if(m_deleting || !cells.fill())
           break;
-
-        frag = Fragment::make_write(
-          err = Error::OK,
-          get_log_fragment(nxt_id),
-          std::move(interval),
-          range->cfg->block_enc(), range->cfg->cell_versions(),
-          cells_count, cells,
-          buff_write
-        );
-        if(!frag) {
-          // if can happen checkup (fallbacks to Plain at Encoder err)
-          // put cells back tp m_cells
-          SWC_LOG_OUT(LOG_WARN,
-            Error::print(SWC_LOG_OSTREAM << "Bad Fragment Write "
-              << range->cfg->cid << '/' << range->rid << ' ', err);
-          );
-          break;
-        }
-        _add(frag);
+        releasable = m_cells.size_of_internal();
       }
+
+      frag = Fragment::make_write(
+        err = Error::OK,
+        get_log_fragment(nxt_id),
+        std::move(interval),
+        range->cfg->block_enc(), range->cfg->cell_versions(),
+        cells_count, cells,
+        buff_write
+      );
+      if(!frag) {
+        // if can happen checkup (fallbacks to Plain at Encoder err)
+        // put cells back tp m_cells
+        SWC_LOG_OUT(LOG_WARN,
+          Error::print(SWC_LOG_OSTREAM << "Bad Fragment Write "
+            << range->cfg->cid << '/' << range->rid << ' ', err);
+        );
+        break;
+      }
+      _add(frag);
     }
 
     buff_write->own = false;
@@ -140,7 +152,13 @@ void Fragments::commit_new_fragment(bool finalize) {
       &m_sem
     );
 
+    ssize_t tmp = m_releasable_bytes.exchange(releasable);
+    Env::Rgr::res().adj_mem_releasable(releasable - tmp);
+    if(tmp > releasable)
+      released_bytes += tmp - releasable;
+
     m_sem.wait_available();
+    Env::Rgr::res().less_mem_future(block_size);
   }
 
   if(finalize)
@@ -154,6 +172,8 @@ void Fragments::commit_new_fragment(bool finalize) {
 
   if(!finalize)
     try_compact();
+
+  return released_bytes;
 }
 
 SWC_CAN_INLINE
@@ -388,6 +408,7 @@ void Fragments::remove() {
       m_cv.wait(lock_wait, [this] {
         return !m_compacting && !m_commit.running(); });
   }
+  m_sem.wait_all();
   Core::ScopedLock lock(m_mutex);
   for(auto& frag : *this)
     frag->mark_removed();
@@ -563,14 +584,21 @@ void Fragments::print(std::ostream& out, bool minimal) {
 
 
 SWC_CAN_INLINE
-bool Fragments::_need_roll() const {
-  auto ratio = range->cfg->log_rollout_ratio();
-  auto bytes = range->cfg->block_size();
-  auto cells = range->cfg->block_cells();
-  return (m_cells.size() >= cells || m_cells.size_bytes() >= bytes) &&
-         (m_cells.size_bytes() >= bytes * ratio ||
-          m_cells.size() >= cells * ratio ||
-          Env::Rgr::res().need_ram(bytes) );
+bool Fragments::_need_roll() const noexcept {
+  if(m_cells.empty())
+    return false;
+  auto cells = m_cells.size();
+  if(!cells)
+    return false;
+  auto bytes = m_cells.size_bytes();
+  auto cfg_cells = range->cfg->block_cells();
+  auto cfg_bytes = range->cfg->block_size();
+  if(cells < cfg_cells && bytes < cfg_bytes)
+    return false;
+  auto cfg_ratio = range->cfg->log_rollout_ratio();
+  return bytes >= cfg_bytes * cfg_ratio ||
+         cells >= cfg_cells * cfg_ratio ||
+         Env::Rgr::res().need_ram(bytes);
 }
 
 size_t Fragments::_need_compact(CompactGroups& groups,

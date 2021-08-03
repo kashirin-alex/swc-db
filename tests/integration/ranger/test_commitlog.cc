@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
 
   sem.wait_all();
 
-  commitlog.commit_new_fragment(true);
+  commitlog.commit_finalize();
 
   commitlog.print(std::cout << " added cell=" << num_cells << ": \n", true);
 

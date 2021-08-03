@@ -47,7 +47,11 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
 
   void add(const DB::Cells::Cell& cell);
 
-  void commit_new_fragment(bool finalize=false);
+  void commit();
+
+  size_t commit_release();
+
+  void commit_finalize();
 
   void add(Fragment::Ptr& frag);
 
@@ -109,13 +113,15 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
 
   private:
 
+  size_t _commit(bool finalize);
+
   void _add(Fragment::Ptr& frag);
 
   uint64_t _next_id();
 
   void _remove(int &err, Vec& fragments_old, Core::Semaphore* semp);
 
-  bool _need_roll() const;
+  bool _need_roll() const noexcept;
 
   size_t _need_compact(CompactGroups& groups,const Vec& without,
                        size_t vol);
@@ -132,7 +138,6 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
 
   std::shared_mutex           m_mutex_cells;
   DB::Cells::MutableVec       m_cells;
-  uint8_t                     m_roll_chk;
 
   Core::StateRunning          m_commit;
   Core::AtomicBool            m_compacting;
@@ -142,6 +147,7 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
   std::condition_variable_any m_cv;
   Core::Semaphore             m_sem;
   uint64_t                    m_last_id;
+  Core::Atomic<size_t>        m_releasable_bytes;
 };
 
 

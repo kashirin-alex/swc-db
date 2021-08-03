@@ -269,7 +269,6 @@ Read::Read(const csid_t csid,
             blocks(std::move(blks)),
             cell_revs(cell_revs),
             smartfd(smartfd) {
-  Env::Rgr::res().more_mem_usage(size_of());
   for(auto blk : blocks)
     blk->init(this);
 }
@@ -277,17 +276,18 @@ Read::Read(const csid_t csid,
 Read::~Read() {
   for(auto blk : blocks)
     delete blk;
-  Env::Rgr::res().less_mem_usage(size_of());
 }
 
-size_t Read::size_of() const {
-  return sizeof(*this)
+/*
+size_t Read::size_of() const noexcept {
+  return sizeof(*this) + sizeof(Ptr)
         + prev_key_end.size
+        + key_end.size
         + interval.size_of_internal()
-        + blocks.size() * sizeof(Block::Read::Ptr)
-        + sizeof(*smartfd.get())
+        + sizeof(*smartfd.get()) + smartfd->filepath().size()
       ;
 }
+*/
 
 SWC_CAN_INLINE
 const std::string& Read::filepath() const {
@@ -452,11 +452,8 @@ void Write::block_encode(int& err, DynamicBuffer& cells_buff,
 void Write::block_write(int& err, DynamicBuffer& blk_buff,
                         Block::Header&& header) {
   header.offset_data = size + Block::Header::SIZE;
-  auto& blk = m_blocks.emplace_back(new Block::Write(std::move(header)));
+  m_blocks.emplace_back(new Block::Write(std::move(header)));
   block(err, blk_buff);
-
-  blk->released = true;
-  Env::Rgr::res().less_mem_usage(blk->header.size_enc);
 }
 
 void Write::block(int& err, DynamicBuffer& blk_buff) {

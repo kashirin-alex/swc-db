@@ -201,7 +201,9 @@ uint8_t Compaction::compact(const RangePtr& range) {
     return 0;
   }
 
+  Env::Rgr::res().more_mem_future(blk_size);
   uint8_t running = m_running.add_rslt(1);
+
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s",
            range->cfg->cid, range->rid, need.c_str());
 
@@ -239,11 +241,13 @@ void Compaction::compacted(const CompactRange::Ptr req,
     if((ok = it != m_compacting.cend()))
       m_compacting.erase(it);
   }
-  if(ok)
+  if(ok) {
+    Env::Rgr::res().less_mem_future(req->blk_size);
     compacted();
-  else
+  } else {
     SWC_LOGF(LOG_WARN, "Ranger compaction track missed(%lu/%lu)",
              range->cfg->cid, range->rid);
+  }
 }
 
 SWC_CAN_INLINE

@@ -172,7 +172,7 @@ void CompactRange::initialize() {
   }
 
   if(range->blocks.commitlog.cells_count(true))
-    range->blocks.commitlog.commit_new_fragment(true);
+    range->blocks.commitlog.commit_finalize();
 
   // ? immediate split
   if(range->blocks.cellstores.size() >= range->cfg->cellstore_max() * 2 &&
@@ -337,7 +337,7 @@ void CompactRange::response(int& err) {
     state_default.store(Range::COMPACT_APPLYING);
     range->compacting(Range::COMPACT_APPLYING);
     range->blocks.wait_processing();
-    range->blocks.commitlog.commit_new_fragment(true);
+    range->blocks.commitlog.commit_finalize();
   }
 
   bool is_last;
@@ -887,7 +887,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     /* split latest fragments to new_range from new interval key_end */
 
     fragments_old.clear();
-    range->blocks.commitlog.commit_new_fragment(true);
+    range->blocks.commitlog.commit_finalize();
     range->blocks.commitlog.get(fragments_old); // fragments for removal
 
     CommitLog::Splitter splitter(
@@ -900,8 +900,8 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     splitter.run();
     range->blocks.commitlog.remove(err, fragments_old);
 
-    range->blocks.commitlog.commit_new_fragment(true);
-    new_range->blocks.commitlog.commit_new_fragment(true);
+    range->blocks.commitlog.commit_finalize();
+    new_range->blocks.commitlog.commit_finalize();
   }
 
   new_range->expand_and_align(false, Query::Update::CommonMeta::make(

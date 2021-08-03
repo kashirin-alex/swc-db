@@ -103,7 +103,6 @@ Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
               m_q_run_add(false), m_q_run_scan(false),
               m_adding(0) { //, m_inbytes(0)
   Env::Rgr::in_process_ranges(1);
-  Env::Rgr::res().more_mem_usage(size_of());
 }
 
 SWC_CAN_INLINE
@@ -112,13 +111,7 @@ void Range::init() {
 }
 
 Range::~Range() {
-  Env::Rgr::res().less_mem_usage(size_of());
   Env::Rgr::in_process_ranges(-1);
-}
-
-SWC_CAN_INLINE
-size_t Range::size_of() const {
-  return sizeof(*this) + sizeof(RangePtr);
 }
 
 std::string Range::get_path(const std::string suff) const {
@@ -950,7 +943,10 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
   }
 
   virtual ~MetaRegOnAddReq() {
+    bool added = req->rsp.cells_added;
     delete req;
+    if(added)
+      range->blocks.commitlog.commit();
   }
 
   virtual void response(int err=Error::OK) override {
@@ -1091,9 +1087,12 @@ void Range::_run_add_queue() {
     }
 
     _response:
-      req->response();
-      delete req;
       blocks.processing_decrement();
+      req->response();
+      bool added = req->rsp.cells_added;
+      delete req;
+      if(added)
+        blocks.commitlog.commit();
   }
 
   if(m_adding.fetch_sub(1) == 1 && !m_q_add.empty())

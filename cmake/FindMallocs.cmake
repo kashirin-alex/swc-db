@@ -17,6 +17,7 @@ elseif (USE_JEMALLOC)
     set(MALLOC_LIBRARIES_SHARED ${JEMALLOC_LIBRARIES_SHARED})
     set(MALLOC_LIBRARIES_STATIC ${JEMALLOC_LIBRARIES_STATIC})
     set(MALLOC_INCLUDE_PATHS    ${JEMALLOC_INCLUDE_PATHS})
+    set(MALLOC_FLAGS -DJEMALLOC)
   else ()
     message(FATAL_ERROR "Unable to use jemalloc: library not found")
   endif ()
@@ -34,9 +35,9 @@ elseif (USE_HOARD)
 
 
 elseif (USE_MIMALLOC)
-  SET_DEPS(NAME "MIMALLOC" REQUIRED FALSE 
-    LIB_PATHS "/usr/local/lib/mimalloc-1.6/" 
-    INC_PATHS "/usr/local/lib/mimalloc-1.6/include" 
+  SET_DEPS(NAME "MIMALLOC" REQUIRED FALSE
+    LIB_PATHS "/usr/local/lib/mimalloc-1.6/"
+    INC_PATHS "/usr/local/lib/mimalloc-1.6/include"
     STATIC libmimalloc.a SHARED mimalloc INCLUDE mimalloc.h INSTALL TRUE)
   if (MIMALLOC_FOUND)
     set(MALLOC_LIBRARIES_SHARED ${MIMALLOC_LIBRARIES_SHARED})
@@ -49,26 +50,26 @@ elseif (USE_MIMALLOC)
 
 
 else()  # TCMALLOC_MINIMAL default if found
-  
+
   set(Tcmalloc_header_NAMES gperftools/tcmalloc.h )
   if (USE_TCMALLOC)
     set(Tcmalloc_NAMES tcmalloc unwind)
     set(Tcmalloc_static_NAMES libtcmalloc.a libunwind.a)
-  else () 
+  else ()
     set(Tcmalloc_NAMES tcmalloc_minimal)
     set(Tcmalloc_static_NAMES libtcmalloc_minimal.a)
   endif ()
 
   SET_DEPS(
-    NAME "TCMALLOC" 
-    REQUIRED FALSE 
-    LIB_PATHS "" 
-    INC_PATHS "" 
-    STATIC ${Tcmalloc_static_NAMES} 
-    SHARED ${Tcmalloc_NAMES} 
+    NAME "TCMALLOC"
+    REQUIRED FALSE
+    LIB_PATHS ""
+    INC_PATHS ""
+    STATIC ${Tcmalloc_static_NAMES}
+    SHARED ${Tcmalloc_NAMES}
     INCLUDE ${Tcmalloc_header_NAMES}
     INSTALL TRUE
-  )  
+  )
   if (TCMALLOC_FOUND)
     if (TCMALLOC_LIBRARIES_SHARED MATCHES "tcmalloc_minimal")
       SET (MALLOC_FLAGS ${MALLOC_FLAGS} -DTCMALLOC_MINIMAL)
@@ -81,7 +82,7 @@ else()  # TCMALLOC_MINIMAL default if found
     set(MALLOC_LIBRARIES_STATIC ${TCMALLOC_LIBRARIES_STATIC})
     set(MALLOC_INCLUDE_PATHS    ${TCMALLOC_INCLUDE_PATHS})
   endif ()
-  
+
 endif ()
 
 

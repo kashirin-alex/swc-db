@@ -141,7 +141,8 @@ Bkr::Bkr()
         SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
           "swc.bkr.ram.release.rate"),
         _reporting ? &_reporting->system : nullptr,
-        [this](size_t bytes) noexcept { (void)this; (void)bytes; return 0; }
+        nullptr
+        //[this](size_t bytes) noexcept { (void)this; (void)bytes; return 0; }
       ),
       m_not_accepting(false), m_in_process(0) {
 }

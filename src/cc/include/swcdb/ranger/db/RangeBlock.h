@@ -141,6 +141,7 @@ class Block final {
 
   std::shared_mutex           m_mutex;
   DB::Cells::Mutable          m_cells;
+  Core::Atomic<size_t>        m_releasable_bytes;
 
   mutable Core::MutexAtomic   m_mutex_intval;
   DB::Cell::Key               m_prev_key_end;

@@ -28,8 +28,6 @@ class Compact final {
 
     Group& operator=(const Group&) = delete;
 
-    ~Group();
-
     void run(bool initial);
 
     void loaded(Fragment::Ptr&& frag) override;
