@@ -33,7 +33,7 @@ namespace SWC { namespace System {
 
 class Mem {
   static const uint32_t FAIL_MS           = 10;
-  static const uint32_t BASE_MS           = 300;
+  static const uint32_t BASE_MS           = 250;
   static const uint32_t URGENT_MS         = 100;
   static const uint32_t MAX_MS            = 5000;
   static const uint32_t RELEASE_NORMAL_MS = 500;
@@ -171,33 +171,39 @@ class Mem {
   }
   SWC_CAN_INLINE
   void less_mem_future(size_t sz) noexcept {
+    used_future.fetch_sub(sz);
+    /*
     size_t was = used_future.fetch_sub(sz);
     if(sz > was)
       SWC_LOGF(LOG_WARN, "less_mem_future OVERFLOW was=%lu less=%lu",
                           was, sz);
+    */
   }
 
 
   SWC_CAN_INLINE
   void more_mem_releasable(size_t sz) noexcept {
     used_releasable.fetch_add(sz);
-    used_reg.fetch_add(sz);
   }
   SWC_CAN_INLINE
   void less_mem_releasable(size_t sz) noexcept {
+    used_releasable.fetch_sub(sz);
+    /*
     size_t was = used_releasable.fetch_sub(sz);
     if(sz > was)
       SWC_LOGF(LOG_WARN, "less_mem_releasable OVERFLOW was=%lu less=%lu",
                           was, sz);
+    */
   }
   SWC_CAN_INLINE
   void adj_mem_releasable(ssize_t sz) noexcept {
+    used_releasable.fetch_add(sz);
+    /*
     size_t was = used_releasable.fetch_add(sz);
-    if(sz > 0)
-      used_reg.fetch_add(sz);
-    else if(sz < 0 && size_t(-sz) > was)
+    if(sz < 0 && size_t(-sz) > was)
       SWC_LOGF(LOG_WARN, "adj_mem_releasable OVERFLOW was=%lu adj=%ld",
                           was, sz);
+    */
   }
 
 
@@ -310,11 +316,9 @@ class Mem {
       if(mallctl("stats.active", &_bytes, &sz, NULL, 0))
         return false;
       bytes = _bytes;
-      /*
       if(mallctl("stats.metadata", &_bytes, &sz, NULL, 0))
         return false;
       bytes += _bytes;
-      */
 
     #else
       #if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 33
@@ -365,7 +369,7 @@ class Mem {
       }
 
     #elif defined JEMALLOC
-      // ... 
+      // ...
 
     #else
       ssize_t keep = reserved;

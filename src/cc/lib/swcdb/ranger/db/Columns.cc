@@ -165,7 +165,7 @@ size_t Columns::release(size_t bytes) {
     1: fragments
     2: blocks (only data-columns)
     3: commit-log
-    ![4: blocks-structure (only data-columns)]
+    4: blocks-structure (only data-columns)
   */
   do {
     SWC_LOGF(LOG_DEBUG, "Columns::release bytes=%lu level=%u released=%lu",
@@ -181,7 +181,7 @@ size_t Columns::release(size_t bytes) {
           it = cbegin();
           for(size_t i=0; i < offset && it != cend(); ++it, ++i);
         }
-        if(level == 2) {
+        if(level == 2 || level == 4) {
           for(; it != cend() &&
                 !DB::Types::SystemColumn::is_data(it->first);
                 ++it);
@@ -194,7 +194,7 @@ size_t Columns::release(size_t bytes) {
       if(released >= bytes)
         break;
     }
-  } while(released < bytes && ++level < 4);
+  } while(released < bytes && ++level < 5);
 
   m_release.stop();
   return released;

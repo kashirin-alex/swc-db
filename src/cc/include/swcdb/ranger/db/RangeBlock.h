@@ -58,7 +58,7 @@ class Block final {
 
   ~Block();
 
-  size_t size_of() const noexcept;
+  size_t _releasing_size() const noexcept;
 
   Ptr ptr();
 

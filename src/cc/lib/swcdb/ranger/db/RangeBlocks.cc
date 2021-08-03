@@ -336,15 +336,16 @@ size_t Blocks::release(size_t bytes, uint8_t level) {
       released = commitlog.commit_release();
       break;
     }
-    /*
     case 4: {
       released = 0;
       bool support;
       if(m_mutex.try_full_lock(support)) {
-        if(!_processing()) {
+        if(m_block && !_processing()) {
           processing_increment();
           if(!range->compacting()) {
-            released += ... ;
+            for(Block::Ptr blk = m_block; blk; blk = blk->next) {
+              released += blk->_releasing_size();
+            }
             _clear();
           }
           processing_decrement();
@@ -353,7 +354,6 @@ size_t Blocks::release(size_t bytes, uint8_t level) {
       }
       break;
     }
-    */
     default:
       released = 0;
       break;

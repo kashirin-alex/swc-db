@@ -347,7 +347,7 @@ void Fragment::load(Fragment::LoadCallback* cb) {
   }
   switch(at) {
     case State::NONE: {
-      //Env::Rgr::res().more_mem_future(size_plain);
+      Env::Rgr::res().more_mem_future(size_plain);
       Env::Rgr::res().more_mem_releasable(size_plain);
       struct Task {
         Ptr frag;
@@ -661,6 +661,7 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
 }
 
 void Fragment::load_finish(int err) {
+  Env::Rgr::res().less_mem_future(size_plain);
   if(err)
     SWC_LOG_OUT(LOG_ERROR,
       Error::print(SWC_LOG_OSTREAM << "CommitLog::Fragment load ", err);
@@ -686,8 +687,6 @@ void Fragment::load_finish(int err) {
   }
 
   run_queued();
-
-  //Env::Rgr::res().less_mem_future(size_plain);
 }
 
 

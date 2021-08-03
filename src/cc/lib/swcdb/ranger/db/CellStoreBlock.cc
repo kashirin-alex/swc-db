@@ -306,6 +306,7 @@ void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
 }
 
 void Read::load_finish(int err) {
+  //Env::Rgr::res().less_mem_future(header.size_plain);
   if(err) {
     SWC_LOG_OUT(LOG_ERROR,
       Error::print(SWC_LOG_OSTREAM << "CellStore::Block load ", err);
@@ -344,8 +345,6 @@ void Read::load_finish(int err) {
     }
     loader->loaded_blk();
   }
-
-  //Env::Rgr::res().less_mem_future(header.size_plain);
 }
 
 

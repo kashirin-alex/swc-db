@@ -31,19 +31,21 @@ Block::Block(const DB::Cells::Interval& interval,
               m_releasable_bytes(0),
               m_key_end(interval.key_end),
               m_processing(0), m_state(state), m_loader(nullptr) {
+  if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
+    Env::Rgr::res().more_mem_releasable(
+      sizeof(*this) + sizeof(Ptr));
 }
 
 SWC_CAN_INLINE
 Block::~Block() {
-  if(m_releasable_bytes &&
-     DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
-    Env::Rgr::res().less_mem_releasable(m_releasable_bytes);
-  }
+  if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
+    Env::Rgr::res().less_mem_releasable(
+      sizeof(*this) + sizeof(Ptr) + m_releasable_bytes);
 }
 
 SWC_CAN_INLINE
-size_t Block::size_of() const noexcept {
-  return sizeof(*this) + sizeof(Ptr);
+size_t Block::_releasing_size() const noexcept {
+  return sizeof(*this) + sizeof(Ptr) + m_key_end.size + m_prev_key_end.size;
 }
 
 SWC_CAN_INLINE
