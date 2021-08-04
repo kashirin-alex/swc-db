@@ -103,12 +103,15 @@ bool Columns::unload(cid_t cid_begin, cid_t cid_end,
                      Callback::ColumnsUnload::Ptr req) {
   {
     uint8_t count = 0;
+    uint32_t max = Env::Rgr::res().concurrency() / 2;
+    if(!max)
+      max = 1;
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = cbegin(); it != cend(); ++it) {
       if((!cid_begin || cid_begin <= it->first) &&
          (!cid_end || cid_end >= it->first)) {
         req->add(it->second);
-        if(++count == 4)
+        if(++count == max)
           return ++it != cend();
       }
     }

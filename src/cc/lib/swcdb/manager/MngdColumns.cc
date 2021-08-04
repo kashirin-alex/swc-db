@@ -444,7 +444,8 @@ bool MngdColumns::initialize() {
     }
   }
 
-  Core::Semaphore pending(Env::Mngr::io()->get_size()/4 + 1, 1);
+  uint32_t sz = Env::Mngr::res().concurrency() / 2;
+  Core::Semaphore pending(sz ? sz : 1, 1);
   int32_t vol = entries.size()/pending.available() + 1;
   auto it = entries.cbegin();
   FS::IdEntries_t::const_iterator it_to;
