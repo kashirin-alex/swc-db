@@ -14,7 +14,7 @@ sort: 1
 
 
 ## Introduction to the SWC-DB
-The SWC-DB _(Super Wide Column Database)_ a Super Fast database management system designed to handle [Yottabytes+](https://en.wikipedia.org/wiki/Yottabyte) on a [quadrillion](https://en.wikipedia.org/wiki/Orders_of_magnitude_(numbers)#1024) base of entries. Latest release of SWC-DB is version 0.5.3 available at [github.com/kashirin-alex/swc-db](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.3) more details at [Getting SWC-DB]({{ site.baseurl }}/install/getting_swcdb/) .
+The SWC-DB _(Super Wide Column Database)_ a Super Fast database management system designed to handle [Yottabytes+](https://en.wikipedia.org/wiki/Yottabyte) on a [quadrillion](https://en.wikipedia.org/wiki/Orders_of_magnitude_(numbers)#1024) base of entries. Latest release of SWC-DB is version 0.5.4 available at [github.com/kashirin-alex/swc-db](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.4) more details at [Getting SWC-DB]({{ site.baseurl }}/install/getting_swcdb/) .
 
 
 _The proven test with SWC-DB v0.4.9, on one machine(CPU Intel E3-1246V3 RAM 32GB SW-RAID 2x 2TB-7200rpm) run the DB and the Client, capabilities standing is a dozen terabytes of raw-data with 100+billion of record entries with performace input of ~250,000+ cells a second and random scan/select of one entry surrounds the microseconds to milliseconds, whereas performance varies on applied configurations and hardware. **Testing facillity is required for in deep and further testing.**_
@@ -58,7 +58,7 @@ _The proven test with SWC-DB v0.4.9, on one machine(CPU Intel E3-1246V3 RAM 32GB
 
 #### The Differences of SWC-DB with Wide Column Databases
 The major differences **“Super Wide Column Database”** has to commonly known Wide Column Databases are SWC-DB does not have Tables nor
-Namespaces and while cell key as known to be in Wide Column Database structured in timestamp, row, column-family and column-family-qualifier in
+Namespaces whereas the number of columns is numerous with a support of a selector over Column-Tags and while cell key as known to be in Wide Column Database structured in timestamp, row, column-family and column-family-qualifier in
 SWC-DB a cell key is a list of Fractions with timestamp. The differences in [SQL]({{ site.baseurl }}/use/sql/) syntax, it is in-place of ```select columns from “table_name”``` with SWC-DB
 It is ```select [ where_clause [Columns-Intervals] ]```.\
 Considering to structure a Wide-Column-DB in SWC-DB it can be in these forms ```key=[F(row),

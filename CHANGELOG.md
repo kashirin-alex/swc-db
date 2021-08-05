@@ -8,6 +8,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.4...master)
+******
+
+
+
+
+### [SWC-DB v0.5.4](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.4) (upcoming-release)
+
     added SWC_FS_* Log & Stats for FileSystem::default_{write,combi_p/read}
     added STL Core::Vector<T, SizeT, GROW_SZ>
     added STL Core::VectorsVector<VectorsT, VectorT, SIZE, GROW, SPLIT>
@@ -86,8 +96,18 @@
     changed lambda accept to Acceptor::{Plain,Mixed} + operator()(ec,sock)
     changed source-wide timer lambda handlers to TimerTask::operator()(...)
     changed source-wide io-post lambda handlers to "Handler"::operator()(...)
+    added System::Mem::_check_malloc(ts) 'used_reg' as by mallinfo2 uordblks
+    added System::Mem::used_releasable & {more,less,adj}_mem_releasable(sz)
+    added System::Mem::used_future & {more,less}_mem_future(sz)
+    changed System::Mem::{avail,need}_ram used_reg with 'used_future'
+    changed System::Mem::need_ram() return at most used_releasable
+    removed System::Mem::{more,less,adj}_mem_usage(sz)
+    fixed System::Mem::_release() 'need_ram' with 0-bytes presion
+    fixed Ranger System memory track & Release procedure (only by releasable)
+    added Ranger mem-release levels 0:cs 1:frags 2:blks 3:commit 4:structure
+    added Python module swcdb.thrift.pool and classes Pool PoolService
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.3...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.3...v0.5.4)
 ******
 
 

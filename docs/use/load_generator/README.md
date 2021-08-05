@@ -29,7 +29,7 @@ cd /opt/swcdb;          # if SWCDB_INSTALL_PATH not on PATH
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.
-# If not, see <https://github.com/kashirin-alex/swc-db/blob/master/LICENSE>.
+# If not, see <https://github.com/kashirin-alex/swc-db/blob/v0.5.4/LICENSE>.
 
 SWC-DB(load_generator) Usage: swcdb_load_generator [options]
 
@@ -59,6 +59,7 @@ Options:
   --gen-distrib-seed                      Use this seed/step for Distribution injection                                1
   --gen-fraction-size                     fraction size in bytes at least                                              10
   --gen-fractions                         Number of Fractions per cell key                                             10
+  --gen-handlers                          Number of client Handlers                                                    8
   --gen-insert                            Generate new data                                                            true
   --gen-log-compact-cointervaling         CommitLog minimal cointervaling Fragments for compaction                     0
   --gen-log-preload                       Number of CommitLog Fragments to preload                                     0
@@ -84,6 +85,7 @@ Options:
   --swc.client.Mngr.connection.keepalive  Manager client connection keepalive for ms since last action                 30000
   --swc.client.Mngr.connection.probes     Manager client connect probes                                                1
   --swc.client.Mngr.connection.timeout    Manager client connect timeout                                               10000
+  --swc.client.Mngr.range.master.expiry   Cached Master Range expiry in ms                                             1800000
   --swc.client.Rgr.comm.encoder           The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB         ZSTD  # (4)
   --swc.client.Rgr.connection.keepalive   Ranger client connection keepalive for ms since last action                  30000
   --swc.client.Rgr.connection.probes      Ranger client connect probes                                                 1

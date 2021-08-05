@@ -32,11 +32,14 @@ Usage Help:  'command' [options];
   add column        add column|schema (schema definitions [name=value ]);
   modify column     modify column|schema (schema definitions [name=value ]);
   delete column     delete column|schema (schema definitions [name=value ]);
-  list columns      list|get column|s [OUTPUT_FLAGS] [(NAME|ID)|Comp'expr'..];
+  list columns      list|get column|s [OUTPUT_FLAGS]
+                         [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];
                     * OUTPUT_FLAGS: OUTPUT_ONLY_CID
-  compact column    compact column|s [(NAME|ID)|Comp'expr',..];
+  compact column    compact column|s
+                         [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];
   select            select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;
-                    -> select where COL(NAME|ID|Comp'expr',)=(cells=(Interval Flags)) AND
+                    -> select where COL(NAME|ID,.,Comp'expr',.,tags Comp[Comp'expr',..])
+                                     = (cells=(Interval Flags)) AND
                          COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(
                            [F-begin] <= range <= [F-end]                   AND
                            [[COMP 'F-start'] <=  key  <= [COMP 'F-finish'] AND]

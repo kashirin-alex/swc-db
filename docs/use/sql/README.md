@@ -59,6 +59,7 @@ The key fields:
 | ---           | ---               | ---                                 | ---                                                               |
 |cid            |```i64```          | NO_CID == 0                         | the Column ID                                                     |
 |name           |```string```       | empty                               | The Column Name                                                   |
+|tags           |```strings```      | empty == []                         | The Column Tags                                                   |
 |seq            |```string```       | VOLUME                              | The Column Key Sequence, options LEXIC / VOLUME / FC_LEXIC / FC_VOLUME  |
 |type           |```string```       | PLAIN                               | The Column Value Type, options PLAIN / COUNTER_I{64,32,16,8} / SERIAL     |
 |cell_versions  |```i32```          | 0 == 1                              | The Cell Versions                                                 |
@@ -103,7 +104,21 @@ The key fields:
 
 
 ### The Column Selector Syntax
-The Column Selector Syntax is comma-separated value (name, cid, and a Comparator-Expresssion) such as ```nameOne, 2,r'test$'``` with or without word-separators or a single column by name or cid.
+The Column Selector Syntax is comma-separated values with available select options:
+  * cid - an exact match of column cid
+  * name - an exact match on column name
+  * comparator with name - a column name pattern selector
+  * tags - a comparator to square-brackets of tags-list and inner pattern comparator for every tag-string
+
+The following Syntax, to the comma-separated values, rules applied:
+  1. space/tab/newline not in-quotes is ignored/skipped.
+  2. a digit-value without quotes is evaluated as `cid`.
+  3. a string-value without quotes is at first evaluated for Comparator and rest is value (eg. `rrest` is RE with value "rest" whereas if the required is -EQ "rrest" the string should be qouted).
+  4. an overall or a reserved, for non-qouted values, token for lookup is the `tags` token and each tag in the tags-list is evaluate by rule-3.
+
+As example, the Selector `nameOne, 2, =^'test', tags%>[2,v>"5",=1]` result will be the columns: a column with column-name "nameOne", a column with cid "2", columns with column-name starts-with(prefix) "test" and columns with tags consist of tags "2","1" and above volumetric "5" and all the tags are being the superset to the subset.
+
+> Only the exact match of cid and name are options to be first probed on the cache of the application's(Clients) Schemas-Cache rest are made with a request to a Schemas Role Manager.
 
 
 

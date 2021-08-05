@@ -64,6 +64,7 @@ Options:
   --swc.client.Mngr.connection.keepalive  Manager client connection keepalive for ms since last action          30000
   --swc.client.Mngr.connection.probes     Manager client connect probes                                         1
   --swc.client.Mngr.connection.timeout    Manager client connect timeout                                        10000
+  --swc.client.Mngr.range.master.expiry   Cached Master Range expiry in ms                                      1800000
   --swc.client.Rgr.comm.encoder           The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB  ZSTD  # (4)
   --swc.client.Rgr.connection.keepalive   Ranger client connection keepalive for ms since last action           30000
   --swc.client.Rgr.connection.probes      Ranger client connect probes                                          1
