@@ -1,2 +1,2 @@
-__all__ = ['service', 'native', 'tornado', 'twisted', 'zopeif']
+__all__ = ['service', 'pool', 'native', 'tornado', 'twisted', 'zopeif']
 

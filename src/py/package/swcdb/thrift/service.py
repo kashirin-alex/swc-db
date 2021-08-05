@@ -11,21 +11,22 @@ from swcdb.thrift.native import Service
 from swcdb.thrift.native.ttypes import *
 
 
-def init_ssl(handler=None, formatter=None):
-    import logging
-    from thrift.transport import TSSLSocket as _ssl_socket
-    if not handler:
-        handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    if not formatter:
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-
-    _ssl_socket.logger.setLevel(logging.DEBUG)
-    _ssl_socket.logger.addHandler(handler)
-    global TSSLSocket
-    TSSLSocket = _ssl_socket
-    #
+# Not Implemented thrift.transport.TSSLSocket
+# def init_ssl(handler=None, formatter=None):
+#    import logging
+#    from thrift.transport import TSSLSocket as _ssl_socket
+#    if not handler:
+#        handler = logging.StreamHandler()
+#    handler.setLevel(logging.DEBUG)
+#    if not formatter:
+#        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#    handler.setFormatter(formatter)
+#
+#    _ssl_socket.logger.setLevel(logging.DEBUG)
+#    _ssl_socket.logger.addHandler(handler)
+#    global TSSLSocket
+#    TSSLSocket = _ssl_socket
+#    #
 
 
 class Client(Service.Client):
@@ -39,7 +40,7 @@ class Client(Service.Client):
 
         s = TSocket.TSocket(host, port)
         if socket:
-            s.setHandle(s)
+            s.setHandle(socket)
         s.setTimeout(timeout_ms)
 
         if framed:

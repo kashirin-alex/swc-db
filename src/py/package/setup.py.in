@@ -84,6 +84,7 @@ setup(
 #    thrift/
 #         __init__.py
 #         service.py
+#         pool.py
 #         native/
 #         tornado/
 #         twisted/
