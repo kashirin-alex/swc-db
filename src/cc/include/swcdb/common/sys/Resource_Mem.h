@@ -320,21 +320,22 @@ class Mem {
         return false;
       bytes += _bytes;
 
-    #else
-      #if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 33
-        #define SWC_MALLINFO ::mallinfo2();
-        struct mallinfo2 mi;
-      #else
-        #define SWC_MALLINFO ::mallinfo();
-        struct mallinfo mi;
-        static_assert(
-          sizeof(mi.uordblks) == sizeof(size_t),
-          "Unsupported mallinfo size-type"
-        );
-      #endif
-      mi = SWC_MALLINFO;
+    #elif defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 33
+      struct mallinfo2 mi;
+      mi = ::mallinfo2();
       bytes = mi.uordblks;
-      #undef SWC_MALLINFO
+      
+    #elif defined(SWC_ENABLE_SANITIZER)
+      bytes = used;
+    
+    #else
+      struct mallinfo mi;
+      static_assert(
+        sizeof(mi.uordblks) == sizeof(size_t),
+        "Unsupported mallinfo size-type"
+      );
+      mi = ::mallinfo();
+      bytes = mi.uordblks;
     #endif
 
     used_reg.store(bytes);

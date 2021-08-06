@@ -31,6 +31,7 @@ ADD_TEST_TARGET(
             "--swc.rgr.ram.allowed.percent=2"
             "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
             "--swc.fs.lib.local=${CMAKE_INSTALL_PREFIX}/lib/libswcdb_fs_local.so"
+            "--swc.rgr.metrics.enabled=false"
 
   SHARED    ${SWC_LIB_CORE_SHARED}
   STATIC    ${SWC_LIB_CORE_STATIC}
@@ -46,6 +47,7 @@ ADD_TEST_TARGET(
             "--swc.rgr.ram.allowed.percent=2"
             "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
             "--swc.fs.lib.local=${CMAKE_INSTALL_PREFIX}/lib/libswcdb_fs_local.so"
+            "--swc.rgr.metrics.enabled=false"
 
   SHARED    ${SWC_LIB_CORE_SHARED}
   STATIC    ${SWC_LIB_CORE_STATIC}

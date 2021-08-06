@@ -211,24 +211,7 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
   blocks.unload();
 }
 
-int main(int argc, char** argv) {
-
-  SWC::Env::Config::init(argc, argv);
-  SWC::Env::FsInterface::init(
-    SWC::Env::Config::settings(),
-    SWC::FS::fs_type(SWC::Env::Config::settings()->get_str("swc.fs"))
-  );
-
-  SWC::Env::Clients::init(
-    SWC::client::Clients::make(
-      *SWC::Env::Config::settings(),
-      SWC::Comm::IoContext::make("Clients", 8),
-      nullptr, // std::make_shared<SWC::client::ManagerContext>()
-      nullptr  // std::make_shared<SWC::client::RangerContext>()
-    )->init()
-  );
-
-  SWC::Env::Rgr::init();
+int run() {
 
   SWC::cid_t cid = 11;
   SWC::DB::Schema schema;
@@ -360,14 +343,43 @@ int main(int argc, char** argv) {
 
   SWC::Env::FsInterface::interface()->rmdir(
     err, SWC::DB::RangeBase::get_column_path(range->cfg->cid));
+  return 0;
+}
 
-  range = nullptr;
+
+
+int main(int argc, char** argv) {
+  SWC::Env::Config::init(argc, argv);
+  SWC::Env::FsInterface::init(
+    SWC::Env::Config::settings(),
+    SWC::FS::fs_type(SWC::Env::Config::settings()->get_str("swc.fs"))
+  );
+
+  SWC::Env::Clients::init(
+    SWC::client::Clients::make(
+      *SWC::Env::Config::settings(),
+      SWC::Comm::IoContext::make("Clients", 8),
+      nullptr, // std::make_shared<SWC::client::ManagerContext>()
+      nullptr  // std::make_shared<SWC::client::RangerContext>()
+    )->init()
+  );
+
+  SWC::Env::Rgr::init();
+
+
+  int s = run();
+  
 
   SWC::Env::Rgr::shuttingdown();
+  SWC::Env::Rgr::wait_if_in_process();
+
   SWC::Env::Clients::get()->stop();
+  SWC::Env::FsInterface::interface()->stop();
+  SWC::Env::Rgr::io()->stop();
 
   if(SWC::Env::Rgr::metrics_track())
     SWC::Env::Rgr::metrics_track()->wait();
+
   SWC::Env::Rgr::reset();
   SWC::Env::Clients::reset();
   SWC::Env::FsInterface::reset();
@@ -375,5 +387,5 @@ int main(int argc, char** argv) {
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   std::cout << "\n-   OK   -\n\n";
-  return 0;
+  return s;
 }

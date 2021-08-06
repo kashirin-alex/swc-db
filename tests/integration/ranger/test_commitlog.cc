@@ -42,25 +42,8 @@ void count_all_cells(size_t num_cells, Ranger::Blocks& blocks) {
   std::cout << " count_all_cells, OK\n";
 }
 
-int main(int argc, char** argv) {
-  Env::Config::init(argc, argv);
 
-  Env::FsInterface::init(
-    Env::Config::settings(),
-    FS::fs_type(Env::Config::settings()->get_str("swc.fs"))
-  );
-
-  Env::Clients::init(
-    client::Clients::make(
-      *Env::Config::settings(),
-      Comm::IoContext::make("Clients", 8),
-      nullptr, // std::make_shared<client::ManagerContext>()
-      nullptr  // std::make_shared<client::RangerContext>()
-    )->init()
-  );
-
-  Env::Rgr::init();
-  Env::Rgr::start();
+int run() {
 
   cid_t cid = 11;
   DB::Schema schema;
@@ -256,13 +239,44 @@ int main(int argc, char** argv) {
     err, DB::RangeBase::get_column_path(range->cfg->cid));
 
   std::cerr << " range use-count=" << range.use_count() << '\n';
-  range = nullptr;
+  return 0;
+}
+
+
+int main(int argc, char** argv) {
+  Env::Config::init(argc, argv);
+
+  Env::FsInterface::init(
+    Env::Config::settings(),
+    FS::fs_type(Env::Config::settings()->get_str("swc.fs"))
+  );
+
+  Env::Clients::init(
+    client::Clients::make(
+      *Env::Config::settings(),
+      Comm::IoContext::make("Clients", 8),
+      nullptr, // std::make_shared<client::ManagerContext>()
+      nullptr  // std::make_shared<client::RangerContext>()
+    )->init()
+  );
+
+  Env::Rgr::init();
+  Env::Rgr::start();
+
+
+  int s = run();
+
 
   Env::Rgr::shuttingdown();
-  Env::Clients::get()->stop();
+  Env::Rgr::wait_if_in_process();
 
-  if(SWC::Env::Rgr::metrics_track())
-    SWC::Env::Rgr::metrics_track()->wait();
+  Env::Clients::get()->stop();
+  Env::FsInterface::interface()->stop();
+  Env::Rgr::io()->stop();
+
+  if(Env::Rgr::metrics_track())
+    Env::Rgr::metrics_track()->wait();
+
   Env::Rgr::reset();
   Env::Clients::reset();
   Env::FsInterface::reset();
@@ -270,5 +284,5 @@ int main(int argc, char** argv) {
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   std::cout << "\n-   OK   -\n\n";
-  return 0;
+  return s;
 }
