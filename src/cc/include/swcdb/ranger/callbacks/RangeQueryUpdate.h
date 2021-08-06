@@ -24,10 +24,13 @@ struct RangeQueryUpdate : Core::QueuePointer<RangeQueryUpdate*>::Pointer {
   RangeQueryUpdate(const Comm::ConnHandlerPtr& conn,
                    const Comm::Event::Ptr& ev)
                   : conn(conn), ev(ev), rsp(Error::OK) {
+    Env::Rgr::res().more_mem_future(ev->data_ext.size);
   }
 
   SWC_CAN_INLINE
-  ~RangeQueryUpdate() { }
+  ~RangeQueryUpdate() {
+    Env::Rgr::res().less_mem_future(ev->data_ext.size);
+  }
 
   SWC_CAN_INLINE
   bool expired() const {
