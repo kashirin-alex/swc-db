@@ -78,12 +78,9 @@ void Common::response_partials() {
     Core::UniqueLock lock_wait(m_mutex);
     if(m_sending_result.running()) {
       if(wait_on_partials()) {
-        m_cv.wait(
-          lock_wait,
-          [hdlr = std::dynamic_pointer_cast<Common>(shared_from_this())] () {
-            return !hdlr->m_sending_result || !hdlr->wait_on_partials();
-          }
-        );
+        m_cv.wait(lock_wait, [this] () {
+          return !m_sending_result || !wait_on_partials();
+        });
       }
       return;
     }
@@ -100,12 +97,9 @@ void Common::wait() {
     {
       Core::UniqueLock lock_wait(m_mutex);
       if(m_sending_result || completion.count()) {
-        m_cv.wait(
-          lock_wait,
-          [hdlr = std::dynamic_pointer_cast<Common>(shared_from_this())] () {
-            return !hdlr->m_sending_result && !hdlr->completion.count();
-          }
-        );
+        m_cv.wait(lock_wait, [this] () {
+          return !m_sending_result && !completion.count();
+        });
       }
     }
     if(m_notify && valid() && !empty()) {

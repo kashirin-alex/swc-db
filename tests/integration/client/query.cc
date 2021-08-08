@@ -115,7 +115,7 @@ class Test {
   }
 
   void create_column() {
-    SWC_LOG(LOG_DEBUG, "create_column");
+    SWC_LOG(LOG_INFO, "create_column");
 
     int err = Error::OK;
     if((schema = Env::Clients::get()->get_schema(err, col_name)))
@@ -155,7 +155,7 @@ class Test {
   }
 
   void delete_column(const std::function<void()>& cb) {
-    SWC_LOG(LOG_DEBUG, "delete_column");
+    SWC_LOG(LOG_INFO, "delete_column");
 
     auto _cb = [this, cb]
       (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
@@ -185,7 +185,7 @@ class Test {
 
 
   void expect_empty_column() {
-    SWC_LOG(LOG_DEBUG, "expect_empty_column");
+    SWC_LOG(LOG_INFO, "expect_empty_column");
 
     auto hdlr = client::Query::Select::Handlers::Common::make(
       Env::Clients::get(),
@@ -222,7 +222,7 @@ class Test {
   }
 
   void expect_one_at_offset() {
-    SWC_LOG(LOG_DEBUG, "expect_one_at_offset");
+    SWC_LOG(LOG_INFO, "expect_one_at_offset");
 
     auto hdlr = client::Query::Select::Handlers::Common::make(
       Env::Clients::get(),
@@ -320,7 +320,7 @@ class Test {
 
 
   void query_insert() {
-    SWC_LOG(LOG_DEBUG, "query_insert");
+    SWC_LOG(LOG_INFO, "query_insert");
 
     expect_empty_column();
 
@@ -370,7 +370,7 @@ class Test {
 
 
   void query_select(uint32_t i, uint32_t f) {
-    SWC_LOG(LOG_DEBUG, "query_select");
+    SWC_LOG(LOG_INFO, "query_select");
 
     if(f == nfractions) {
       f = 0;
@@ -394,7 +394,7 @@ class Test {
       (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
         time_select += Time::now_ns() - ts;
 
-        SWC_LOG_OUT(LOG_DEBUG,
+        SWC_LOG_OUT(LOG_INFO,
           SWC_LOG_OSTREAM << "query_select:  \n";
           hdlr->profile.print(SWC_LOG_OSTREAM);
         );
@@ -425,14 +425,14 @@ class Test {
     key_intval.start.set(key, Condition::EQ);
     intval.flags.offset = 0;
     intval.flags.limit = counter ? 1 : cell_versions;
-    SWC_LOG(LOG_DEBUG, intval.to_string());
+    SWC_LOG(LOG_INFO, intval.to_string());
 
     hdlr->scan(schema, std::move(intval));
   }
 
 
   void query_delete() {
-    SWC_LOG(LOG_DEBUG, "query_delete");
+    SWC_LOG(LOG_INFO, "query_delete");
 
     auto hdlr = client::Query::Update::Handlers::Common::make(
       Env::Clients::get(),

@@ -74,10 +74,7 @@ void Common::response(int err) {
 void Common::wait() {
   Core::UniqueLock lock_wait(m_mutex);
   if(completion.count()) {
-    m_cv.wait(
-      lock_wait,
-      [hdlr=shared_from_this()]() { return !hdlr->completion.count(); }
-    );
+    m_cv.wait(lock_wait, [this]() { return !completion.count(); });
   }
 }
 
@@ -91,12 +88,12 @@ bool Common::wait_ahead_buffers(uint64_t from) {
   if(bytes < buff_sz * buff_ahead)
     return false;
 
-  m_cv.wait(
-    lock_wait,
-    [hdlr=shared_from_this()]() {
-      return hdlr->size_bytes() < hdlr->buff_sz * hdlr->buff_ahead;
-    }
-  );
+  if(from < completion.count()) {
+    m_cv.wait(lock_wait, [this, from]() {
+      return from == completion.count() ||
+             size_bytes() < buff_sz * buff_ahead;
+    });
+  }
   return from == completion.count() && size_bytes() >= buff_sz;
 }
 
