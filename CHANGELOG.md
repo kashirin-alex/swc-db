@@ -16,7 +16,7 @@
 
 
 
-### [SWC-DB v0.5.4](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.4) (upcoming-release)
+### [SWC-DB v0.5.4](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.4) (2021-08-09)
 
     added SWC_FS_* Log & Stats for FileSystem::default_{write,combi_p/read}
     added STL Core::Vector<T, SizeT, GROW_SZ>
