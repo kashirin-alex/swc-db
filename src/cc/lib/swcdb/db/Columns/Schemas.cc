@@ -10,6 +10,12 @@
 
 namespace SWC { namespace DB {
 
+
+uint64_t Schemas::size()  {
+  Core::MutexSptd::scope lock(m_mutex);
+  return Map::size();
+}
+
 void Schemas::add(int& err, const Schema::Ptr& schema) {
   Core::MutexSptd::scope lock(m_mutex);
   _add(err, schema);
@@ -71,8 +77,8 @@ Schema::Ptr Schemas::_get(const std::string& name) const noexcept {
 }
 
 void Schemas::all(std::vector<Schema::Ptr>& entries) {
-  Core::MutexSptd::scope lock(m_mutex);
   entries.reserve(entries.size() + size());
+  Core::MutexSptd::scope lock(m_mutex);
   for(const auto& it : *this)
     entries.push_back(it.second);
 }

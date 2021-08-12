@@ -18,6 +18,8 @@
 namespace SWC { namespace DB {
 
 class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
+  using Map = std::unordered_map<cid_t, Schema::Ptr>;
+
   public:
 
 
@@ -71,6 +73,8 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   Schemas() noexcept { }
 
   //~Schemas() { }
+
+  uint64_t size();
 
   void add(int& err, const Schema::Ptr& schema);
 
