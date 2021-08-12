@@ -18,6 +18,13 @@ __all__ = ['Pool', 'PoolService']
 #
 
 
+class PoolStopping(EnvironmentError):
+    def __init__(self, *args, **kwargs):
+        EnvironmentError.__init__(self, *args, **kwargs)
+        #
+    #
+
+
 class PoolClient(service.Client):
     __slots__ = ['expiry']
 
@@ -149,6 +156,7 @@ class Pool(object):
                 self.logger.exception('Socket connect problem %s' % self.__repr__())
             self.__open -= 1
             self.sleep(3)
+        raise PoolStopping("get cancelled, swcdb.thrift.pool.Pool has stopped")
         #
 
     def put(self, client):
@@ -223,6 +231,7 @@ class InsistentClient(object):
                     self.__pool.put(client)
                 else:
                     self.__pool.discard(client)
+        raise PoolStopping(self.__method.__name__  + " cancelled, swcdb.thrift.pool.Pool has stopped")
         #
     #
 

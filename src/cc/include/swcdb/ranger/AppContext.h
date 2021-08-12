@@ -209,7 +209,19 @@ class AppContext final : public Comm::AppContext {
 
       //&Comm::Protocol::Rgr::Handler::debug,
       //&Comm::Protocol::Rgr::Handler::status,
-      //&Comm::Protocol::Rgr::Handler::shutdown
+      /*
+      case Comm::Protocol::Rgr::Handler::shutdown: {
+        struct Handler {
+          AppContext* ptr;
+          SWC_CAN_INLINE
+          Handler(AppContext* ptr) noexcept : ptr(ptr) { }
+          void operator()() { ptr->shutting_down(std::error_code(), SIGINT); }
+        };
+        Env::Rgr::post(Handler(this));
+        conn->response_ok(ev);
+        break;
+      }
+      */
 
       default: {
         Comm::Protocol::Common::Handler::not_implemented(conn, ev);
@@ -261,6 +273,7 @@ class AppContext final : public Comm::AppContext {
               sig, ec.message().c_str());
       return;
     }
+    Env::Rgr::io()->signals->cancel();
     SWC_LOGF(LOG_INFO, "Shutdown signal, sig=%d ec=%s",
              sig, ec.message().c_str());
 

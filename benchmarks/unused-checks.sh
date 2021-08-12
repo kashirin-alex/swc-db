@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 
-# the script creates a benchmarks.csv 
+# the script creates a benchmarks.csv
 
 
-if [ -z $SWCDB_INSTALL_PATH ];then 
+if [ -z $SWCDB_INSTALL_PATH ];then
   SWCDB_INSTALL_PATH="/opt/swcdb";
 fi
 
-if [ -z $NUM_CELLS ];then 
+if [ -z $NUM_CELLS ];then
   NUM_CELLS=100000;
 fi
 
@@ -20,7 +20,7 @@ blk_encodings=('ZSTD'); #  PLAIN SNAPPY ZLIB
 
 num_fractions=('1 5 10 100 1000 10000 100000');
 
-if [ -z $VALUE_SIZE ];then 
+if [ -z $VALUE_SIZE ];then
   cell_value=('0');
 else
   cell_value=('0 ${VALUE_SIZE}');
@@ -61,7 +61,7 @@ compact_columns() {
 
   echo "compact column ${column_name};quit;" |\
    ${SWCDB_INSTALL_PATH}/bin/swcdb| \
-   grep "Compactig Column";
+   grep "Compacting Column";
 
   c=$(($ncells / 7200));
   echo "sleeping for ${c}sec";
@@ -70,7 +70,7 @@ compact_columns() {
 
 
 execute_load() {
-  
+
   case $load_type in
     generate_data)
       generate_data;;
@@ -85,8 +85,8 @@ execute_load() {
 
 
 load_types=('
-  generate_data 
-  select_data_before_compaction 
+  generate_data
+  select_data_before_compaction
   compact_columns
   select_data_after_compaction
   select_data_with_some_in_rss
@@ -95,7 +95,7 @@ load_types=('
 nc=$(($NUM_CELLS / 1000));
 
 do_checks() {
-  for nfractions in $num_fractions; do 
+  for nfractions in $num_fractions; do
 
     nf=$(($nfractions / 1000));
     if [[ $nf != 0 && $nc != 0 ]]; then
@@ -104,15 +104,15 @@ do_checks() {
       ncells=$NUM_CELLS;
     fi;
 
-    for cellatime in $check_cellatime; do 
-      for col_seq in $col_seqs; do 
-        for col_type in $col_types; do 
-          for blk_encoding in $blk_encodings; do 
-          
+    for cellatime in $check_cellatime; do
+      for col_seq in $col_seqs; do
+        for col_type in $col_types; do
+          for blk_encoding in $blk_encodings; do
+
             column_name="benchmark_${col_seq}-${col_type}-${blk_encoding}-${nfractions}-${cellatime}";
-            echo "--- Benchmarking column=${column_name} cells=${ncells}"; 
-          
-            for load_type in $load_types; do 
+            echo "--- Benchmarking column=${column_name} cells=${ncells}";
+
+            for load_type in $load_types; do
               echo "-- EXECUTING-LOAD: ${load_type}";
               execute_load;
             done;

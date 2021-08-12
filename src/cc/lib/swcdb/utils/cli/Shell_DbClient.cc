@@ -246,7 +246,7 @@ bool DbClient::compact_column(std::string& cmd) {
           schema->cid, 300000, clients, err)
       : Comm::Protocol::Mngr::Req::ColumnCompact_Sync::request(
           schema->cid, 300000, clients, err);
-    SWC_PRINT << "Compactig Column cid=" << schema->cid
+    SWC_PRINT << "Compacting Column cid=" << schema->cid
               << " '" << schema->col_name << "' ";
     Error::print(SWC_LOG_OSTREAM, err);
     SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;

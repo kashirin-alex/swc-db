@@ -100,7 +100,11 @@ def swcdb_read_config():
             continue
         swcdb_set_hosts(role)
 
-    for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]: # thriftbroker defaults on localhost
+    # thriftbroker,broker defaults on localhost
+    for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]:
+        if not cfg[1] and not cfg[2]:
+            cfg[2] = "localhost"
+    for cfg in swcdb_cfg["swc.cluster.bkr.host"]:
         if not cfg[1] and not cfg[2]:
             cfg[2] = "localhost"
 
@@ -111,7 +115,9 @@ def swcdb_read_config():
         [cfg[0] for cfg in swcdb_cfg["swc.cluster.fsbroker.host"]]
     ))
     swcdb_remote_hosts += list(set(
-        host for host in [cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]] + [cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]] + swcdb_fsbrokers
+        host for host in [cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]]
+        + [cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]]
+        + swcdb_fsbrokers
         if host not in [swcdb_source_host, "localhost"]
     ))
 
@@ -148,22 +154,29 @@ def swcdb_set_exec_args(port_arg, addrs, host, port):
     #
 
 
+def swcdb_print(s):
+    print(s)
+    sys.stdout.flush()
+    sys.stderr.flush()
+    #
+
+
 def swcdb_print_start(task, c):
-    print(task + " S(" + c.host + ":" + str(c.port) + ")")
+    swcdb_print(task + " S(" + c.host + ":" + str(c.port) + ")")
     #
 
 
 def swcdb_print_result(task, c, r):
-    print(task + " R(" + c.host + ":" + str(c.port) + "): " + r)
+    swcdb_print(task + " R(" + c.host + ":" + str(c.port) + "): " + r)
     #
 
 
 def swcdb_print_finish(task, c):
-    print(task + " F(" + c.host + ":" + str(c.port) + ")")
+    swcdb_print(task + " F(" + c.host + ":" + str(c.port) + ")")
     #
 
 
-def swcdb_print(task, c, res=None):
+def swcdb_print_exec(task, c, res=None):
     swcdb_print_start(task, c)
     if res:
         for o in res.stdout.strip().split("\n") + res.stderr.strip().split("\n"):
@@ -183,33 +196,41 @@ def swcdb_proc_pids(name, c):
     #
 
 
-def swcdb_stop_proc(task, name, c, gracefull):
-    swcdb_print_start(task, c)
-    pids = swcdb_proc_pids(name, c)
-    for pid in pids:
-        kres = c.run("kill " + ("" if gracefull else "-9 ") + pid, hide=True)
-        swcdb_print_result(
-            task, c,
-            ("SIGINT" if gracefull else "SIGTERM") + " pid(" + pid + ") " +
-            kres.stdout.strip() + " " +
-            kres.stderr.strip()
-        )
+def swcdb_stop_proc(task, name, hosts, gracefull):
+    for host in hosts:
+        with fabric.Connection(host) as c:
+            swcdb_print_start(task, c)
+            pids = swcdb_proc_pids(name, c)
+            if pids:
+                for pid in pids:
+                    kres = c.run("kill " + ("" if gracefull else "-9 ") + pid, hide=True)
+                    swcdb_print_result(
+                        task, c,
+                        ("SIGINT" if gracefull else "SIGTERM") + " pid(" + pid + ") " +
+                        kres.stdout.strip() + " " +
+                        kres.stderr.strip()
+                    )
+            else:
+                swcdb_print_result(task, c, "not-running")
 
-    if pids:
-        check = 0
-        time.sleep(1)
-        while swcdb_proc_pids(name, c):
-            check += 1
-            swcdb_print_result(task, c, "wait check=" + str(check))
-            time.sleep(2)
-    else:
-        swcdb_print_result(task, c, "not-running")
-    swcdb_print_finish(task, c)
+    for host in hosts:
+        with fabric.Connection(host) as c:
+            check = 0
+            while True:
+                pids = swcdb_proc_pids(name, c)
+                if not pids:
+                    break
+                check += 1
+                swcdb_print_result(task, c, "wait check=" + str(check))
+                time.sleep(2)
+            swcdb_print_finish(task, c)
     #
 
 
 @fabric.task(hosts=[swcdb_source_host])
-def wait_ready(c, on_start=False):
+def wait_ready(c, on_start=False, codes=None):
+    if codes is None:
+        codes = [0]
     swcdb_print_start("wait-ready", c)
     if on_start:
         time.sleep(5)
@@ -227,14 +248,16 @@ def wait_ready(c, on_start=False):
                 code = s
                 break;
         if not confirm:
-            print("cluster-status check=" + str(check) + ":" +
-                  " rslt=(" + (code if code else ("NO-CODE - " + res.stdout)) + ")")
-        if code.startswith("code=0 "):
-            if confirm:
-                break
-            confirm = True
-            time.sleep(1)
-            continue
+            swcdb_print("cluster-status check=" + str(check) + ":" +
+                        " rslt=(" + (code if code else ("NO-CODE - " + res.stdout)) + ")")
+        if code.startswith("code="):
+            ncode = int(code.split("=")[1].split(" ")[0])
+            if ncode in codes:
+                if confirm:
+                    break
+                confirm = True
+                time.sleep(1)
+                continue
         elif confirm:
             confirm = False
         time.sleep(3)
@@ -329,7 +352,7 @@ def start_fsbrokers(c):
     opts = swcdb_common_options()
     for saddr, addrs, host, port in swcdb_cfg["swc.cluster.fsbroker.host"]:
         with fabric.Connection(saddr) as c:
-            swcdb_print("start-fsbrokers", c, c.run(
+            swcdb_print_exec("start-fsbrokers", c, c.run(
                 " ".join([
                     'source /etc/profile;',
                     swcdb_install_path+"/bin/swcdbFsBroker",
@@ -346,21 +369,27 @@ def start_fsbrokers(c):
 #        hide=True
 #    )
 #    for c in results:
-#        swcdb_print("start-fsbrokers", c, results[c]
+#        swcdb_print_exec("start-fsbrokers", c, results[c]
 
 
 @fabric.task
 def stop_fsbrokers(c):
-    for host in swcdb_fsbrokers:
-        with fabric.Connection(host) as c:
-            swcdb_stop_proc("stop-fsbrokers", "swcdbFsBroker", c, True)
+    swcdb_stop_proc(
+        "stop-fsbrokers",
+        "swcdbFsBroker",
+        swcdb_fsbrokers,
+        True
+    )
     #
 
 @fabric.task
 def kill_fsbrokers(c):
-    for host in swcdb_fsbrokers:
-        with fabric.Connection(host) as c:
-            swcdb_stop_proc("kill-fsbrokers", "swcdbFsBroker", c, False)
+    swcdb_stop_proc(
+        "kill-fsbrokers",
+        "swcdbFsBroker",
+        swcdb_fsbrokers,
+        False
+    )
     #
 
 
@@ -371,7 +400,7 @@ def start_managers(c):
     opts = swcdb_common_options()
     for saddr, addrs, host, port in swcdb_cfg["swc.mngr.host"]:
         with fabric.Connection(saddr) as c:
-            swcdb_print("start-managers", c, c.run(
+            swcdb_print_exec("start-managers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbManager",
                     swcdb_set_exec_args("swc.mngr.port", addrs, host, port)
@@ -383,16 +412,22 @@ def start_managers(c):
 
 @fabric.task
 def stop_managers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("stop-managers", "swcdbManager", c, True)
+    swcdb_stop_proc(
+        "stop-managers",
+        "swcdbManager",
+        set(cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]),
+        True
+    )
     #
 
 @fabric.task
 def kill_managers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("kill-managers", "swcdbManager", c, False)
+    swcdb_stop_proc(
+        "kill-managers",
+        "swcdbManager",
+        set(cfg[0] for cfg in swcdb_cfg["swc.mngr.host"]),
+        False
+    )
     #
 
 
@@ -403,7 +438,7 @@ def start_rangers(c):
     opts = swcdb_common_options()
     for saddr, addrs, host, port in swcdb_cfg["swc.cluster.rgr.host"]:
         with fabric.Connection(saddr) as c:
-            swcdb_print("start-rangers", c, c.run(
+            swcdb_print_exec("start-rangers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbRanger",
                     swcdb_set_exec_args("swc.rgr.port", addrs, host, port)
@@ -415,16 +450,22 @@ def start_rangers(c):
 
 @fabric.task
 def stop_rangers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("stop-rangers", "swcdbRanger", c, True)
+    swcdb_stop_proc(
+        "stop-rangers",
+        "swcdbRanger",
+        set(cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]),
+        True
+    )
     #
 
 @fabric.task
 def kill_rangers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("kill-rangers", "swcdbRanger", c, False)
+    swcdb_stop_proc(
+        "kill-rangers",
+        "swcdbRanger",
+        set(cfg[0] for cfg in swcdb_cfg["swc.cluster.rgr.host"]),
+        False
+    )
     #
 
 
@@ -435,7 +476,7 @@ def start_brokers(c):
     opts = swcdb_common_options()
     for saddr, addrs, host, port in swcdb_cfg["swc.cluster.bkr.host"]:
         with fabric.Connection(saddr) as c:
-            swcdb_print("start-brokers", c, c.run(
+            swcdb_print_exec("start-brokers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbBroker",
                     swcdb_set_exec_args("swc.bkr.port", addrs, host, port)
@@ -447,16 +488,22 @@ def start_brokers(c):
 
 @fabric.task
 def stop_brokers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("stop-brokers", "swcdbBroker", c, True)
+    swcdb_stop_proc(
+        "stop-brokers",
+        "swcdbBroker",
+        set(cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]),
+        True
+    )
     #
 
 @fabric.task
 def kill_brokers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("kill-brokers", "swcdbBroker", c, False)
+    swcdb_stop_proc(
+        "kill-brokers",
+        "swcdbBroker",
+        set(cfg[0] for cfg in swcdb_cfg["swc.cluster.bkr.host"]),
+        False
+    )
     #
 
 
@@ -467,7 +514,7 @@ def start_thriftbrokers(c):
     opts = swcdb_common_options()
     for saddr, addrs, host, port in swcdb_cfg["swc.cluster.thriftbroker.host"]:
         with fabric.Connection(saddr) as c:
-            swcdb_print("start-thriftbrokers", c, c.run(
+            swcdb_print_exec("start-thriftbrokers", c, c.run(
                 " ".join([
                     swcdb_install_path+"/bin/swcdbThriftBroker",
                     swcdb_set_exec_args("swc.ThriftBroker.port", addrs, host, port)
@@ -479,16 +526,22 @@ def start_thriftbrokers(c):
 
 @fabric.task
 def stop_thriftbrokers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("stop-thriftbrokers", "swcdbThriftBroker", c, True)
+    swcdb_stop_proc(
+        "stop-thriftbrokers",
+        "swcdbThriftBroker",
+        set(cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]),
+        True
+    )
     #
 
 @fabric.task
 def kill_thriftbrokers(c):
-    for saddr in set(cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]):
-        with fabric.Connection(saddr) as c:
-            swcdb_stop_proc("kill-thriftbrokers", "swcdbThriftBroker", c, False)
+    swcdb_stop_proc(
+        "kill-thriftbrokers",
+        "swcdbThriftBroker",
+        set(cfg[0] for cfg in swcdb_cfg["swc.cluster.thriftbroker.host"]),
+        False
+    )
     #
 
 
@@ -499,15 +552,22 @@ def start(c):
     for name, run in [
             ("fsbrokers",       start_fsbrokers),
             ("managers",        start_managers),
-            ("rangers",         start_rangers),
+            ("rangers",         start_rangers)]:
+        swcdb_print("-- starting " + name + " --")
+        run(c)
+        time.sleep(swcdb_cfg["swc.cluster.role.delay.start"])
+    swcdb_print("-- wait for ready --")
+    wait_ready(c, True, [0, 3041])
+
+    for name, run in [
             ("brokers",         start_brokers),
             ("thriftbrokers",   start_thriftbrokers)]:
-        print("-- starting " + name + " --")
+        swcdb_print("-- starting " + name + " --")
         run(c)
         time.sleep(swcdb_cfg["swc.cluster.role.delay.start"])
 
-    print("-- wait for ready --")
-    wait_ready(c, True)
+    swcdb_print("-- wait for ready --")
+    wait_ready(c, True, [0])
     #
 
 
@@ -521,7 +581,7 @@ def stop(c):
             ("rangers",         stop_rangers),
             ("managers",        stop_managers),
             ("fsbrokers",       stop_fsbrokers)]:
-        print("-- stopping " + name + " --")
+        swcdb_print("-- stopping " + name + " --")
         run(c)
     #
 
@@ -536,7 +596,7 @@ def kill(c):
             ("rangers",         kill_rangers),
             ("managers",        kill_managers),
             ("fsbrokers",       kill_fsbrokers)]:
-        print("-- killing " + name + " --")
+        swcdb_print("-- killing " + name + " --")
         run(c)
     #
 
@@ -561,10 +621,10 @@ def shell(c):
         ).run(cmd, hide=True)
 
         for c in results:
-            print("on (" + c.host + ":" + str(c.port) + "): ")
+            swcdb_print("on (" + c.host + ":" + str(c.port) + "): ")
             for o in results[c].stdout.strip().split("\n") + results[c].stderr.strip().split("\n"):
                 if o:
-                    print("  ", o)
+                    swcdb_print("  " + o)
     #
 
 
