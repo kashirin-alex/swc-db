@@ -142,8 +142,24 @@ _default_ **```swc.mngr.column.health.checks.delay=3000```**
 
 * ### swc.mngr.schema.replication
 ```G_INT8```
-Save schema under this number of replications (fs-dependent) \
+Save schema & schemas-store under this number of replications (fs-dependent) \
 _default_ **```swc.mngr.schema.replication=3```**
+
+* ### swc.mngr.schemas.store.from.capacity
+```G_UINT64```
+Use Schemas-Store from this number of schemas. The Schemas-Store dump will be used at schemas capacity reach for fast-load. The schemas will be dumped/saved to Schemas-Store only at gracefull manager-shutdown, after load or on failure the Schema-Store file is removed (the file exists as a hint directive). \
+_default_ **```swc.mngr.schemas.store.from.capacity=1000```**
+
+* ### swc.mngr.schemas.store.block.size
+```G_INT32```
+The Block-size of Schemas-Store in bytes \
+_default_ **```swc.mngr.schemas.store.block.size=32000000```**
+
+* ### swc.mngr.schemas.store.block.encoder
+```G_ENUM```
+The Schemas-Store Block encoder, options PLAIN/ZSTD/SNAPPY/ZLIB \
+_default_ **```swc.mngr.schemas.store.block.encoder=ZSTD```**
+
 
 * ### swc.mngr.rangers.resource.interval.check
 ```G_INT32```

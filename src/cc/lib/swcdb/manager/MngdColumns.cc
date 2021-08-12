@@ -20,20 +20,57 @@ using ColumnMngFunc = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
 
 MngdColumns::MngdColumns()
-    : m_run(true), m_schemas_set(false),
-      m_cid_active(false),
-      m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
-      m_expected_remain(STATE_COLUMNS_NOT_INITIALIZED),
-      cfg_schema_replication(
+    : cfg_schema_replication(
         Env::Config::settings()->get<Config::Property::V_GUINT8>(
           "swc.mngr.schema.replication")),
+      cfg_schemas_store_cap(
+        Env::Config::settings()->get<Config::Property::V_GUINT64>(
+          "swc.mngr.schemas.store.from.capacity")),
+      cfg_schemas_store_blksz(
+        Env::Config::settings()->get<Config::Property::V_GINT32>(
+          "swc.mngr.schemas.store.block.size")),
+      cfg_schemas_store_encoder(
+        Env::Config::settings()->get<Config::Property::V_GENUM>(
+          "swc.mngr.schemas.store.block.encoder")),
       cfg_delay_cols_init(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
-          "swc.mngr.ranges.assign.delay.afterColumnsInit")) {
+          "swc.mngr.ranges.assign.delay.afterColumnsInit")),
+      m_run(true), m_schemas_set(false),
+      m_cid_active(false),
+      m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
+      m_expected_remain(STATE_COLUMNS_NOT_INITIALIZED) {
 }
 
 void MngdColumns::stop() {
   m_run.store(false);
+  for(size_t c=0; ; ++c) {
+    if(m_actions.empty()) {
+      Core::MutexSptd::scope lock(m_mutex_actions);
+      if(m_actions_pending.empty())
+        break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    if(c % 1000 == 0)
+      SWC_LOGF(LOG_DEBUG, "Stop-Waiting actions=%lu", m_actions.size());
+  }
+}
+
+void MngdColumns::create_schemas_store() {
+  int err = Error::OK;
+  if(is_schemas_mngr(err) && (!err || err == Error::SERVER_SHUTTING_DOWN) &&
+     Env::Mngr::schemas()->size() >= cfg_schemas_store_cap->get()) {
+    Env::Mngr::schemas()->store_create(
+      err,
+      cfg_schema_replication->get(),
+      cfg_schemas_store_blksz->get(),
+      DB::Types::Encoder(cfg_schemas_store_encoder->get())
+    );
+    SWC_LOG_OUT(LOG_INFO,
+      SWC_LOG_OSTREAM
+        << "Create Schemas-Store schemas=" << Env::Mngr::schemas()->size();
+      Error::print(SWC_LOG_OSTREAM << ' ', err);
+    );
+  }
 }
 
 void MngdColumns::reset(bool schemas_mngr) {
@@ -58,8 +95,11 @@ bool MngdColumns::is_schemas_mngr(int& err) {
   if(Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS)) {
     if(m_schemas_set) {
       Core::MutexSptd::scope lock(m_mutex_schemas);
-      if(m_schemas_set)
+      if(m_schemas_set) {
+        if(!m_run)
+          err = Error::SERVER_SHUTTING_DOWN;
         return true;
+      }
     }
     err = Error::MNGR_NOT_INITIALIZED;
     return true;
@@ -428,9 +468,27 @@ bool MngdColumns::initialize() {
   if(m_schemas_set)
     return false;
 
+  SWC_LOG(LOG_INFO, "Load-Schemas START");
   int err = Error::OK;
+  try {
+    if(Env::Mngr::schemas()->store_load(err)) {
+      m_schemas_set.store(true);
+      SWC_LOGF(LOG_INFO, "Load-Schemas FINISH schemas=%lu",
+                          Env::Mngr::schemas()->size());
+      return true;
+    }
+    if(err) {
+      SWC_LOG_OUT(LOG_WARN,
+        SWC_LOG_OSTREAM << "Problem loading Schemas-Store ";
+        Error::print(SWC_LOG_OSTREAM, err);
+      );
+    }
+  } catch(...) {
+    SWC_LOG_CURRENT_EXCEPTION("");
+  }
+
   FS::IdEntries_t entries;
-  Columns::columns_by_fs(err, entries);
+  Columns::columns_by_fs(err = Error::OK, entries);
   if(err) {
     if(err != ENOENT)
       return false;
@@ -491,6 +549,8 @@ bool MngdColumns::initialize() {
   pending.wait_all();
 
   m_schemas_set.store(true);
+  SWC_LOGF(LOG_INFO, "Load-Schemas FINISH schemas=%lu",
+                      Env::Mngr::schemas()->size());
   return true;
 }
 

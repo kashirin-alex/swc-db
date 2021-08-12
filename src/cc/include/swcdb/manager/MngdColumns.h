@@ -24,11 +24,21 @@ class MngdColumns final {
     }
   };
 
+
+  const Config::Property::V_GUINT8::Ptr   cfg_schema_replication;
+  const Config::Property::V_GUINT64::Ptr  cfg_schemas_store_cap;
+  const Config::Property::V_GINT32::Ptr   cfg_schemas_store_blksz;
+  const Config::Property::V_GENUM::Ptr    cfg_schemas_store_encoder;
+  const Config::Property::V_GINT32::Ptr   cfg_delay_cols_init;
+
+
   MngdColumns();
 
   //~MngdColumns() { }
 
   void stop();
+
+  void create_schemas_store();
 
   void reset(bool schemas_mngr);
 
@@ -106,9 +116,6 @@ class MngdColumns final {
   Core::MutexSptd                              m_mutex_actions;
   Core::QueueSafe<ColumnReq::Ptr>              m_actions;
   std::unordered_map<uint64_t, ColumnReq::Ptr> m_actions_pending;
-
-  const Config::Property::V_GUINT8::Ptr cfg_schema_replication;
-  const Config::Property::V_GINT32::Ptr cfg_delay_cols_init;
 
   constexpr static uint64_t STATE_COLUMNS_NOT_INITIALIZED = UINT64_MAX;
 };

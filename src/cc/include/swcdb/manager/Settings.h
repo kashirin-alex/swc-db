@@ -86,7 +86,18 @@ void Settings::init_app_options(){
      "Column Health delay in ms between Checks")
 
     ("swc.mngr.schema.replication", g_i8(3),
-     "Save schema under N-replications (fs-dependent)")
+     "Save schema & schemas-store under N-replications (fs-dependent)")
+    ("swc.mngr.schemas.store.from.capacity", g_i64(1000),
+     "Use Schemas-Store from this number of schemas")
+    ("swc.mngr.schemas.store.block.size", g_i32(32000000),
+     "Block-size of Schemas-Store in bytes")
+    ("swc.mngr.schemas.store.block.encoder",
+      g_enum(
+        int(SWC_DEFAULT_STORAGE_ENCODER),
+        nullptr,
+        Core::Encoder::from_string_encoding,
+        Core::Encoder::repr_encoding),
+     "The Schemas-Store Block encoder, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
     ("swc.mngr.rangers.resource.interval.check", g_i32(120000),
      "Rangers Resources check interval in ms")

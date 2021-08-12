@@ -336,6 +336,7 @@ void MngrRole::stop() {
     if(h->conn && h->conn->is_open())
       h->conn->do_close();
   }
+  Env::Mngr::mngd_columns()->create_schemas_store();
 }
 
 void MngrRole::print(std::ostream& out) {

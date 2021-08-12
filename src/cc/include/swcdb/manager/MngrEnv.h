@@ -10,8 +10,8 @@
 #include "swcdb/common/sys/Resources.h"
 
 #include "swcdb/db/Protocol/Commands.h"
-#include "swcdb/db/Columns/Schemas.h"
 
+#include "swcdb/manager/db/Schemas.h"
 #include "swcdb/manager/db/Columns.h"
 #include "swcdb/manager/MngrRole.h"
 #include "swcdb/manager/Rangers.h"
@@ -51,7 +51,7 @@ class Mngr final {
   }
 
   SWC_CAN_INLINE
-  static DB::Schemas* schemas() noexcept {
+  static Manager::Schemas* schemas() noexcept {
     return &m_env->m_schemas;
   }
 
@@ -121,7 +121,7 @@ class Mngr final {
   inline static std::shared_ptr<Mngr> m_env = nullptr;
   Manager::Metric::Reporting::Ptr     _reporting;
   System::Resources                   _resources;
-  DB::Schemas                         m_schemas;
+  Manager::Schemas                    m_schemas;
   Manager::Columns                    m_columns;
   Manager::MngrRole                   m_role;
   Manager::Rangers                    m_rangers;
