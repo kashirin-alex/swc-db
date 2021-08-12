@@ -42,6 +42,8 @@ const char* Value::to_string(Type type) noexcept {
       return "G_UINT16";
     case G_INT32:
       return "G_INT32";
+    case G_UINT64:
+      return "G_UINT64";
     case G_ENUM:
       return "G_ENUM";
     case G_STRINGS:
@@ -135,6 +137,32 @@ void from_string(const std::string& s, int64_t* value) {
   if(errno)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
               "Bad Value %s, number out of range of 64-bit integer", s.c_str());
+
+  switch (*last) {
+    case 'k':
+    case 'K': *value *= 1000LL;         break;
+    case 'm':
+    case 'M': *value *= 1000000LL;      break;
+    case 'g':
+    case 'G': *value *= 1000000000LL;   break;
+    case '\0':                          break;
+    default:
+      SWC_THROWF(Error::CONFIG_GET_ERROR,
+                "Bad Value %s unknown suffix %s", s.c_str(), last);
+  }
+}
+
+void from_string(const std::string& s, uint64_t* value) {
+  char *last;
+  errno = 0;
+  *value = strtoull(s.c_str(), &last, 0);
+
+  if (s.c_str() == last)
+    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
+
+  if(errno)
+    SWC_THROWF(Error::CONFIG_GET_ERROR,
+      "Bad Value %s, number out of range of unsigned 64-bit integer", s.c_str());
 
   switch (*last) {
     case 'k':
@@ -796,6 +824,60 @@ void V_GINT32::on_change() const {
 }
 
 void V_GINT32::set_cb_on_chg(V_GINT32::OnChg_t&& cb) {
+  on_chg_cb = std::move(cb);
+}
+
+
+
+V_GUINT64::V_GUINT64(const uint64_t& v,
+                      V_GUINT64::OnChg_t&& cb, uint8_t flags)
+                    : Value(flags | Value::GUARDED),
+                      value(v), on_chg_cb(std::move(cb)) {
+}
+
+V_GUINT64::V_GUINT64(V_GUINT64* ptr)
+                    : Value(ptr),
+                      value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
+}
+
+Value::Ptr V_GUINT64::make_new(const Strings& values) {
+  auto ptr = new V_GUINT64(this);
+  if(!values.empty())
+    ptr->set_from(values);
+  return ptr;
+}
+
+void V_GUINT64::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<V_GUINT64>(ptr);
+  flags.store(from->flags);
+  bool chg = value != from->value;
+  value.store(from->value.load());
+  if(!on_chg_cb)
+    on_chg_cb = from->on_chg_cb;
+  if(chg)
+    on_change();
+}
+
+void V_GUINT64::set_from(const Strings& values) {
+  uint64_t v;
+  from_string(values.back(), &v);
+  value.store(v);
+}
+
+Value::Type V_GUINT64::type() const noexcept {
+  return value_type;
+}
+
+std::string V_GUINT64::to_string() const {
+  return std::to_string(value);
+}
+
+void V_GUINT64::on_change() const {
+  if(on_chg_cb)
+    on_chg_cb(get());
+}
+
+void V_GUINT64::set_cb_on_chg(V_GUINT64::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 

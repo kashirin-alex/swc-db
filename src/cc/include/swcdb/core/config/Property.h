@@ -54,6 +54,7 @@ class Value {
     G_UINT8,
     G_UINT16,
     G_INT32,
+    G_UINT64,
     G_ENUM,
     G_STRINGS
   };
@@ -575,6 +576,43 @@ class V_GINT32 final : public Value {
 
   Core::Atomic<int32_t> value;
   OnChg_t               on_chg_cb;
+
+};
+
+
+class V_GUINT64 final : public Value {
+  public:
+  static const Type value_type = G_UINT64;
+
+  typedef V_GUINT64*                     Ptr;
+  typedef std::function<void(uint64_t)>  OnChg_t;
+
+  V_GUINT64(const uint64_t& v, OnChg_t&& cb, uint8_t flags=0);
+
+  V_GUINT64(V_GUINT64* ptr);
+
+
+  Value::Ptr make_new(const Strings& values = Strings()) override;
+
+  void set_from(Value::Ptr ptr) override;
+
+  void set_from(const Strings& values) override;
+
+  Type type() const noexcept override;
+
+  std::string to_string() const override;
+
+  SWC_CAN_INLINE
+  uint64_t get() const noexcept {
+    return value;
+  }
+
+  void on_change() const;
+
+  void set_cb_on_chg(OnChg_t&& cb);
+
+  Core::Atomic<uint64_t> value;
+  OnChg_t                on_chg_cb;
 
 };
 

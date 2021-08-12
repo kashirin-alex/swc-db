@@ -77,6 +77,10 @@ Config::Property::V_GINT32::Ptr
 Config::g_i32(const int32_t& v) {
   return new Config::Property::V_GINT32(v, nullptr);
 }
+Config::Property::V_GUINT64::Ptr
+Config::g_i64(const uint64_t& v) {
+  return new Config::Property::V_GUINT64(v, nullptr);
+}
 Config::Property::V_GSTRINGS::Ptr
 Config::g_strs(Strings&& v) {
   return new Config::Property::V_GSTRINGS(std::move(v), nullptr);

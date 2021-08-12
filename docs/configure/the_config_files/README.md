@@ -56,6 +56,7 @@ The value of a property defaults to type String, the available specialized value
   G_UINT8,
   G_UINT16,
   G_INT32,
+  G_UINT64,
   G_ENUM,
   G_STRINGS
   ]
