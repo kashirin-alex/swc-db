@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnMng.h"
+#include "swcdb/core/StateSynchronization.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -19,7 +20,7 @@ class ColumnMng_Sync {
 
   template<typename... DataArgsT>
   SWC_CAN_INLINE
-  static std::shared_ptr<ColumnMng<ColumnMng_Sync>> 
+  static std::shared_ptr<ColumnMng<ColumnMng_Sync>>
   make(const Mngr::Params::ColumnMng& params,
        const uint32_t timeout,
        DataArgsT&&... args) {
@@ -32,9 +33,8 @@ class ColumnMng_Sync {
                       const uint32_t timeout,
                       DataArgsT&&... args) {
     auto req = make(params, timeout, args...);
-    auto res = req->data.await.get_future();
     req->run();
-    res.get();
+    req->data.await.wait();
   }
 
   template<typename... DataArgsT>
@@ -73,7 +73,7 @@ class ColumnMng_Sync {
       Mngr::Params::ColumnMng::Function::DELETE, schema, timeout, args...);
   }
 
-  std::promise<void>       await;
+  Core::StateSynchronization        await;
 
   SWC_CAN_INLINE
   ColumnMng_Sync(const SWC::client::Clients::Ptr& clients, int& err) noexcept
@@ -95,7 +95,7 @@ class ColumnMng_Sync {
   SWC_CAN_INLINE
   void callback(const client::ConnQueue::ReqBase::Ptr&, int error) {
     err = error;
-    await.set_value();
+    await.acknowledge();
   }
 
   private:

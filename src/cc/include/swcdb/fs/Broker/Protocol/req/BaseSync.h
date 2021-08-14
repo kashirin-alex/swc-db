@@ -7,31 +7,19 @@
 #define swcdb_fs_Broker_Protocol_req_BaseSync_h
 
 
-#include <future>
+#include "swcdb/core/StateSynchronization.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Req {
 
 
-class BaseSync : private std::promise<void> {
+class BaseSync : private Core::StateSynchronization {
   public:
-
-  SWC_CAN_INLINE
-  BaseSync() { }
-
-  SWC_CAN_INLINE
-  void wait() {
-    get_future().wait();
-  }
+  using Core::StateSynchronization::wait;
 
   protected:
-
-  SWC_CAN_INLINE
-  void acknowledge() {
-    set_value();
-  }
-
+  using Core::StateSynchronization::acknowledge;
 };
 
 

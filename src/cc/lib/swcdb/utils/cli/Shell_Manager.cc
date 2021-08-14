@@ -7,6 +7,7 @@
 #include "swcdb/utils/cli/Shell_Manager.h"
 #include "swcdb/db/Protocol/Mngr/req/Report.h"
 #include "swcdb/db/client/sql/Reader.h"
+#include "swcdb/core/StateSynchronization.h"
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -82,18 +83,19 @@ bool Mngr::cluster_status(std::string&) {
     return error(message);
   }
 
+  Core::StateSynchronization res;
   for(auto& endpoints : hosts) {
-    std::promise<void>  r_promise;
     Comm::Protocol::Mngr::Req::ClusterStatus::request(
       clients,
       endpoints,
-      [this, await=&r_promise]
-      (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error) {
+      [this, await=&res]
+      (const Comm::client::ConnQueue::ReqBase::Ptr&,
+       const int& error) noexcept {
         err = error;
-        await->set_value();
+        await->acknowledge();
       }
     );
-    r_promise.get_future().wait();
+    res.wait();
     if(err) {
       SWC_PRINT << "code=" << err
                 << " msg=" << Error::get_text(err) << SWC_PRINT_CLOSE;
@@ -101,6 +103,7 @@ bool Mngr::cluster_status(std::string&) {
       message.append("\n");
       return error(message);
     }
+    res.reset();
   }
   SWC_PRINT << "code=" << err
             << " msg=" << Error::get_text(err) << SWC_PRINT_CLOSE;
@@ -166,12 +169,12 @@ bool Mngr::managers_status(std::string& cmd) {
     hosts.push_back({});
   }
 
+  Core::StateSynchronization res;
   for(auto& endpoints : hosts) {
-    std::promise<void>  r_promise;
     Comm::Protocol::Mngr::Req::ManagersStatus::request(
       clients,
       endpoints,
-      [endpoints, await=&r_promise]
+      [endpoints, await=&res]
       (const Comm::client::ConnQueue::ReqBase::Ptr& req, const int& error,
        const Comm::Protocol::Mngr::Params::Report::RspManagersStatus& rsp) {
         SWC_PRINT << "# by Manager(";
@@ -186,10 +189,11 @@ bool Mngr::managers_status(std::string& cmd) {
           rsp.display(SWC_LOG_OSTREAM);
         }
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
-        await->set_value();
+        await->acknowledge();
       }
     );
-    r_promise.get_future().wait();
+    res.wait();
+    res.reset();
   }
   return true;
 }
@@ -232,11 +236,11 @@ bool Mngr::column_status(std::string& cmd) {
     return error(message);
   }
 
-  std::promise<void>  r_promise;
+  Core::StateSynchronization res;
   Comm::Protocol::Mngr::Req::ColumnStatus::request(
     clients,
     Comm::Protocol::Mngr::Params::Report::ReqColumnStatus(cid),
-    [this, await=&r_promise]
+    [this, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Comm::Protocol::Mngr::Params::Report::RspColumnStatus& rsp) {
       if(!(err = error)) {
@@ -244,10 +248,10 @@ bool Mngr::column_status(std::string& cmd) {
         rsp.display(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
       }
-      await->set_value();
+      await->acknowledge();
     }
   );
-  r_promise.get_future().wait();
+  res.wait();
 
   if(err) {
     message.append(Error::get_text(err));
@@ -291,11 +295,11 @@ bool Mngr::rangers_status(std::string& cmd) {
     cid = schema->cid;
   }
 
-  std::promise<void>  r_promise;
+  Core::StateSynchronization res;
   Comm::Protocol::Mngr::Req::RangersStatus::request(
     clients,
     cid,
-    [this, await=&r_promise]
+    [this, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Comm::Protocol::Mngr::Params::Report::RspRangersStatus& rsp) {
       if(!(err = error)) {
@@ -303,10 +307,10 @@ bool Mngr::rangers_status(std::string& cmd) {
         rsp.display(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
       }
-      await->set_value();
+      await->acknowledge();
     }
   );
-  r_promise.get_future().wait();
+  res.wait();
 
   if(err) {
     message.append(Error::get_text(err));

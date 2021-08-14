@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnList.h"
+#include "swcdb/core/StateSynchronization.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -32,13 +33,12 @@ class ColumnList_Sync {
                       const uint32_t timeout,
                       DataArgsT&&... args) {
     auto req = make(params, timeout, args...);
-    auto res = req->data.await.get_future();
     req->run();
-    res.get();
+    req->data.await.wait();
   }
 
 
-  std::promise<void>        await;
+  Core::StateSynchronization        await;
 
   SWC_CAN_INLINE
   ColumnList_Sync(const SWC::client::Clients::Ptr& clients,
@@ -78,7 +78,7 @@ class ColumnList_Sync {
         schemas = std::move(rsp.schemas);
       }
     }
-    await.set_value();
+    await.acknowledge();
   }
 
   private:

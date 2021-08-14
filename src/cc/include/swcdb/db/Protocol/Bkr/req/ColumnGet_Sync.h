@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnGet.h"
+#include "swcdb/core/StateSynchronization.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -19,7 +20,7 @@ class ColumnGet_Sync {
 
   template<typename... DataArgsT>
   SWC_CAN_INLINE
-  static std::shared_ptr<ColumnGet<ColumnGet_Sync>> 
+  static std::shared_ptr<ColumnGet<ColumnGet_Sync>>
   make(const Mngr::Params::ColumnGetReq& params,
        const uint32_t timeout,
        DataArgsT&&... args) {
@@ -32,9 +33,8 @@ class ColumnGet_Sync {
                       const uint32_t timeout,
                       DataArgsT&&... args) {
     auto req = make(params, timeout, args...);
-    auto res = req->data.await.get_future();
     req->run();
-    res.get();
+    req->data.await.wait();
   }
 
   template<typename... DataArgsT>
@@ -63,7 +63,7 @@ class ColumnGet_Sync {
     );
   }
 
-  std::promise<void>        await;
+  Core::StateSynchronization        await;
 
   SWC_CAN_INLINE
   ColumnGet_Sync(const SWC::client::Clients::Ptr& clients,
@@ -89,7 +89,7 @@ class ColumnGet_Sync {
                 const Mngr::Params::ColumnGetRsp& rsp) {
     err = error;
     _schema = std::move(rsp.schema);
-    await.set_value();
+    await.acknowledge();
   }
 
   private:

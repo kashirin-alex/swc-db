@@ -7,6 +7,7 @@
 #include "swcdb/utils/cli/Shell_Ranger.h"
 #include "swcdb/db/Protocol/Rgr/req/Report.h"
 #include "swcdb/db/client/sql/Reader.h"
+#include "swcdb/core/StateSynchronization.h"
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -114,11 +115,11 @@ bool Rgr::report_resources(std::string& cmd) {
   if(err)
     return r;
 
-  std::promise<void>  r_promise;
+  Core::StateSynchronization res;
   Comm::Protocol::Rgr::Req::ReportRes::request(
     clients,
     endpoints,
-    [this, await=&r_promise]
+    [this, await=&res]
     (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
      const Comm::Protocol::Rgr::Params::Report::RspRes& rsp) {
       if(!(err = error)) {
@@ -126,10 +127,10 @@ bool Rgr::report_resources(std::string& cmd) {
         rsp.display(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
       }
-      await->set_value();
+      await->acknowledge();
     }
   );
-  r_promise.get_future().wait();
+  res.wait();
 
   if(err) {
     std::string message(Error::get_text(err));
@@ -189,14 +190,14 @@ bool Rgr::report(std::string& cmd) {
     : (ranges ? Comm::Protocol::Rgr::Params::Report::Function::COLUMN_RANGES
               : Comm::Protocol::Rgr::Params::Report::Function::COLUMN_RIDS);
 
-  std::promise<void>  r_promise;
+  Core::StateSynchronization res;
 
   switch(func) {
     case Comm::Protocol::Rgr::Params::Report::Function::COLUMNS_RANGES: {
       Comm::Protocol::Rgr::Req::ReportColumnsRanges::request(
         clients,
         endpoints,
-        [this, await=&r_promise]
+        [this, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Comm::Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
@@ -204,7 +205,7 @@ bool Rgr::report(std::string& cmd) {
             rsp.display(SWC_LOG_OSTREAM);
             SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
-          await->set_value();
+          await->acknowledge();
         }
       );
       break;
@@ -213,7 +214,7 @@ bool Rgr::report(std::string& cmd) {
       Comm::Protocol::Rgr::Req::ReportCids::request(
         clients,
         endpoints,
-        [this, await=&r_promise]
+        [this, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Comm::Protocol::Rgr::Params::Report::RspCids& rsp) {
           if(!(err = error)) {
@@ -221,7 +222,7 @@ bool Rgr::report(std::string& cmd) {
             rsp.display(SWC_LOG_OSTREAM);
             SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
-          await->set_value();
+          await->acknowledge();
         }
       );
       break;
@@ -231,7 +232,7 @@ bool Rgr::report(std::string& cmd) {
         clients,
         endpoints,
         cid,
-        [this, await=&r_promise]
+        [this, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Comm::Protocol::Rgr::Params::Report::RspColumnsRanges& rsp) {
           if(!(err = error)) {
@@ -239,7 +240,7 @@ bool Rgr::report(std::string& cmd) {
             rsp.display(SWC_LOG_OSTREAM);
             SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
-          await->set_value();
+          await->acknowledge();
         }
       );
       break;
@@ -249,7 +250,7 @@ bool Rgr::report(std::string& cmd) {
         clients,
         endpoints,
         cid,
-        [this, await=&r_promise]
+        [this, await=&res]
         (const Comm::client::ConnQueue::ReqBase::Ptr&, const int& error,
          const Comm::Protocol::Rgr::Params::Report::RspColumnRids& rsp) {
           if(!(err = error)) {
@@ -257,19 +258,19 @@ bool Rgr::report(std::string& cmd) {
             rsp.display(SWC_LOG_OSTREAM);
             SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
           }
-          await->set_value();
+          await->acknowledge();
         }
       );
       break;
     }
     default: {
       err = Error::NOT_IMPLEMENTED;
-      r_promise.set_value();
+      res.acknowledge();
       break;
     }
   }
 
-  r_promise.get_future().wait();
+  res.wait();
 
   if(err) {
     message.append(Error::get_text(err));

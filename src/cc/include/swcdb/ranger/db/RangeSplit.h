@@ -8,16 +8,19 @@
 #define swcdb_ranger_db_RangeSplit_h
 
 
+#include "swcdb/core/StateSynchronization.h"
+
+
 namespace SWC { namespace Ranger {
 
 
 static void mngr_remove_range(const RangePtr& new_range) {
-  std::promise<void> res;
+  Core::StateSynchronization res;
   struct ReqData {
-    const RangePtr&     new_range;
-    std::promise<void>& res;
+    const RangePtr&             new_range;
+    Core::StateSynchronization& res;
     SWC_CAN_INLINE
-    ReqData(const RangePtr& new_range, std::promise<void>& res)
+    ReqData(const RangePtr& new_range, Core::StateSynchronization& res)
             noexcept : new_range(new_range), res(res) {
     }
     SWC_CAN_INLINE
@@ -48,7 +51,7 @@ static void mngr_remove_range(const RangePtr& new_range) {
          rsp.err != Error::COLUMN_NOT_READY) {
          req->request_again();
       } else {
-        res.set_value();
+        res.acknowledge();
       }
     }
   };
@@ -58,7 +61,7 @@ static void mngr_remove_range(const RangePtr& new_range) {
     10000,
     new_range, res
   );
-  res.get_future().wait();
+  res.wait();
 }
 
 
@@ -148,10 +151,10 @@ class RangeSplit final {
       new_range->blocks.commitlog.commit_finalize();
     }
 
-    std::promise<void>  r_promise;
+    Core::StateSynchronization res;
     new_range->expand_and_align(false, Query::Update::CommonMeta::make(
       new_range,
-      [this, col, await=&r_promise]
+      [this, col, await=&res]
       (const Query::Update::CommonMeta::Ptr& hdlr) {
         SWC_LOGF(LOG_INFO,
           "COMPACT-SPLIT RANGE %lu/%lu unloading new-rid=%lu reg-err=%d(%s)",
@@ -204,13 +207,13 @@ class RangeSplit final {
 
         range->expand_and_align(true, Query::Update::CommonMeta::make(
           range,
-          [await] (const Query::Update::CommonMeta::Ptr&) {
-            await->set_value();
+          [await] (const Query::Update::CommonMeta::Ptr&) noexcept {
+            await->acknowledge();
           })
         );
     }));
     new_range = nullptr;
-    r_promise.get_future().wait();
+    res.wait();
 
     SWC_LOG_OUT(LOG_INFO,
       SWC_LOG_PRINTF("COMPACT-SPLITTED RANGE %lu/%lu took=%luns new-end=",
@@ -221,16 +224,17 @@ class RangeSplit final {
   }
 
   void mngr_create_range(int& err, rid_t& new_rid) {
-    std::promise<void>  res;
+    Core::StateSynchronization res;
 
     struct ReqData {
-      const cid_t         cid;
-      int&                err;
-      rid_t&              new_rid;
-      std::promise<void>& res;
+      const cid_t                 cid;
+      int&                        err;
+      rid_t&                      new_rid;
+      Core::StateSynchronization& res;
       SWC_CAN_INLINE
-      ReqData(cid_t cid, int& err, rid_t& new_rid, std::promise<void>& res)
-              noexcept : cid(cid), err(err), new_rid(new_rid), res(res) {
+      ReqData(cid_t cid, int& err, rid_t& new_rid,
+              Core::StateSynchronization& res) noexcept
+              : cid(cid), err(err), new_rid(new_rid), res(res) {
       }
       SWC_CAN_INLINE
       cid_t get_cid() const noexcept {
@@ -262,7 +266,7 @@ class RangeSplit final {
         }
         err = rsp.err;
         new_rid = rsp.rid;
-        res.set_value();
+        res.acknowledge();
       }
     };
     Comm::Protocol::Mngr::Req::RangeCreate<ReqData>::request(
@@ -271,7 +275,7 @@ class RangeSplit final {
       10000,
       range->cfg->cid, err, new_rid, res
     );
-    res.get_future().wait();
+    res.wait();
   }
 
   const RangePtr range;

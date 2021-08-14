@@ -8,6 +8,7 @@
 
 
 #include "swcdb/db/Protocol/Bkr/req/ColumnCompact.h"
+#include "swcdb/core/StateSynchronization.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -19,7 +20,7 @@ class ColumnCompact_Sync {
 
   template<typename... DataArgsT>
   SWC_CAN_INLINE
-  static std::shared_ptr<ColumnCompact<ColumnCompact_Sync>> 
+  static std::shared_ptr<ColumnCompact<ColumnCompact_Sync>>
   make(const Mngr::Params::ColumnCompactReq& params,
        const uint32_t timeout,
        DataArgsT&&... args) {
@@ -32,9 +33,8 @@ class ColumnCompact_Sync {
                       const uint32_t timeout,
                       DataArgsT&&... args) {
     auto req = make(params, timeout, args...);
-    auto res = req->data.await.get_future();
     req->run();
-    res.get();
+    req->data.await.wait();
   }
 
   template<typename... DataArgsT>
@@ -45,7 +45,7 @@ class ColumnCompact_Sync {
     request(Mngr::Params::ColumnCompactReq(cid), timeout, args...);
   }
 
-  std::promise<void>        await;
+  Core::StateSynchronization        await;
 
   SWC_CAN_INLINE
   ColumnCompact_Sync(const SWC::client::Clients::Ptr& clients,
@@ -69,7 +69,7 @@ class ColumnCompact_Sync {
   void callback(const client::ConnQueue::ReqBase::Ptr&,
                 const Mngr::Params::ColumnCompactRsp& rsp) {
     err = rsp.err;
-    await.set_value();
+    await.acknowledge();
   }
 
   private:

@@ -7,16 +7,19 @@
 #define swcdb_ranger_callbacks_ColumnsUnloadAll_h
 
 
+#include "swcdb/core/StateSynchronization.h"
+
+
 namespace SWC { namespace Ranger { namespace Callback {
 
 
-class ColumnsUnloadAll : public ColumnsUnload {
+class ColumnsUnloadAll : private Core::StateSynchronization,
+                         public ColumnsUnload {
   public:
 
   typedef std::shared_ptr<ColumnsUnloadAll> Ptr;
 
-  bool                validation;
-  std::promise<void>  promise;
+  bool validation;
 
   ColumnsUnloadAll(bool validation);
 
@@ -27,15 +30,13 @@ class ColumnsUnloadAll : public ColumnsUnload {
   void unloaded(const ColumnPtr& col) override;
 
   void complete() override {
-    promise.set_value();
+    acknowledge();
   }
 
   SWC_CAN_INLINE
   void wait() {
-    promise.get_future().wait();
-
-    std::promise<void> _promise;
-    promise.swap(_promise);
+    Core::StateSynchronization::wait();
+    Core::StateSynchronization::reset();
   }
 
 };
