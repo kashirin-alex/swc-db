@@ -6,12 +6,15 @@
 #ifndef swcdb_db_client_Schemas_h
 #define swcdb_db_client_Schemas_h
 
+
 #include "swcdb/db/client/Settings.h"
 #include "swcdb/db/Columns/Schemas.h"
 
+
 namespace SWC { namespace client {
 
-class Schemas final : private DB::Schemas {
+
+class Schemas final {
   public:
 
   SWC_CAN_INLINE
@@ -25,6 +28,8 @@ class Schemas final : private DB::Schemas {
   void remove(cid_t cid);
 
   void remove(const std::string& name);
+
+  void clear_expired();
 
   DB::Schema::Ptr get(int& err, cid_t cid,
                       uint32_t timeout=300000);
@@ -69,11 +74,21 @@ class Schemas final : private DB::Schemas {
                 std::vector<DB::Schema::Ptr>& schemas,
                 uint32_t timeout);
 
-  Clients*                            _clients;
-  std::unordered_map<cid_t, int64_t>  m_track;
-  Config::Property::V_GINT32::Ptr     m_expiry_ms;
-  std::map<cid_t,       Pending>      m_pending_cid;
-  std::map<std::string, Pending>      m_pending_name;
+  struct SchemaData {
+    int64_t         ts;
+    DB::Schema::Ptr schema;
+    SWC_CAN_INLINE
+    void assign(int64_t _ts, const DB::Schema::Ptr& _schema) {
+      ts = _ts;
+      schema = _schema;
+    }
+  };
+  Core::MutexSptd                         m_mutex;
+  std::unordered_map<cid_t, SchemaData>   m_schemas;
+  Clients*                                _clients;
+  Config::Property::V_GINT32::Ptr         m_expiry_ms;
+  std::map<cid_t,       Pending>          m_pending_cid;
+  std::map<std::string, Pending>          m_pending_name;
 
 };
 

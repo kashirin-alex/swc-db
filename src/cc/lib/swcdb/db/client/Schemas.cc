@@ -15,25 +15,32 @@ namespace SWC { namespace client {
 
 void Schemas::remove(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
-
-  auto it = m_track.find(cid);
-  if(it != m_track.cend())
-    m_track.erase(it);
-  _remove(cid);
+  auto it = m_schemas.find(cid);
+  if(it != m_schemas.cend())
+    m_schemas.erase(it);
 }
 
 void Schemas::remove(const std::string& name) {
   Core::MutexSptd::scope lock(m_mutex);
-
-  auto schema = _get(name);
-  if(!schema)
-    return;
-  auto it = m_track.find(schema->cid);
-  if(it != m_track.cend())
-    m_track.erase(it);
-  _remove(schema->cid);
+  for(auto it = m_schemas.cbegin(); it != m_schemas.cend(); ++it) {
+    if(Condition::str_eq(name, it->second.schema->col_name)) {
+      m_schemas.erase(it);
+      return;
+    }
+  }
 }
 
+void Schemas::clear_expired() {
+  auto ts = Time::now_ms();
+  Core::MutexSptd::scope lock(m_mutex);
+  for(auto it = m_schemas.cbegin(); it != m_schemas.cend(); ) {
+    if(ts >= it->second.ts + m_expiry_ms->get()) {
+      m_schemas.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
 
 
 class Schemas::ColumnGetData final {
@@ -85,16 +92,14 @@ class Schemas::ColumnGetData final {
 
 DB::Schema::Ptr
 Schemas::get(int& err, cid_t cid, uint32_t timeout) {
-  DB::Schema::Ptr schema;
   Pending pending;
   bool has_req;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    auto it = m_track.find(cid);
-    if(it != m_track.cend() &&
-       Time::now_ms() - it->second < m_expiry_ms->get() &&
-       (schema = _get(cid))) {
-      return schema;
+    auto it = m_schemas.find(cid);
+    if(it != m_schemas.cend() &&
+       Time::now_ms() < it->second.ts + m_expiry_ms->get()) {
+      return it->second.schema;
     }
     auto it_req = m_pending_cid.find(cid);
     has_req = it_req != m_pending_cid.cend();
@@ -105,11 +110,11 @@ Schemas::get(int& err, cid_t cid, uint32_t timeout) {
   if(!has_req)
     pending.req->run();
 
+  DB::Schema::Ptr schema;
   if(pending.datap->wait(err, schema) && schema) {
     auto ts = Time::now_ms();
     Core::MutexSptd::scope lock(m_mutex);
-    m_track.emplace(schema->cid, ts);
-    _replace(schema);
+    m_schemas[schema->cid].assign(ts, schema);
     m_pending_cid.erase(cid);
   } else if(!schema && !err) {
     err = Error::COLUMN_SCHEMA_MISSING;
@@ -119,15 +124,16 @@ Schemas::get(int& err, cid_t cid, uint32_t timeout) {
 
 DB::Schema::Ptr
 Schemas::get(int& err, const std::string& name, uint32_t timeout) {
-  DB::Schema::Ptr schema;
   Pending pending;
   bool has_req;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if((schema = _get(name))) {
-      auto it = m_track.find(schema->cid);
-      if(it != m_track.cend() && Time::now_ms()-it->second < m_expiry_ms->get())
-        return schema;
+    for(const auto& data : m_schemas) {
+      if(Condition::str_eq(name, data.second.schema->col_name)) {
+        if(Time::now_ms() < data.second.ts + m_expiry_ms->get())
+          return data.second.schema;
+        break;
+      }
     }
     auto it_req = m_pending_name.find(name);
     has_req = it_req != m_pending_name.cend();
@@ -138,11 +144,11 @@ Schemas::get(int& err, const std::string& name, uint32_t timeout) {
   if(!has_req)
     pending.req->run();
 
+  DB::Schema::Ptr schema;
   if(pending.datap->wait(err, schema) && schema) {
     auto ts = Time::now_ms();
     Core::MutexSptd::scope lock(m_mutex);
-    m_track.emplace(schema->cid, ts);
-    _replace(schema);
+    m_schemas[schema->cid].assign(ts, schema);
     m_pending_name.erase(name);
   } else if(!schema && !err) {
     err = Error::COLUMN_SCHEMA_MISSING;
@@ -152,21 +158,22 @@ Schemas::get(int& err, const std::string& name, uint32_t timeout) {
 
 DB::Schema::Ptr Schemas::get(cid_t cid) {
   Core::MutexSptd::scope lock(m_mutex);
-  auto it = m_track.find(cid);
-  return it != m_track.cend() &&
-         Time::now_ms()-it->second < m_expiry_ms->get()
-         ? _get(cid) : nullptr;
+  auto it = m_schemas.find(cid);
+  return it != m_schemas.cend() &&
+         Time::now_ms() < it->second.ts + m_expiry_ms->get()
+         ? it->second.schema : nullptr;
 }
 
 DB::Schema::Ptr Schemas::get(const std::string& name) {
-  DB::Schema::Ptr schema;
   Core::MutexSptd::scope lock(m_mutex);
-  if((schema = _get(name))) {
-    auto it = m_track.find(schema->cid);
-    if(it == m_track.cend() || Time::now_ms()-it->second > m_expiry_ms->get())
-      schema = nullptr;
+  for(const auto& data : m_schemas) {
+    if(Condition::str_eq(name, data.second.schema->col_name)) {
+      if(Time::now_ms() < data.second.ts + m_expiry_ms->get())
+        return data.second.schema;
+      break;
+    }
   }
-  return schema;
+  return nullptr;
 }
 
 void
@@ -181,8 +188,7 @@ Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
     auto ts = Time::now_ms();
     Core::MutexSptd::scope lock(m_mutex);
     for(auto& schema : schemas) {
-      m_track[schema->cid] = ts;
-      _replace(schema);
+      m_schemas[schema->cid].assign(ts, schema);
     }
   }
 }
@@ -198,16 +204,14 @@ Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
 void Schemas::set(const DB::Schema::Ptr& schema) {
   auto ts = Time::now_ms();
   Core::MutexSptd::scope lock(m_mutex);
-  m_track[schema->cid] = ts;
-  _replace(schema);
+  m_schemas[schema->cid].assign(ts, schema);
 }
 
 void Schemas::set(const std::vector<DB::Schema::Ptr>& schemas) {
   auto ts = Time::now_ms();
   Core::MutexSptd::scope lock(m_mutex);
   for(auto& schema : schemas) {
-    m_track[schema->cid] = ts;
-    _replace(schema);
+    m_schemas[schema->cid].assign(ts, schema);
   }
 }
 
