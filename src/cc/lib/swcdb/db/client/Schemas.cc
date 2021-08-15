@@ -4,10 +4,11 @@
  */
 
 #include "swcdb/db/client/Clients.h"
-#include "swcdb/db/Protocol/Mngr/req/ColumnGet_Sync.h"
+#include "swcdb/db/Protocol/Mngr/req/ColumnGet.h"
+#include "swcdb/db/Protocol/Bkr/req/ColumnGet.h"
 #include "swcdb/db/Protocol/Mngr/req/ColumnList_Sync.h"
-#include "swcdb/db/Protocol/Bkr/req/ColumnGet_Sync.h"
 #include "swcdb/db/Protocol/Bkr/req/ColumnList_Sync.h"
+#include "swcdb/core/StateSynchronization.h"
 
 namespace SWC { namespace client {
 
@@ -33,43 +34,117 @@ void Schemas::remove(const std::string& name) {
   _remove(schema->cid);
 }
 
-DB::Schema::Ptr Schemas::get(int& err, cid_t cid,
-                             uint32_t timeout) {
+
+
+class Schemas::ColumnGetData final {
+  public:
+
+  SWC_CAN_INLINE
+  ColumnGetData(const SWC::client::Clients::Ptr& clients) noexcept
+                :  clients(clients), err(Error::OK), once(false) {
+  }
+
+  SWC_CAN_INLINE
+  SWC::client::Clients::Ptr& get_clients() noexcept {
+    return clients;
+  }
+
+  SWC_CAN_INLINE
+  bool valid() {
+    return true;
+  }
+
+  SWC_CAN_INLINE
+  void callback(const Comm::client::ConnQueue::ReqBase::Ptr&,
+                int error,
+                const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
+    schema = std::move(rsp.schema);
+    err = error;
+    await.acknowledge();
+  }
+
+  SWC_CAN_INLINE
+  bool wait(int& _err, DB::Schema::Ptr& _schema) {
+    await.wait();
+    _schema = schema;
+    _err = err;
+    bool at = false;
+    return once.compare_exchange_weak(at, true);
+  }
+
+  private:
+  SWC::client::Clients::Ptr   clients;
+  Core::StateSynchronization  await;
+  DB::Schema::Ptr             schema;
+  int                         err;
+  Core::AtomicBool            once;
+
+};
+
+
+
+DB::Schema::Ptr
+Schemas::get(int& err, cid_t cid, uint32_t timeout) {
   DB::Schema::Ptr schema;
-  Core::MutexSptd::scope lock(m_mutex);
+  Pending pending;
+  bool has_req;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    auto it = m_track.find(cid);
+    if(it != m_track.cend() &&
+       Time::now_ms() - it->second < m_expiry_ms->get() &&
+       (schema = _get(cid))) {
+      return schema;
+    }
+    auto it_req = m_pending_cid.find(cid);
+    has_req = it_req != m_pending_cid.cend();
+    pending = has_req
+      ? it_req->second
+      : m_pending_cid.emplace(cid, _request(cid, timeout)).first->second;
+  }
+  if(!has_req)
+    pending.req->run();
 
-  auto it = m_track.find(cid);
-  if(it != m_track.cend() &&
-     Time::now_ms() - it->second < m_expiry_ms->get() &&
-     (schema = _get(cid)))
-    return schema;
-
-  _request(err, cid, schema, timeout);
-  if(schema) {
-    m_track.emplace(cid, Time::now_ms());
+  if(pending.datap->wait(err, schema) && schema) {
+    auto ts = Time::now_ms();
+    Core::MutexSptd::scope lock(m_mutex);
+    m_track.emplace(schema->cid, ts);
     _replace(schema);
-  } else if(!err)
+    m_pending_cid.erase(cid);
+  } else if(!schema && !err) {
     err = Error::COLUMN_SCHEMA_MISSING;
+  }
   return schema;
 }
 
-DB::Schema::Ptr Schemas::get(int& err, const std::string& name,
-                             uint32_t timeout) {
+DB::Schema::Ptr
+Schemas::get(int& err, const std::string& name, uint32_t timeout) {
   DB::Schema::Ptr schema;
-  Core::MutexSptd::scope lock(m_mutex);
-
-  if((schema = _get(name))) {
-    auto it = m_track.find(schema->cid);
-    if(it != m_track.cend() && Time::now_ms()-it->second < m_expiry_ms->get())
-      return schema;
-    schema = nullptr;
+  Pending pending;
+  bool has_req;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    if((schema = _get(name))) {
+      auto it = m_track.find(schema->cid);
+      if(it != m_track.cend() && Time::now_ms()-it->second < m_expiry_ms->get())
+        return schema;
+    }
+    auto it_req = m_pending_name.find(name);
+    has_req = it_req != m_pending_name.cend();
+    pending = has_req
+      ? it_req->second
+      : m_pending_name.emplace(name, _request(name, timeout)).first->second;
   }
+  if(!has_req)
+    pending.req->run();
 
-  _request(err, name, schema, timeout);
-  if(schema) {
-    m_track.emplace(schema->cid, Time::now_ms());
+  if(pending.datap->wait(err, schema) && schema) {
+    auto ts = Time::now_ms();
+    Core::MutexSptd::scope lock(m_mutex);
+    m_track.emplace(schema->cid, ts);
     _replace(schema);
-  } else if(!err) {
+    m_pending_name.erase(name);
+  } else if(!schema && !err) {
     err = Error::COLUMN_SCHEMA_MISSING;
   }
   return schema;
@@ -136,31 +211,62 @@ void Schemas::set(const std::vector<DB::Schema::Ptr>& schemas) {
   }
 }
 
-void Schemas::_request(int& err, cid_t cid,
-                       DB::Schema::Ptr& schema,
-                       uint32_t timeout) {
+
+Schemas::Pending
+Schemas::_request(cid_t cid, uint32_t timeout) {
   switch(_clients->flags) {
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
-    case Clients::Flag::BROKER:
-      return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
-        cid, timeout, _clients->shared(), err, schema);
-    default:
-      return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-        cid, timeout, _clients->shared(), err, schema);
+    case Clients::Flag::BROKER: {
+      auto req = Comm::Protocol::Bkr::Req::ColumnGet<ColumnGetData>::make(
+        Comm::Protocol::Mngr::Params::ColumnGetReq(
+          Comm::Protocol::Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_ID,
+          cid
+        ),
+        timeout,
+        _clients->shared()
+      );
+      return Schemas::Pending(req, &req->data);
+    }
+    default: {
+      auto req = Comm::Protocol::Mngr::Req::ColumnGet<ColumnGetData>::make(
+        Comm::Protocol::Mngr::Params::ColumnGetReq(
+          Comm::Protocol::Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_ID,
+          cid
+        ),
+        timeout,
+        _clients->shared()
+      );
+      return Schemas::Pending(req, &req->data);
+    }
   }
 }
 
-void Schemas::_request(int& err, const std::string& name,
-                       DB::Schema::Ptr& schema,
-                       uint32_t timeout) {
+Schemas::Pending
+Schemas::_request(const std::string& name, uint32_t timeout) {
   switch(_clients->flags) {
     case Clients::Flag::DEFAULT |Clients::Flag::BROKER |Clients::Flag::SCHEMA:
-    case Clients::Flag::BROKER:
-      return Comm::Protocol::Bkr::Req::ColumnGet_Sync::schema(
-        name, timeout, _clients->shared(), err, schema);
-    default:
-      return Comm::Protocol::Mngr::Req::ColumnGet_Sync::schema(
-        name, timeout, _clients->shared(), err, schema);
+    case Clients::Flag::BROKER: {
+      auto req = Comm::Protocol::Bkr::Req::ColumnGet<ColumnGetData>::make(
+        Comm::Protocol::Mngr::Params::ColumnGetReq(
+          Comm::Protocol::Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME,
+          name
+        ),
+        timeout,
+        _clients->shared()
+      );
+      return Schemas::Pending(req, &req->data);
+    }
+    default: {
+      auto req = Comm::Protocol::Mngr::Req::ColumnGet<ColumnGetData>::make(
+        Comm::Protocol::Mngr::Params::ColumnGetReq(
+          Comm::Protocol::Mngr::Params::ColumnGetReq::Flag::SCHEMA_BY_NAME,
+          name
+        ),
+        timeout,
+        _clients->shared()
+      );
+      return Schemas::Pending(req, &req->data);
+    }
   }
 }
 

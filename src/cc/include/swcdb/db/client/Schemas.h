@@ -50,19 +50,30 @@ class Schemas final : private DB::Schemas {
 
   private:
 
-  void _request(int& err, cid_t cid, DB::Schema::Ptr& schema,
-                uint32_t timeout);
+  class ColumnGetData;
+  struct Pending final {
+    Comm::DispatchHandler::Ptr  req;
+    ColumnGetData*              datap;
+    SWC_CAN_INLINE
+    Pending() noexcept : datap(nullptr) { }
+    SWC_CAN_INLINE
+    Pending(const Comm::DispatchHandler::Ptr& req, ColumnGetData* datap)
+            noexcept : req(req), datap(datap) { }
+  };
 
-  void _request(int& err, const std::string& name, DB::Schema::Ptr& schema,
-                uint32_t timeout);
+  Pending _request(cid_t cid, uint32_t timeout);
+
+  Pending _request(const std::string& name, uint32_t timeout);
 
   void _request(int& err, const DB::Schemas::SelectorPatterns& patterns,
                 std::vector<DB::Schema::Ptr>& schemas,
                 uint32_t timeout);
 
   Clients*                            _clients;
-  std::unordered_map<cid_t, int64_t>  m_track; // .second {time,queue(promises)}
+  std::unordered_map<cid_t, int64_t>  m_track;
   Config::Property::V_GINT32::Ptr     m_expiry_ms;
+  std::map<cid_t,       Pending>      m_pending_cid;
+  std::map<std::string, Pending>      m_pending_name;
 
 };
 
