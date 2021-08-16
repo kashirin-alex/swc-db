@@ -20,7 +20,6 @@ class RangeBase final {
   static constexpr const char RANGER_FILE[]     = "ranger.data";
   static constexpr const char CELLSTORES_DIR[]  = "cs";
   static constexpr const char LOG_DIR[]         = "log";
-  static constexpr const char RANGE_FILE[]      = "range.data";
 
   // (swc.fs.path.data)+COLUMN_DIR+/+{cid}+/RANGE_DIR+/+{rid}+/+(types)
 
@@ -68,6 +67,8 @@ class RangeBase final {
     return s;
   }
 
+  #ifdef SWC_RANGER_WITH_RANGEDATA
+  static constexpr const char RANGE_FILE[] = "range.data";
   static const std::string get_path_range_data(const std::string& range_path) {
     std::string s;
     s.reserve(range_path.length() + strlen(RANGE_FILE));
@@ -75,6 +76,7 @@ class RangeBase final {
     s.append(RANGE_FILE);
     return s;
   }
+  #endif
 
   static const std::string get_path_cs(const std::string& range_path,
                                        const std::string& folder,

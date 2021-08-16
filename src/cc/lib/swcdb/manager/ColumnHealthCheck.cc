@@ -534,8 +534,10 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
       col_merger->col_checker->col->set_unloaded(range);
   }
 
+  #ifdef SWC_RANGER_WITH_RANGEDATA
   if(!merged.empty()) // delete expired/outdated range.data file
     fs->remove(err, DB::RangeBase::get_path_range_data(main_range_path));
+  #endif
 
   col_merger->col_checker->col->set_unloaded(main_range);
   Env::Mngr::rangers()->schedule_check(2000);

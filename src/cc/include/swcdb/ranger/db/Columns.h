@@ -94,7 +94,9 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
 #include "swcdb/ranger/db/CommitLogFragment.cc"
 #include "swcdb/ranger/db/CommitLogCompact.cc"
 
+#ifdef SWC_RANGER_WITH_RANGEDATA
 #include "swcdb/ranger/db/RangeData.cc"
+#endif
 
 #include "swcdb/ranger/callbacks/RangeLoad.cc"
 #include "swcdb/ranger/callbacks/RangeUnload.cc"

@@ -663,7 +663,9 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
       return;
   }
 
+  #ifdef SWC_RANGER_WITH_RANGEDATA
   RangeData::save(err, blocks.cellstores);
+  #endif
   fs_if->remove(err, DB::RangeBase::get_path_ranger(m_path));
   err = Error::OK;
 }
@@ -678,7 +680,9 @@ void Range::internal_create(int &err, CellStore::Readers::Vec& mv_css) {
   if(mv_css.empty())
     err = Error::CANCELLED;
   if(!err) {
+    #ifdef SWC_RANGER_WITH_RANGEDATA
     RangeData::save(err, blocks.cellstores);
+    #endif
     Env::FsInterface::interface()->remove(
       err = Error::OK, DB::RangeBase::get_path_ranger(m_path));
     err = Error::OK;
@@ -731,7 +735,11 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
   bool is_initial_column_range = false;
+  #ifdef SWC_RANGER_WITH_RANGEDATA
   RangeData::load(err, blocks.cellstores);
+  #else
+  blocks.cellstores.load_from_path(err);
+  #endif
   if(err) {
     (void)err;
     //err = Error::OK; // ranger-to determine range-removal (+ Notify Mngr)
@@ -763,7 +771,9 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   }
 
   if(is_initial_column_range) {
+    #ifdef SWC_RANGER_WITH_RANGEDATA
     RangeData::save(err, blocks.cellstores);
+    #endif
     return on_change(false, MetaRegOnLoadReq::make(shared_from_this(), req));
   }
 

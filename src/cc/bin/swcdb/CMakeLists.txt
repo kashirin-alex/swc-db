@@ -69,6 +69,12 @@ endif()
 
 # swcdbRanger
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "ranger")
+
+set(RANGER_FLAGS ${FLAGS})
+if(SWC_RANGER_WITH_RANGEDATA)
+  set(RANGER_FLAGS ${RANGER_FLAGS} "-DSWC_RANGER_WITH_RANGEDATA")
+endif()
+
 ADD_EXEC_TARGET(
   NAME    swcdbRanger
   SRCS    ranger/main.cc
@@ -81,7 +87,7 @@ ADD_EXEC_TARGET(
   STATIC  ${STATIC}
           ${SWC_LIB_LIBRARIES_STATIC}
           ${SWC_LIB_FS_LIBRARIES_STATIC}
-  FLAGS   ${FLAGS}
+  FLAGS   ${RANGER_FLAGS}
 )
 endif()
 
@@ -89,6 +95,12 @@ endif()
 
 # swcdbManager
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "manager")
+
+set(MANAGER_FLAGS ${FLAGS})
+if(SWC_RANGER_WITH_RANGEDATA)
+  set(MANAGER_FLAGS ${MANAGER_FLAGS} "-DSWC_RANGER_WITH_RANGEDATA")
+endif()
+
 ADD_EXEC_TARGET(
   NAME    swcdbManager
   SRCS    manager/main.cc
@@ -101,7 +113,7 @@ ADD_EXEC_TARGET(
   STATIC  ${STATIC}
           ${SWC_LIB_LIBRARIES_STATIC}
           ${SWC_LIB_FS_LIBRARIES_STATIC}
-  FLAGS   ${FLAGS}
+  FLAGS   ${MANAGER_FLAGS}
 )
 endif()
 

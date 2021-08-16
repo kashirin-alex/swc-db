@@ -99,7 +99,9 @@ void Blocks::apply_new(int &err,
   cellstores.replace(err, w_cellstores);
   if(err)
     return;
+  #ifdef SWC_RANGER_WITH_RANGEDATA
   RangeData::save(err, cellstores);
+  #endif
 
   commitlog.remove(err, fragments_old);
 }
