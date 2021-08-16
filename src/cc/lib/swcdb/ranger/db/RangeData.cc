@@ -49,7 +49,7 @@ void RangeData::save(int& err, CellStore::Readers& cellstores) {
       cellstores.range->get_path(DB::RangeBase::RANGE_FILE),
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
     ),
-    cellstores.range->cfg->file_replication(),
+    1, // as hint-file without cellstores.range->cfg->file_replication()
     -1,
     send_buf
   );

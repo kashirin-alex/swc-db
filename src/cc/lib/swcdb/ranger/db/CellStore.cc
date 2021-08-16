@@ -613,8 +613,7 @@ void Write::print(std::ostream& out) const {
 
 Read::Ptr create_initial(int& err, const RangePtr& range) {
   Write writer(1, range->get_path_cs(1), range, range->cfg->cell_versions());
-  writer.create(
-    err, -1, range->cfg->file_replication(), range->cfg->block_size());
+  writer.create(err, -1, range->cfg->file_replication(), -1);
   if(err)
     return nullptr;
 

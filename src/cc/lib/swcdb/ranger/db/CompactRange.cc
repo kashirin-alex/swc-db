@@ -623,7 +623,7 @@ csid_t CompactRange::create_cs(int& err) {
     range,
     spec.flags.max_versions
   ));
-  cs_writer->create(err, -1, range->cfg->file_replication(), blk_size);
+  cs_writer->create(err, -1, range->cfg->file_replication(), -1);
 
   if(!m_chk_final) {
     uint32_t p = range->cfg->compact_percent()/10;

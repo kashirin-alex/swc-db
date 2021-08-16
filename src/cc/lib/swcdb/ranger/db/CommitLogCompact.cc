@@ -127,7 +127,7 @@ void Compact::Group::write() {
     frag->write(
       Error::UNPOSSIBLE,
       compact->log->range->cfg->file_replication(),
-      frag->offset_data + frag->size_enc,
+      -1,
       buff_write,
       &sem
     );
