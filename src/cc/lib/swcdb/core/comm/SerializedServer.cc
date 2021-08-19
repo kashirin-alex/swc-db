@@ -213,8 +213,8 @@ void SerializedServer::run() {
 
 std::shared_ptr<IoContext::ExecutorWorkGuard>
 SerializedServer::stop_accepting() {
-  auto guard = std::make_shared<IoContext::ExecutorWorkGuard>(
-    m_io_contexts.back()->executor());
+  auto guard = std::shared_ptr<IoContext::ExecutorWorkGuard>(
+    new IoContext::ExecutorWorkGuard(m_io_contexts.back()->executor()));
 
   for(auto it = m_acceptors.cbegin(); it != m_acceptors.cend(); ) {
     (*it)->stop();

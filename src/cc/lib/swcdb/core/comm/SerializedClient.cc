@@ -72,7 +72,8 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
     SWC_LOG_OSTREAM << "Connecting Async: " << m_srv_name << ' '
       << m_endpoint << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
 
-  auto sock = std::make_shared<asio::ip::tcp::socket>(m_ioctx->executor());
+  auto sock = std::shared_ptr<asio::ip::tcp::socket>(
+    new asio::ip::tcp::socket(m_ioctx->executor()));
   sock->async_connect(
     m_endpoint,
     [sock, preserve, cb=std::move(cb), ptr=shared_from_this()]
