@@ -1,8 +1,7 @@
 # These are supported funding model platforms
 
+github: kashirin-alex
 custom: ['https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PPNZNZ9YJUH5Y&source=url', ]
-issuehunt: kashirin-alex 
-github: # kashirin-alex
 
 patreon: # Replace with a single Patreon username
 open_collective: # Replace with a single Open Collective username
