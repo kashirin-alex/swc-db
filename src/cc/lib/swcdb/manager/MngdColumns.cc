@@ -386,8 +386,112 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
     return update(
       ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
 
-  cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
-    schema->col_seq, DB::Types::SystemColumn::get_range_type(schema->cid));
+  auto hdlr = client::Query::Select::Handlers::Common::make(
+    Env::Clients::get(),
+    [this, req_id, schema]
+    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
+        schema->col_seq,
+        DB::Types::SystemColumn::get_range_type(schema->cid)
+      );
+      DB::Cells::Result cells_meta;
+      DB::Cells::Result cells_rgrdata;
+      int err = hdlr->state_error;
+      if(!err) {
+        auto col = hdlr->get_columnn(meta_cid);
+        if(!(err = col->error()) && !col->empty())
+          col->get_cells(cells_meta);
+
+        col = hdlr->get_columnn(DB::Types::SystemColumn::SYS_RGR_DATA);
+        if(!col->error() && !col->empty())
+          col->get_cells(cells_rgrdata);
+      }
+      if(err && cells_meta.empty()) {
+        SWC_LOGF(LOG_WARN,
+        "Column(cid=%lu meta_cid=%lu) "
+        "Range MetaData might remained, result-err=%d(%s)",
+        schema->cid, meta_cid, err, Error::get_text(err));
+      }
+
+      if(err || (cells_meta.empty() && cells_rgrdata.empty()))
+        return update(
+          ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
+
+      if(!cells_meta.empty()) {
+        SWC_LOG_OUT(LOG_INFO,
+          SWC_LOG_OSTREAM << "Column(cid=" << schema->cid
+            << " meta_cid=" << meta_cid << ')'
+            << " deleting Range MetaData, remained(" << cells_meta.size() << ')'
+            << " cells=[";
+          for(auto cell : cells_meta)
+            cell->key.print(SWC_LOG_OSTREAM << "\n\t");
+          SWC_LOG_OSTREAM << "\n]";
+        );
+      }
+
+      auto updater = client::Query::Update::Handlers::Common::make(
+        Env::Clients::get(),
+        [this, req_id, schema]
+        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
+          cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
+            schema->col_seq,
+            DB::Types::SystemColumn::get_range_type(schema->cid)
+          );
+          int err = hdlr->error();
+          auto col = hdlr->get(meta_cid);
+          if(col && (err || col->error())) {
+            SWC_LOGF(LOG_WARN,
+              "Column(cid=%lu meta_cid=%lu) "
+              "Range MetaData might remained, "
+              "updater-err=%d(%s) colm-err=%d(%s)",
+              schema->cid, meta_cid,
+              err, Error::get_text(err),
+              col->error(), Error::get_text(col->error())
+            );
+          }
+          col = hdlr->get(DB::Types::SystemColumn::SYS_RGR_DATA);
+          if(col && (err || col->error())) {
+            SWC_LOGF(LOG_WARN,
+              "Column(cid=%lu rgrdata_cid=%lu) "
+              "Range RgrData might remained, "
+              "updater-err=%d(%s) colm-err=%d(%s)",
+              schema->cid, DB::Types::SystemColumn::SYS_RGR_DATA,
+              err, Error::get_text(err),
+              col->error(), Error::get_text(col->error())
+            );
+          }
+          return update(
+            ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
+        },
+        Env::Mngr::io()
+      );
+
+      updater->completion.increment();
+      if(!cells_meta.empty()) {
+        auto& col = updater->create(
+          meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
+        for(auto cell : cells_meta) {
+          cell->flag = DB::Cells::DELETE;
+          col->add(*cell);
+          updater->commit_or_wait(col.get(), 1);
+        }
+      }
+      if(!cells_rgrdata.empty()) {
+        auto& col = updater->create(
+          DB::Types::SystemColumn::SYS_RGR_DATA,
+          DB::Types::KeySeq::VOLUME, 1, 0, DB::Types::Column::PLAIN);
+        for(auto cell : cells_rgrdata) {
+          cell->flag = DB::Cells::DELETE;
+          col->add(*cell);
+          updater->commit_or_wait(col.get(), 1);
+        }
+      }
+      updater->response(Error::OK);
+    },
+    false,
+    Env::Mngr::io()
+  );
+
   DB::Specs::Interval spec(DB::Types::Column::SERIAL);
   spec.flags.set_only_keys();
   auto& key_intval = spec.key_intervals.add();
@@ -395,67 +499,22 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   key_intval.start.add(std::to_string(schema->cid), Condition::EQ);
   key_intval.start.add("", Condition::GE);
 
-  auto hdlr = client::Query::Select::Handlers::Common::make(
-    Env::Clients::get(),
-    [this, req_id, schema, meta_cid]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-      DB::Cells::Result cells;
-      int err = hdlr->state_error;
-      if(!err) {
-        auto col = hdlr->get_columnn(meta_cid);
-        if(!(err = col->error()) && !col->empty())
-          col->get_cells(cells);
-      }
-      if(err) {
-        SWC_LOGF(LOG_WARN,
-        "Column(cid=%lu meta_cid=%lu) "
-        "Range MetaData might remained, result-err=%d(%s)",
-        schema->cid, meta_cid, err, Error::get_text(err));
-      }
-      if(err || cells.empty())
-        return update(
-          ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
-
-      SWC_LOG_OUT(LOG_INFO,
-        SWC_LOG_OSTREAM << "Column(cid=" << schema->cid
-          << " meta_cid=" << meta_cid << ')'
-          << " deleting Range MetaData, remained(" << cells.size() << ')'
-          << " cells=[";
-        for(auto cell : cells)
-          cell->key.print(SWC_LOG_OSTREAM << "\n\t");
-        SWC_LOG_OSTREAM << "\n]";
-      );
-
-      auto updater = client::Query::Update::Handlers::Common::make(
-        Env::Clients::get(),
-        [this, req_id, schema, meta_cid]
-        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
-          int err = hdlr->error();
-          if(err) {
-            SWC_LOGF(LOG_WARN,
-              "Column(cid=%lu meta_cid=%lu) "
-              "Range MetaData might remained, update-err=%d(%s)",
-              schema->cid, meta_cid, err, Error::get_text(err));
-          }
-          return update(
-            ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
-        },
-        Env::Mngr::io()
-      );
-      updater->completion.increment();
-      auto& col = updater->create(
-        meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
-      for(auto cell : cells) {
-        cell->flag = DB::Cells::DELETE;
-        col->add(*cell);
-        updater->commit_or_wait(col.get(), 1);
-      }
-      updater->response(Error::OK);
-    },
-    false,
-    Env::Mngr::io()
-  );
-  hdlr->scan(schema->col_seq, meta_cid, std::move(spec));
+  cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
+    schema->col_seq, DB::Types::SystemColumn::get_range_type(schema->cid));
+  if(DB::Types::SystemColumn::is_rgr_data_on_fs(schema->cid)) {
+    hdlr->scan(schema->col_seq, meta_cid, std::move(spec));
+  } else {
+    hdlr->completion.increment();
+    hdlr->scan(schema->col_seq, meta_cid, spec);
+    spec.values.col_type = DB::Types::Column::PLAIN;
+    hdlr->scan(
+      DB::Types::KeySeq::VOLUME,
+      DB::Types::SystemColumn::SYS_RGR_DATA,
+      std::move(spec)
+    );
+    if(hdlr->completion.is_last())
+      hdlr->response(Error::OK);
+  }
 }
 
 

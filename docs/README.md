@@ -102,9 +102,11 @@ Key comparison on the comparators of request, resulting in most narrowed ranges 
   The Data-Columns ranges with Fractions-Count Lexical Key-Sequence.
 8. Ranges("SYS_META_FC_VOLUME") \
   The Data-Columns ranges with Fractions-Count Volumetric Key-Sequence.
-9. Statistics("SYS_STATS") \
+9. System("SYS_RGR_DATA") \
+  The Ranger-Data column is an internal system column for mapping/resolution of Column-Range to Ranger ID with Endpoints. Instead of storing RgrData in a file(/C/cid/R/rid/ranger.data) on the file-system, The column exists in favour and the stored data is for columns above/other-than system Ranges-Columns and the SYS_RGR_DATA it self. \
+10. Statistics("SYS_STATS") \
   The Statistics column used for internal systems monitoring and it can be used like any other serial-column with Lexic Key-Sequence (keeping for the purpose) with fractions of [period, host, group, role, id, component, part, type] with value of serialized merics data.
-10. Definers("SYS_DEFINE_LEXIC") \
+11. Definers("SYS_DEFINE_LEXIC") \
   The Definer columns is SERIAL type column with Lexic Key Sequence and the column is used for system's internal column-definitions of metrics-data serialization saved to SYS_STATS. The SYS_DEFINE_LEXIC column can be used as any column, whereas requires first fraction to be the CID of a column for the serialization defintions.
 
 
@@ -116,7 +118,7 @@ compaction whereas Commit-Log is Fragments of current added data, one fragment i
 
 
 #### The limitations that can be overseen with SWC-DB
-  ✗ Maximum number of columns, it is store-size of uint64(2^64) – 10(reserved cols) which can be improved by CID to be a string-type. \
+  ✗ Maximum number of columns, it is store-size of uint64(2^64) – 11(reserved cols) which can be improved by CID to be a string-type. \
   ✗ Maximum size of Value or Key-Fraction(after serialization), it is 4GB, while for such data size other limitations apply.
 
 

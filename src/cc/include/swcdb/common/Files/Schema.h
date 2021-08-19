@@ -141,6 +141,11 @@ DB::Schema::Ptr load(int &err, cid_t cid,
         schema->col_type = DB::Types::Column::SERIAL;
         schema->col_seq = DB::Types::KeySeq::LEXIC;
 
+      } else if(cid == DB::Types::SystemColumn::SYS_RGR_DATA) {
+        schema->col_name.append("RGR_DATA");
+        schema->col_type = DB::Types::Column::PLAIN;
+        schema->col_seq = DB::Types::KeySeq::VOLUME;
+
       } else {
         schema->col_type = DB::Types::Column::SERIAL;
         schema->col_seq = DB::Types::SystemColumn::get_seq_type(cid);

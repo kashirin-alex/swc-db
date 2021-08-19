@@ -93,7 +93,8 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       }
       if(waiting_meta &&
          (cid == DB::Types::SystemColumn::CID_MASTER_END ||
-          cid == DB::Types::SystemColumn::CID_META_END))
+          cid == DB::Types::SystemColumn::CID_META_END ||
+          cid == DB::Types::SystemColumn::SYS_RGR_DATA))
         return false;
     }
     if(waiting_meta)

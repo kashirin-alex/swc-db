@@ -71,7 +71,9 @@ class Range final : public std::enable_shared_from_this<Range> {
   std::string get_path_cs_on(const std::string folder,
                              const csid_t csid) const;
 
-  Common::Files::RgrData::Ptr get_last_rgr(int &err);
+  void set_rgr(int &err) const noexcept;
+
+  void remove_rgr(int &err) const noexcept;
 
   uint24_t known_interval_count();
 

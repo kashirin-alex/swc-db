@@ -133,10 +133,20 @@ std::string Range::get_path_cs_on(const std::string folder,
   return DB::RangeBase::get_path_cs(m_path, folder, csid);
 }
 
-SWC_CAN_INLINE
-Common::Files::RgrData::Ptr Range::get_last_rgr(int &err) {
-  return Common::Files::RgrData::get_rgr(
-    err, DB::RangeBase::get_path_ranger(m_path));
+void Range::set_rgr(int& err) const noexcept {
+  DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)
+    ? Common::Files::RgrData::set_rgr(
+        *Env::Rgr::rgr_data(),
+        err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication()
+      )
+    : Env::Rgr::rgr_data()->set_rgr(err, cfg->cid, rid);
+}
+
+void Range::remove_rgr(int& err) const noexcept {
+  DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)
+    ? Env::FsInterface::interface()->remove(
+        err, DB::RangeBase::get_path_ranger(m_path))
+    : DB::RgrData::remove(err, cfg->cid, rid);
 }
 
 SWC_CAN_INLINE
@@ -338,10 +348,42 @@ void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& re
   if(state_unloading())
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
 
-  Env::Rgr::rgr_data()->set_rgr(
-    err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
+  if(DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)) {
+    Common::Files::RgrData::set_rgr(
+      *Env::Rgr::rgr_data(),
+      err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication()
+    );
+    err ? loaded(err, req) : load(err, req);
+    return;
+  }
 
-  err ? loaded(err, req) : load(err, req);
+  class SetRgr : public DB::RgrData::BaseUpdater {
+    public:
+    typedef std::shared_ptr<SetRgr> Ptr;
+    RangePtr                        range;
+    Callback::RangeLoad::Ptr        req;
+    SetRgr(RangePtr&& range,
+           const Callback::RangeLoad::Ptr& req) noexcept
+          : range(std::move(range)), req(req) { }
+    virtual ~SetRgr() { }
+    void callback() override {
+      struct Task {
+        SetRgr::Ptr ptr;
+        SWC_CAN_INLINE
+        Task(SetRgr::Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+        void operator()() {
+          int err = ptr->error();
+          err
+            ? ptr->range->loaded(err, ptr->req)
+            : ptr->range->load(err, ptr->req);
+        }
+      };
+      Env::Rgr::post(Task(
+        std::dynamic_pointer_cast<SetRgr>(shared_from_this())));
+    }
+  };
+  SetRgr::Ptr(new SetRgr(shared_from_this(), req))
+    ->set_rgr(*Env::Rgr::rgr_data(), cfg->cid, rid);
 }
 
 void Range::internal_unload(bool completely, bool& chk_empty) {
@@ -364,8 +406,7 @@ void Range::internal_unload(bool completely, bool& chk_empty) {
 
   int err = Error::OK;
   if(completely) // whether to keep RANGER_FILE
-    Env::FsInterface::interface()->remove(
-      err, DB::RangeBase::get_path_ranger(m_path));
+    remove_rgr(err);
 
   {
     Core::ScopedLock lock(m_mutex);
@@ -404,6 +445,10 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
         hdlr->range->blocks.remove(err);
 
         Env::FsInterface::interface()->rmdir(err, hdlr->range->get_path(""));
+        /* Manager clears all column ranges
+        if(!DB::Types::SystemColumn::is_rgr_data_on_fs(hdlr->range->cfg->cid))
+          DB::RgrData::remove(err, hdlr->range->cfg->cid, hdlr->range->rid);
+        */
         req->removed(hdlr->range);
       }
     )
@@ -639,8 +684,7 @@ void Range::internal_create_folders(int& err) {
 }
 
 void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
-  Env::Rgr::rgr_data()->set_rgr(
-    err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
+  set_rgr(err);
   if(err)
     return;
 
@@ -666,13 +710,12 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
   #ifdef SWC_RANGER_WITH_RANGEDATA
   RangeData::save(err, blocks.cellstores);
   #endif
-  fs_if->remove(err, DB::RangeBase::get_path_ranger(m_path));
+  remove_rgr(err);
   err = Error::OK;
 }
 
 void Range::internal_create(int &err, CellStore::Readers::Vec& mv_css) {
-  Env::Rgr::rgr_data()->set_rgr(
-    err, DB::RangeBase::get_path_ranger(m_path), cfg->file_replication());
+  set_rgr(err);
   if(err)
     return;
 
@@ -683,8 +726,7 @@ void Range::internal_create(int &err, CellStore::Readers::Vec& mv_css) {
     #ifdef SWC_RANGER_WITH_RANGEDATA
     RangeData::save(err, blocks.cellstores);
     #endif
-    Env::FsInterface::interface()->remove(
-      err = Error::OK, DB::RangeBase::get_path_ranger(m_path));
+    remove_rgr(err);
     err = Error::OK;
   }
 }
@@ -706,26 +748,77 @@ void Range::print(std::ostream& out, bool minimal) {
 void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK LAST RGR", cfg->cid, rid);
 
-  // ranger.data
-  auto rgr_data = Env::Rgr::rgr_data();
-  Common::Files::RgrData::Ptr rgr_last = get_last_rgr(err);
-
-  if(rgr_last->endpoints.size() &&
-     !Comm::has_endpoint(rgr_data->endpoints, rgr_last->endpoints)) {
-    SWC_LOG_OUT(LOG_DEBUG,
-      rgr_last->print(SWC_LOG_OSTREAM << "RANGER LAST=");
-      rgr_data->print(SWC_LOG_OSTREAM << " NEW=");
-    );
-
-    Env::Clients::get()->get_rgr_queue(rgr_last->endpoints)->put(
-      Comm::Protocol::Rgr::Req::RangeUnload::Ptr(
-        new Comm::Protocol::Rgr::Req::RangeUnload(shared_from_this(), req)
-      )
-    );
-
-  } else {
-    internal_take_ownership(err, req);
+  if(DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)) {
+    DB::RgrData rgr_last;
+    Common::Files::RgrData::get_rgr(
+      rgr_last, DB::RangeBase::get_path_ranger(m_path));
+    if(!rgr_last.endpoints.empty()) {
+      if(Comm::equal_endpoints(
+          Env::Rgr::rgr_data()->endpoints, rgr_last.endpoints)) {
+        return load(err, req);
+      }
+      if(!Comm::has_endpoint(
+          Env::Rgr::rgr_data()->endpoints, rgr_last.endpoints)) {
+        SWC_LOG_OUT(LOG_DEBUG,
+          rgr_last.print(SWC_LOG_OSTREAM << "RANGER LAST=");
+          Env::Rgr::rgr_data()->print(SWC_LOG_OSTREAM << " NEW=");
+        );
+        Env::Clients::get()->get_rgr_queue(rgr_last.endpoints)->put(
+          Comm::Protocol::Rgr::Req::RangeUnload::Ptr(
+            new Comm::Protocol::Rgr::Req::RangeUnload(shared_from_this(), req)
+          )
+        );
+        return;
+      }
+    }
+    return internal_take_ownership(err, req);
   }
+
+  class GetRgr : public DB::RgrData::BaseSelector {
+    public:
+    typedef std::shared_ptr<GetRgr>   Ptr;
+    RangePtr                          range;
+    Callback::RangeLoad::Ptr          req;
+    SWC_CAN_INLINE
+    GetRgr(RangePtr&& range, const Callback::RangeLoad::Ptr& req)
+           noexcept : range(std::move(range)), req(req) { }
+    void callback() override {
+      struct Task {
+        GetRgr::Ptr ptr;
+        SWC_CAN_INLINE
+        Task(GetRgr::Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+        void operator()() {
+          int err = Error::OK;
+          DB::RgrData rgr_last;
+          ptr->get_rgr(err, rgr_last);
+          if(err && err != ENOKEY)
+            return ptr->range->loaded(err, ptr->req);
+          if(!rgr_last.endpoints.empty()) {
+            if(Comm::equal_endpoints(
+              Env::Rgr::rgr_data()->endpoints, rgr_last.endpoints)) {
+              return ptr->range->load(err, ptr->req);
+            }
+            if(!Comm::has_endpoint(
+                Env::Rgr::rgr_data()->endpoints, rgr_last.endpoints)) {
+              SWC_LOG_OUT(LOG_DEBUG,
+                rgr_last.print(SWC_LOG_OSTREAM << "RANGER LAST=");
+                Env::Rgr::rgr_data()->print(SWC_LOG_OSTREAM << " NEW=");
+              );
+              Env::Clients::get()->get_rgr_queue(rgr_last.endpoints)->put(
+                Comm::Protocol::Rgr::Req::RangeUnload::Ptr(
+                  new Comm::Protocol::Rgr::Req::RangeUnload(
+                    ptr->range, ptr->req)));
+              return;
+            }
+          }
+          return ptr->range->internal_take_ownership(err, ptr->req);
+        }
+      };
+      Env::Rgr::post(Task(
+        std::dynamic_pointer_cast<GetRgr>(shared_from_this())));
+    }
+  };
+  GetRgr::Ptr(new GetRgr(shared_from_this(), req))->scan(cfg->cid, rid);
 }
 
 void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {

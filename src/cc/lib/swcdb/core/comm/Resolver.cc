@@ -99,6 +99,17 @@ bool has_endpoint(const EndPoints& endpoints,
   return false;
 }
 
+bool equal_endpoints(const EndPoints& endpoints1,
+                     const EndPoints& endpoints2) noexcept {
+  if(endpoints1.size() != endpoints2.size())
+    return false;
+  auto it = endpoints2.cbegin();
+  for(; it != endpoints2.cend(); ++it) {
+    if(!has_endpoint(*it, endpoints1))
+      return false;
+  }
+  return it == endpoints2.cend();
+}
 
 size_t endpoints_hash(const EndPoints& endpoints) {
   std::string s;

@@ -590,8 +590,7 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rgr_set) {
   size_t avg_ranges = 0;
   Ranger::Ptr rgr;
 
-  int err = Error::OK;
-  auto last_rgr = range->get_last_rgr(err);
+  const DB::RgrData& last_rgr = range->get_last_rgr();
   uint8_t state;
   Core::MutexSptd::scope lock(m_mutex);
 
@@ -608,9 +607,9 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& rgr_set) {
       _changes(chged, true);
 
     } else if(state & RangerState::ACK) {
-      if(!last_rgr->endpoints.empty() &&
+      if(!last_rgr.endpoints.empty() &&
          !(state & RangerState::SHUTTINGDOWN) &&
-         Comm::has_endpoint(rgr->endpoints, last_rgr->endpoints)) {
+         Comm::has_endpoint(rgr->endpoints, last_rgr.endpoints)) {
         rgr_set = rgr;
         return;
       }

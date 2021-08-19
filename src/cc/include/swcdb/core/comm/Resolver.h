@@ -85,6 +85,8 @@ bool has_endpoint(const EndPoint& e1,
 bool has_endpoint(const EndPoints& endpoints,
                   const EndPoints& endpoints_in) noexcept;
 
+bool equal_endpoints(const EndPoints& endpoints1,
+                     const EndPoints& endpoints2) noexcept;
 
 size_t endpoints_hash(const EndPoints& endpoints);
 

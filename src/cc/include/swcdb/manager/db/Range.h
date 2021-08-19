@@ -134,12 +134,18 @@ class Range final {
   }
 
   SWC_CAN_INLINE
-  Common::Files::RgrData::Ptr get_last_rgr(int &err) {
+  const DB::RgrData& get_last_rgr() {
     Core::ScopedLock lock(m_mutex);
-    if(!m_last_rgr)
-      m_last_rgr = Common::Files::RgrData::get_rgr(
-        err, DB::RangeBase::get_path_ranger(m_path));
-    return m_last_rgr;
+    if(!m_last_rgr) {
+      m_last_rgr.reset(new DB::RgrData());
+      DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)
+        ? Common::Files::RgrData::get_rgr(
+            *m_last_rgr.get(),
+            DB::RangeBase::get_path_ranger(m_path)
+          )
+        : DB::RgrData::get_rgr(*m_last_rgr.get(), cfg->cid, rid);
+    }
+    return *m_last_rgr.get();
   }
 
   void set(const DB::Cells::Interval& intval, int64_t revision) {
@@ -207,7 +213,7 @@ class Range final {
   State                         m_state;
   int64_t                       m_check_ts;
   rgrid_t                       m_rgrid;
-  Common::Files::RgrData::Ptr   m_last_rgr;
+  std::unique_ptr<DB::RgrData>  m_last_rgr;
 
   DB::Cell::Key                 m_key_begin;
   DB::Cell::Key                 m_key_end;

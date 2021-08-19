@@ -45,7 +45,7 @@ class Rgr final {
   static void wait_if_in_process();
 
   SWC_CAN_INLINE
-  static Common::Files::RgrData* rgr_data() noexcept {
+  static DB::RgrData* rgr_data() noexcept {
     return &m_env->m_rgr_data;
   }
 
@@ -184,7 +184,7 @@ class Rgr final {
   private:
   inline static std::shared_ptr<Rgr>  m_env = nullptr;
 
-  Common::Files::RgrData              m_rgr_data;
+  DB::RgrData                         m_rgr_data;
   Core::AtomicBool                    m_shuttingdown;
   Core::AtomicBool                    m_not_accepting;
   Core::Atomic<int64_t>               m_in_process;

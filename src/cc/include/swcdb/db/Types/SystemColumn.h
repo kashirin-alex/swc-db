@@ -19,8 +19,11 @@ const cid_t CID_MASTER_END       = 4;
 const cid_t CID_META_BEGIN       = 5;
 const cid_t CID_META_END         = 8;
 
-const cid_t SYS_CID_STATS        = 9;
-const cid_t SYS_CID_DEFINE_LEXIC = 10;
+const cid_t SYS_RGR_DATA         = 9;
+
+const cid_t SYS_CID_STATS        = 10;
+const cid_t SYS_CID_DEFINE_LEXIC = 11;
+
 const cid_t SYS_CID_END = SYS_CID_DEFINE_LEXIC;
 
 
@@ -32,6 +35,11 @@ bool is_master(cid_t cid) noexcept {
 constexpr SWC_CAN_INLINE
 bool is_meta(cid_t cid) noexcept {
   return cid >= CID_META_BEGIN && cid <= CID_META_END;
+}
+
+constexpr SWC_CAN_INLINE
+bool is_rgr_data_on_fs(cid_t cid) noexcept {
+  return cid <= SYS_RGR_DATA;
 }
 
 constexpr SWC_CAN_INLINE

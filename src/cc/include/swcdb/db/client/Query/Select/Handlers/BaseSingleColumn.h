@@ -22,6 +22,7 @@ class BaseSingleColumn : public Base {
   public:
 
   typedef std::shared_ptr<BaseSingleColumn>   Ptr;
+  using Base::error;
 
   const cid_t         cid;
 

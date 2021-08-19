@@ -94,7 +94,7 @@ class ColumnMutable : public Base::Column {
     state_error.compare_exchange_weak(at, err);
   }
 
-  virtual bool error() noexcept override {
+  virtual int error() noexcept override {
     return state_error;
   }
 

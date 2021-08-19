@@ -92,7 +92,7 @@ class Base : public std::enable_shared_from_this<Base> {
 
     virtual void error(int err) noexcept = 0;
 
-    virtual bool error() noexcept  = 0;
+    virtual int error() noexcept  = 0;
 
     protected:
 

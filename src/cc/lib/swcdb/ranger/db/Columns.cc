@@ -124,7 +124,13 @@ void Columns::unload_all(bool validation) {
     new Callback::ColumnsUnloadAll(validation));
   bool more;
   do {
-    more = unload(DB::Types::SystemColumn::CID_META_END + 1, 0, req);
+    more = unload(DB::Types::SystemColumn::SYS_CID_END + 1, 0, req);
+    req->run();
+    req->wait();
+  } while(more);
+
+  do {
+    more = unload(DB::Types::SystemColumn::SYS_RGR_DATA + 1, 0, req);
     req->run();
     req->wait();
   } while(more);
