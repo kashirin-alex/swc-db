@@ -29,3 +29,9 @@ assignees: ''
 
 
 #
+
+
+
+##### _**Consent to the Contributors file:**_ [https://github.com/kashirin-alex/swc-db/blob/master/CONTRIBUTING.md](https://github.com/kashirin-alex/swc-db/blob/master/CONTRIBUTING.md)
+_I Understand and Agree: YES or NO_
+#
