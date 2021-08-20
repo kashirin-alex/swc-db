@@ -37,7 +37,7 @@ class Schemas final : public DB::Schemas {
 
     std::vector<DB::Schema::Ptr> entries;
     DB::Schemas::all(entries);
-    for(auto it = entries.cbegin(); it < entries.cend(); ) {
+    for(auto it = entries.cbegin(); it != entries.cend(); ) {
       blk_buff.ensure((*it)->encoded_length());
       (*it)->encode(&blk_buff.ptr);
       if(++it == entries.cend() || blk_buff.fill() >= blksz) {

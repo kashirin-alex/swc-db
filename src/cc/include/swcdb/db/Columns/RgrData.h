@@ -10,6 +10,8 @@
 
 #include "swcdb/core/Serialization.h"
 #include "swcdb/core/Buffer.h"
+#include "swcdb/core/StateSynchronization.h"
+
 #include "swcdb/db/client/Query/Select/Handlers/BaseSingleColumn.h"
 #include "swcdb/db/client/Query/Update/Handlers/BaseSingleColumn.h"
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"

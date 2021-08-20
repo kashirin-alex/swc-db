@@ -13,7 +13,7 @@ The Contribution Types consist of Issues(support), Pull-Request(development), Pu
 
 
 ### The Permission you Grant to the SWC-DB project by Contributing
-You grand SWC-DB project the rights(copyrights without the requirement of crediting the author) to use the provided-information by either types of the listed Contributions. SWC-DB project at its sole-discretion will decide whether the rights of the provided-information are subject to 3rd(other) parties involved and act-accordingly by limiting the Permission Grant on the Information received. The "Contributor(you) Grant Rights" to the full-meaning of expression is that SWC-DB project is allowed to use the provided-information in the SWC-DB proprietary licenses and the copyrights are unclaimable by the Contributor.
+You grant SWC-DB project the rights(copyrights without the requirement of crediting the author) to use the provided-information by either types of the listed Contributions. SWC-DB project at its sole-discretion will decide whether the rights of the provided-information are subject to 3rd(other) parties involved and act-accordingly by limiting the Permission Grant on the Information received. The "Contributor(you) Grant Rights" to the full-meaning of expression is that SWC-DB project is allowed to use the provided-information in the SWC-DB proprietary licenses and the copyrights are unclaimable by the Contributor.
 
 
 
