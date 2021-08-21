@@ -29,7 +29,8 @@ Compaction::Compaction()
               asio::high_resolution_timer(
                 Env::Rgr::maintenance_io()->executor())),
             m_last_cid(0), m_idx_cid(0),
-            m_last_rid(0), m_idx_rid(0)  {
+            m_last_rid(0), m_idx_rid(0),
+            m_next(false)  {
 }
 
 SWC_CAN_INLINE
@@ -133,6 +134,7 @@ void Compaction::run(bool initial) {
       ++added;
   }
 
+  m_next.store(m_idx_cid);
   m_schedule.stop();
   if(stopped()) {
     Core::ScopedLock lock(m_mutex);
@@ -251,7 +253,7 @@ void Compaction::compacted(const CompactRange::Ptr req,
 SWC_CAN_INLINE
 void Compaction::compacted() {
   uint8_t ran = m_running.fetch_sub(1);
-  if(ran == cfg_max_range->get() && !m_schedule) {
+  if(!m_schedule && m_next) {
     struct Task {
       Compaction* ptr;
       SWC_CAN_INLINE
@@ -274,7 +276,7 @@ void Compaction::_schedule(uint32_t t_ms) {
   if(stopped() || m_schedule)
     return;
 
-  auto set_in = std::chrono::milliseconds(t_ms);
+  auto set_in = std::chrono::milliseconds(m_next ? 2 : t_ms);
   auto set_on = m_check_timer.expiry();
   auto now = asio::high_resolution_timer::clock_type::now();
   if(set_on > now && set_on < now + set_in)

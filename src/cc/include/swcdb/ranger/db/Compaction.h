@@ -78,6 +78,7 @@ class Compaction final {
   size_t                          m_idx_cid;
   cid_t                           m_last_rid;
   size_t                          m_idx_rid;
+  Core::AtomicBool                m_next;
 
   Core::Vector<CompactRange::Ptr> m_compacting;
 
