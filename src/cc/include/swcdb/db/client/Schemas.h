@@ -83,12 +83,12 @@ class Schemas final {
       schema = _schema;
     }
   };
-  Core::MutexSptd                         m_mutex;
-  std::unordered_map<cid_t, SchemaData>   m_schemas;
-  Clients*                                _clients;
-  Config::Property::V_GINT32::Ptr         m_expiry_ms;
-  std::map<cid_t,       Pending>          m_pending_cid;
-  std::map<std::string, Pending>          m_pending_name;
+  Core::MutexSptd                           m_mutex;
+  std::unordered_map<cid_t, SchemaData>     m_schemas;
+  Clients*                                  _clients;
+  Config::Property::V_GINT32::Ptr           m_expiry_ms;
+  std::unordered_map<cid_t,       Pending>  m_pending_cid;
+  std::unordered_map<std::string, Pending>  m_pending_name;
 
 };
 

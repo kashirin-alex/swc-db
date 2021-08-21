@@ -12,8 +12,6 @@
 #include "swcdb/core/comm/IoContext.h"
 #include "swcdb/core/comm/ConnHandler.h"
 #include "swcdb/core/comm/ConfigSSL.h"
-#include <queue>
-#include <unordered_map>
 
 
 namespace SWC { namespace Comm {

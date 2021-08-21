@@ -12,8 +12,6 @@
 #include "swcdb/core/Comparators.h"
 #include "swcdb/db/Columns/Schema.h"
 
-#include <unordered_map>
-
 
 namespace SWC { namespace DB {
 

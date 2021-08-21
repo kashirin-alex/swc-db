@@ -6,8 +6,6 @@
 
 #include "swcdb/core/config/Settings.h"
 #include "swcdb/core/comm/SerializedClient.h"
-#include <queue>
-#include <unordered_map>
 
 
 namespace SWC { namespace Comm { namespace client {

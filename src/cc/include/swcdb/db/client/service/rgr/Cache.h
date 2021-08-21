@@ -10,7 +10,6 @@
 #include "swcdb/db/Types/Identifiers.h"
 #include "swcdb/db/client/Settings.h"
 #include "swcdb/core/comm/Resolver.h"
-#include <unordered_map>
 
 #include "swcdb/db/client/service/rgr/ContextRanger.h"
 

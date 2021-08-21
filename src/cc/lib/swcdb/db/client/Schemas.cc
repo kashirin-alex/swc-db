@@ -101,11 +101,10 @@ Schemas::get(int& err, cid_t cid, uint32_t timeout) {
        Time::now_ms() < it->second.ts + m_expiry_ms->get()) {
       return it->second.schema;
     }
-    auto it_req = m_pending_cid.find(cid);
-    has_req = it_req != m_pending_cid.cend();
-    pending = has_req
-      ? it_req->second
-      : m_pending_cid.emplace(cid, _request(cid, timeout)).first->second;
+    Pending& tmp = m_pending_cid[cid];
+    if(!(has_req = tmp.datap))
+      tmp = _request(cid, timeout);
+    pending = tmp;
   }
   if(!has_req)
     pending.req->run();
@@ -135,11 +134,10 @@ Schemas::get(int& err, const std::string& name, uint32_t timeout) {
         break;
       }
     }
-    auto it_req = m_pending_name.find(name);
-    has_req = it_req != m_pending_name.cend();
-    pending = has_req
-      ? it_req->second
-      : m_pending_name.emplace(name, _request(name, timeout)).first->second;
+    Pending& tmp = m_pending_name[name];
+    if(!(has_req = tmp.datap))
+      tmp = _request(name, timeout);
+    pending = tmp;
   }
   if(!has_req)
     pending.req->run();
@@ -166,7 +164,7 @@ DB::Schema::Ptr Schemas::get(cid_t cid) {
 
 DB::Schema::Ptr Schemas::get(const std::string& name) {
   Core::MutexSptd::scope lock(m_mutex);
-  for(const auto& data : m_schemas) {
+  for(const auto& data : m_schemas) { // ? cross-map m_schemas_names
     if(Condition::str_eq(name, data.second.schema->col_name)) {
       if(Time::now_ms() < data.second.ts + m_expiry_ms->get())
         return data.second.schema;

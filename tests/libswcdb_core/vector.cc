@@ -9,7 +9,6 @@
 #include "swcdb/core/Vector.h"
 #include "swcdb/core/VectorsVector.h"
 
-#include <map>
 
 namespace SWC {
 

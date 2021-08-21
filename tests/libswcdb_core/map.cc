@@ -6,7 +6,7 @@
 
 #include "swcdb/core/Exception.h"
 #include "swcdb/core/Time.h"
-#include <map>
+
 
 namespace SWC {
 
@@ -23,7 +23,7 @@ void test_map(const typename MapT::size_type _sz) {
   for(size_t n=sz; n; --n)
     map[n] = n;
   uint64_t took = track.elapsed();
-  std::cout << typeid(MapT).name() << " operator[]: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
+  std::cout << typeid(MapT).name() << " operator[]-w: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   }
 
   // emplace
@@ -48,6 +48,19 @@ void test_map(const typename MapT::size_type _sz) {
   }
   uint64_t took = track.elapsed();
   std::cout << typeid(MapT).name() << " find: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
+  }
+
+  // operator[]
+  {
+  MapT map;
+  for(size_t n=sz; n; --n)
+    map.emplace(n, n);
+  Time::Measure_ns track;
+  for(size_t n=sz; n; --n) {
+    SWC_ASSERT(map[n] == n);
+  }
+  uint64_t took = track.elapsed();
+  std::cout << typeid(MapT).name() << " operator[]-r: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   }
 
 }
@@ -249,6 +262,11 @@ int main() {
   SWC::test_map< std::unordered_map<uint64_t, uint64_t> >(10000000, probes);
   SWC::test_map< std::unordered_map<uint64_t, Type1>    >(10000000, probes);
   SWC::test_map< std::unordered_map<uint64_t, Type2>    >(10000000, probes);
+
+  // ? diff - unordered faster by~ 1/3
+  SWC::test_map< std::unordered_map<uint64_t, uint64_t> >(1000000, probes);
+  SWC::test_map< std::map<uint64_t, uint64_t>           >(1000000, probes);
+
 
   std::cout << " OK! \n";
   return 0;

@@ -6,7 +6,6 @@
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Error.h"
-#include <map>
 #include <future>
 #include <netdb.h>
 
@@ -17,7 +16,7 @@ namespace SWC {
 
 namespace {
 
-std::map<const int, const char *> text_map {
+const std::unordered_map<int, const char *> text_map {
 
   { Error::EXCEPTION_BAD,                  "Bad Exception" },
   { Error::EXCEPTION_UNKNOWN,              "Unknown Exception" },
@@ -120,15 +119,18 @@ static const char ERROR_NOT_REGISTERED[] = "ERROR NOT REGISTERED";
 SWC_SHOULD_NOT_INLINE
 const char* Error::get_text(const int err) noexcept {
   const char* text = nullptr;
-  if(err <= SWC_ERRNO_SYS_END)
+  if(err <= SWC_ERRNO_SYS_END) {
     text = strerror(err);
-  else if(err <= SWC_ERRNO_FUTURE_END)
+  } else if(err <= SWC_ERRNO_FUTURE_END) {
     text =  std::future_error(
       std::future_errc(err - SWC_ERRNO_FUTURE_BEGIN)).what();
-  else if(err <= SWC_ERRNO_EAI_END)
+  } else if(err <= SWC_ERRNO_EAI_END) {
     text = gai_strerror(-(err - SWC_ERRNO_EAI_BEGIN));
-  else if(err >= SWC_ERRNO_APP_BEGIN && err <= SWC_ERRNO_APP_END)
-    text = text_map[err];
+  } else if(err >= SWC_ERRNO_APP_BEGIN && err <= SWC_ERRNO_APP_END) {
+    auto it = text_map.find(err);
+    if(it != text_map.cend())
+      text = it->second;
+  }
   return text ? text : ERROR_NOT_REGISTERED;
 }
 

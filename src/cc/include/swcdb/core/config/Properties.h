@@ -13,8 +13,6 @@
 #include "swcdb/core/config/Property.h"
 #include "swcdb/core/config/PropertiesParser.h"
 
-#include <map>
-
 
 namespace SWC { namespace Config {
 

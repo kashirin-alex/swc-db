@@ -6,7 +6,6 @@
 
 #include "swcdb/core/comm/Settings.h"
 #include "swcdb/core/comm/SerializedServer.h"
-#include <unordered_map>
 
 
 namespace SWC { namespace Comm { namespace server {

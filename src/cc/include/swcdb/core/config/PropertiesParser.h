@@ -9,7 +9,6 @@
 
 
 #include "swcdb/core/config/Property.h"
-#include <map>
 
 
 namespace SWC { namespace Config {

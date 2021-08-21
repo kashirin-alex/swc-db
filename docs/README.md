@@ -180,6 +180,7 @@ In worst case of outdated data being used with a request the Ranger return an er
 
 
 
+<iframe src="https://github.com/sponsors/kashirin-alex/card" title="Sponsor kashirin-alex" width="100%" style="border: 0;width:100%;"></iframe>
 
 
 

@@ -11,8 +11,6 @@
 #include "swcdb/manager/db/Range.h"
 #include "swcdb/db/Types/MngrColumnState.h"
 
-#include <unordered_map>
-
 
 namespace SWC { namespace Manager {
 
@@ -56,10 +54,15 @@ class Column final : private Core::Vector<Range::Ptr> {
     {
       Core::ScopedLock lock(m_mutex);
 
-      if(!exists_range_path(err))
-        create_range_path(err);
-      else
+      if(exists_range_path(err))
         ranges_by_fs(err, entries);
+      if(entries.empty()) {
+        SWC_LOGF(LOG_WARN,
+          "Problem reading Ranges of cid=%lu err=%d - "
+          "creating new Range directories",
+          cfg->cid, err);
+        create_range_path(err = Error::OK);
+      }
     }
 
     if(entries.empty())

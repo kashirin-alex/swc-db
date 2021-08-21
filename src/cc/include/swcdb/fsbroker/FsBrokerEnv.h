@@ -11,8 +11,6 @@
 #include "swcdb/fs/Broker/Protocol/Commands.h"
 #include "swcdb/fsbroker/queries/update/MetricsReporting.h"
 
-#include <unordered_map>
-
 
 namespace SWC { namespace FsBroker {
 

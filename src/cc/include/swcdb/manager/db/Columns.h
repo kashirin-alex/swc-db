@@ -15,8 +15,6 @@
 #include "swcdb/manager/db/Column.h"
 #include "swcdb/common/Files/Schema.h"
 
-#include <unordered_map>
-
 
 namespace SWC { namespace Manager {
 

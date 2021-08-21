@@ -27,8 +27,6 @@ typedef std::shared_ptr<Range> RangePtr;
 #include "swcdb/ranger/db/ColumnCfg.h"
 #include "swcdb/ranger/db/Column.h"
 
-#include <unordered_map>
-
 
 namespace SWC { namespace Ranger {
 

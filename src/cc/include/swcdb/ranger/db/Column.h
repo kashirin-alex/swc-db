@@ -10,8 +10,6 @@
 
 #include "swcdb/ranger/db/Range.h"
 
-#include <unordered_map>
-
 
 namespace SWC { namespace Ranger {
 
