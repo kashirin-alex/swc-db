@@ -25,20 +25,20 @@ struct Item final {
   const size_t            hash_;
 
 
-  Item() = delete;
-
-  Item(const Item&) = delete;
-
-  Item& operator=(const Item&) = delete;
+  Item()                        = delete;
+  Item(const Item&)             = delete;
+  Item(Item&& other)            = delete;
+  Item& operator=(const Item&)  = delete;
+  Item& operator=(Item&&)       = delete;
 
 
   static Item::Ptr make(const uint8_t* buf, uint32_t size);
 
-  Item(const uint8_t* ptr, uint32_t size)
+  Item(const uint8_t* ptr, uint32_t size) noexcept
       : count(0), size_(size), data_(ptr), hash_(_hash()) {
   }
 
-  size_t _hash() {
+  size_t _hash() const noexcept {
     size_t ret = 0;
     const uint8_t* dp = data_;
     for(uint32_t sz = size_; sz; --sz, ++dp)
@@ -54,43 +54,43 @@ struct Item final {
 
   ~Item() {
     if(data_)
-      delete data_;
+      delete[] data_;
   }
 
-  uint32_t size() const {
+  uint32_t size() const noexcept {
     return size_;
   }
 
-  const uint8_t* data() const {
+  const uint8_t* data() const noexcept {
     return data_;
   }
 
-  size_t hash() const {
+  size_t hash() const noexcept {
     return hash_;
   }
 
-  Ptr use() {
+  Ptr use() noexcept {
     count.fetch_add(1);
     return this;
   }
 
-  bool unused() {
+  bool unused() noexcept {
     return count.fetch_sub(1) == 1;
   }
 
   void release();
 
-  std::string_view to_string() const {
+  std::string_view to_string() const noexcept {
     return std::string_view(reinterpret_cast<const char*>(data_), size_);
   }
 
-  bool less(const Item& other) const {
+  bool less(const Item& other) const noexcept {
     return size_ < other.size_ ||
            (size_ == other.size() &&
             Condition::mem_cmp(data_, other.data(), size_) < 0);
   }
 
-  bool equal(const Item& other) const {
+  bool equal(const Item& other) const noexcept {
     return Condition::eq(data_, size_, other.data(), other.size());
   }
 
@@ -157,12 +157,14 @@ class Page final : public PageBase {
     //  sz += nxt->count();
     return sz;
   }
+
   /*
   void next_page(Page*& page) const {
     Core::ScopedLock lock(m_mutex);
     page = m_page;
   }
   */
+
   private:
   mutable std::mutex            m_mutex;
   //Page*                         m_page = nullptr; // upper ranges
@@ -264,8 +266,8 @@ class Arena final {
 
   size_t count() const {
     size_t sz = 0;
-    for(uint16_t i=0;i<256;++i)
-      sz += _pages[i].count();
+    for(auto& p : _pages)
+      sz += p.count();
     return sz;
   }
 
@@ -317,6 +319,10 @@ struct ItemPtr final { // Item as SmartPtr
           : ptr(other.ptr ? other.ptr->use() : nullptr) {
   }
 
+  ItemPtr(ItemPtr&& other) noexcept : ptr(other.ptr) {
+    other.ptr = nullptr;
+  }
+
   ItemPtr(const uint8_t* buf, uint32_t size)
           : ptr(Item::make(buf, size)) {
   }
@@ -326,22 +332,33 @@ struct ItemPtr final { // Item as SmartPtr
     return *this;
   }
 
-  ~ItemPtr() {
-    release();
+  ItemPtr operator=(ItemPtr&& other) {
+    ptr = other.ptr;
+    other.ptr = nullptr;
+    return *this;
   }
 
-  void release() {
+  ~ItemPtr() {
     if(ptr)
       ptr->release();
   }
 
+  void release() {
+    if(ptr) {
+      ptr->release();
+      ptr = nullptr;
+    }
+  }
+
   void use(const ItemPtr& other) {
-    release();
+    if(ptr)
+      ptr->release();
     ptr = other.ptr->use();
   }
 
   void use(const uint8_t* buf, uint32_t size) {
-    release();
+    if(ptr)
+      ptr->release();
     ptr = Item::make(buf, size);
   }
 

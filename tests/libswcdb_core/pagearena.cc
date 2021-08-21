@@ -8,7 +8,7 @@
 #include "swcdb/core/PageArena.h"
 
 
-int main() {
+int run() {
   size_t num_items = 1000;
   size_t num_uses = 1000;
   auto& arena = SWC::Env::PageArena;
@@ -58,7 +58,7 @@ int main() {
   }
 
   std::cout << " release  begin\n";
-  for(auto arr : data) {
+  for(auto& arr : data) {
     arr.release();
   }
   std::cout << " release  end\n";
@@ -69,3 +69,12 @@ int main() {
   std::cout << " OK! \n";
   return 0;
 }
+
+
+int main() {
+  int e = run();
+  std::cout << " dtor scope OK! \n";
+  return e;
+}
+
+
