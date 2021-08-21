@@ -74,6 +74,13 @@ void Column::get_rids(std::vector<rid_t>& rids) {
     rids.push_back(it->first);
 }
 
+void Column::get_ranges(Core::Vector<RangePtr>& ranges) {
+  Core::MutexSptd::scope lock(m_mutex);
+  ranges.reserve(size());
+  for(auto it = cbegin(); it != cend(); ++it)
+    ranges.push_back(it->second);
+}
+
 void Column::schema_update(const DB::SchemaPrimitives& schema) {
   bool compact =
     cfg->c_versions > schema.cell_versions ||

@@ -37,6 +37,8 @@ class Column final :
 
   void get_rids(std::vector<rid_t>& rids);
 
+  void get_ranges(Core::Vector<RangePtr>& ranges);
+
   void schema_update(const DB::SchemaPrimitives& schema);
 
   void compact();

@@ -110,7 +110,8 @@ void Compaction::run(bool initial) {
   uint8_t added = 0;
   RangePtr range  = nullptr;
   for(ColumnPtr col = nullptr;
-      !stopped() && (!m_running || !Env::Rgr::res().is_low_mem_state()) &&
+      !stopped() && m_running < cfg_max_range->get() &&
+      (!m_running || !Env::Rgr::res().is_low_mem_state()) &&
       (col || (col=Env::Rgr::columns()->get_next(m_last_cid, m_idx_cid)));) {
 
     if(col->removing() ||
@@ -128,11 +129,8 @@ void Compaction::run(bool initial) {
         !range->compact_possible())
       continue;
 
-    if(uint8_t running = compact(range)) {
+    if(compact(range))
       ++added;
-      if(running == cfg_max_range->get())
-        break;
-    }
   }
 
   m_schedule.stop();
@@ -253,7 +251,7 @@ void Compaction::compacted(const CompactRange::Ptr req,
 SWC_CAN_INLINE
 void Compaction::compacted() {
   uint8_t ran = m_running.fetch_sub(1);
-  if(ran == cfg_max_range->get()) {
+  if(ran == cfg_max_range->get() && !m_schedule) {
     struct Task {
       Compaction* ptr;
       SWC_CAN_INLINE

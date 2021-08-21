@@ -59,6 +59,13 @@ void Columns::get_cids(std::vector<cid_t>& cids) {
     cids.push_back(it->first);
 }
 
+void Columns::get_columns(Core::Vector<ColumnPtr>& columns) {
+  Core::MutexSptd::scope lock(m_mutex);
+  columns.reserve(size());
+  for(auto it = cbegin(); it != cend(); ++it)
+    columns.push_back(it->second);
+}
+
 void Columns::load_range(const DB::SchemaPrimitives& schema,
                          const Callback::RangeLoad::Ptr& req) {
   int err = Error::OK;

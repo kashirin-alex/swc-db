@@ -105,9 +105,9 @@ struct Report {
           c->col_seq = col->cfg->key_seq;
           c->mem_bytes = 0;
 
-          Ranger::RangePtr range;
-          rid_t last_rid = 0;
-          for(size_t ridx=0; (range=col->get_next(last_rid, ridx)); ++ridx) {
+          Core::Vector<Ranger::RangePtr> ranges;
+          col->get_ranges(ranges);
+          for(auto& range : ranges) {
             auto r = new Params::Report::RspColumnsRanges::Range(c->col_seq);
             c->ranges.push_back(r);
             c->mem_bytes += range->blocks.size_bytes_total(true);
@@ -132,18 +132,17 @@ struct Report {
           Params::Report::RspColumnsRanges rsp_params(
             rgrid, rgr_data->endpoints);
 
-          Ranger::ColumnPtr col;
-          Ranger::RangePtr range;
-          auto& columns = *Env::Rgr::columns();
-          cid_t last_cid = 0;
-          rid_t last_rid = 0;
-          for(size_t cidx=0;(col=columns.get_next(last_cid, cidx));++cidx) {
+          Core::Vector<Ranger::ColumnPtr> cols;
+          Env::Rgr::columns()->get_columns(cols);
+          Core::Vector<Ranger::RangePtr> ranges;
+          for(auto& col : cols) {
             auto c = new Params::Report::RspColumnsRanges::Column();
             rsp_params.columns.push_back(c);
             c->cid = col->cfg->cid;
             c->col_seq = col->cfg->key_seq;
             c->mem_bytes = 0;
-            for(size_t ridx=0;(range=col->get_next(last_rid, ridx));++ridx) {
+            col->get_ranges(ranges);
+            for(auto& range : ranges) {
               auto r = new Params::Report::RspColumnsRanges::Range(
                 c->col_seq);
               c->ranges.push_back(r);
@@ -151,6 +150,7 @@ struct Report {
               r->rid = range->rid;
               range->get_interval(r->interval);
             }
+            ranges.clear();
           }
 
           cbp = Buffers::make(ev, rsp_params, 4);
