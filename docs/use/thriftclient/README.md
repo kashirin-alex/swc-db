@@ -14,6 +14,7 @@ sort: 3
   * [C++](cpp/)
   * [Java](java/)
   * [Python](python/)
+  * [Ruby](ruby/)
   * [C-Glib](c_glib/)
 
  _**Additional only generated SWC-DB Thrift Client Service**_:

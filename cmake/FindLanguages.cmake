@@ -34,6 +34,9 @@ if (LANGS OR LANG_PY2 OR LANG_PY3 OR LANG_PYPY2 OR LANG_PYPY3)
   find_package(LangPy)
 endif ()
 
+if (LANGS OR LANG_RUBY)
+  find_package(LangRuby)
+endif ()
 
 if (LANGS OR LANG_JAVA)
   find_package(LangJava)

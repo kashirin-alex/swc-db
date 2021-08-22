@@ -14,6 +14,9 @@ namespace cpp     SWC.Thrift
 /* The SWC-DB Thrift-Protocol Python Module 'swcdb.thrift' */
 namespace py      swcdb.thrift.gen
 
+/* The SWC-DB Thrift-Protocol Ruby Module 'swcdb.thrift' */
+namespace rb      swcdb.thrift.gen
+
 /* The SWC-DB Thrift-Protocol C-GLIB prefix 'swcdb_thrift' */
 namespace c_glib  swcdb_thrift
 

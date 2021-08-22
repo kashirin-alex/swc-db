@@ -69,7 +69,7 @@ endif(THRIFT_C_FOUND)
 
 
 ######## SET THRIFT JAVA CLIENT MODULE
-if(MAVEN_FOUND)
+if(LANGS OR LANG_JAVA)
   set(THRIFT_JAVA_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../java/mvn/swcdb/thrift/src/main/java/org/swcdb/thrift/)
 
   if(NOT EXISTS ${THRIFT_JAVA_GEN_PATH}/gen OR NOT EXISTS ${VER_GEN_PATH}/gen-java)
@@ -94,15 +94,15 @@ if(MAVEN_FOUND)
   if(EXISTS ${THRIFT_JAVA_GEN_PATH}/gen)
       set(THRIFT_JAVA_GEN_PATH ${THRIFT_JAVA_GEN_PATH} PARENT_SCOPE)
   endif()
-endif(MAVEN_FOUND)
+endif(LANGS OR LANG_JAVA)
 
 
 
 ######## SET THRIFT PYTHON CLIENT MODULE
-if(PYTHON_EXECUTABLES)
+if (LANGS OR LANG_PY2 OR LANG_PY3 OR LANG_PYPY2 OR LANG_PYPY3)
   set(THRIFT_PY_GEN_PATH ${CMAKE_CURRENT_BINARY_DIR}/../../py/package/swcdb/thrift)
 
-  if(NOT EXISTS ${THRIFT_PY_GEN_PATH}/gen OR NOT EXISTS ${VER_GEN_PATH}/gen-py)
+  if(NOT EXISTS ${THRIFT_PY_GEN_PATH}/native OR NOT EXISTS ${VER_GEN_PATH}/gen-py)
     if(THRIFT_COMPILER_FOUND)
 
       set(GEN_TYPES "native;tornado;twisted;zope.interface")
@@ -134,7 +134,6 @@ if(PYTHON_EXECUTABLES)
 
     if(EXISTS ${VER_GEN_PATH}/gen-py)  # set module path
       execute_process(COMMAND mkdir -p ${THRIFT_PY_GEN_PATH} )
-      execute_process(COMMAND rm -rf ${THRIFT_PY_GEN_PATH}/gen-py )
 
       foreach(typ ${GEN_TYPES})
         if(typ STREQUAL "zope.interface")
@@ -142,6 +141,7 @@ if(PYTHON_EXECUTABLES)
         else()
           set(dest ${typ})
         endif()
+        execute_process(COMMAND rm -rf ${THRIFT_PY_GEN_PATH}/${dest} )
         execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-py/${typ}/swcdb/thrift/gen ${THRIFT_PY_GEN_PATH}/${dest}/)
       endforeach()
     endif()
@@ -150,7 +150,7 @@ if(PYTHON_EXECUTABLES)
   if(EXISTS ${THRIFT_PY_GEN_PATH}/native)
       set(THRIFT_PY_GEN_PATH ${THRIFT_PY_GEN_PATH} PARENT_SCOPE)
   endif()
-endif(PYTHON_EXECUTABLES)
+endif(LANGS OR LANG_PY2 OR LANG_PY3 OR LANG_PYPY2 OR LANG_PYPY3)
 
 
 
@@ -216,5 +216,31 @@ endif(LANGS OR LANG_RUST)
 
 
 
+######## SET THRIFT RUBY CLIENT SOURCES
+if (LANGS OR LANG_RUBY)
+  set(THRIFT_RUBY_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../rb/package/lib/swcdb/thrift)
 
+  if(NOT EXISTS ${THRIFT_RUBY_GEN_PATH}/gen OR NOT EXISTS ${VER_GEN_PATH}/gen-rb)
+    if(THRIFT_COMPILER_FOUND)
+      execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-rb )
+      execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-rb )
+
+      message(STATUS "Generating Thrift Ruby:") # :rubygems,
+      execute_process(COMMAND thrift -r --gen rb:namespaced
+                      -o ${VER_GEN_PATH}
+                      ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
+      message("       ${VER_GEN_PATH}/gen-rb")
+    endif()
+
+    if(EXISTS ${VER_GEN_PATH}/gen-rb) # set current gen-rb/ included path
+      execute_process(COMMAND rm -rf ${THRIFT_RUBY_GEN_PATH}/gen )
+      execute_process(COMMAND mkdir -p ${THRIFT_RUBY_GEN_PATH} )
+      execute_process(COMMAND cp -r  ${VER_GEN_PATH}/gen-rb/swcdb/thrift/gen ${THRIFT_RUBY_GEN_PATH}/)
+    endif()
+  endif()
+
+  if(EXISTS ${THRIFT_RUBY_GEN_PATH}/gen)
+      set(THRIFT_RUBY_GEN_PATH ${THRIFT_RUBY_GEN_PATH} PARENT_SCOPE)
+  endif()
+endif(LANGS OR LANG_RUBY)
 

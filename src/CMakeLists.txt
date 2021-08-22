@@ -13,7 +13,7 @@ add_subdirectory(c)
 
 if(NOT SWC_BUILD_PKG)
   add_subdirectory(py)
-
+  add_subdirectory(rb)
   add_subdirectory(java)
 endif()
 
