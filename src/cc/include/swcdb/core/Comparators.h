@@ -557,13 +557,13 @@ bool ne(const T p1, const T p2) noexcept {
 template<typename T>
 extern constexpr SWC_CAN_INLINE
 bool sbs(const T p1, const T p2) noexcept {
-  return (p2 % p1) == 0;
+  return !p1 || (p2 % p1) == 0;
 }
 
 template<>
 SWC_CAN_INLINE
 bool sbs(const long double p1, const long double p2) noexcept {
-  return fmod(p2, p1) == 0;
+  return !p1 || fmod(p2, p1) == 0;
 }
 
 template<typename T>
