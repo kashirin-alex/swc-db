@@ -16,12 +16,12 @@ All the Objects **[Enumerations]({{ site.baseurl }}/use/thriftclient/#enumeratio
 
 
 
-## Before Using
+### Before Using
 Before you can start using the SWC-DB Ruby Package you need as [by instructions to Install the package]({{ site.baseurl }}/install/thrift_clients/#install-the-swc-db-ruby-package).
 
 
-## An Exmaple with using `irb`
-Enter Ruby CLI (in quiet mode):
+#### Some code Examples
+`irb` is used for the examples, Enter Ruby CLI (in quiet mode):
 ```bash
 irb --noecho
 ```
