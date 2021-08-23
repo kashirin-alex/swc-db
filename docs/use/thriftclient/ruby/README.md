@@ -27,6 +27,7 @@ irb --noecho
 ```
 
 > Print schemas with the cids 1,2,3,4 - `swcdbThriftBroker` assumed to be listening on `localhost:18000`
+
 ```ruby
 require 'swcdb/thrift/client'
 
@@ -40,6 +41,7 @@ client.close()
 ```
 
 > Scan with Specs and Print SYS_CID_STATS(cid:10) cells with the RSS-Memory field_id:3 (FIELD_RSS_USED_MIN) above 2MB.
+
 ```ruby
 require 'swcdb/thrift/client'
 
