@@ -156,10 +156,9 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       chk->assigned(rgrid, num, ranges);
     } while(num);
   }
-
-  Column::Ptr get_need_health_check(int64_t ts, uint32_t ms) {
+  Column::Ptr get_need_health_check(int64_t ts, uint32_t ms, cid_t last_cid) {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it = cbegin(); it != cend(); ++it) {
+    for(auto it = last_cid ? find(last_cid) : cbegin(); it != cend(); ++it) {
       if(it->second->need_health_check(ts, ms))
         return it->second;
     }
