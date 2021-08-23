@@ -175,10 +175,29 @@ void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
 
 SWC_CAN_INLINE
 void Readers::load_from_path(int &err) {
+  const auto& fs_if = Env::FsInterface::interface();
+
+  const std::string& cs_path = range->get_path(DB::RangeBase::CELLSTORES_DIR);
+  const std::string& bak_path = range->get_path(Range::CELLSTORES_BAK_DIR);
+
+  if(fs_if->exists(err, bak_path)) {
+    const std::string& rcvd_path = range->get_path(Range::CELLSTORES_RCVD_DIR);
+    SWC_LOGF(LOG_WARN,
+      "Backup dir='%s' has remained - Recovering from uncomplete Compaction, "
+      "backing-up current to='%s'", bak_path.c_str(), rcvd_path.c_str());
+    if(fs_if->exists(err, cs_path))
+      fs_if->rename(err, cs_path, rcvd_path);
+    if(err)
+      return;
+    fs_if->rename(err, bak_path, cs_path);
+  }
+  if(err)
+    return;
 
   FS::DirentList dirs;
-  Env::FsInterface::interface()->readdir(
-    err, range->get_path(DB::RangeBase::CELLSTORES_DIR), dirs);
+  fs_if->readdir(err, cs_path, dirs);
+  if(err)
+    return;
 
   FS::IdEntries_t entries;
   entries.reserve(dirs.size());
@@ -202,23 +221,18 @@ void Readers::load_from_path(int &err) {
 }
 
 void Readers::replace(int &err, Writers& w_cellstores) {
-  const auto& fs = Env::FsInterface::interface();
+  const auto& fs_if = Env::FsInterface::interface();
 
   _close();
 
-  fs->rename(
-    err,
-    range->get_path(DB::RangeBase::CELLSTORES_DIR),
-    range->get_path(Range::CELLSTORES_BAK_DIR)
-  );
+  const std::string& cs_path = range->get_path(DB::RangeBase::CELLSTORES_DIR);
+  const std::string& bak_path = range->get_path(Range::CELLSTORES_BAK_DIR);
+
+  fs_if->rename(err, cs_path, bak_path);
   if(err)
     return;
 
-  fs->rename(
-    err,
-    range->get_path(Range::CELLSTORES_TMP_DIR),
-    range->get_path(DB::RangeBase::CELLSTORES_DIR)
-  );
+  fs_if->rename(err, range->get_path(Range::CELLSTORES_TMP_DIR), cs_path);
 
   if(!err) {
     Vec cellstores;
@@ -240,16 +254,12 @@ void Readers::replace(int &err, Writers& w_cellstores) {
   }
 
   if(err) {
-    fs->rmdir(err, range->get_path(DB::RangeBase::CELLSTORES_DIR));
-    fs->rename(
-      err,
-      range->get_path(Range::CELLSTORES_BAK_DIR),
-      range->get_path(DB::RangeBase::CELLSTORES_DIR)
-    );
+    fs_if->rmdir(err, cs_path);
+    fs_if->rename(err, bak_path, cs_path);
     return;
   }
 
-  fs->rmdir(err, range->get_path(Range::CELLSTORES_BAK_DIR));
+  fs_if->rmdir(err, bak_path);
 
   err = Error::OK;
 

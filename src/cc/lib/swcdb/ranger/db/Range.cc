@@ -330,16 +330,16 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
   SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-STARTED", cfg->cid, rid);
 
   if(!Env::FsInterface::interface()->exists(
-        err, get_path(DB::RangeBase::CELLSTORES_DIR))) {
+        err, get_path(DB::RangeBase::CELLSTORES_DIR)) && !err &&
+     !Env::FsInterface::interface()->exists(
+        err, get_path(Range::CELLSTORES_BAK_DIR)) && !err) {
+    internal_create_folders(err);
     if(!err)
-      internal_create_folders(err);
-    if(err)
-      return loaded(err, req);
-
-    internal_take_ownership(err, req);
-  } else {
-    last_rgr_chk(err, req);
+      return internal_take_ownership(err, req);
+  } else if(!err) {
+    return last_rgr_chk(err, req);
   }
+  return loaded(err, req);
 }
 
 void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req) {

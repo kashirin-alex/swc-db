@@ -357,6 +357,7 @@ size_t Interface::length(int& err, const std::string& name) {
     switch(err) {
       case Error::OK:
       case Error::FS_PATH_NOT_FOUND:
+      case ENOENT:
       //case Error::FS_PERMISSION_DENIED:
       case Error::SERVER_SHUTTING_DOWN:
         return length;
