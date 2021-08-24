@@ -56,14 +56,15 @@ class Column final : private Core::Vector<Range::Ptr> {
 
       if(exists_range_path(err))
         ranges_by_fs(err, entries);
-      if(entries.empty()) {
+      if(!err && entries.empty()) {
         SWC_LOGF(LOG_WARN,
-          "Problem reading Ranges of cid=%lu err=%d - "
-          "creating new Range directories",
-          cfg->cid, err);
-        create_range_path(err = Error::OK);
+          "Problem reading Ranges of cid=%lu, creating new Range directories",
+          cfg->cid);
+        create_range_path(err);
       }
     }
+    if(err)
+      return;
 
     if(entries.empty())
       entries.push_back(1); // initialize 1st range
@@ -248,13 +249,11 @@ class Column final : private Core::Vector<Range::Ptr> {
         range->set_rgr_id(rgrid);
     }
 
-    for(auto it = m_schemas_rev.cbegin(); it != m_schemas_rev.cend(); ++it) {
-      if(it->first == rgrid_old) {
-        int64_t last = it->second;
-        m_schemas_rev.erase(it);
-        m_schemas_rev.emplace(rgrid, last);
-        break;
-      }
+    auto it = m_schemas_rev.find(rgrid_old);
+    if(it != m_schemas_rev.cend()) {
+      int64_t rev = it->second;
+      m_schemas_rev.erase(it);
+      m_schemas_rev[rgrid] = rev;
     }
   }
 

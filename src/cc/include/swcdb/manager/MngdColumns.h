@@ -7,6 +7,7 @@
 #define swcdb_manager_MngdColumns_h
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
+#include <forward_list>
 
 namespace SWC { namespace Manager {
 
@@ -111,7 +112,7 @@ class MngdColumns final {
   cid_t                  m_cid_begin;
   cid_t                  m_cid_end;
   uint64_t               m_expected_remain;
-  Core::Vector<cid_t>    m_expected_load;
+  std::forward_list<cid_t> m_expected_load;
 
   Core::MutexSptd                              m_mutex_actions;
   Core::QueueSafe<ColumnReq::Ptr>              m_actions;

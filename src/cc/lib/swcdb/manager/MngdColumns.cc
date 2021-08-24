@@ -256,7 +256,7 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
       if(std::find(m_expected_load.cbegin(), m_expected_load.cend(), cid)
                                               == m_expected_load.cend() &&
          !_cols->get_column(err = Error::OK, cid)) {
-        m_expected_load.push_back(cid);
+        m_expected_load.push_front(cid);
       } else {
         --m_expected_remain;
       }
@@ -321,18 +321,11 @@ void MngdColumns::update_status(ColumnMngFunc func,
           Env::Mngr::schemas()->replace(schema);
         {
           Core::MutexSptd::scope lock(m_mutex_active);
-          if(!m_expected_load.empty()) {
-            auto it = std::find(
-              m_expected_load.cbegin(), m_expected_load.cend(), schema->cid);
-            if(it != m_expected_load.cend()) {
-              m_expected_load.erase(it);
-              if(m_expected_load.empty())
-                m_expected_load.shrink_to_fit();
-              init = true;
-              --m_expected_remain;
-              SWC_LOGF(LOG_DEBUG, "Expected Column(%lu) Loaded remain=%lu",
-                                  schema->cid, m_expected_remain);
-            }
+          if(m_expected_load.remove(schema->cid)) {
+            init = true;
+            --m_expected_remain;
+            SWC_LOGF(LOG_DEBUG, "Expected Column(%lu) Loaded remain=%lu",
+                                schema->cid, m_expected_remain);
           }
         }
       }
@@ -810,7 +803,7 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
       return;
     }
     case ColumnMngFunc::INTERNAL_ACK_LOAD:
-      if(err) {
+      if(err && m_run) {
         auto existing = Env::Mngr::schemas()->get(schema->cid);
         if(existing)
           update_status(
@@ -847,7 +840,7 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
 
   if(err)
     SWC_LOG_OUT(LOG_DEBUG,
-      SWC_LOG_OSTREAM << "COLUMN-ACK func=" << co_func;
+      SWC_LOG_OSTREAM << "COLUMN-ACK func=" << int(co_func);
       Error::print(SWC_LOG_OSTREAM << ' ', err);
       schema->print(SWC_LOG_OSTREAM << ' ');
     );
