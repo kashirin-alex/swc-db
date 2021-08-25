@@ -276,6 +276,11 @@ class AppContext final : public Comm::AppContext {
 
     Env::Mngr::stop();
 
+    #if defined(SWC_ENABLE_SANITIZER)
+      if(m_metrics)
+        m_metrics->wait();
+    #endif
+
     Env::Clients::get()->stop();
 
     Env::FsInterface::interface()->stop();
@@ -286,10 +291,7 @@ class AppContext final : public Comm::AppContext {
 
     #if defined(SWC_ENABLE_SANITIZER)
       std::this_thread::sleep_for(std::chrono::seconds(2));
-      if(m_metrics) {
-        m_metrics->wait();
-        m_metrics = nullptr;
-      }
+      m_metrics = nullptr;
       m_srv = nullptr;
       Env::Mngr::reset();
       Env::Clients::reset();

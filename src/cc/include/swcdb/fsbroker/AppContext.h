@@ -238,8 +238,12 @@ class AppContext final : public Comm::AppContext {
     auto guard = m_srv->stop_accepting(); // no further requests accepted
 
     Env::FsBroker::shuttingdown();
-    if(m_metrics)
+    if(m_metrics) {
+      #if defined(SWC_ENABLE_SANITIZER)
+        m_metrics->wait();
+      #endif
       Env::Clients::get()->stop_services();
+    }
 
     Env::IoCtx::io()->stop();
 
@@ -250,10 +254,7 @@ class AppContext final : public Comm::AppContext {
     #if defined(SWC_ENABLE_SANITIZER)
       std::this_thread::sleep_for(std::chrono::seconds(2));
       m_srv = nullptr;
-      if(m_metrics) {
-        m_metrics->wait();
-        m_metrics = nullptr;
-      }
+      m_metrics = nullptr;
       Env::FsBroker::reset();
       Env::Clients::reset();
       Env::FsInterface::reset();
