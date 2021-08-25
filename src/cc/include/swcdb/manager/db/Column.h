@@ -24,8 +24,7 @@ class Column final : private Core::Vector<Range::Ptr> {
   typedef std::shared_ptr<Column> Ptr;
 
   static bool create(int &err, const cid_t cid) {
-    Env::FsInterface::interface()->mkdirs(
-      err, DB::RangeBase::get_column_path(cid));
+    Env::FsInterface::interface()->mkdirs(err, DB::RangeBase::get_path(cid));
     return true;
   }
 
@@ -50,25 +49,14 @@ class Column final : private Core::Vector<Range::Ptr> {
 
   void init(int &err) {
     FS::IdEntries_t entries;
-
-    {
-      Core::ScopedLock lock(m_mutex);
-
-      if(exists_range_path(err))
-        ranges_by_fs(err, entries);
-      if(!err && entries.empty()) {
-        SWC_LOGF(LOG_WARN,
-          "Problem reading Ranges of cid=%lu, creating new Range directories",
-          cfg->cid);
-        create_range_path(err);
-      }
-    }
+    Env::FsInterface::interface()->get_structured_ids(
+      err, DB::RangeBase::get_path(cfg->cid), entries);
     if(err)
       return;
-
-    if(entries.empty())
-      entries.push_back(1); // initialize 1st range
-
+    if(entries.empty()) {
+      SWC_LOGF(LOG_INFO, "Init. New Column(%lu) Range(1)", cfg->cid);
+      entries.push_back(1);
+    }
     for(auto rid : entries)
       get_range(rid, true);
   }
@@ -378,26 +366,6 @@ class Column final : private Core::Vector<Range::Ptr> {
   }
 
   private:
-
-  bool exists(int &err) {
-    return Env::FsInterface::interface()->exists(
-      err, DB::RangeBase::get_column_path(cfg->cid));
-  }
-
-  bool exists_range_path(int &err) {
-    return Env::FsInterface::interface()->exists(
-      err, DB::RangeBase::get_path(cfg->cid));
-  }
-
-  void create_range_path(int &err) {
-    Env::FsInterface::interface()->mkdirs(
-      err, DB::RangeBase::get_path(cfg->cid));
-  }
-
-  void ranges_by_fs(int &err, FS::IdEntries_t &entries) {
-    Env::FsInterface::interface()->get_structured_ids(
-      err, DB::RangeBase::get_path(cfg->cid), entries);
-  }
 
   void _print(std::ostream& out) {
     cfg->print(out << '(');
