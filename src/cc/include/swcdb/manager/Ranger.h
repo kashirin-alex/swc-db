@@ -33,7 +33,8 @@ class Ranger final {
   Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
         : rgrid(rgrid), endpoints(endpoints),
           interm_ranges(0), failures(0), load_scale(0),
-          state(RangerState::NONE), m_rebalance(0) {
+          state(RangerState::NONE), m_rebalance(0),
+          m_queue(nullptr) {
   }
 
   SWC_CAN_INLINE
@@ -43,7 +44,20 @@ class Ranger final {
           interm_ranges(0), failures(0),
           load_scale(Serialization::decode_i16(bufp, remainp)),
           state(Serialization::decode_i8(bufp, remainp)),
-          m_rebalance(Serialization::decode_i8(bufp, remainp)) {
+          m_rebalance(Serialization::decode_i8(bufp, remainp)),
+          m_queue(nullptr) {
+  }
+
+  SWC_CAN_INLINE
+  Ranger(const Ranger& other, const Comm::EndPoints& endpoints)
+        : rgrid(other.rgrid.load()),
+          endpoints(endpoints),
+          interm_ranges(other.interm_ranges.load()),
+          failures(other.failures.load()),
+          load_scale(other.load_scale.load()),
+          state(other.state.load()),
+          m_rebalance(other.rebalance()),
+          m_queue(nullptr) {
   }
 
   //~Ranger() { }
@@ -59,11 +73,6 @@ class Ranger final {
     if(m_queue)
       m_queue->print(out << ' ');
     out << ']';
-  }
-
-  SWC_CAN_INLINE
-  void set(const Comm::EndPoints& _endpoints) {
-    endpoints = _endpoints;
   }
 
   size_t encoded_length() const noexcept {
@@ -130,7 +139,7 @@ class Ranger final {
 
   mutable Core::MutexAtomic m_mutex;
   uint8_t                   m_rebalance;
-  Comm::client::Host::Ptr   m_queue = nullptr;
+  Comm::client::Host::Ptr   m_queue;
 
 };
 
