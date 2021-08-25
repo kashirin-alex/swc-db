@@ -49,23 +49,33 @@ Host::Ptr ConnQueues::get(const EndPoints& endpoints){
 }
 
 void ConnQueues::remove(const EndPoints& endpoints) {
-  Core::MutexSptd::scope lock(m_mutex);
-  for(auto it = cbegin(); it != cend(); ++it) {
-    if(has_endpoint((*it)->endpoints, endpoints)) {
-      erase(it);
-      break;
+  Host::Ptr host;
+  {
+    Core::MutexSptd::scope lock(m_mutex);
+    for(auto it = cbegin(); it != cend(); ++it) {
+      if(has_endpoint((*it)->endpoints, endpoints)) {
+        host = std::move(*it);
+        erase(it);
+        break;
+      }
     }
   }
+  if(host)
+    host->stop();
 }
 
 void ConnQueues::stop() {
   for(;;) {
-    Core::MutexSptd::scope lock(m_mutex);
-    auto it = cbegin();
-    if(it == cend())
-      break;
-    (*it)->stop();
-    erase(it);
+    Host::Ptr host;
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      auto it = cbegin();
+      if(it == cend())
+        break;
+      host = std::move(*it);
+      erase(it);
+    }
+    host->stop();
   }
   service->stop();
 }

@@ -30,28 +30,22 @@ void ConnQueue::stop() {
   }
   for(;;) {
     Core::MutexSptd::scope lock(m_mutex);
-    auto it = m_delayed.cbegin();
-    if(it == m_delayed.cend()) {
-      if(m_conn) {
-        if(m_conn->is_open())
-          m_conn->do_close();
-        m_conn = nullptr;
-      }
+    if(m_delayed.empty())
       break;
-    }
-    (*it)->cancel();
-    m_delayed.erase(it);
+    (*m_delayed.cbegin())->cancel();
+    m_delayed.erase(m_delayed.cbegin());
     std::this_thread::yield();
   }
 
   while(m_q_state.running())
     std::this_thread::yield();
 
+  ConnHandlerPtr conn;
   for(ReqBase::Ptr req;;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       if(empty()) {
-        m_q_state.stop();
+        m_conn.swap(conn);
         break;
       }
       req = front();
@@ -59,6 +53,9 @@ void ConnQueue::stop() {
     }
     req->handle_no_conn();
   }
+  if(conn)
+    conn->do_close();
+  m_q_state.stop();
 }
 
 EndPoint ConnQueue::get_endpoint_remote() noexcept {
@@ -206,8 +203,7 @@ void ConnQueue::schedule_close(bool closing) {
       Core::MutexSptd::scope lock(m_mutex);
       if((closing = empty() && m_delayed.empty() &&
                    (!m_conn || !m_conn->due()))) {
-        conn = m_conn;
-        m_conn = nullptr;
+        m_conn.swap(conn);
         m_timer->cancel();
       }
     }
@@ -228,7 +224,7 @@ void ConnQueue::schedule_close(bool closing) {
     SWC_CAN_INLINE
     TimerTask(ConnQueuePtr&& queue) noexcept : queue(std::move(queue)) { }
     void operator()(const asio::error_code& ec) {
-      if(ec != asio::error::operation_aborted){
+      if(ec != asio::error::operation_aborted) {
         queue->schedule_close(true);
       }
     }
