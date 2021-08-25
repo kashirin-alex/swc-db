@@ -79,8 +79,6 @@ class Serialized final :
              const IoContextPtr& ioctx,
              const AppContext::Ptr& ctx);
 
-  ServerConnections::Ptr get_srv(const EndPoint& endpoint);
-
   ConnHandlerPtr get_connection(
         const EndPoints& endpoints,
         const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
@@ -98,7 +96,7 @@ class Serialized final :
 
   void preserve(ConnHandlerPtr& conn);
 
-  void close(ConnHandlerPtr& conn);
+  //void close(ConnHandlerPtr& conn);
 
   SWC_CAN_INLINE
   IoContextPtr io() noexcept {
@@ -112,6 +110,8 @@ class Serialized final :
   virtual ~Serialized();
 
   private:
+
+  ServerConnections::Ptr get_srv(const EndPoint& endpoint);
 
   ConnHandlerPtr _get_connection(
         const EndPoints& endpoints,

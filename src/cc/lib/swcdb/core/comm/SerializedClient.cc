@@ -199,7 +199,7 @@ void Serialized::get_connection(
       ServerConnections::NewCb_t&& cb,
       const std::chrono::milliseconds& timeout,
       uint32_t probes, bool preserve) noexcept {
-  try {
+  if(m_run) try {
     if(endpoints.empty()) {
       SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints",
                           m_srv_name.c_str());
@@ -232,7 +232,7 @@ void Serialized::_get_connection(
   auto srv = get_srv(endpoints[next]);
   ConnHandlerPtr conn = nullptr;
   srv->reusable(conn, preserve);
-  if(conn || (probes && !tries)) {
+  if(!m_run || conn || (probes && !tries)) {
     cb(conn);
     return;
   }
@@ -274,6 +274,7 @@ void Serialized::preserve(ConnHandlerPtr& conn) {
     it->second->push(conn);
 }
 
+/*
 void Serialized::close(ConnHandlerPtr& conn) {
   size_t hash = conn->endpoint_remote_hash();
   conn->do_close();
@@ -282,6 +283,7 @@ void Serialized::close(ConnHandlerPtr& conn) {
   if((it = find(hash)) != cend() && it->second->empty())
     erase(it);
 }
+*/
 
 void Serialized::print(std::ostream& out, ConnHandlerPtr& conn) {
   conn->print(out << m_srv_name << ' ');
@@ -296,10 +298,16 @@ void Serialized::stop() {
       Core::MutexSptd::scope lock(m_mutex);
       if((it = cbegin()) == cend())
         break;
-      srv = it->second;
+      srv = std::move(it->second);
       erase(it);
     }
     srv->close_all();
+    for(size_t c = 0; srv.use_count() > 1; ++c) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
+      if(c % 5000 == 0)
+        SWC_LOGF(LOG_WARN, "Wating: %s count(wait=%lu use=%ld)",
+                            m_srv_name.c_str(), c, srv.use_count());
+    }
   }
   SWC_LOGF(LOG_INFO, "Stop: %s", m_srv_name.c_str());
 }
