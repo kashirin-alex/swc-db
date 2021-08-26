@@ -654,10 +654,7 @@ void Rangers::health_check_columns() {
     uint32_t intval = cfg_column_health_chk->get();
     for(Column::Ptr col;
         m_columns_check.size() < size_t(cfg_column_health_chkers->get()) &&
-        (col = Env::Mngr::columns()->get_need_health_check(
-                ts, intval, m_columns_check.empty()
-                              ? DB::Schema::NO_CID
-                              : m_columns_check.back()->col->cfg->cid)); ) {
+        (col = Env::Mngr::columns()->get_need_health_check(ts, intval)); ) {
       Env::Mngr::post(Task(m_columns_check.emplace_back(
         new ColumnHealthCheck(col, ts, intval))));
     }

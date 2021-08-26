@@ -217,32 +217,38 @@ class Column final : private Core::Vector<Range::Ptr> {
     return nullptr;
   }
 
-  void set_rgr_unassigned(rgrid_t rgrid) {
+  bool set_rgr_unassigned(rgrid_t rgrid) {
+    bool found = false;
     Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid) {
         range->set_state_none();
         _set_loading();
+        found = true;
       }
     }
     _remove_rgr_schema(rgrid);
+    return found;
   }
 
-  void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
+  bool change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
+    bool found = false;
     Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
-      if(range->get_rgr_id() == rgrid_old)
+      if(range->get_rgr_id() == rgrid_old) {
         range->set_rgr_id(rgrid);
+        found = true;
+      }
     }
-
     auto it = m_schemas_rev.find(rgrid_old);
     if(it != m_schemas_rev.cend()) {
       int64_t rev = it->second;
       m_schemas_rev.erase(it);
       m_schemas_rev[rgrid] = rev;
     }
+    return found;
   }
 
   void change_rgr_schema(const rgrid_t rgrid, int64_t rev=0) {

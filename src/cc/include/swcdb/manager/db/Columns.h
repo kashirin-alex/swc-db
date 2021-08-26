@@ -14,6 +14,7 @@
 #include "swcdb/manager/db/ColumnCfg.h"
 #include "swcdb/manager/db/Column.h"
 #include "swcdb/common/Files/Schema.h"
+#include <list>
 
 
 namespace SWC { namespace Manager {
@@ -31,7 +32,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   typedef Columns* Ptr;
 
-  Columns() noexcept {}
+  Columns() noexcept : m_health_last_cid(DB::Schema::NO_CID) { }
 
   //~Columns() { }
 
@@ -57,8 +58,12 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       col = res.first->second;
     }
     col->init(err);
-    if(err)
+    if(err) {
       remove(schema->cid);
+    } else {
+      Core::MutexSptd::scope lock(m_mutex);
+      m_need_assign.push_back(col->cfg->cid);
+    }
     return !err;
   }
 
@@ -98,6 +103,16 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     if(waiting_meta)
       return false;
 
+    while(!m_need_assign.empty()) {
+      auto it = find(m_need_assign.front());
+      m_need_assign.pop_front();
+      if(it != cend() &&
+         (range = it->second->get_next_unassigned())) {
+          col = it->second;
+        return true;
+      }
+    }
+
     if(col) {
       if((range = col->get_next_unassigned()))
         return true;
@@ -125,13 +140,15 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   void set_rgr_unassigned(rgrid_t rgrid) {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = cbegin(); it != cend(); ++it)
-      it->second->set_rgr_unassigned(rgrid);
+      if(it->second->set_rgr_unassigned(rgrid))
+        m_need_assign.push_back(it->second->cfg->cid);
   }
 
   void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = cbegin(); it != cend(); ++it)
-      it->second->change_rgr(rgrid_old, rgrid);
+      if(it->second->change_rgr(rgrid_old, rgrid))
+        m_need_assign.push_back(it->second->cfg->cid);
   }
 
   void assigned(rgrid_t rgrid, size_t num, Core::Vector<Range::Ptr>& ranges) {
@@ -156,12 +173,17 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
       chk->assigned(rgrid, num, ranges);
     } while(num);
   }
-  Column::Ptr get_need_health_check(int64_t ts, uint32_t ms, cid_t last_cid) {
+
+  Column::Ptr get_need_health_check(int64_t ts, uint32_t ms) {
     Core::MutexSptd::scope lock(m_mutex);
-    for(auto it = last_cid ? find(last_cid) : cbegin(); it != cend(); ++it) {
-      if(it->second->need_health_check(ts, ms))
+    for(auto it = m_health_last_cid ? find(m_health_last_cid) : cbegin();
+        it != cend(); ++it) {
+      if(it->second->need_health_check(ts, ms)) {
+        m_health_last_cid = it->second->cfg->cid;
         return it->second;
+      }
     }
+    m_health_last_cid = DB::Schema::NO_CID;
     return nullptr;
   }
 
@@ -170,6 +192,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     auto it = find(cid);
     if(it != cend())
       erase(it);
+    m_need_assign.remove(cid);
   }
 
   void print(std::ostream& out) {
@@ -180,7 +203,9 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   private:
-  Core::MutexSptd   m_mutex;
+  Core::MutexSptd    m_mutex;
+  std::list<cid_t>   m_need_assign;
+  cid_t              m_health_last_cid;
 
 };
 

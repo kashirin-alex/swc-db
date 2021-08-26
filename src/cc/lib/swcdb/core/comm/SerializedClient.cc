@@ -305,7 +305,7 @@ void Serialized::stop() {
     for(size_t c = 0; srv.use_count() > 1; ++c) {
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
       if(c % 5000 == 0)
-        SWC_LOGF(LOG_WARN, "Wating: %s count(wait=%lu use=%ld)",
+        SWC_LOGF(LOG_WARN, "Waiting: %s count(wait=%lu use=%ld)",
                             m_srv_name.c_str(), c, srv.use_count());
     }
   }
