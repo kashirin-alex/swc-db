@@ -29,7 +29,8 @@ RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
 
 bool RangeUnload::valid() {
   return col->state() != DB::Types::MngrColumn::State::DELETED &&
-         !range->deleted();
+         !range->deleted() &&
+         Env::Mngr::rangers()->running();
 }
 
 void RangeUnload::handle_no_conn() {

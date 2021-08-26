@@ -49,7 +49,8 @@ void RangeLoad::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 bool RangeLoad::valid() {
-  return !range->deleted();
+  return !range->deleted() &&
+          Env::Mngr::rangers()->running();
 }
 
 void RangeLoad::handle_no_conn() {

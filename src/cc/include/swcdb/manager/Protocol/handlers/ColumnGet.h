@@ -48,12 +48,17 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
   virtual ~MngrColumnGet() { }
 
   bool valid() override {
-    return !ev->expired() && conn->is_open();
+    return !ev->expired() &&
+            conn->is_open() &&
+            Env::Mngr::mngd_columns()->running();
   }
 
   void handle_no_conn() override {
     if(valid())
       request_again();
+    else if(!Env::Mngr::mngd_columns()->running())
+      mngr_update_response(
+        conn, ev, Error::SERVER_SHUTTING_DOWN, flag, nullptr);
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

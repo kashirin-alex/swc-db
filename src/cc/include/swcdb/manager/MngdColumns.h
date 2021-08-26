@@ -37,6 +37,11 @@ class MngdColumns final {
 
   //~MngdColumns() { }
 
+  SWC_CAN_INLINE
+  bool running() const noexcept {
+    return m_run;
+  }
+
   void stop();
 
   void create_schemas_store();

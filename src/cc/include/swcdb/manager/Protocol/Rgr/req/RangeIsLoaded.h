@@ -37,7 +37,8 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
 
   bool valid() override {
     return checker->rgr->state == DB::Types::MngrRangerState::ACK &&
-           range->assigned();
+           range->assigned() &&
+           Env::Mngr::rangers()->running();
   }
 
   void handle_no_conn() override {

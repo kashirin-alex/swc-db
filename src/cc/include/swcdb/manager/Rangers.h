@@ -31,6 +31,11 @@ class Rangers final {
 
   //~Rangers() { }
 
+  SWC_CAN_INLINE
+  bool running() const noexcept {
+    return m_run;
+  }
+
   void stop(bool shuttingdown=true);
 
   bool empty() noexcept;

@@ -43,7 +43,8 @@ void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 }
 
 bool RangeUnload::valid() {
-  return !range->deleted();
+  return !range->deleted() &&
+         !range->state_unloading();
 }
 
 void RangeUnload::handle_no_conn() {

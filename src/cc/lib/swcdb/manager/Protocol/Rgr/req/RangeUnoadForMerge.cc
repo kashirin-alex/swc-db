@@ -30,7 +30,8 @@ RangeUnoadForMerge::RangeUnoadForMerge(
 bool RangeUnoadForMerge::valid() {
   return merger->col_merger->col_checker->col->state()
           != DB::Types::MngrColumn::State::DELETED &&
-         !range->deleted();
+         !range->deleted() &&
+         Env::Mngr::rangers()->running();
 }
 
 void RangeUnoadForMerge::handle_no_conn() {
@@ -39,7 +40,11 @@ void RangeUnoadForMerge::handle_no_conn() {
 
 void RangeUnoadForMerge::handle(ConnHandlerPtr, const Event::Ptr& ev) {
   Params::RangeUnloadRsp rsp_params(
-    valid() ? ev->error : Error::COLUMN_MARKED_REMOVED);
+    valid()
+      ? ev->error
+      : (Env::Mngr::rangers()->running()
+          ? Error::COLUMN_MARKED_REMOVED
+          : Error::SERVER_SHUTTING_DOWN));
   if(!rsp_params.err) {
     try {
       const uint8_t *ptr = ev->data.base;
