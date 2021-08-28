@@ -38,7 +38,8 @@ MngdColumns::MngdColumns()
       m_run(true), m_schemas_set(false),
       m_cid_active(false),
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
-      m_expected_remain(STATE_COLUMNS_NOT_INITIALIZED) {
+      m_expected_remain(STATE_COLUMNS_NOT_INITIALIZED),
+      m_last_used_cid(DB::Types::SystemColumn::SYS_CID_END) {
 }
 
 void MngdColumns::stop() {
@@ -742,10 +743,17 @@ bool MngdColumns::columns_load() {
 }
 
 cid_t MngdColumns::get_next_cid() {
-  cid_t cid = DB::Types::SystemColumn::SYS_CID_END;
-  while(++cid && Env::Mngr::schemas()->get(cid));
-  // if schema does exist on fs (? sanity-check)
-  return cid; // err !cid
+  for(cid_t cid; ;) {
+    cid = m_last_used_cid.add_rslt(1);
+    if(cid <= DB::Types::SystemColumn::SYS_CID_END) {
+      cid = DB::Types::SystemColumn::SYS_CID_END;
+      m_last_used_cid.store(++cid);
+    }
+    if(!Env::Mngr::schemas()->get(cid)) {
+      // if schema does exist on fs (? sanity-check)
+      return cid; // err !cid
+    }
+  }
 }
 
 void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
@@ -783,10 +791,12 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
   if(!err)
     Env::Mngr::schemas()->add(err, schema_save);
 
-  if(!err)
+  if(!err) {
     schema = Env::Mngr::schemas()->get(schema_save->cid);
-  else
+  } else {
     Column::remove(err, cid);
+    m_last_used_cid.store(cid - 1);
+  }
 }
 
 void MngdColumns::update(int &err, DB::Schema::Ptr& schema,
@@ -874,8 +884,10 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
         err = Error::SERVER_SHUTTING_DOWN;
       } else {
         Column::remove(err, schema->cid);
-        if(!err)
+        if(!err) {
           Env::Mngr::schemas()->remove(schema->cid);
+          m_last_used_cid.store(schema->cid - 1);
+        }
       }
       break;
     }

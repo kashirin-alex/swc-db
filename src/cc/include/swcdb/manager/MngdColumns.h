@@ -105,19 +105,20 @@ class MngdColumns final {
   void run_actions();
 
 
-  Core::AtomicBool       m_run;
+  Core::AtomicBool          m_run;
 
-  Core::StateRunning     m_columns_load;
+  Core::StateRunning        m_columns_load;
 
-  Core::MutexSptd        m_mutex_schemas;
-  Core::AtomicBool       m_schemas_set;
+  Core::MutexSptd           m_mutex_schemas;
+  Core::AtomicBool          m_schemas_set;
 
-  Core::MutexSptd        m_mutex_active;
-  bool                   m_cid_active;
-  cid_t                  m_cid_begin;
-  cid_t                  m_cid_end;
-  uint64_t               m_expected_remain;
-  std::forward_list<cid_t> m_expected_load;
+  Core::MutexSptd           m_mutex_active;
+  bool                      m_cid_active;
+  cid_t                     m_cid_begin;
+  cid_t                     m_cid_end;
+  uint64_t                  m_expected_remain;
+  Core::Atomic<cid_t>       m_last_used_cid;
+  std::forward_list<cid_t>  m_expected_load;
 
   Core::MutexSptd                              m_mutex_actions;
   Core::QueueSafe<ColumnReq::Ptr>              m_actions;
