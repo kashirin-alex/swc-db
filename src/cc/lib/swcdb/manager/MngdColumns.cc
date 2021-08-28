@@ -337,7 +337,8 @@ void MngdColumns::update_status(ColumnMngFunc func,
 
     case ColumnMngFunc::CREATE:
     case ColumnMngFunc::INTERNAL_LOAD: {
-      bool init = Env::Mngr::columns()->is_an_initialization(err, schema);
+      bool init = m_run &&
+                  Env::Mngr::columns()->is_an_initialization(err, schema);
       if(init || !err || !m_run) {
         if(!schemas_mngr)
           Env::Mngr::schemas()->replace(schema);

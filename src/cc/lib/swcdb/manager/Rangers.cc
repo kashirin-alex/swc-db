@@ -533,10 +533,14 @@ void Rangers::assign_ranges() {
 }
 
 void Rangers::assign_ranges_run() {
-  Column::Ptr col(nullptr);
-  Range::Ptr range(nullptr);
+  auto& columns = *Env::Mngr::columns();
+  int err;
+  DB::Schema::Ptr schema;
+  Column::Ptr col;
+  Range::Ptr range;
+  Ranger::Ptr rgr;
 
-  for(bool state; ; range.reset(static_cast<Range*>(nullptr))) {
+  for(bool state; ;) {
     {
       Core::MutexSptd::scope lock(m_mutex);
       state = m_rangers.empty() || !m_run;
@@ -545,23 +549,20 @@ void Rangers::assign_ranges_run() {
       m_assign.stop();
       return schedule_check();
     }
-
-    if(!Env::Mngr::columns()->get_next_unassigned(col, range, state=false)) {
+    if(!(range = columns.get_next_unassigned(state=false))) {
       if(state) // waiting-on-meta-ranges
         schedule_check(2000);
       m_assign.stop();
       break;
     }
 
-    Ranger::Ptr rgr = nullptr;
-    next_rgr(range, rgr);
+    next_rgr(range, rgr = nullptr);
     if(!rgr) {
       m_assign.stop();
       return schedule_check();
     }
-    auto schema = Env::Mngr::schemas()->get(col->cfg->cid);
-    if(!schema) {
-      col.reset(static_cast<Column*>(nullptr));
+    if(!(schema = Env::Mngr::schemas()->get(range->cfg->cid)) ||
+       !(col = columns.get_column(err = Error::OK, range->cfg->cid))) {
       continue;
     }
 

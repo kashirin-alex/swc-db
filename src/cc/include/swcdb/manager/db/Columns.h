@@ -37,8 +37,12 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   //~Columns() { }
 
   void reset() {
-    Core::MutexSptd::scope lock(m_mutex);
-    clear();
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      clear();
+    }
+    for(auto& g : m_need_assign)
+      g.reset();
   }
 
   void state(int& err) {
@@ -60,9 +64,6 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     col->init(err);
     if(err) {
       remove(schema->cid);
-    } else {
-      Core::MutexSptd::scope lock(m_mutex);
-      m_need_assign.push_back(col->cfg->cid);
     }
     return !err;
   }
@@ -76,79 +77,47 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     return nullptr;
   }
 
-  bool get_next_unassigned(Column::Ptr& col, Range::Ptr& range,
-                           bool& waiting_meta) {
-    if(col && col->cfg->cid <= DB::Types::SystemColumn::SYS_CID_END &&
-      (range = col->get_next_unassigned()))
-      return true;
-
-    const_iterator it;
-    Core::MutexSptd::scope lock(m_mutex);
-    for(cid_t cid = DB::Types::SystemColumn::CID_MASTER_BEGIN;
-        cid <= DB::Types::SystemColumn::SYS_CID_END; ++cid) {
-      if((it = find(cid)) != cend()) {
-        if((range = it->second->get_next_unassigned())) {
-          col = it->second;
-          return true;
-        }
-        if(it->second->state() != Column::State::OK)
-          waiting_meta = true;
+  Range::Ptr get_next_unassigned(bool& waiting_meta) {
+    #define _PRELOAD(_GROUP, _BEGIN, _END) \
+      if(Range::Ptr range = m_need_assign[_GROUP].get()) \
+        return range; \
+      for(cid_t cid = _BEGIN; cid <= _END; ++cid) { \
+        Core::MutexSptd::scope lock(m_mutex); \
+        auto it = find(cid); \
+        if(it != cend()) { \
+          if((waiting_meta = it->second->_state() != Column::State::OK)) \
+            return nullptr; \
+        } \
       }
-      if(waiting_meta &&
-         (cid == DB::Types::SystemColumn::CID_MASTER_END ||
-          cid == DB::Types::SystemColumn::CID_META_END ||
-          cid == DB::Types::SystemColumn::SYS_RGR_DATA))
-        return false;
-    }
-    if(waiting_meta)
-      return false;
-
-    while(!m_need_assign.empty()) {
-      auto it = find(m_need_assign.front());
-      m_need_assign.pop_front();
-      if(it != cend() &&
-         (range = it->second->get_next_unassigned())) {
-          col = it->second;
-        return true;
-      }
-    }
-
-    if(col) {
-      if((range = col->get_next_unassigned()))
-        return true;
-      if((it = find(col->cfg->cid)) != cend())
-        ++it;
-      for(; it != cend(); ++it) {
-        if(it->second->state() != Column::State::DELETED &&
-           (range = it->second->get_next_unassigned())) {
-          col = it->second;
-          return true;
-        }
-      }
-    }
-
-    for(it = cbegin(); it != cend(); ++it) {
-      if(it->second->state() != Column::State::DELETED &&
-         (range = it->second->get_next_unassigned())) {
-        col = it->second;
-        return true;
-      }
-    }
-    return false;
+    _PRELOAD(
+      0,
+      DB::Types::SystemColumn::CID_MASTER_BEGIN,
+      DB::Types::SystemColumn::CID_MASTER_END
+    );
+    _PRELOAD(
+      1,
+      DB::Types::SystemColumn::CID_META_BEGIN,
+      DB::Types::SystemColumn::CID_META_END
+    );
+    _PRELOAD(
+      2,
+      DB::Types::SystemColumn::SYS_RGR_DATA,
+      DB::Types::SystemColumn::SYS_RGR_DATA
+    );
+    #undef _PRELOAD
+    return m_need_assign[3].get();
   }
 
   void set_rgr_unassigned(rgrid_t rgrid) {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = cbegin(); it != cend(); ++it)
-      if(it->second->set_rgr_unassigned(rgrid))
-        m_need_assign.push_back(it->second->cfg->cid);
+      it->second->set_rgr_unassigned(rgrid);
   }
 
   void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
     Core::MutexSptd::scope lock(m_mutex);
     for(auto it = cbegin(); it != cend(); ++it)
-      if(it->second->change_rgr(rgrid_old, rgrid))
-        m_need_assign.push_back(it->second->cfg->cid);
+      it->second->change_rgr(rgrid_old, rgrid);
   }
 
   void assigned(rgrid_t rgrid, size_t num, Core::Vector<Range::Ptr>& ranges) {
@@ -160,7 +129,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
         Core::MutexSptd::scope lock(m_mutex);
         chked.reserve(size());
         for(auto it = cbegin(); it != cend(); ++it) {
-          if(std::find(chked.cbegin(),chked.cend(),it->first)
+          if(std::find(chked.cbegin(), chked.cend(), it->first)
               == chked.cend()) {
             chk = it->second;
             chked.push_back(it->first);
@@ -188,11 +157,26 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   void remove(const cid_t cid) {
-    Core::MutexSptd::scope lock(m_mutex);
-    auto it = find(cid);
-    if(it != cend())
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      auto it = find(cid);
+      if(it == cend())
+        return;
       erase(it);
-    m_need_assign.remove(cid);
+    }
+    assign_group(cid).remove(cid);
+  }
+
+  void assign_add(Range::Ptr&& range) {
+    assign_group(range->cfg->cid).add(std::move(range));
+  }
+
+  void assign_add(const Range::Ptr& range) {
+    assign_group(range->cfg->cid).add(range);
+  }
+
+  void assign_remove(const Range::Ptr& range) {
+    assign_group(range->cfg->cid).remove(range);
   }
 
   void print(std::ostream& out) {
@@ -203,9 +187,75 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   private:
-  Core::MutexSptd    m_mutex;
-  std::list<cid_t>   m_need_assign;
-  cid_t              m_health_last_cid;
+
+  class AssignGroup final : private std::unordered_set<Range::Ptr> {
+    public:
+
+    AssignGroup() noexcept { }
+
+    AssignGroup(AssignGroup&&)                 = delete;
+    AssignGroup(const AssignGroup&)            = delete;
+    AssignGroup& operator=(AssignGroup&&)      = delete;
+    AssignGroup& operator=(const AssignGroup&) = delete;
+
+    SWC_CAN_INLINE
+    Range::Ptr get() {
+      Core::MutexSptd::scope lock(m_mutex);
+      return empty() ? nullptr : *cbegin();
+    }
+
+    SWC_CAN_INLINE
+    void add(Range::Ptr&& range) {
+      Core::MutexSptd::scope lock(m_mutex);
+      insert(std::move(range));
+    }
+
+    SWC_CAN_INLINE
+    void add(const Range::Ptr& range) {
+      Core::MutexSptd::scope lock(m_mutex);
+      insert(range);
+    }
+
+    SWC_CAN_INLINE
+    void remove(const Range::Ptr& range) {
+      Core::MutexSptd::scope lock(m_mutex);
+      erase(range);
+    }
+
+    SWC_CAN_INLINE
+    void remove(const cid_t cid) {
+      Core::MutexSptd::scope lock(m_mutex);
+      for(auto it = cbegin();
+          it != cend();
+          (*it)->cfg->cid == cid ? (it = erase(it)) : ++it
+      );
+    }
+
+    SWC_CAN_INLINE
+    void reset() {
+      Core::MutexSptd::scope lock(m_mutex);
+      clear();
+    }
+
+    private:
+    Core::MutexSptd                 m_mutex;
+  };
+
+  AssignGroup& assign_group(const cid_t cid) noexcept {
+    return m_need_assign[
+      cid > DB::Types::SystemColumn::SYS_RGR_DATA
+        ? 3
+        : (cid > DB::Types::SystemColumn::CID_META_END
+            ? 2
+            : (cid > DB::Types::SystemColumn::CID_MASTER_END
+              ? 1
+              : 0))
+      ];
+  }
+
+  AssignGroup       m_need_assign[4];
+  Core::MutexSptd   m_mutex;
+  cid_t             m_health_last_cid;
 
 };
 

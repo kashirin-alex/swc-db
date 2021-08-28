@@ -50,8 +50,10 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
   void handle_no_conn() override { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override {
-    if(ev->response_code())
+    if(ev->response_code()) {
       conn->do_close();
+      request_again();
+    }
   }
 
 };

@@ -137,7 +137,8 @@ class Mngr final {
 #include "swcdb/manager/MngdColumns.cc"
 #include "swcdb/manager/ColumnHealthCheck.cc"
 #include "swcdb/manager/queries/update/MetricsReporting.cc"
-
+#include "swcdb/manager/db/Column.cc"
+#include "swcdb/manager/db/Range.cc"
 
 
 namespace SWC { namespace Env {

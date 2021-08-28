@@ -47,19 +47,7 @@ class Column final : private Core::Vector<Range::Ptr> {
 
   //~Column() { }
 
-  void init(int &err) {
-    FS::IdEntries_t entries;
-    Env::FsInterface::interface()->get_structured_ids(
-      err, DB::RangeBase::get_path(cfg->cid), entries);
-    if(err)
-      return;
-    if(entries.empty()) {
-      SWC_LOGF(LOG_INFO, "Init. New Column(%lu) Range(1)", cfg->cid);
-      entries.push_back(1);
-    }
-    for(auto rid : entries)
-      get_range(rid, true);
-  }
+  void init(int &err);
 
   void set_loading() {
     Core::ScopedLock lock(m_mutex);
@@ -88,14 +76,23 @@ class Column final : private Core::Vector<Range::Ptr> {
   }
 
   SWC_CAN_INLINE
+  State _state() {
+    return m_state;
+  }
+
+  SWC_CAN_INLINE
   void state(int& err) {
     Core::SharedLock lock(m_mutex);
-    if(m_state == State::OK)
-      return;
-    if(m_state == State::DELETED)
-      err = Error::COLUMN_MARKED_REMOVED;
-    else
-      err = Error::COLUMN_NOT_READY;
+    switch(m_state) {
+      case State::OK:
+        break;
+      case State::DELETED:
+        err = Error::COLUMN_MARKED_REMOVED;
+        break;
+      default:
+        err = Error::COLUMN_NOT_READY;
+        break;
+    }
   }
 
   size_t ranges() {
@@ -120,14 +117,13 @@ class Column final : private Core::Vector<Range::Ptr> {
     ranges.assign(cbegin(), cend());
   }
 
-  Range::Ptr get_range(const rid_t rid, bool initialize=false) {
-    Core::ScopedLock lock(m_mutex);
-
+  Range::Ptr get_range(const rid_t rid) {
+    Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
       if(range->rid == rid)
         return range;
     }
-    return initialize ? emplace_back(new Range(cfg, rid)) : nullptr;
+    return nullptr;
   }
 
   Range::Ptr get_range(int&,
@@ -217,29 +213,24 @@ class Column final : private Core::Vector<Range::Ptr> {
     return nullptr;
   }
 
-  bool set_rgr_unassigned(rgrid_t rgrid) {
-    bool found = false;
+  void set_rgr_unassigned(rgrid_t rgrid) {
     Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid) {
         range->set_state_none();
         _set_loading();
-        found = true;
       }
     }
     _remove_rgr_schema(rgrid);
-    return found;
   }
 
-  bool change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
-    bool found = false;
+  void change_rgr(rgrid_t rgrid_old, rgrid_t rgrid) {
     Core::ScopedLock lock(m_mutex);
 
     for(auto& range : *this) {
       if(range->get_rgr_id() == rgrid_old) {
         range->set_rgr_id(rgrid);
-        found = true;
       }
     }
     auto it = m_schemas_rev.find(rgrid_old);
@@ -248,7 +239,6 @@ class Column final : private Core::Vector<Range::Ptr> {
       m_schemas_rev.erase(it);
       m_schemas_rev[rgrid] = rev;
     }
-    return found;
   }
 
   void change_rgr_schema(const rgrid_t rgrid, int64_t rev=0) {
@@ -292,12 +282,12 @@ class Column final : private Core::Vector<Range::Ptr> {
   }
 
   void reset_health_check() {
-    Core::SharedLock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_check_ts = 0;
   }
 
   bool need_health_check(int64_t ts, uint32_t ms) {
-    Core::SharedLock lock(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     if(m_state == State::OK && m_check_ts + ms < ts) {
       m_check_ts = ts;
       return true;
@@ -421,12 +411,12 @@ class Column final : private Core::Vector<Range::Ptr> {
       if(!range->assigned())
         return;
     }
-    if(m_state == State::LOADING) {
+    State at = State::LOADING;
+    if(m_state.compare_exchange_weak(at, State::OK)) {
       /* if Ranger do not select/check ranges on rid value match
          once on start, Master & Meta column check rid consistency
          on dup. cell of rid, delete earliest
       */
-      m_state.store(State::OK);
       m_check_ts = Time::now_ms();
     }
   }

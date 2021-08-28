@@ -18,7 +18,7 @@
 
 namespace SWC { namespace Manager {
 
-class Range final {
+class Range final : public std::enable_shared_from_this<Range> {
   public:
 
   typedef std::shared_ptr<Range> Ptr;
@@ -94,18 +94,11 @@ class Range final {
     m_check_ts = 0;
   }
 
-  void set_state_none() {
-    set_state(State::NOTSET, 0);
-  }
+  void set_state_none();
 
-  void set_state_queued(rgrid_t rgrid) {
-    int64_t ts = Time::now_ms();
-    Core::ScopedLock lock(m_mutex);
-    m_state = State::QUEUED;
-    m_rgrid = rgrid;
-    m_load_revision = 0;
-    m_check_ts = ts;
-  }
+  void set_deleted();
+
+  void set_state_queued(rgrid_t rgrid);
 
   void set_state_assigned(rgrid_t rgrid, int64_t revision) {
     int64_t ts = Time::now_ms();
@@ -115,11 +108,6 @@ class Range final {
     m_load_revision = revision;
     m_check_ts = ts;
     m_last_rgr = nullptr;
-  }
-
-  void set_deleted() {
-    Core::ScopedLock lock(m_mutex);
-    m_state = State::DELETED;
   }
 
   rgrid_t get_rgr_id() {

@@ -301,7 +301,7 @@ void ColumnHealthCheck::ColumnMerger::run() {
     DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
     rid_t rid = Serialization::decode_vi64(&ptr, &remain);
 
-    Range::Ptr range = col_checker->col->get_range(rid, false);
+    Range::Ptr range = col_checker->col->get_range(rid);
     if(!range) {
       m_mergers.clear();
       break;
