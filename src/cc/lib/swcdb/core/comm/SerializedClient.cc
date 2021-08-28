@@ -127,7 +127,7 @@ Serialized::Serialized(const Config::Settings& settings,
             : m_srv_name(std::move(srv_name)), m_ioctx(ioctx), m_ctx(ctx),
               m_use_ssl(settings.get_bool("swc.comm.ssl")),
               m_ssl_cfg(m_use_ssl ? new ConfigSSL(settings) : nullptr),
-              m_run(true) {
+              m_run(true), m_calls(0) {
   SWC_LOGF(LOG_DEBUG, "Init: %s", m_srv_name.c_str());
 }
 
@@ -151,10 +151,12 @@ ConnHandlerPtr Serialized::get_connection(
       const EndPoints& endpoints,
       const std::chrono::milliseconds& timeout,
       uint32_t probes, bool preserve) noexcept {
+  m_calls.fetch_add(1);
   try {
     return _get_connection(endpoints, timeout, probes, preserve);
   } catch (...) {
     SWC_LOG_CURRENT_EXCEPTION("");
+    m_calls.fetch_sub(1);
     return nullptr;
   }
 }
@@ -168,6 +170,7 @@ ConnHandlerPtr Serialized::_get_connection(
   if(endpoints.empty()) {
     SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints",
                         m_srv_name.c_str());
+    m_calls.fetch_sub(1);
     return conn;
   }
 
@@ -180,8 +183,10 @@ ConnHandlerPtr Serialized::_get_connection(
       srv->reusable(conn, preserve);
       if(!conn)
         srv->connection(conn, timeout, preserve);
-      if(conn)
+      if(conn) {
+        m_calls.fetch_sub(1);
         return conn;
+      }
     }
     SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%u",
                          m_srv_name.c_str(), tries);
@@ -191,6 +196,7 @@ ConnHandlerPtr Serialized::_get_connection(
 
   } while (m_run && m_ioctx->running && (!probes || --tries));
 
+  m_calls.fetch_sub(1);
   return conn;
 }
 
@@ -199,6 +205,7 @@ void Serialized::get_connection(
       ServerConnections::NewCb_t&& cb,
       const std::chrono::milliseconds& timeout,
       uint32_t probes, bool preserve) noexcept {
+  m_calls.fetch_add(1);
   if(m_run) try {
     if(endpoints.empty()) {
       SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints",
@@ -212,6 +219,7 @@ void Serialized::get_connection(
     SWC_LOG_CURRENT_EXCEPTION("");
   }
   cb(nullptr);
+  m_calls.fetch_sub(1);
 }
 
 void Serialized::_get_connection(
@@ -223,6 +231,7 @@ void Serialized::_get_connection(
 
   if(!m_run || !m_ioctx->running || endpoints.empty()) {
     cb(nullptr);
+    m_calls.fetch_sub(1);
     return;
   }
 
@@ -234,6 +243,7 @@ void Serialized::_get_connection(
   srv->reusable(conn, preserve);
   if(!m_run || conn || (probes && !tries)) {
     cb(conn);
+    m_calls.fetch_sub(1);
     return;
   }
 
@@ -246,6 +256,7 @@ void Serialized::_get_connection(
     (const ConnHandlerPtr& conn) mutable {
       if(!ptr->m_run.load() || (conn && conn->is_open())) {
         cb(conn);
+        ptr->m_calls.fetch_sub(1);
         return;
       }
 
@@ -260,6 +271,7 @@ void Serialized::_get_connection(
       } catch (...) {
         SWC_LOG_CURRENT_EXCEPTION("");
         cb(nullptr);
+        ptr->m_calls.fetch_sub(1);
       }
     },
     preserve
@@ -302,11 +314,11 @@ void Serialized::stop() {
       erase(it);
     }
     srv->close_all();
-    for(size_t c = 0; srv.use_count() > 1; ++c) {
+    for(size_t c = 0; m_calls || srv.use_count() > 1; ++c) {
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
       if(c % 5000 == 0)
-        SWC_LOGF(LOG_WARN, "Waiting: %s count(wait=%lu use=%ld)",
-                            m_srv_name.c_str(), c, srv.use_count());
+        SWC_LOGF(LOG_WARN, "Waiting: %s count(wait=%lu use=%ld due=%lu)",
+                  m_srv_name.c_str(), c, srv.use_count(), m_calls.load());
     }
   }
   SWC_LOGF(LOG_INFO, "Stop: %s", m_srv_name.c_str());

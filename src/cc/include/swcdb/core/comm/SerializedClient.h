@@ -138,6 +138,7 @@ class Serialized final :
 
   Core::MutexSptd       m_mutex;
   Core::AtomicBool      m_run;
+  Core::Atomic<size_t>  m_calls;
 
 };
 
