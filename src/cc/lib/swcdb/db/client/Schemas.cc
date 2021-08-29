@@ -110,14 +110,15 @@ Schemas::get(int& err, cid_t cid, uint32_t timeout) {
     pending.req->run();
 
   DB::Schema::Ptr schema;
-  if(pending.datap->wait(err, schema) && schema) {
+  if(pending.datap->wait(err, schema)) {
     auto ts = Time::now_ms();
     Core::MutexSptd::scope lock(m_mutex);
-    m_schemas[schema->cid].assign(ts, schema);
+    if(schema)
+      m_schemas[schema->cid].assign(ts, schema);
     m_pending_cid.erase(cid);
-  } else if(!schema && !err) {
-    err = Error::COLUMN_SCHEMA_MISSING;
   }
+  if(!schema && !err)
+    err = Error::COLUMN_SCHEMA_MISSING;
   return schema;
 }
 
@@ -143,14 +144,15 @@ Schemas::get(int& err, const std::string& name, uint32_t timeout) {
     pending.req->run();
 
   DB::Schema::Ptr schema;
-  if(pending.datap->wait(err, schema) && schema) {
+  if(pending.datap->wait(err, schema)) {
     auto ts = Time::now_ms();
     Core::MutexSptd::scope lock(m_mutex);
-    m_schemas[schema->cid].assign(ts, schema);
+    if(schema)
+      m_schemas[schema->cid].assign(ts, schema);
     m_pending_name.erase(name);
-  } else if(!schema && !err) {
-    err = Error::COLUMN_SCHEMA_MISSING;
   }
+  if(!schema && !err)
+    err = Error::COLUMN_SCHEMA_MISSING;
   return schema;
 }
 

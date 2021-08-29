@@ -305,6 +305,12 @@ void MngdColumns::update_status(ColumnMngFunc func,
   if(!is_active(schema->cid))
     return update(func, schema, err, req_id);
 
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_OSTREAM << "ColumnUpdate Request func=" << int(func)
+                    << " req_id=" << req_id;
+    schema->print(SWC_LOG_OSTREAM << ' ');
+  );
+
   bool do_update = false;
   switch(func) {
 
@@ -854,6 +860,13 @@ void MngdColumns::update(ColumnMngFunc func,
 void MngdColumns::update_status_ack(ColumnMngFunc func,
                                     const DB::Schema::Ptr& schema, int err,
                                     uint64_t req_id) {
+  SWC_LOG_OUT(LOG_DEBUG,
+    SWC_LOG_OSTREAM << "ColumnUpdate ACK Request func=" << int(func)
+                    << " req_id=" << req_id;
+    Error::print(SWC_LOG_OSTREAM << ' ', err);
+    schema->print(SWC_LOG_OSTREAM << ' ');
+  );
+
   switch(func) {
     case ColumnMngFunc::INTERNAL_LOAD_ALL: {
       columns_load();
@@ -919,7 +932,8 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
   } else {
     SWC_LOG_OUT(LOG_WARN,
       SWC_LOG_OSTREAM
-        << "Missing Pending Req-Ack for func=" << co_func << " req_id=" << req_id;
+        << "Missing Pending Req-Ack for func=" << co_func
+        << " req_id=" << req_id;
       schema->print(SWC_LOG_OSTREAM << ' ');
     );
   }
@@ -931,6 +945,11 @@ void MngdColumns::run_actions() {
   do {
     err = Error::OK;
     req = std::move(m_actions.front());
+
+    SWC_LOG_OUT(LOG_DEBUG,
+      SWC_LOG_OSTREAM << "ColumnMng Request func=" << int(req->function);
+      req->schema->print(SWC_LOG_OSTREAM << ' ');
+    );
 
     if(!m_run) {
       err = Error::SERVER_SHUTTING_DOWN;
