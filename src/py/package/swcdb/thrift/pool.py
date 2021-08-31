@@ -69,7 +69,7 @@ class Pool(object):
         return len(self.__clients)
         #
 
-    def await(self):
+    def waiting(self):
         return self.__await
         #
 
@@ -130,7 +130,7 @@ class Pool(object):
 
                 if self.__size <= self.__open:
                     self.__await += 1
-                    self.logger.info('Wait Client release (open=%d await=%d)' % (self.open(), self.await()))
+                    self.logger.info('Wait Client release (open=%d await=%d)' % (self.open(), self.waiting()))
                     try:
                         self.__sem.acquire()
                         self.sleep(0)
@@ -185,7 +185,7 @@ class Pool(object):
         return '%s(host=%s port=%d timeout=%d size=%d open=%d await=%d available=%d%s) clients=[%s]' % (
             self.__class__,
             self.host, self.port, self.timeout,
-            self.size(), self.open(), self.await(), self.available(),
+            self.size(), self.open(), self.waiting(), self.available(),
             ("" if self.is_running() else " STOPPED"),
             ("\n ".join([""] + [client.__repr__() for client in self.__clients] + [""])) if self.__clients else ""
         )

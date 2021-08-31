@@ -33,8 +33,8 @@ setup(
     version='@SWCDB_VERSION_PYTHON@',
     description='The SWC-DB Python Package',
     long_description=long_description,
-    long_description_content_type='text/markdown',
 
+    # long_description_content_type='text/markdown',
     # install_requires=['thrift==@THRIFT_VERSION@'],
 
     url='https://github.com/kashirin-alex/swc-db',
