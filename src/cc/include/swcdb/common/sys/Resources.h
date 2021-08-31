@@ -145,7 +145,10 @@ class Resources final {
 
   void stop() {
     for(;;) {
-      m_timer.cancel();
+      {
+        Core::MutexAtomic::scope lock(m_mutex_timer);
+        m_timer.cancel();
+      }
       if(!running.count())
         break;
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
@@ -175,6 +178,7 @@ class Resources final {
 
   SWC_CAN_INLINE
   void schedule(uint64_t intval) {
+    Core::MutexAtomic::scope lock(m_mutex_timer);
     m_timer.expires_after(std::chrono::milliseconds(intval));
     struct TimerTask {
       Resources* ptr;
@@ -190,6 +194,7 @@ class Resources final {
   }
 
   Core::CompletionCounter<uint8_t>  running;
+  Core::MutexAtomic                 m_mutex_timer;
   asio::steady_timer                m_timer;
 
 };

@@ -46,9 +46,8 @@ void IoContext::stop() {
   SWC_LOGF(LOG_DEBUG, "Wait for IO-ctx(%s) finished %sgracefully",
            name.c_str(), untracked ? "" : "not-");
 
-  //if(!untracked)
-  //  pool.join();
   pool.stop();
+  pool.wait();
 }
 
 
