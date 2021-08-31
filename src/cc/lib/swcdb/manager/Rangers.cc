@@ -519,7 +519,8 @@ void Rangers::print(std::ostream& out) {
 }
 
 void Rangers::assign_ranges() {
-  if(!Env::Mngr::mngd_columns()->expected_ready())
+  if(!Env::Mngr::mngd_columns()->expected_ready() ||
+      m_assignments >= cfg_assign_due->get())
     return schedule_check(5000);
 
   struct Task {

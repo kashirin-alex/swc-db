@@ -63,7 +63,7 @@ void RangeUnload::unloaded(int err) {
       rgr->failures.fetch_add(1);
   } else if(range->get_rgr_id() == rgr->rgrid) {
     col->set_unloaded(range);
-    Env::Mngr::rangers()->schedule_check(2);
+    Env::Mngr::rangers()->assign_ranges();
   }
 }
 

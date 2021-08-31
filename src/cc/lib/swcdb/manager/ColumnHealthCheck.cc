@@ -76,7 +76,7 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range,
       }
     } else if(err == Error::RGR_NOT_LOADED_RANGE) {
       col_checker->col->set_unloaded(range);
-      Env::Mngr::rangers()->schedule_check(2000);
+      Env::Mngr::rangers()->assign_ranges();
     }
   }
 
@@ -413,7 +413,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
         if(range) // reset merge state
           col_merger->col_checker->col->set_unloaded(range);
       }
-      Env::Mngr::rangers()->schedule_check(2000);
+      Env::Mngr::rangers()->assign_ranges();
     }
     return col_merger->completion();
   }
@@ -540,7 +540,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
   #endif
 
   col_merger->col_checker->col->set_unloaded(main_range);
-  Env::Mngr::rangers()->schedule_check(2000);
+  Env::Mngr::rangers()->assign_ranges();
 
   SWC_LOGF(LOG_INFO,
     "Column-Health MERGE GROUP cid(%lu) ranges(%ld/%ld) to range(%lu)",

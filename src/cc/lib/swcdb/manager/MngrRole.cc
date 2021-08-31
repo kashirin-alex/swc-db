@@ -598,7 +598,7 @@ void MngrRole::apply_role_changes() {
 
   if(role_new & DB::Types::MngrRole::RANGERS) {
     if(!(role_old & DB::Types::MngrRole::RANGERS))
-      Env::Mngr::rangers()->schedule_check(1);
+      Env::Mngr::rangers()->schedule_check(2);
 
   } else if(role_old & DB::Types::MngrRole::RANGERS) {
     SWC_LOG(LOG_INFO, "Manager(RANGERS) role has been decommissioned");

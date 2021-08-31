@@ -39,9 +39,9 @@ void range_unloaded(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       rsp_params.err = Error::RANGE_NOT_FOUND;
       goto send_response;
     }
-    range->set_state_none();
 
-    Env::Mngr::rangers()->schedule_check(1);
+    range->set_state_none();
+    Env::Mngr::rangers()->assign_ranges();
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

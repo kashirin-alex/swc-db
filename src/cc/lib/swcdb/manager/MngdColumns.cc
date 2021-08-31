@@ -801,7 +801,8 @@ void MngdColumns::create(int &err, DB::Schema::Ptr& schema) {
     schema = Env::Mngr::schemas()->get(schema_save->cid);
   } else {
     Column::remove(err, cid);
-    m_last_used_cid.store(cid - 1);
+    if(m_last_used_cid > cid)
+      m_last_used_cid.store(cid - 1);
   }
 }
 
@@ -899,7 +900,8 @@ void MngdColumns::update_status_ack(ColumnMngFunc func,
         Column::remove(err, schema->cid);
         if(!err) {
           Env::Mngr::schemas()->remove(schema->cid);
-          m_last_used_cid.store(schema->cid - 1);
+          if(m_last_used_cid > schema->cid)
+            m_last_used_cid.store(schema->cid - 1);
         }
       }
       break;
