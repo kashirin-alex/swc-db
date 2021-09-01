@@ -64,15 +64,15 @@ class Block final {
 
   void schema_update() noexcept;
 
-  void set_prev_key_end(const DB::Cell::Key& key);
+  void _set_prev_key_end(const DB::Cell::Key& key);
 
-  Condition::Comp cond_key_end(const DB::Cell::Key& key) const;
+  void _set_prev_key_end(const Ptr blk);
 
-  void set_key_end(const DB::Cell::Key& key);
+  Condition::Comp _cond_key_end(const DB::Cell::Key& key) const;
 
-  void free_key_end();
+  void _set_key_end(const DB::Cell::Key& key);
 
-  void get_key_end(DB::Cell::Key& key) const;
+  void _free_key_end();
 
   bool is_consist(const DB::Cells::Interval& intval) const;
 

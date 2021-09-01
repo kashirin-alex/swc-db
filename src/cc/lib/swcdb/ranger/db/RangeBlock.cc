@@ -63,32 +63,28 @@ void Block::schema_update() noexcept {
 }
 
 SWC_CAN_INLINE
-void Block::set_prev_key_end(const DB::Cell::Key& key) {
+void Block::_set_prev_key_end(const DB::Cell::Key& key) {
   m_prev_key_end.copy(key);
 }
 
 SWC_CAN_INLINE
-Condition::Comp Block::cond_key_end(const DB::Cell::Key& key) const {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
+void Block::_set_prev_key_end(const Block::Ptr blk) {
+  m_prev_key_end.copy(blk->m_key_end);
+}
+
+SWC_CAN_INLINE
+Condition::Comp Block::_cond_key_end(const DB::Cell::Key& key) const {
   return DB::KeySeq::compare(m_cells.key_seq, m_key_end, key);
 }
 
 SWC_CAN_INLINE
-void Block::set_key_end(const DB::Cell::Key& key) {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
+void Block::_set_key_end(const DB::Cell::Key& key) {
   m_key_end.copy(key);
 }
 
 SWC_CAN_INLINE
-void Block::free_key_end() {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
+void Block::_free_key_end() {
   m_key_end.free();
-}
-
-SWC_CAN_INLINE
-void Block::get_key_end(DB::Cell::Key& key) const {
-  Core::MutexAtomic::scope lock(m_mutex_intval);
-  key.copy(m_key_end);
 }
 
 SWC_CAN_INLINE
@@ -170,6 +166,8 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 
   if(loaded()) {
     Core::ScopedLock lock(m_mutex);
+    if(!_is_in_end(cell.key)) // split-could-happen (blk is now next)
+      return false;
     m_cells.add_raw(cell);
     splitter();
   }
@@ -352,6 +350,7 @@ Block::Ptr Block::_split(bool loaded) {
     Core::MutexAtomic::scope lock(m_mutex_intval);
     blk->m_key_end.move(m_key_end);
     m_key_end.copy(m_cells.back().key);
+    blk->m_prev_key_end.copy(m_key_end);
   }
 
   if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
@@ -372,7 +371,6 @@ void Block::_add(Block::Ptr blk) {
     blk->next = next;
     next->prev = blk;
   }
-  get_key_end(blk->m_prev_key_end);
   next = blk;
 }
 

@@ -114,7 +114,7 @@ void Blocks::add_logged(const DB::Cells::Cell& cell) {
   Block::Ptr blk;
   {
     Core::MutexSptd::scope lock(m_mutex);
-    blk = m_block ? *(m_blocks_idx.cbegin()+_narrow(cell.key)) : nullptr;
+    blk = m_block ? *(m_blocks_idx.cbegin() + _narrow(cell.key)) : nullptr;
   }
   while(blk && !blk->add_logged(cell)) {
     Core::MutexSptd::scope lock(m_mutex);
@@ -482,15 +482,15 @@ void Blocks::init_blocks(int& err) {
   for(auto cs_blk : blocks) {
     if(!blk) {
       m_block = blk = Block::make(cs_blk->header.interval, ptr());
-      m_block->set_prev_key_end(range->prev_range_end);
+      m_block->_set_prev_key_end(range->prev_range_end);
       m_blocks_idx.push_back(blk);
-    } else if(blk->cond_key_end(cs_blk->header.interval.key_begin)
+    } else if(blk->_cond_key_end(cs_blk->header.interval.key_begin)
                                             != Condition::EQ) {
       blk->_add(Block::make(cs_blk->header.interval, ptr()));
-      blk = blk->next;
-      m_blocks_idx.push_back(blk);
+      blk->next->_set_prev_key_end(blk);
+      m_blocks_idx.push_back((blk = blk->next));
     } else {
-      blk->set_key_end(cs_blk->header.interval.key_end);
+      blk->_set_key_end(cs_blk->header.interval.key_end);
     }
   }
   if(!m_block) {
@@ -499,7 +499,7 @@ void Blocks::init_blocks(int& err) {
   }
 
   if(range->_is_any_end())
-    blk->free_key_end();
+    blk->_free_key_end();
 }
 
 SWC_CAN_INLINE
