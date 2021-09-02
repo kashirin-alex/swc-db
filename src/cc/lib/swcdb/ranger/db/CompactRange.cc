@@ -612,16 +612,15 @@ csid_t CompactRange::create_cs(int& err) {
     tmp_dir = true;
   }
 
-  csid_t csid = 1;
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    csid += cellstores.size();
-  }
+  csid_t csid = cellstores.size() + 1;
   cs_writer.reset(new CellStore::Write(
     csid,
     range->get_path_cs_on(Range::CELLSTORES_TMP_DIR, csid),
     range,
-    spec.flags.max_versions
+    spec.flags.max_versions,
+    cellstores.empty()
+      ? range->prev_range_end
+      : cellstores.back()->blocks.back()->header.interval.key_end
   ));
   cs_writer->create(err, -1, range->cfg->file_replication(), -1);
 
@@ -655,7 +654,7 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
     return;
 
   if(cs_writer->size >= cs_size ||
-     cs_writer->blocks_count() == CellStore::Read::MAX_BLOCKS - 1) {
+     cs_writer->blocks.size() == CellStore::Read::MAX_BLOCKS - 1) {
     add_cs(err);
     if(err)
       return;
@@ -663,14 +662,6 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
 }
 
 void CompactRange::add_cs(int& err) {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    cs_writer->prev_key_end.copy(
-      cellstores.empty()
-        ? range->prev_range_end
-        : cellstores.back()->interval.key_end
-    );
-  }
   cs_writer->finalize(err);
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -695,7 +686,8 @@ ssize_t CompactRange::can_split_at() {
   split_option:
     it = cellstores.cbegin() + at;
     do {
-      if(!(*it)->interval.key_begin.equal((*(it-1))->interval.key_end))
+      if(!(*it)->blocks.front()->header.interval.key_begin.equal(
+              (*(it-1))->blocks.back()->header.interval.key_end))
         break;
     } while(++it != cellstores.cend());
 
@@ -891,7 +883,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     range->blocks.commitlog.get(fragments_old); // fragments for removal
 
     CommitLog::Splitter splitter(
-      cellstores.back()->interval.key_end,
+      cellstores.back()->blocks.back()->header.interval.key_end,
       fragments_old,
       &range->blocks.commitlog,
       &new_range->blocks.commitlog
@@ -964,7 +956,8 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
       SWC_LOG_OUT(LOG_INFO,
         SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%luns new-end=",
           ptr->range->cfg->cid, ptr->range->rid, t_measure.elapsed());
-          ptr->cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
+          ptr->cellstores.back()->blocks.back()
+            ->header.interval.key_end.print(SWC_LOG_OSTREAM);
       );
       Env::Rgr::maintenance_post(TaskFinished<true>(std::move(ptr)));
     }

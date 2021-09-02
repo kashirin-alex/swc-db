@@ -55,7 +55,8 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
 
   SWC::Ranger::CellStore::Write cs_writer(
     csid, range->get_path_cs(csid),
-    range, range->cfg->cell_versions()
+    range, range->cfg->cell_versions(),
+    SWC::DB::Cell::Key()
   );
   cs_writer.create(err);
   hdlr_err(err);
@@ -150,11 +151,10 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
              const SWC::DB::Cell::Key& expected_key) {
   int err = SWC::Error::OK;
 
-  SWC::DB::Cells::Interval intval_r(range->cfg->key_seq);
   SWC::Ranger::Blocks blocks(range->cfg->key_seq);
   blocks.init(range);
   blocks.cellstores.add(
-    SWC::Ranger::CellStore::Read::make(err, csid, range, intval_r, true));
+    SWC::Ranger::CellStore::Read::make(err, csid, range, true));
 
   hdlr_err(err);
 
@@ -368,7 +368,7 @@ int main(int argc, char** argv) {
 
 
   int s = run();
-  
+
 
   SWC::Env::Rgr::shuttingdown();
   SWC::Env::Rgr::wait_if_in_process();

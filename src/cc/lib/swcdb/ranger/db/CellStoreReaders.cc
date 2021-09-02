@@ -143,8 +143,7 @@ bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
 uint32_t Readers::encoded_length() const {
   uint32_t sz = Serialization::encoded_length_vi32(size());
   for(auto cs : *this) {
-    sz += Serialization::encoded_length_vi32(cs->csid)
-        + cs->interval.encoded_length();
+    sz += Serialization::encoded_length_vi32(cs->csid);
   }
   return sz;
 }
@@ -153,22 +152,17 @@ void Readers::encode(uint8_t** ptr) const {
   Serialization::encode_vi32(ptr, size());
   for(auto cs : *this) {
     Serialization::encode_vi32(ptr, cs->csid);
-    cs->interval.encode(ptr);
   }
 }
 
 void Readers::decode(int &err, const uint8_t** ptr, size_t* remain) {
   _close();
   _free();
-  csid_t csid;
   uint32_t len = Serialization::decode_vi32(ptr, remain);
   Vec::reserve(len);
   for(size_t i=0; i<len; ++i) {
-    csid = Serialization::decode_vi32(ptr, remain);
     push_back(
-      Read::make(
-        err, csid, range,
-        DB::Cells::Interval(range->cfg->key_seq, ptr, remain)));
+      Read::make(err, Serialization::decode_vi32(ptr, remain), range));
     //if(err == Error::FS_PATH_NOT_FOUND) ?without cs
   }
 }
@@ -214,9 +208,7 @@ void Readers::load_from_path(int &err) {
   std::sort(entries.begin(), entries.end());
   Vec::reserve(entries.size());
   for(csid_t csid : entries) {
-    push_back(
-      Read::make(err, csid, range, DB::Cells::Interval(range->cfg->key_seq))
-    );
+    push_back(Read::make(err, csid, range));
   }
 }
 
@@ -238,9 +230,7 @@ void Readers::replace(int &err, Writers& w_cellstores) {
     Vec cellstores;
     cellstores.reserve(w_cellstores.size());
     for(auto cs : w_cellstores) {
-      cellstores.push_back(
-        Read::make(err, cs->csid, range, cs->interval, true)
-      );
+      cellstores.push_back(Read::make(err, cs->csid, range, true));
       if(err)
         break;
     }
@@ -287,9 +277,7 @@ void Readers::move_from(int &err, Readers::Vec& mv_css) {
   cellstores.reserve(moved.size());
   if(!err) {
     for(auto cs : moved) {
-      cellstores.push_back(
-        Read::make(err, cs->csid, range, cs->interval, true)
-      );
+      cellstores.push_back(Read::make(err, cs->csid, range, true));
       if(err)
         break;
     }

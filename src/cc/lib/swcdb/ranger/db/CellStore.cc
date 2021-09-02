@@ -10,18 +10,17 @@
 namespace SWC { namespace Ranger { namespace CellStore {
 
 
-Read::Ptr Read::make(int& err, const csid_t csid,
-                     const RangePtr& range,
-                     const DB::Cells::Interval& interval, bool chk_base) {
+Read::Ptr Read::make(int& err, const csid_t csid, const RangePtr& range,
+                     bool chk_base) {
   auto smartfd = FS::SmartFd::make_ptr(range->get_path_cs(csid), 0);
   DB::Cell::Key prev_key_end;
   DB::Cell::Key key_end;
-  DB::Cells::Interval interval_by_blks(range->cfg->key_seq);
+  DB::Cells::Interval interval(range->cfg->key_seq);
   Blocks blocks;
   uint32_t cell_revs = 0;
   try {
     load_blocks_index(
-      err, smartfd, prev_key_end, key_end, interval_by_blks,
+      err, smartfd, prev_key_end, key_end, interval,
       blocks, cell_revs, chk_base);
     blocks.shrink_to_fit();
   } catch(...) {
@@ -41,9 +40,7 @@ Read::Ptr Read::make(int& err, const csid_t csid,
     csid,
     std::move(prev_key_end),
     std::move(key_end),
-    (interval_by_blks.was_set
-      ? std::move(interval_by_blks)
-      : std::move(DB::Cells::Interval(interval))),
+    std::move(interval),
     std::move(blocks),
     cell_revs,
     smartfd
@@ -418,7 +415,8 @@ void Read::print(std::ostream& out, bool minimal) const {
 
 SWC_CAN_INLINE
 Write::Write(const csid_t csid, std::string&& filepath,
-             const RangePtr& range, uint32_t cell_revs)
+             const RangePtr& range, uint32_t cell_revs,
+             const DB::Cell::Key& prev_key_end)
             : csid(csid),
               smartfd(
                 FS::SmartFd::make_ptr(
@@ -427,8 +425,8 @@ Write::Write(const csid_t csid, std::string&& filepath,
               encoder(range->cfg->block_enc()),
               block_size(range->cfg->block_size()),
               cell_revs(cell_revs),
-              size(0),
-              interval(range->cfg->key_seq) {
+              prev_key_end(prev_key_end),
+              size(0) {
 }
 
 void Write::create(int& err, int32_t bufsz, uint8_t blk_replicas,
@@ -452,7 +450,7 @@ void Write::block_encode(int& err, DynamicBuffer& cells_buff,
 void Write::block_write(int& err, DynamicBuffer& blk_buff,
                         Block::Header&& header) {
   header.offset_data = size + Block::Header::SIZE;
-  m_blocks.emplace_back(new Block::Write(std::move(header)));
+  blocks.emplace_back(new Block::Write(std::move(header)));
   block(err, blk_buff);
 }
 
@@ -470,8 +468,7 @@ void Write::block(int& err, DynamicBuffer& blk_buff) {
 
 SWC_CAN_INLINE
 void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
-  interval.free();
-  if(m_blocks.empty())
+  if(blocks.empty())
     return;
 
   blks_idx_count = 0;
@@ -479,19 +476,17 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
   uint32_t len_data = 0;
   Block::Write::Ptr blk;
 
-  auto it = m_blocks.cbegin();
+  auto it = blocks.cbegin();
   auto it_last = it;
   do {
     blk = *it;
-    interval.expand(blk->header.interval);
-    interval.align(blk->header.interval);
 
     if(!blks_idx_count && !blks_count)
       len_data += prev_key_end.encoded_length();
     ++blks_count;
     len_data += blk->header.encoded_length_idx();
 
-    if(++it == m_blocks.cend() || len_data >= block_size) {
+    if(++it == blocks.cend() || len_data >= block_size) {
       len_data += Serialization::encoded_length_vi32(blks_count);
 
       StaticBuffer raw_buffer(static_cast<size_t>(len_data));
@@ -512,13 +507,16 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
       raw_buffer.free();
       if(err)
         return;
-      if(!len_enc) {
-        encoder = DB::Types::Encoder::PLAIN;
+      DB::Types::Encoder _encoder;
+      if(len_enc) {
+        _encoder = encoder;
+      } else {
+        _encoder = DB::Types::Encoder::PLAIN;
         len_enc = len_data;
       }
 
       uint8_t* header_ptr = buffer_write.base;
-      Serialization::encode_i8(&header_ptr, uint8_t(encoder));
+      Serialization::encode_i8(&header_ptr, uint8_t(_encoder));
       Serialization::encode_i32(&header_ptr, len_enc);
       Serialization::encode_i32(&header_ptr, len_data);
       Core::checksum_i32(
@@ -538,7 +536,7 @@ void Write::write_blocks_index(int& err, uint32_t& blks_idx_count) {
       size += buff_write.size;
       blks_count = len_data = 0;
     }
-  } while (it != m_blocks.cend());
+  } while (it != blocks.cend());
 }
 
 SWC_CAN_INLINE
@@ -598,12 +596,11 @@ void Write::print(std::ostream& out) const {
       << " size=" << size
       << " encoder=" << Core::Encoder::to_string(encoder)
       << " cell_revs=" << cell_revs
-      << " prev=" << prev_key_end
-      << ' ' << interval;
+      << " prev=" << prev_key_end;
   smartfd->print(out << ' ');
-  out << " blocks=" << m_blocks.size()
+  out << " blocks=" << blocks.size()
       << " blocks=[";
-  for(auto blk : m_blocks) {
+  for(auto blk : blocks) {
     blk->print(out);
     out << ", ";
   }
@@ -612,11 +609,13 @@ void Write::print(std::ostream& out) const {
 
 
 Read::Ptr create_initial(int& err, const RangePtr& range) {
-  Write writer(1, range->get_path_cs(1), range, range->cfg->cell_versions());
+  Write writer(
+    1, range->get_path_cs(1), range, range->cfg->cell_versions(),
+    DB::Cell::Key()
+  );
   writer.create(err, -1, range->cfg->file_replication(), -1);
   if(err)
     return nullptr;
-
 
   Block::Header header(range->cfg->key_seq);
   range->_get_interval(header.interval);
@@ -627,12 +626,11 @@ Read::Ptr create_initial(int& err, const RangePtr& range) {
     header.is_any |= Block::Header::ANY_END;
 
   DynamicBuffer cells_buff;
-  DB::Cells::Interval cs_intval(header.interval);
   writer.block_encode(err, cells_buff, std::move(header));
   if(!err) {
     writer.finalize(err);
     if(!err) {
-      auto cs = Read::make(err, 1, range, cs_intval, true);
+      auto cs = Read::make(err, 1, range, true);
       if(!err)
         return cs;
       delete cs;

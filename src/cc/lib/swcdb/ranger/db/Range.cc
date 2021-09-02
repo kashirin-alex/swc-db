@@ -699,8 +699,7 @@ void Range::internal_create(int &err, const CellStore::Writers& w_cellstores) {
       return;
 
     blocks.cellstores.add(
-      CellStore::Read::make(
-        err, cs->csid, shared_from_this(), cs->interval, true)
+      CellStore::Read::make(err, cs->csid, shared_from_this(), true)
     );
     if(err)
       return;

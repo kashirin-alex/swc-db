@@ -46,9 +46,7 @@ class Read final {
 
   static constexpr uint32_t MAX_BLOCKS = UINT32_MAX;
 
-  inline static Ptr make(int& err, const csid_t csid,
-                         const RangePtr& range,
-                         const DB::Cells::Interval& interval,
+  inline static Ptr make(int& err, const csid_t csid, const RangePtr& range,
                          bool chk_base=false);
 
   static bool load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
@@ -131,19 +129,21 @@ class Write final {
   public:
   typedef std::shared_ptr<Write>  Ptr;
 
-  const csid_t              csid;
-  FS::SmartFd::Ptr          smartfd;
-  DB::Types::Encoder        encoder;
-  uint32_t                  block_size;
-  uint32_t                  cell_revs;
-  size_t                    size;
-  DB::Cells::Interval       interval;
-  DB::Cell::Key             prev_key_end;
+  const csid_t                    csid;
+  FS::SmartFd::Ptr                smartfd;
+  const DB::Types::Encoder        encoder;
+  const uint32_t                  block_size;
+  const uint32_t                  cell_revs;
+  const DB::Cell::Key             prev_key_end;
+
+  size_t                          size;
+  Core::Vector<Block::Write::Ptr> blocks;
 
   //Core::Atomic<uint32_t>    completion;
 
   Write(const csid_t csid, std::string&& filepath,
-        const RangePtr& range, uint32_t cell_revs);
+        const RangePtr& range, uint32_t cell_revs,
+        const DB::Cell::Key& prev_key_end);
 
   //~Write() { }
 
@@ -162,10 +162,6 @@ class Write final {
 
   void print(std::ostream& out) const;
 
-  size_t blocks_count() const noexcept {
-    return m_blocks.size();
-  }
-
   private:
 
   void block(int& err, DynamicBuffer& blk_buff);
@@ -175,8 +171,6 @@ class Write final {
   void write_trailer(int& err);
 
   void close_and_validate(int& err);
-
-  Core::Vector<Block::Write::Ptr> m_blocks;
 };
 
 typedef Core::Vector<Write::Ptr>  Writers;
