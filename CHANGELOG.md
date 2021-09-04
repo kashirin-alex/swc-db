@@ -10,7 +10,73 @@
 
 
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.4...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.5...master)
+******
+
+
+
+
+### [SWC-DB v0.5.5](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.5) (2021-09-05)
+
+    added Config::Property::V_GUINT64 (G_UINT64)
+    added class Manager::Schemas derived from DB::Schemas
+    changed Env::Mngr::m_schemas to Manager::Schemas
+    added Manager Configuration Properties:
+      G_UINT64 swc.mngr.schemas.store.from.capacity
+      G_INT32  swc.mngr.schemas.store.block.size
+      G_ENUM   swc.mngr.schemas.store.block.encoder
+    added Manager at shutdown save-schemas and fast-load from Schemas-Store
+    changed sbin/swcdb_cluster kill/stop exec-seq. wait-ready after send-kill
+    added class Core::StateSynchronization, replaces use cases of std::promise
+    added bool Comm::equal_endpoints(const EndPoints& , const EndPoints&)
+    changed fs-block-size without specific to default-0, FS dependable/default
+    added definer SWC_RANGER_WITH_RANGEDATA default OFF "range.data" hint-file
+    added RgrData storage in Column SYS_RGR_DATA for CID above 9
+    added system reserved column SYS_RGR_DATA (cid=9) other moved up +1
+    added DB::Types::SystemColumn::is_rgr_data_on_fs(cid_t cid)
+    added class DB::RgrData (handles SYS_RGR_DATA)
+    changed Common::Files::RgrData Cls to NS & functions accepts DB::RgrData&
+    changed Manager::Range::m_last_rgr to std::unique_ptr<DB::RgrData>
+    added auto-create SYS_RGR_DATA in Common::Files::Schema::load
+    added Manager::Columns pre-load SYS_RGR_DATA after Master & Meta Ranges
+    added unload-phase for cols in SYS_RGR_DATA Ranger::Columns::unload_all
+    added delete all RgrData at colm-delete in Manager::MngdColumns::remove
+    changed Env::Rgr::m_rgr_data to DB::RgrData
+    removed Ranger Range::get_last_rgr(int &err)
+    added Ranger::Range::{set,remove}_rgr(int& err)
+    added #include <unordered_map> and <map> to Compat.h
+    fixed Error::get_text access with operator[] (unsafe) to map.find(err)
+    added client::Schemas::get a single request handlers for the same cid/name
+    added Ranger Column/s::get_{columns|ranges}(vec&) - for reporting command
+    fixed Ranger Compaction at swc.rgr.compaction.range.max=1 (without delay)
+    fixed (Experimental) Core::Mem::PageArena reset ptr at ItemPtr::release()
+    fixed numericals Condition::sbs case of against Zero in modulus & fmod
+    added unretriable case at ENOENT in FS::Interface::length
+    added char[] Ranger::Range::CELLSTORES_RCVD_DIR
+    added CELLSTORES_BAK_DIR check for init-create in Ranger::Range::load
+    added Ranger Recover CellStore at CellStore::Readers::load_from_path
+    changed Manager MngdColumns::m_expected_load to std::forward_list<cid_t>
+    changed programs AppContext to wait for metrics finish before IO ctx stop
+    changed Comm::client::ConnQueues stop out-of lock and host->stop at remove
+    changed Manager Column::create mkdirs inclusive of RANGE_DIR
+    changed Manager::Rangers endpoints eq-cond. to Comm::equal_endpoints(..)
+    fixed Manager::Rangers missing cases of rgr->stop() at erase
+    added ctor Manager::Ranger(const Ranger& other, const Comm::EndPoints&)
+    removed Manager Ranger::set(Comm::EndPoints) - ctor Ranger with init_queue
+    added Manager MngdColumns quit cases at no-run & cancel Load Expectations
+    fixed Comm::client::Serialized dtor/stop at time of making new connection
+    changed Manager Columns::get_need_health_check start by m_health_last_cid
+    added Manager Columns::AssignGroup cls manages next ranges for assignment
+    added source-files swcdb/manager/db/{Column,Range}.cc
+    added Manager::Columns::assign_{add,remove}( Range::Ptr )
+    changed Manager Columns::get_range(const rid_t rid) without bool initialize
+    added Manager AssignGroup Columns::m_need_assign[4] [Master,Meta,Sys,Data]
+    fixed Ranger Range::Block::add_logged(Cell&) a case at block got split
+    added Ranger CompactRange use count barrier at finalize
+    added Python swcdb.thrift.pool.PoolStopping exception, raise with stop
+    added SWC-DB Ruby 'swcdb' package and availability with gem list -r swcdb
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.4...v0.5.5)
 ******
 
 

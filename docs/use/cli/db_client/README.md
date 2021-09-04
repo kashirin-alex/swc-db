@@ -46,7 +46,7 @@ Usage Help:  'command' [options];
                            'TS-begin' <= timestamp <= 'TS-finish'          AND
                            offset_key = [F] offset_rev='TS'                AND
                            value COMP 'DATA'
-                           LIMIT=NUM   OFFSET=NUM  ONLY_KEYS   ONLY_DELETES     )
+                           LIMIT=NUM OFFSET=NUM MAX_VERSIONS=NUM ONLY_KEYS ONLY_DELETES)
                          ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;
                     * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP "VALUE", ..])
   update            update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;
@@ -80,7 +80,7 @@ SWC-DB(client)>
 ```bash
 SWC-DB(client)> add column(name=FirstColumn);
 SWC-DB(client)> get column FirstColumn;
-Schema(cid=10 name="FirstColumn" seq=LEXIC type=PLAIN revision=1610393297905674262 compact=0 cell_versions=1 cell_ttl=0 blk_encoding=DEFAULT blk_size=0 blk_cells=0 cs_replication=0 cs_size=0 cs_max=0 log_rollout=0 log_compact=0 log_preload=0)
+Schema(cid=10 name="FirstColumn" tags=[] seq=LEXIC type=PLAIN revision=1630745999588173486 compact=0 cell_versions=1 cell_ttl=0 blk_encoding=DEFAULT blk_size=0 blk_cells=0 cs_replication=0 cs_size=0 cs_max=0 log_rollout=0 log_compact=0 log_preload=0)
 SWC-DB(client)>
 ```
 
@@ -91,16 +91,17 @@ SWC-DB(client)> update cell(INSERT, FirstColumn, [My, First, Super, Wide, Column
 
 
 Statistics:
- Total Time Took:        834.152 microseconds
+Statistics:
+ Total Time Took:        456.938 microseconds
  Total Cells Count:      1
  Total Cells Size:       64 B
- Average Transfer Rate:  0.0767246 B/microsecond
- Average Cells Rate:     0.00119882 cell/microsecond
- Mngr Locate:            203563ns/1(0)
- Mngr Resolve:           0ns/0(0)
- Rgr Locate Master:      247751ns/1(0)
- Rgr Locate Meta:        190690ns/1(0)
- Rgr Data:               157399ns/1(0)
+ Average Transfer Rate:  0.140063 B/microsecond
+ Average Cells Rate:     0.00218848 cell/microsecond
+ Mngr Locate:            3680ns 1/1/0
+ Mngr Resolve:           1633ns 2/2/0
+ Rgr Locate Master:      201359ns 1/0/0
+ Rgr Locate Meta:        111957ns 1/0/0
+ Rgr Data:               99451ns 1/0/0
 
 SWC-DB(client)>
 ```
@@ -109,20 +110,20 @@ SWC-DB(client)>
 ##### SELECT cells
 ```bash
 SWC-DB(client)> select where col(FirstColumn)=( cells=() ) DISPLAY_STATS DISPLAY_TIMESTAMP DISPLAY_DATETIME;
-2020/01/23 19:58:09.820320533  1579809489820320533  [My, First, Super, Wide, Column, Key, Fractions]  The Cell Data Value
+2021/09/04 09:00:52.380345269   1630746052380345269     ["My","First","Super","Wide","Column","Key","Fractions"]        The Cell Data Value
 
 
 Statistics:
- Total Time Took:        1012.45 microseconds
+ Total Time Took:        700.735 microseconds
  Total Cells Count:      1
  Total Cells Size:       72 B
- Average Transfer Rate:  0.0711147 B/microsecond
- Average Cells Rate:     0.000987704 cell/microsecond
- Mngr Locate:            318855ns/2(1)
- Mngr Resolve:           0ns/0(0)
- Rgr Locate Master:      278175ns/2(1)
- Rgr Locate Meta:        238001ns/2(1)
- Rgr Data:               124960ns/1(0)
+ Average Transfer Rate:  0.102749 B/microsecond
+ Average Cells Rate:     0.00142707 cell/microsecond
+ Mngr Locate:            106893ns 2/1/1
+ Mngr Resolve:           1674ns 2/2/0
+ Rgr Locate Master:      260523ns 2/0/1
+ Rgr Locate Meta:        186388ns 2/0/1
+ Rgr Data:               94666ns 1/0/0
 
 SWC-DB(client)>
 ```

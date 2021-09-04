@@ -12,10 +12,10 @@ endif ()
 
 
 project(SWCDB)
-# 0.5.4
+# 0.5.5
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "5")
-set(VERSION_MICRO "4")
+set(VERSION_MICRO "5")
 set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}")
 set(VERSION_PATCH )
 set(VERSION_MISC_SUFFIX  "")
@@ -185,6 +185,13 @@ else()
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 
+    # if (O_LEVEL STREQUAL "3")
+    #  if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    #    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fipa-pta")
+    #    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fipa-pta")
+    #  endif()
+    # endif()
+
     if(O_LEVEL MATCHES "[4-7]")
 
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
@@ -284,6 +291,7 @@ install(
             CHANGELOG.md
   DESTINATION share/swcdb/${SWC_BUILD_PKG}
 )
+# CONTRIBUTING.md CREDITS.md SPONSORS.md
 
 
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "doc")
