@@ -509,7 +509,7 @@ void CompactRange::request_more() {
     Ptr ptr;
     SWC_CAN_INLINE
     Task(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
-    void operator()() { ptr->range->scan_internal(ptr->get_req_scan()); }
+    void operator()() { ptr->range->scan_internal(ptr); }
   };
   if(!m_get.running())
     Env::Rgr::maintenance_post(Task(shared()));
@@ -637,7 +637,6 @@ csid_t CompactRange::create_cs(int& err) {
     }
   }
   return csid;
-
 }
 
 SWC_CAN_INLINE
@@ -650,20 +649,16 @@ void CompactRange::write_cells(int& err, InBlock* in_block) {
   }
 
   cs_writer->block_write(err, in_block->cells, std::move(in_block->header));
-  if(err)
-    return;
-
-  if(cs_writer->size >= cs_size ||
-     cs_writer->blocks.size() == CellStore::Read::MAX_BLOCKS - 1) {
+  if(!err &&
+     (cs_writer->size >= cs_size ||
+      cs_writer->blocks.size() == CellStore::Read::MAX_BLOCKS - 1)) {
     add_cs(err);
-    if(err)
-      return;
   }
 }
 
 void CompactRange::add_cs(int& err) {
   cs_writer->finalize(err);
-  {
+  if(!err) {
     Core::MutexSptd::scope lock(m_mutex);
     cellstores.push_back(cs_writer);
   }
@@ -712,6 +707,22 @@ void CompactRange::finalize() {
   Time::Measure_ns t_measure;
   int err = Error::OK;
   bool empty_cs = false;
+
+  {
+    auto ptr = shared();
+    for(uint32_t chk = 0; !m_stopped && ptr.use_count() > 3; ++chk) {
+      // insure sane
+      if(chk == 3000000) {
+        SWC_LOGF(LOG_INFO, "COMPACT-FINALIZING %lu/%lu use_count=%ld",
+                  range->cfg->cid, range->rid, ptr.use_count());
+        chk = 0;
+      }
+      if(ptr.use_count() > 3)
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
+    }
+    if(m_stopped)
+      return;
+  }
 
   if(m_inblock->header.cells_count) {
     // first or/and last block of any-type set with empty-key
@@ -992,13 +1003,14 @@ bool CompactRange::completion() {
   stop_check_timer();
 
   auto ptr = shared();
-  for(int chk = 0; ptr.use_count() > 3; ++chk) { // insure sane
-    if(chk == 3000) {
+  for(uint32_t chk = 0; ptr.use_count() > 3; ++chk) { // insure sane
+    if(chk == 3000000) {
       SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %lu/%lu use_count=%ld",
                 range->cfg->cid, range->rid, ptr.use_count());
       chk = 0;
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    if(ptr.use_count() > 3)
+      std::this_thread::sleep_for(std::chrono::microseconds(1));
   }
   return true;
 }

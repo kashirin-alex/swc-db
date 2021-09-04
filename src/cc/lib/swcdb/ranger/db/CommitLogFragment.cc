@@ -379,8 +379,8 @@ SWC_CAN_INLINE
 void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
   ssize_t remain_hint(0);
   if(!marked_removed()) {
-    bool was_splitted = false;
     if(m_buffer.size) {
+      bool was_splitted;
       remain_hint = m_cells_remain.sub_rslt(
         cells_block->load_cells(
           m_buffer.base, m_buffer.size,

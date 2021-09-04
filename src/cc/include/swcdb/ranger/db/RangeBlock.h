@@ -144,6 +144,7 @@ class Block final {
   Core::Atomic<size_t>        m_releasable_bytes;
 
   mutable Core::MutexAtomic   m_mutex_intval;
+  uint32_t                    m_split_rev;
   DB::Cell::Key               m_prev_key_end;
   DB::Cell::Key               m_key_end;
 

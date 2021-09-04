@@ -29,7 +29,7 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_ttl(),
                   blocks->range->cfg->column_type())),
               m_releasable_bytes(0),
-              m_key_end(interval.key_end),
+              m_split_rev(0), m_key_end(interval.key_end),
               m_processing(0), m_state(state), m_loader(nullptr) {
   if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
     Env::Rgr::res().more_mem_releasable(
@@ -161,13 +161,18 @@ void Block::preload() {
 
 SWC_CAN_INLINE
 bool Block::add_logged(const DB::Cells::Cell& cell) {
-  if(!is_in_end(cell.key))
-    return false;
+  uint32_t rev;
+  {
+    Core::MutexAtomic::scope lock(m_mutex_intval);
+    if(!_is_in_end(cell.key))
+      return false;
+    rev = m_split_rev;
+  }
 
   if(loaded()) {
     Core::ScopedLock lock(m_mutex);
-    if(!_is_in_end(cell.key)) // split-could-happen (blk is now next)
-      return false;
+    if(rev != m_split_rev && !_is_in_end(cell.key))
+      return false; // split-could-happen (blk is now next)
     m_cells.add_raw(cell);
     splitter();
   }
@@ -187,9 +192,10 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
       ssize_t sz = m_cells.size_of_internal();
       Env::Rgr::res().adj_mem_releasable(sz - m_releasable_bytes.exchange(sz));
     }
-  }
-  {
-    Core::MutexSptd::scope lock(m_mutex_state);
+    Core::MutexSptd::scope lock_state(m_mutex_state);
+    m_state.store(State::LOADED);
+  } else {
+    Core::MutexSptd::scope lock_state(m_mutex_state);
     m_state.store(State::LOADED);
   }
 }
@@ -348,6 +354,7 @@ Block::Ptr Block::_split(bool loaded) {
   }
   {
     Core::MutexAtomic::scope lock(m_mutex_intval);
+    ++m_split_rev;
     blk->m_key_end.move(m_key_end);
     m_key_end.copy(m_cells.back().key);
     blk->m_prev_key_end.copy(m_key_end);
