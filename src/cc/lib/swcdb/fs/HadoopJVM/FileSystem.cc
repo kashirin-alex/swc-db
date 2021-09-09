@@ -390,16 +390,19 @@ void FileSystemHadoopJVM::readdir(int& err, const std::string& name,
       need_reconnect(err = errno, fs);
 
     } else {
-      results.reserve(numEntries);
-      for(int i=0; i < numEntries; ++i) {
-        if(fileInfo[i].mName[0] == '.' || !fileInfo[i].mName[0])
-          continue;
-        auto& entry = results.emplace_back();
-        const char *ptr = strrchr(fileInfo[i].mName, '/');
-        entry.name.append(ptr ? ++ptr : fileInfo[i].mName);
-        entry.length = fileInfo[i].mSize;
-        entry.last_modification_time = fileInfo[i].mLastMod;
-        entry.is_dir = fileInfo[i].mKind == kObjectKindDirectory;
+      if(numEntries > 0) {
+        results.reserve(numEntries);
+        for(int i=0; i < numEntries; ++i) {
+          if(fileInfo[i].mName[0] == '.' || !fileInfo[i].mName[0])
+            continue;
+          const char *ptr = strrchr(fileInfo[i].mName, '/');
+          results.emplace_back(
+            ptr ? ++ptr : fileInfo[i].mName,
+            fileInfo[i].mLastMod,
+            fileInfo[i].mKind == kObjectKindDirectory,
+            fileInfo[i].mSize
+          );
+        }
       }
       hdfsFreeFileInfo(fileInfo, numEntries);
     }

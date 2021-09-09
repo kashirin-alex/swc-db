@@ -22,7 +22,31 @@ struct Dirent final  {
   SWC_CAN_INLINE
   Dirent(const char* s, int64_t mod_time, bool is_dir, uint64_t length)
         : name(s), last_modification_time(mod_time),
-          is_dir(is_dir), length(length) { }
+          is_dir(is_dir), length(length) {
+  }
+
+  SWC_CAN_INLINE
+  Dirent(Dirent&& other) noexcept
+        : name(std::move(other.name)),
+          last_modification_time(other.last_modification_time),
+          is_dir(other.is_dir), length(other.length) {
+  }
+
+  SWC_CAN_INLINE
+  Dirent(const Dirent& other)
+        : name(other.name),
+          last_modification_time(other.last_modification_time),
+          is_dir(other.is_dir), length(other.length) {
+  }
+
+  SWC_CAN_INLINE
+  Dirent& operator=(Dirent&& other) noexcept {
+    name = std::move(other.name);
+    last_modification_time = other.last_modification_time;
+    is_dir = other.is_dir;
+    length = other.length;
+    return *this;
+  }
 
   /// File or Directory name
   std::string   name;
@@ -62,7 +86,7 @@ struct Dirent final  {
 
 };
 
-typedef std::vector<Dirent> DirentList;
+typedef Core::Vector<Dirent> DirentList;
 }}
 
 

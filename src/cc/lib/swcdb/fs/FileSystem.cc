@@ -170,7 +170,7 @@ void FileSystem::readdir(Callback::ReaddirCb_t&& cb,
   int err = Error::OK;
   DirentList listing;
   readdir(err, name, listing);
-  cb(err, listing);
+  cb(err, std::move(listing));
 }
 
 void FileSystem::rmdir(Callback::RmdirCb_t&& cb,
@@ -270,7 +270,7 @@ void FileSystem::read(Callback::ReadAllCb_t&& cb,
   read(err, name, dst.get());
   cb(err, name, dst);
 }
- 
+
 void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
                                      uint64_t offset, uint32_t amount,
                                      StaticBuffer* buffer) {
