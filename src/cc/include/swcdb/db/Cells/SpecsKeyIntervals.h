@@ -49,6 +49,8 @@ struct KeyInterval {
     decode(bufp, remainp);
   }
 
+  ~KeyInterval();
+
   SWC_CAN_INLINE
   KeyInterval& operator=(const KeyInterval& other) {
     start.copy(other.start);
@@ -98,6 +100,8 @@ class KeyIntervals : public std::vector<KeyInterval> {
   KeyIntervals(KeyIntervals&& other) noexcept
               : Vec(std::move(other)) {
   }
+
+  ~KeyIntervals();
 
   SWC_CAN_INLINE
   KeyIntervals& operator=(const KeyIntervals& other) {

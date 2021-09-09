@@ -16,7 +16,7 @@
 
 
 
-### [SWC-DB v0.5.5](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.5) (2021-09-05)
+### [SWC-DB v0.5.5](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.5) (upcoming-release)
 
     added Config::Property::V_GUINT64 (G_UINT64)
     added class Manager::Schemas derived from DB::Schemas

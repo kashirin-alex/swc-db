@@ -180,12 +180,6 @@ void Cell::display(std::ostream& out,
   }
 }
 
-std::string Cell::to_string(Types::Column typ) const {
-  std::stringstream ss;
-  print(ss, typ);
-  return ss.str();
-}
-
 void Cell::print(std::ostream& out, Types::Column typ) const {
   out << "Cell(flag=" << Cells::to_string(Flag(flag));
   key.print(out << " key=");

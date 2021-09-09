@@ -296,7 +296,7 @@ struct FieldsWriter final : DynamicBuffer {
   constexpr SWC_CAN_INLINE
   FieldsWriter() noexcept : index_count(0) { }
 
-  //~FieldsWriter() { }
+  ~FieldsWriter() { }
 
   SWC_CAN_INLINE
   void add(Field* field) {
@@ -367,9 +367,6 @@ struct FieldsWriter final : DynamicBuffer {
   void add(const std::vector<std::string>& items) {
     add(index_count++, items);
   }
-
-
-  std::string to_string() const;
 
   void print(std::ostream& out) const;
 

@@ -12,6 +12,8 @@ namespace SWC { namespace Comm {
 
 
 
+Event::~Event() { }
+
 int32_t Event::response_code() const noexcept {
   if(error)
     return error;

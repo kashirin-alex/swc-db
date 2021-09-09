@@ -167,7 +167,16 @@ class Key final {
 
   bool equal(const std::vector<std::string>& key) const;
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void display(std::ostream& out, bool pretty=true,
                const char* sep = ",") const;
@@ -190,8 +199,9 @@ class Key final {
 
   SWC_CAN_INLINE
   uint8_t* _data(const uint8_t* ptr) {
-    return size
-      ? static_cast<uint8_t*>(memcpy(new uint8_t[size], ptr, size))
+    uint8_t* data = size ? new uint8_t[size] : nullptr;
+    return data
+      ? static_cast<uint8_t*>(memcpy(data, ptr, size))
       : nullptr;
   }
 

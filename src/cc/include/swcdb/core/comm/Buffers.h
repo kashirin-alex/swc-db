@@ -119,7 +119,7 @@ class Buffers final {
           const Serializable& params, StaticBuffer& buffer,
           uint32_t reserve=0);
 
-  //~Buffers() { }
+  ~Buffers();
 
   void set_data(uint32_t sz);
 

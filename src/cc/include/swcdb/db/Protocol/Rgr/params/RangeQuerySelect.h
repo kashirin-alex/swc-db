@@ -27,7 +27,8 @@ class RangeQuerySelectReq final : public Serializable {
                       : cid(cid), rid(rid), interval(interval) {
   }
 
-  //~RangeQuerySelectReq() { }
+  SWC_CAN_INLINE
+  ~RangeQuerySelectReq() { }
 
   void print(std::ostream& out) const;
 
@@ -96,7 +97,8 @@ class RangeQuerySelectRsp final : public Serializable {
   RangeQuerySelectRsp(int err, const uint8_t *ptr, size_t remain,
                       StaticBuffer& data) noexcept;
 
-  //~RangeQuerySelectRsp() { }
+  SWC_CAN_INLINE
+  ~RangeQuerySelectRsp() { }
 
   void print(std::ostream& out) const;
 

@@ -78,6 +78,8 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               need_data_cid_check(false) {
 }
 
+Scanner::~Scanner() { }
+  
 void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
                               const Comm::EndPoints& endpoints) {
   SWC_LOG_OUT(LOG_DEBUG,

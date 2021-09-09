@@ -32,6 +32,8 @@ struct RangeEndPoints final {
     endpoints = std::move(other.endpoints);
     return *this;
   }
+  SWC_CAN_INLINE
+  ~RangeEndPoints() { }
 };
 
 
@@ -48,6 +50,9 @@ class CachedRangers final
   CachedRangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
                 : m_expiry_ms(expiry_ms) {
   }
+
+  SWC_CAN_INLINE
+  ~CachedRangers() { }
 
   void clear();
 

@@ -58,12 +58,6 @@ bool Schema::equal(const Ptr& other, bool with_rev) const noexcept {
           tags == other->tags;
 }
 
-std::string Schema::to_string() const {
-  std::stringstream ss;
-  display(ss);
-  return ss.str();
-}
-
 void Schema::display(std::ostream& out) const {
   out
     << "Schema("

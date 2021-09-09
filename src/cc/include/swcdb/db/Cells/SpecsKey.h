@@ -117,11 +117,10 @@ struct Fraction final : public std::string {
 
 
 
-class Key final : public std::vector<Fraction> {
+class Key final : public Core::Vector<Fraction> {
   public:
 
-  using std::vector<Fraction>::insert;
-
+  typedef Core::Vector<Fraction> Vec;
   typedef std::shared_ptr<Key> Ptr;
 
   SWC_CAN_INLINE
@@ -129,7 +128,7 @@ class Key final : public std::vector<Fraction> {
 
   SWC_CAN_INLINE
   explicit Key(Key&& other) noexcept
-              : std::vector<Fraction>(std::move(other)) {
+              : Vec(std::move(other)) {
   }
 
   SWC_CAN_INLINE
@@ -139,7 +138,7 @@ class Key final : public std::vector<Fraction> {
 
   explicit Key(const Key& other);
 
-  //~Key() { }
+  ~Key();
 
   size_t size_of_internal() const noexcept;
 
@@ -153,7 +152,7 @@ class Key final : public std::vector<Fraction> {
 
   SWC_CAN_INLINE
   void move(Key& other) noexcept {
-    std::vector<Fraction>::operator=(std::move(other));
+    Vec::operator=(std::move(other));
   }
 
   bool equal(const Key &other) const noexcept;
@@ -290,7 +289,16 @@ class Key final : public std::vector<Fraction> {
   template<Types::KeySeq T_seq>
   bool is_matching(const Cell::Key &key) const;
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(std::ostream& out) const;
 

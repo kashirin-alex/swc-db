@@ -53,7 +53,8 @@ class RangeQueryUpdateRsp final : public Serializable {
 
   RangeQueryUpdateRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
 
-  //~RangeQueryUpdateRsp() { }
+  SWC_CAN_INLINE
+  ~RangeQueryUpdateRsp() { }
 
   void print(std::ostream& out) const;
 

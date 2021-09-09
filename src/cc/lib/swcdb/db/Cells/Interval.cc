@@ -11,6 +11,7 @@
 namespace SWC {  namespace DB { namespace Cells {
 
 
+Interval::~Interval() { }
 
 void Interval::copy(const Interval& other) {
   set_key_begin(other.key_begin);
@@ -146,12 +147,6 @@ void Interval::decode(const uint8_t **ptr, size_t *remain, bool owner){
   aligned_max.decode(ptr, remain);
 
   was_set = true;
-}
-
-std::string Interval::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
 }
 
 void Interval::print(std::ostream& out) const {

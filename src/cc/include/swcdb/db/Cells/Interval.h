@@ -56,7 +56,7 @@ class Interval final {
 
   Interval& operator=(const Interval&) = delete;
 
-  //~Interval() { }
+  ~Interval();
 
   void copy(const Interval& other);
 
@@ -189,8 +189,6 @@ class Interval final {
   void encode(uint8_t **ptr) const;
 
   void decode(const uint8_t **ptr, size_t *remain, bool owner);
-
-  std::string to_string() const;
 
   void print(std::ostream& out) const;
 

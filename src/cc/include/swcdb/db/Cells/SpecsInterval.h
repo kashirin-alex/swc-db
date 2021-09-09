@@ -76,7 +76,7 @@ class Interval {
 
   void move(Interval& other) noexcept;
 
-  //~Interval() { }
+  ~Interval();
 
   void free();
 
@@ -191,7 +191,16 @@ class Interval {
   void apply_possible_range(DB::Cell::Key& key, bool ending,
                             bool rest, bool no_stepping) const;
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(std::ostream& out) const;
 

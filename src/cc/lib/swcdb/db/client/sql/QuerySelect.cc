@@ -903,7 +903,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
             do {
               auto& item = field->items.emplace_back();
               found_comparator(item.comp = Condition::NONE, false);
-             if(!is_numeric_comparator(item.comp))
+              if(!is_numeric_comparator(item.comp))
                 return;
               std::string buff;
               read(buff, ",]");

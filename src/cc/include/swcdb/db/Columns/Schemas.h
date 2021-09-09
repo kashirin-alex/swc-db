@@ -32,15 +32,45 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     Pattern(Condition::Comp comp, std::string&& value) noexcept
             : std::string(std::move(value)), comp(comp) {
     }
+
     SWC_CAN_INLINE
     Pattern(Condition::Comp comp, const std::string& value)
             : std::string(value), comp(comp) {
     }
+
+    SWC_CAN_INLINE
+    Pattern(Pattern&& other) noexcept
+            : std::string(std::move(other)), comp(other.comp) {
+    }
+
+    SWC_CAN_INLINE
+    Pattern(const Pattern& other)
+            : std::string(other), comp(other.comp) {
+    }
+
+    SWC_CAN_INLINE
+    ~Pattern() { }
+
+    SWC_CAN_INLINE
+    Pattern& operator=(Pattern&& other) noexcept {
+      std::string::operator=(std::move(other));
+      comp = other.comp;
+      return *this;
+    }
+
+    SWC_CAN_INLINE
+    Pattern& operator=(const Pattern& other) {
+      std::string::operator=(other);
+      comp = other.comp;
+      return *this;
+    }
+
     SWC_CAN_INLINE
     void set(Condition::Comp _comp, std::string&& value) {
       std::string::operator=(std::move(value));
       comp = _comp;
     }
+
     SWC_CAN_INLINE
     void set(Condition::Comp _comp, const std::string& value) {
       std::string::operator=(value);
@@ -52,17 +82,24 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     }
 
   };
-  typedef std::vector<Pattern> NamePatterns;
+  typedef Core::Vector<Pattern> NamePatterns;
 
-  struct TagsPattern : public std::vector<Pattern> {
+  struct TagsPattern : public NamePatterns {
     Condition::Comp comp;
+
     SWC_CAN_INLINE
     TagsPattern() noexcept : comp(Condition::NONE) { }
+
+    SWC_CAN_INLINE
+    ~TagsPattern() { }
   };
 
   struct SelectorPatterns {
     NamePatterns  names;
     TagsPattern   tags;
+
+    SWC_CAN_INLINE
+    ~SelectorPatterns() { }
   };
 
 
@@ -70,7 +107,8 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   SWC_CAN_INLINE
   Schemas() noexcept { }
 
-  //~Schemas() { }
+  SWC_CAN_INLINE
+  ~Schemas() { }
 
   uint64_t size();
 

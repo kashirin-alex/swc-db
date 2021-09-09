@@ -50,7 +50,7 @@ class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
                 : selector(hdlr), interval(interval), cid(cid) {
   }
 
-  virtual ~BrokerScanner() { }
+  ~BrokerScanner();
 
   void print(std::ostream& out);
 

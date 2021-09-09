@@ -33,7 +33,7 @@ class Event final {
     return Ptr(new Event(error));
   }
 
-  //~Event() { }
+  ~Event();
 
   SWC_CAN_INLINE
   void received() noexcept {

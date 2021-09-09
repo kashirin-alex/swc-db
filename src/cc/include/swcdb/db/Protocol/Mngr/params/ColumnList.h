@@ -26,7 +26,8 @@ class ColumnListReq final : public Serializable {
                : patterns(patterns) {
   }
 
-  //~ColumnListReq() { }
+  SWC_CAN_INLINE
+  ~ColumnListReq() { }
 
   DB::Schemas::SelectorPatterns patterns;
 
@@ -48,7 +49,8 @@ class ColumnListRsp final : public Serializable {
   SWC_CAN_INLINE
   ColumnListRsp() noexcept : expected(0) { }
 
-  //~ColumnListRsp() { }
+  SWC_CAN_INLINE
+  ~ColumnListRsp() { }
 
   uint64_t                     expected;
   std::vector<DB::Schema::Ptr> schemas;

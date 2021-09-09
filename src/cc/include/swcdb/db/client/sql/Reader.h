@@ -30,7 +30,7 @@ class Reader {
 
   Reader(const std::string& sql, std::string& message);
 
-  //~Reader() { }
+  ~Reader() { }
 
   bool is_char(const char* stop) const;
 

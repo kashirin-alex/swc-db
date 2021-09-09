@@ -52,6 +52,8 @@ class Managers  {
               revision(other.revision) {
       }
       SWC_CAN_INLINE
+      ~Range() { }
+      SWC_CAN_INLINE
       void operator=(Range&& other) noexcept {
         ts = other.ts;
         rid = other.rid;
@@ -84,6 +86,9 @@ class Managers  {
       mutable Core::MutexSptd         m_mutex;
 
       public:
+
+      SWC_CAN_INLINE
+      ~Column() { }
 
       void init(DB::Types::KeySeq _key_seq,
                 Config::Property::V_GINT32::Ptr _expiry_ms) noexcept {
@@ -134,6 +139,9 @@ class Managers  {
         );
       }
     }
+
+    SWC_CAN_INLINE
+    ~MasterRangesCache() { }
 
     void clear_expired() noexcept {
       for(auto& c : columns)
@@ -194,7 +202,8 @@ class Managers  {
            Comm::IoContextPtr ioctx,
            const ContextManager::Ptr& mngr_ctx);
 
-  //~Managers() { }
+  SWC_CAN_INLINE
+  ~Managers() { }
 
   bool put(const ClientsPtr& clients,
            const cid_t& cid, Comm::EndPoints& endpoints,

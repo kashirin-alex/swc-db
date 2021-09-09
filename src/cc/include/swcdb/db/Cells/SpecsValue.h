@@ -197,7 +197,16 @@ class Value {
 
   bool is_matching_counter(const Cells::Cell& cell) const;
 
-  std::string to_string(Types::Column col_type) const;
+  SWC_CAN_INLINE
+  std::string to_string(Types::Column col_type) const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(col_type, ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(Types::Column col_type, std::ostream& out) const;
 

@@ -253,7 +253,16 @@ class Cell final {
   void display(std::ostream& out, Types::Column typ = Types::Column::PLAIN,
                uint8_t flags=0, bool meta=false) const;
 
-  std::string to_string(Types::Column typ = Types::Column::PLAIN) const;
+  SWC_CAN_INLINE
+  std::string to_string(Types::Column typ = Types::Column::PLAIN) const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss, typ);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(std::ostream& out, Types::Column typ) const;
 
@@ -270,8 +279,9 @@ class Cell final {
 
   SWC_CAN_INLINE
   uint8_t* _value(const uint8_t* v) {
-    return vlen
-      ? static_cast<uint8_t*>(memcpy(new uint8_t[vlen], v, vlen))
+    uint8_t* data = vlen ? new uint8_t[vlen] : nullptr;
+    return data
+      ? static_cast<uint8_t*>(memcpy(data, v, vlen))
       : nullptr;
   }
 

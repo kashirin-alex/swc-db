@@ -37,6 +37,8 @@ Settings::Settings() {
   cmdline_desc.definition(usage_str());
 }
 
+Settings::~Settings() { }
+
 void Settings::init(int argc, char *argv[]) {
 
   char path[1024];

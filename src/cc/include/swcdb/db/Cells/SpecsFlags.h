@@ -101,7 +101,16 @@ class Flags {
     options = Serialization::decode_i8(bufp, remainp);
   }
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(std::ostream& out) const;
 

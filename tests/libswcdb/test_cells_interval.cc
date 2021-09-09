@@ -21,7 +21,7 @@ int main() {
   int num_keys = 9999;
   DB::Cells::Interval expected_expanded(SWC::DB::Types::KeySeq::VOLUME);
   DB::Cells::Interval interval(SWC::DB::Types::KeySeq::VOLUME);
-  DB::Cells::Cell cell; 
+  DB::Cells::Cell cell;
 
   for (int n = 0; n<=num_keys ;++n) {
       cell.key.free();
@@ -34,8 +34,8 @@ int main() {
       cell.key.add(std::string("d")+s);
       cell.timestamp = n;
 
-      interval.expand(cell);    
-      interval.expand(cell.timestamp);  
+      interval.expand(cell);
+      interval.expand(cell.timestamp);
       interval.align(cell.key);
 
 
@@ -58,8 +58,10 @@ int main() {
   std::cout << "\n";
 
   if(!expected_expanded.equal(interval)){
-    std::cout << " expected,  " << expected_expanded.to_string() << "\n";
-    std::cout << " resulting, " << interval.to_string() << "\n";
+    expected_expanded.print(std::cout << " expected,  ");
+    std::cout << "\n";
+    interval.print(std::cout << " resulting, ");
+    std::cout << "\n";
     std::cerr << "!expected_expanded.equal(interval)): ERROR\n";
     exit(1);
   }

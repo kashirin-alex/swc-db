@@ -348,13 +348,6 @@ void FieldsWriter::add(uint24_t fid, const std::vector<std::string>& items) {
   add(&field);
 }
 
-
-std::string FieldsWriter::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
-}
-
 void FieldsWriter::print(std::ostream& out) const {
   if(!fill()) {
     out << "SerialFields(size=0)";

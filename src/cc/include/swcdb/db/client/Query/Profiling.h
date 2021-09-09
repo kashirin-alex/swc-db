@@ -220,10 +220,15 @@ struct Profiling {
     out << ')';
   }
 
+  SWC_CAN_INLINE
   std::string to_string() const {
-    std::stringstream ss;
-    print(ss);
-    return ss.str();
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
   }
 
 };

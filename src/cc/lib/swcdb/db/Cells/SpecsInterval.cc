@@ -50,6 +50,8 @@ Interval::Interval(Interval&& other) noexcept
                     options(other.options) {
 }
 
+Interval::~Interval() { }
+
 void Interval::copy(const Interval& other) {
   range_begin.copy(other.range_begin);
   range_end.copy(other.range_end);
@@ -258,12 +260,6 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
       }
     } while(it != key_range.cbegin());
   }
-}
-
-std::string Interval::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
 }
 
 void Interval::print(std::ostream& out) const {

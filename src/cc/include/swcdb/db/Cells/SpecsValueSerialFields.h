@@ -232,6 +232,7 @@ struct Field_LIST_INT64 : Field {
     Item(Condition::Comp comp, int64_t value) noexcept
           : comp(comp), value(value) { }
   };
+  typedef Core::Vector<Item> Vec;
 
   SWC_CAN_INLINE
   static std::unique_ptr<Field_LIST_INT64>
@@ -241,14 +242,13 @@ struct Field_LIST_INT64 : Field {
 
   SWC_CAN_INLINE
   static Field::Ptr
-  make(uint24_t fid, Condition::Comp comp, const std::vector<Item>& items) {
+  make(uint24_t fid, Condition::Comp comp, const Vec& items) {
     return Field::Ptr(new Field_LIST_INT64(fid, comp, items));
   }
 
   Field_LIST_INT64(uint24_t fid, Condition::Comp comp);
 
-  Field_LIST_INT64(uint24_t fid, Condition::Comp comp,
-                   const std::vector<Item>& items);
+  Field_LIST_INT64(uint24_t fid, Condition::Comp comp, const Vec& items);
 
   Field_LIST_INT64(const uint8_t** bufp, size_t* remainp);
 
@@ -265,7 +265,7 @@ struct Field_LIST_INT64 : Field {
   void print(std::ostream& out) const override;
 
   Condition::Comp     comp;
-  std::vector<Item>   items;
+  Vec                 items;
   Core::Vector<bool> _found;
 
 };
@@ -285,6 +285,7 @@ struct Field_LIST_BYTES : Field {
     Item(Condition::Comp comp, const std::string& value)
         : comp(comp), value(value) { }
   };
+  typedef Core::Vector<Item> Vec;
 
   SWC_CAN_INLINE
   static std::unique_ptr<Field_LIST_BYTES>
@@ -294,14 +295,13 @@ struct Field_LIST_BYTES : Field {
 
   SWC_CAN_INLINE
   static Field::Ptr
-  make(uint24_t fid, Condition::Comp comp, const std::vector<Item>& items) {
+  make(uint24_t fid, Condition::Comp comp, const Vec& items) {
     return Field::Ptr(new Field_LIST_BYTES(fid, comp, items));
   }
 
   Field_LIST_BYTES(uint24_t fid, Condition::Comp comp);
 
-  Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
-                   const std::vector<Item>& items);
+  Field_LIST_BYTES(uint24_t fid, Condition::Comp comp, const Vec& items);
 
   Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp);
 
@@ -318,7 +318,7 @@ struct Field_LIST_BYTES : Field {
   void print(std::ostream& out) const override;
 
   Condition::Comp     comp;
-  std::vector<Item>   items;
+  Vec                 items;
   Core::Vector<bool> _found;
 
 };
@@ -346,7 +346,16 @@ struct Fields {
 
   bool is_matching(const Cells::Cell& cell);
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(std::ostream& out) const;
 

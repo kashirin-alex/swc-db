@@ -25,7 +25,8 @@ class RgrGetReq final : public Serializable {
             : cid(cid), rid(rid), next_range(next_range) {
   }
 
-  //~RgrGetReq() { }
+  SWC_CAN_INLINE
+  ~RgrGetReq() { }
 
   void print(std::ostream& out) const;
 
@@ -62,7 +63,8 @@ class RgrGetRsp final : public Serializable {
 
   RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
 
-  //~RgrGetRsp() { }
+  SWC_CAN_INLINE
+  ~RgrGetRsp() { }
 
   EndPoints       endpoints;
   int             err;

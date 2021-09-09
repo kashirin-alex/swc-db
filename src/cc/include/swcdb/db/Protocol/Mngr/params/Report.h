@@ -64,7 +64,8 @@ class RspColumnStatus final : public Serializable {
                   : state(DB::Types::MngrColumn::State::NOTSET) {
   }
 
-  //~RspColumnStatus() { }
+  SWC_CAN_INLINE
+  ~RspColumnStatus() { }
 
   struct RangeStatus {
 
@@ -93,7 +94,7 @@ class RspColumnStatus final : public Serializable {
   void display(std::ostream& out, const std::string& offset = "") const;
 
   DB::Types::MngrColumn::State  state;
-  std::vector<RangeStatus>      ranges;
+  Core::Vector<RangeStatus>     ranges;
 
   private:
 
@@ -113,7 +114,8 @@ class RspRangersStatus final : public Serializable {
   SWC_CAN_INLINE
   RspRangersStatus() noexcept { }
 
-  //~RspRangersStatus() { }
+  SWC_CAN_INLINE
+  ~RspRangersStatus() { }
 
   struct Ranger final {
 
@@ -133,6 +135,9 @@ class RspRangersStatus final : public Serializable {
       decode(bufp, remainp);
     }
 
+    SWC_CAN_INLINE
+    ~Ranger() { }
+
     size_t encoded_length() const;
 
     void encode(uint8_t** bufp) const;
@@ -145,7 +150,7 @@ class RspRangersStatus final : public Serializable {
 
   void display(std::ostream& out, const std::string& offset = "") const;
 
-  std::vector<Ranger> rangers;
+  Core::Vector<Ranger> rangers;
 
   private:
 
@@ -165,7 +170,8 @@ class RspManagersStatus final : public Serializable {
   SWC_CAN_INLINE
   RspManagersStatus() noexcept { }
 
-  //~RspManagersStatus() { }
+  SWC_CAN_INLINE
+  ~RspManagersStatus() { }
 
   struct Manager final {
 
@@ -185,6 +191,9 @@ class RspManagersStatus final : public Serializable {
       decode(bufp, remainp);
     }
 
+    SWC_CAN_INLINE
+    ~Manager() { }
+
     size_t encoded_length() const;
 
     void encode(uint8_t** bufp) const;
@@ -198,7 +207,7 @@ class RspManagersStatus final : public Serializable {
 
   void display(std::ostream& out, const std::string& offset = "") const;
 
-  std::vector<Manager>  managers;
+  Core::Vector<Manager> managers;
   EndPoint              inchain;
 
   private:

@@ -12,12 +12,6 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 
-std::string Flags::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
-}
-
 void Flags::print(std::ostream& out) const {
   display(out << "Flags(");
   out << ')';

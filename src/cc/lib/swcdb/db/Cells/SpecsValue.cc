@@ -82,12 +82,6 @@ bool Value::is_matching_counter(const Cells::Cell& cell) const {
 }
 
 
-std::string Value::to_string(Types::Column col_type) const {
-  std::stringstream ss;
-  print(col_type, ss);
-  return ss.str();
-}
-
 void Value::print(Types::Column col_type, std::ostream& out) const {
   out << "Value(";
   if(size)

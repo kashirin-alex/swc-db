@@ -223,12 +223,6 @@ bool Key::equal(const std::vector<std::string>& key) const {
   return true;
 }
 
-std::string Key::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
-}
-
 void Key::display_details(std::ostream& out, bool pretty) const {
   out << "size=" << size << " count=" << count << " fractions=";
   display(out, pretty);

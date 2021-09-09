@@ -86,7 +86,16 @@ class Timestamp {
     return Condition::is_matching(comp, value, other);
   }
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void display(std::ostream& out) const;
 

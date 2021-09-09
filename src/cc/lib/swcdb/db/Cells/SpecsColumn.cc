@@ -59,12 +59,6 @@ void Column::decode(const uint8_t** bufp, size_t* remainp) {
     intval.reset(new Interval(bufp, remainp));
 }
 
-std::string Column::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
-}
-
 void Column::print(std::ostream& out) const {
   out << "Column(cid=" << cid
       << " intervals=[";

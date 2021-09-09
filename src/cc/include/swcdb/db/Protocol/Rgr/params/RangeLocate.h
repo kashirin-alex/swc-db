@@ -31,7 +31,8 @@ class RangeLocateReq final : public Serializable {
                 : cid(cid), rid(rid), flags(0) {
   }
 
-  //~RangeLocateReq() { }
+  SWC_CAN_INLINE
+  ~RangeLocateReq() { }
 
   void print(std::ostream& out) const;
 
@@ -63,7 +64,8 @@ class RangeLocateRsp final : public Serializable {
 
   RangeLocateRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
 
-  //~RangeLocateRsp() { }
+  SWC_CAN_INLINE
+  ~RangeLocateRsp() { }
 
   void print(std::ostream& out) const;
 

@@ -33,7 +33,9 @@ void Fraction::print(std::ostream& out, bool pretty) const {
 
 
 
-Key::Key(const Key& other) : std::vector<Fraction>(other) { }
+Key::Key(const Key& other) : Vec(other) { }
+
+Key::~Key() { }
 
 void Key::copy(const Key &other) {
   clear();
@@ -75,17 +77,17 @@ Fraction& Key::add(const char* buf, uint32_t len,
 
 
 Fraction& Key::insert(uint32_t idx, Fraction&& other) {
-  return *emplace(cbegin() + idx, std::move(other));
+  return *Vec::insert(idx, std::move(other));
 }
 
 Fraction& Key::insert(uint32_t idx, std::string&& fraction,
                       Condition::Comp comp) {
-  return *emplace(cbegin() + idx, std::move(fraction), comp);
+  return *Vec::insert(idx, std::move(fraction), comp);
 }
 
 Fraction& Key::insert(uint32_t idx, const char* buf, uint32_t len,
                       Condition::Comp comp) {
-  return *emplace(cbegin() + idx, buf, len, comp);
+  return *Vec::insert(idx, buf, len, comp);
 }
 
 
@@ -100,12 +102,6 @@ void Key::remove(uint32_t idx, bool recursive) {
     erase(cbegin()+idx, cend());
   else
     erase(cbegin()+idx);
-}
-
-std::string Key::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
 }
 
 void Key::print(std::ostream& out) const {

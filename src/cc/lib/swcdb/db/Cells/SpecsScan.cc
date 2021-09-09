@@ -87,12 +87,6 @@ void Scan::decode(const uint8_t** bufp, size_t* remainp) {
   flags.decode(bufp, remainp);
 }
 
-std::string Scan::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
-}
-
 void Scan::print(std::ostream& out) const {
   out << "Scan(columns=[";
   for(auto& col : columns) {

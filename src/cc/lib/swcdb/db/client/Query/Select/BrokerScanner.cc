@@ -22,6 +22,7 @@ namespace SWC { namespace client { namespace Query { namespace Select {
   );
 
 
+BrokerScanner::~BrokerScanner() { }
 
 void BrokerScanner::print(std::ostream& out) {
   out << "BrokerScanner(cid=" << cid << ' ';

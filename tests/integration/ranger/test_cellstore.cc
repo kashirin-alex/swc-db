@@ -93,7 +93,8 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
       header.interval.expand(cell);
       if(header.interval.key_begin.get_string(0).empty()) {
         std::cout << cell.to_string() << "\n";
-        std::cout << "expand: " << header.interval.to_string() << "\n";
+        header.interval.print(std::cout << "expand: ");
+        std::cout << "\n";
         exit(1);
       }
 

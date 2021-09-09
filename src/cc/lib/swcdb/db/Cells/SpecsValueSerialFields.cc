@@ -192,7 +192,7 @@ Field_LIST_INT64::Field_LIST_INT64(uint24_t fid, Condition::Comp comp)
 }
 
 Field_LIST_INT64::Field_LIST_INT64(uint24_t fid, Condition::Comp comp,
-                                   const std::vector<Item>& items)
+                                   const Field_LIST_INT64::Vec& items)
                                   : Field(fid),
                                     comp(comp), items(items) {
 }
@@ -407,7 +407,7 @@ Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp)
 }
 
 Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
-                                   const std::vector<Item>& items)
+                                   const Field_LIST_BYTES::Vec& items)
                                   : Field(fid),
                                     comp(comp), items(items) {
 }
@@ -830,12 +830,6 @@ bool Fields::is_matching(const Cells::Cell& cell) {
       return true;
   }
   return false;
-}
-
-std::string Fields::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
 }
 
 void Fields::print(std::ostream& out) const {

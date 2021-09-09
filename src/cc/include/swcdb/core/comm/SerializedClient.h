@@ -43,7 +43,7 @@ class ServerConnections final :
                       m_ssl_cfg(ssl_cfg) {
   }
 
-  //~ServerConnections() { }
+  ~ServerConnections();
 
   void reusable(ConnHandlerPtr& conn, bool preserve);
 

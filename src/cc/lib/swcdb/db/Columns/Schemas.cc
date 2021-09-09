@@ -77,8 +77,8 @@ Schema::Ptr Schemas::_get(const std::string& name) const noexcept {
 }
 
 void Schemas::all(std::vector<Schema::Ptr>& entries) {
-  entries.reserve(entries.size() + size());
   Core::MutexSptd::scope lock(m_mutex);
+  entries.reserve(entries.size() + Map::size());
   for(const auto& it : *this)
     entries.push_back(it.second);
 }

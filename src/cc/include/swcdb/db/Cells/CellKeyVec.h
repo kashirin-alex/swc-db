@@ -145,7 +145,16 @@ class KeyVec final : public VecFraction {
 
   void decode(const uint8_t** bufp, size_t* remainp);
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      print(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(std::ostream& out) const;
 

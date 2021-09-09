@@ -217,7 +217,16 @@ class Schema final : public SchemaPrimitives {
 
   void display(std::ostream& out) const;
 
-  std::string to_string() const;
+  SWC_CAN_INLINE
+  std::string to_string() const {
+    std::string s;
+    {
+      std::stringstream ss;
+      display(ss);
+      s = ss.str();
+    }
+    return s;
+  }
 
   void print(std::ostream& out) const;
 

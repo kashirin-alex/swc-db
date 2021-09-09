@@ -16,12 +16,6 @@ void Timestamp::display(std::ostream& out) const {
   out << Condition::to_string(comp) << " \"" << value << "\"";
 }
 
-std::string Timestamp::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
-}
-
 void Timestamp::print(std::ostream& out) const {
   out << "Timestamp(";
   if(comp != Condition::NONE)

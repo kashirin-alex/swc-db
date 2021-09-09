@@ -10,12 +10,6 @@ namespace SWC { namespace DB { namespace Cell {
 
 
 
-std::string KeyVec::to_string() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str();
-}
-
 void KeyVec::print(std::ostream& out) const {
   out << "Key(";
   if(!size()) {

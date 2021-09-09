@@ -156,9 +156,13 @@ Exception::~Exception() {
 }
 
 std::string Exception::message() const {
-  std::stringstream ss;
-  print(ss);
-  return ss.str().c_str();
+  std::string s;
+  {
+    std::stringstream ss;
+    print(ss);
+    s = ss.str();
+  }
+  return s;
 }
 
 SWC_SHOULD_NOT_INLINE

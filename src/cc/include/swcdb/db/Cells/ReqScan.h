@@ -150,10 +150,15 @@ class ReqScan : public Comm::ResponseCallback {
       block_time_scan += Time::now_ns() - ts;
     }
 
+    SWC_CAN_INLINE
     std::string to_string() const {
-      std::stringstream ss;
-      print(ss);
-      return ss.str();
+      std::string s;
+      {
+        std::stringstream ss;
+        print(ss);
+        s = ss.str();
+      }
+      return s;
     }
 
     void print(std::ostream& out) const {

@@ -120,7 +120,7 @@ class BufferStreamIn {
   SWC_CAN_INLINE
   BufferStreamIn() noexcept : error(Error::OK) { }
 
-  virtual ~BufferStreamIn() {}
+  virtual ~BufferStreamIn() { }
 
   virtual bool empty() const;
 

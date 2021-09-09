@@ -12,6 +12,8 @@ namespace SWC { namespace Comm { namespace client {
 
 
 
+ServerConnections::~ServerConnections() { }
+
 void ServerConnections::reusable(ConnHandlerPtr& conn, bool preserve) {
   while(pop(&(conn = nullptr)) && !conn->is_open());
   if(preserve && conn)
