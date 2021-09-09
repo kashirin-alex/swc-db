@@ -19,6 +19,17 @@ namespace Comm {
 typedef asio::ip::tcp::endpoint EndPoint;
 typedef Core::Vector<EndPoint>  EndPoints;
 
+
+SWC_CAN_INLINE
+std::ostream& operator<<(std::ostream& out, const EndPoint& endpoint) {
+  return (
+    endpoint.address().is_v4()
+      ? (out << endpoint.address().to_v4().to_string())
+      : (out << '[' << endpoint.address().to_v6().to_string() << ']')
+    ) << ':' << endpoint.port();
+}
+
+
 struct Network {
   bool                        is_v4;
   const asio::ip::network_v4  v4;
