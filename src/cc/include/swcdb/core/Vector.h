@@ -6,7 +6,7 @@
 #ifndef swcdb_core_Vector_h
 #define swcdb_core_Vector_h
 
-#include <vector>
+
 
 namespace SWC { namespace Core {
 
@@ -137,6 +137,17 @@ class Vector {
     return !_size;
   }
 
+  SWC_CAN_INLINE
+  bool operator==(const Vector& other) const noexcept {
+    if(_size != other.size())
+      return false;
+    for(size_type i = 0; i < _size; ++i) {
+      if((*this)[i] != other[i])
+        return false;
+    }
+    return true;
+  }
+
   constexpr SWC_CAN_INLINE
   size_type size() const noexcept {
     return _size;
@@ -260,8 +271,9 @@ class Vector {
   void resize(size_type sz, ArgsT&&... args) {
     if(sz > _size) {
       reserve(sz);
-      for(pointer ptr = _data + _size; _size < sz; ++_size, ++ptr)
+      for(pointer ptr = _data + _size; _size < sz; ++_size, ++ptr) {
         _construct(ptr, std::forward<ArgsT>(args)...);
+      }
     } else if(sz < _size) {
       if(is_SimpleType) {
         _size = sz;
@@ -437,12 +449,21 @@ class Vector {
     return _data + offset;
   }
 
+  SWC_CAN_INLINE
+  void pop_back() {
+    if(_size) {
+      --_size;
+      if(!is_SimpleType)
+        (_data + _size)->~value_type();
+    }
+  }
 
   private:
 
   SWC_CAN_INLINE
   void _grow(size_type sz) {
-    _data = _allocate_uinitialized(_data, _size, _cap += sz);
+    if(sz && (_cap += sz))
+      _data = _allocate_uinitialized(_data, _size, _cap);
   }
 
   SWC_CAN_INLINE
