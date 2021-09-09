@@ -10,13 +10,18 @@ namespace SWC { namespace Comm {
 PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
                              PeriodicTimer::Call_t&& call,
                              const IoContextPtr& ioctx)
-                            : asio::high_resolution_timer(ioctx->executor()),
-                              m_ms(cfg_ms), m_call(std::move(call)) {
+                            : m_ms(cfg_ms), m_call(std::move(call)),
+                              m_timer(ioctx->executor()) {
   schedule();
 }
 
+PeriodicTimer::~PeriodicTimer() {
+  m_timer.cancel();
+}
+
 void PeriodicTimer::schedule() {
-  expires_after(std::chrono::milliseconds(m_ms->get()));
+  Core::MutexAtomic::scope lock(m_mutex);
+  m_timer.expires_after(std::chrono::milliseconds(m_ms->get()));
   struct TimerTask {
     PeriodicTimer* tm;
     SWC_CAN_INLINE
@@ -28,13 +33,22 @@ void PeriodicTimer::schedule() {
       }
     }
   };
-  async_wait(TimerTask(this));
+  m_timer.async_wait(TimerTask(this));
 }
+
+void PeriodicTimer::cancel() {
+  Core::MutexAtomic::scope lock(m_mutex);
+  m_timer.cancel();
+}
+
+
+
+PeriodicTimers::~PeriodicTimers() { }
 
 void PeriodicTimers::stop() {
   Core::MutexSptd::scope lock(m_mutex);
-  for(auto& ptr : *this)
-    ptr->cancel();
+  for(auto& tm : *this)
+    tm->cancel();
   clear();
 }
 

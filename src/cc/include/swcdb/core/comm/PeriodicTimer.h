@@ -13,16 +13,16 @@
 
 namespace SWC { namespace Comm {
 
-class PeriodicTimer final : private asio::high_resolution_timer {
+class PeriodicTimer final {
   public:
   typedef const std::function<void()> Call_t;
-
-  using asio::high_resolution_timer::cancel;
 
   PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
                 Call_t&& call, const IoContextPtr& ioctx);
 
-  //~PeriodicTimer() { }
+  ~PeriodicTimer();
+
+  void cancel();
 
   private:
 
@@ -30,14 +30,17 @@ class PeriodicTimer final : private asio::high_resolution_timer {
 
   const Config::Property::V_GINT32::Ptr   m_ms;
   const Call_t                            m_call;
+  Core::MutexAtomic                       m_mutex;
+  asio::high_resolution_timer             m_timer;
 };
+
 
 
 class PeriodicTimers final
     : private Core::Vector<std::unique_ptr<PeriodicTimer>> {
   public:
 
-  //~PeriodicTimers() { }
+  ~PeriodicTimers();
 
   void stop();
 
