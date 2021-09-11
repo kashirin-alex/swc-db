@@ -28,7 +28,7 @@
 
 
 extern SWC_MALLOC_ATTRIBS
-  void* operator new(size_t sz)
+  void* operator new(const size_t sz)
   SWC_MALLOC_NEW_ATTRIBS;
 extern SWC_MALLOC_ATTRIBS
   void* operator new[](size_t sz)
@@ -41,7 +41,7 @@ extern SWC_MALLOC_ATTRIBS
   SWC_MALLOC_NEW_ATTRIBS;
 
 extern SWC_MALLOC_ATTRIBS
-  void* operator new(size_t sz, std::align_val_t al)
+  void* operator new(const size_t sz, std::align_val_t al)
   SWC_MALLOC_NEW_ATTRIBS;
 extern SWC_MALLOC_ATTRIBS
   void* operator new[](size_t sz, std::align_val_t al)
@@ -75,7 +75,7 @@ extern SWC_MALLOC_ATTRIBS
 
 
 SWC_MALLOC_ATTRIBS
-void* operator new(size_t sz) {
+void* operator new(const size_t sz) {
   //printf("malloc using new size=%lu\n", sz);
   for(;;) {
     void* ptr = std::malloc(sz);
@@ -105,7 +105,7 @@ void* operator new[](size_t sz, const std::nothrow_t&) {
 
 
 SWC_MALLOC_ATTRIBS
-void* operator new(size_t sz, std::align_val_t al) {
+void* operator new(const size_t sz, std::align_val_t al) {
   //printf("aligned_alloc using new size=%lu aligned=%lu\n",sz,uint64_t(al));
   for(;;) {
     void* ptr = std::aligned_alloc(size_t(al), sz);

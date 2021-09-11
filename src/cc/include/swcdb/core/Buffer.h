@@ -8,6 +8,7 @@
 #define swcdb_core_Buffer_h
 
 #include "swcdb/core/Compat.h"
+#include "swcdb/core/Exception.h"
 
 
 namespace SWC { namespace Core {
@@ -23,21 +24,9 @@ struct Buffer {
 
   SWC_CAN_INLINE
   static value_type* allocate(size_t sz) {
+    SWC_EXPECT(sz, Error::BAD_MEMORY_ALLOCATION);
     return new value_type[sz];
   }
-
-  template<size_t SizeOfT=sizeof(value_type)>
-  constexpr SWC_CAN_INLINE
-  static size_t length_base_bytes(size_t len8) SWC_NOEXCEPT {
-    return len8 / SizeOfT;
-  }
-
-  template<size_t SizeOfT=sizeof(value_type)>
-  constexpr SWC_CAN_INLINE
-  static size_t length_base_byte(size_t sz) SWC_NOEXCEPT {
-    return sz * SizeOfT;
-  }
-
 
   constexpr SWC_CAN_INLINE
   explicit Buffer() SWC_NOEXCEPT
@@ -91,37 +80,30 @@ struct Buffer {
 
   SWC_CAN_INLINE
   void free() SWC_NOEXCEPT {
-    _free();
+    if(base) {
+      if(own)
+        delete [] base;
+      base = nullptr;
+    }
     size = 0;
-    base = nullptr;
   }
 
   SWC_CAN_INLINE
   void reallocate(size_t len) {
-    _free();
-    own = true;
-    base = allocate(size = len);
-  }
-
-  SWC_CAN_INLINE
-  void grow(size_t len) {
-    if(base) {
-      size_t            size_old = size;
-      const value_type* base_old = base;
-      base = allocate(size += len);
-      memcpy(base, base_old, length_base_byte(size_old));
-     if(own)
-        delete [] base_old;
-    } else {
+    if(len) {
+      _free();
+      own = true;
       base = allocate(size = len);
+    } else {
+      free();
     }
-    own = true;
   }
 
   SWC_CAN_INLINE
   void assign(const value_type* data, size_t len) {
     reallocate(len);
-    memcpy(base, data, length_base_byte(len));
+    if(len)
+      memcpy(base, data, len);
   }
 
   void set(value_type* data, size_t len, bool take_ownership) SWC_NOEXCEPT {
@@ -200,7 +182,7 @@ struct BufferDyn : BufferT {
 
   constexpr SWC_CAN_INLINE
   size_t fill() const SWC_NOEXCEPT {
-    return BufferT::length_base_bytes(ptr - BufferT::base);
+    return ptr - BufferT::base;
   }
 
   constexpr SWC_CAN_INLINE
@@ -220,32 +202,39 @@ struct BufferDyn : BufferT {
 
   SWC_CAN_INLINE
   void ensure(size_t len) {
+    if(!len)
+      return;
     if(!BufferT::base) {
       BufferT::own = true;
       ptr = mark = BufferT::base = BufferT::allocate(BufferT::size = len);
 
     } else {
-      size_t remain = remaining();
+      size_t ptr_offset = ptr - BufferT::base;
+      size_t remain = BufferT::size - ptr_offset;
       if(len > remain) {
-        size_t offset_mark = BufferT::length_base_bytes(mark - BufferT::base);
-        size_t offset_ptr = BufferT::length_base_bytes(ptr - BufferT::base);
-
-        BufferT::grow(len - remain); // actual size required to add
-        //BufferT::grow((fill() + len) * 3 / 2); // grow by 1.5
-
-        mark = BufferT::base + offset_mark;
-        ptr = BufferT::base + offset_ptr;
+        len -= remain;
+        const value_type* base_old = BufferT::base;
+        size_t            size_old = BufferT::size;
+        BufferT::size += len;
+        BufferT::base = BufferT::allocate(BufferT::size);
+        memcpy(BufferT::base, base_old, size_old);
+        if(BufferT::own)
+          delete [] base_old;
+        else
+          BufferT::own = true;
+        mark = BufferT::base + (mark - base_old);
+        ptr = BufferT::base + ptr_offset;
       }
     }
   }
 
   SWC_CAN_INLINE
   value_type* add_unchecked(const value_type* data, size_t len) SWC_NOEXCEPT {
-    if(!data)
-      return ptr;
     value_type* rptr = ptr;
-    memcpy(ptr, data, BufferT::length_base_byte(len));
-    ptr += len;
+    if(len) {
+      memcpy(ptr, data, len);
+      ptr += len;
+    }
     return rptr;
   }
 
@@ -301,21 +290,6 @@ struct BufferDyn : BufferT {
 typedef Buffer <uint8_t>          StaticBuffer;
 typedef BufferDyn <StaticBuffer>  DynamicBuffer;
 
-
-// StaticBuffer specializations to SizeOf
-template<>
-template<size_t SizeOf>
-constexpr SWC_CAN_INLINE
-size_t StaticBuffer::length_base_bytes(size_t len8) SWC_NOEXCEPT {
-  return len8;
-}
-
-template<>
-template<size_t SizeOf>
-constexpr SWC_CAN_INLINE
-size_t StaticBuffer::length_base_byte(size_t sz) SWC_NOEXCEPT {
-  return sz;
-}
 
 
 // StaticBuffer specializations to DynamicBuffer
