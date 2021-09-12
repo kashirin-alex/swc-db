@@ -203,7 +203,9 @@ class Key final {
     for(auto it = key.begin(); it != key.cend(); ++it, ptr+=len) {
       len = Serialization::decode_vi24(&ptr);
       it->assign(
-        reinterpret_cast<const T::value_type::value_type*>(ptr), len);
+        reinterpret_cast<const typename T::value_type::value_type*>(ptr),
+        len
+      );
     }
   }
 

@@ -74,6 +74,14 @@ class Vector {
   }
 
   SWC_CAN_INLINE
+  Vector(std::initializer_list<value_type>&& l)
+        : _data(l.size() ? _allocate_uinitialized(l.size()) : nullptr),
+          _cap(l.size()), _size(_cap) {
+    for(size_type i = 0; i < _size; ++i)
+      _construct(_data + i, std::move(*(l.begin() + i)));
+  }
+
+  SWC_CAN_INLINE
   ~Vector() {
     if(_data) {
       if(!is_SimpleType) {
@@ -349,6 +357,12 @@ class Vector {
 
   template<typename... ArgsT>
   SWC_CAN_INLINE
+  reference emplace(const_iterator it, ArgsT&&... args) {
+    return *insert(it, std::forward<ArgsT>(args)...);
+  }
+
+  template<typename... ArgsT>
+  SWC_CAN_INLINE
   iterator insert_unsafe(const_iterator it,
                          ArgsT&&... args) noexcept(is_SimpleType) {
     size_type offset = it - _data;
@@ -398,8 +412,9 @@ class Vector {
   }
 
 
+  template<typename IteratorT>
   SWC_CAN_INLINE
-  void assign(const_iterator first, const_iterator last) {
+  void assign(IteratorT first, IteratorT last) {
     clear();
     if(size_type sz = last - first) {
       reserve(sz);
