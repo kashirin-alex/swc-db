@@ -156,6 +156,11 @@ class Vector {
     return true;
   }
 
+  SWC_CAN_INLINE
+  bool operator!=(const Vector& other) const noexcept {
+    return !(*this == other);
+  }
+
   constexpr SWC_CAN_INLINE
   size_type size() const noexcept {
     return _size;

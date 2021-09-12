@@ -15,7 +15,7 @@
 namespace SWC { namespace DB { namespace Cell {
 
 
-typedef std::vector<std::basic_string<uint8_t>> VecFraction;
+typedef Core::Vector<std::basic_string<uint8_t>> VecFraction;
 
 
 class KeyVec final : public VecFraction {
