@@ -93,7 +93,8 @@ std::string Properties::to_string(const char* name) const {
   return get_ptr(name)->to_string();
 }
 
-void Properties::get_names(std::vector<std::string>& names) const {
+void Properties::get_names(Strings& names) const {
+  names.reserve(m_map.size());
   for(auto it = m_map.cbegin(); it != m_map.cend(); ++it)
     names.push_back(it->first);
 }

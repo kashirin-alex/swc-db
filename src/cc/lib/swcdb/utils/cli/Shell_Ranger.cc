@@ -82,7 +82,7 @@ bool Rgr::read_endpoint(std::string& host_or_ips,
     return error(message);
   }
 
-  std::vector<std::string> ips;
+  Config::Strings ips;
   std::string host;
   if(Comm::Resolver::is_ipv4_address(host_or_ips) ||
      Comm::Resolver::is_ipv6_address(host_or_ips))

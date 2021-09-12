@@ -56,7 +56,7 @@ class Properties {
 
   std::string to_string(const char* name) const;
 
-  void get_names(std::vector<std::string>& names) const;
+  void get_names(Strings& names) const;
 
   void remove(const char* name);
 

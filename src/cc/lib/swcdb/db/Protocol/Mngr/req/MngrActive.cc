@@ -57,8 +57,10 @@ bool MngrActive::run() {
       run_within(5000);
       return false;
     }
+    if(nxt >= hosts.size())
+      nxt = 0;
   }
-  clients->get_mngr_queue(hosts.at(nxt))->put(req());
+  clients->get_mngr_queue(hosts[nxt])->put(req());
   return true;
 }
 

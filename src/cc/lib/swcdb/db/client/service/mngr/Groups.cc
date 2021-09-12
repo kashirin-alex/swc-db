@@ -12,7 +12,7 @@ namespace SWC { namespace client { namespace Mngr {
 
 Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
              const Comm::EndPoints& endpoints)
-            : Hosts({endpoints}),
+            : Hosts(1, endpoints),
               role(role), cid_begin(cid_begin), cid_end(cid_end) {
 }
 
@@ -210,7 +210,7 @@ void Groups::on_cfg_update() {
 
 void Groups::_add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
                        uint16_t port, std::string host_or_ips) {
-  std::vector<std::string> ips;
+  Config::Strings ips;
   std::string host;
   size_t at;
   do {

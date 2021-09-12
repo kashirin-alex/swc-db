@@ -18,7 +18,7 @@ namespace SWC { namespace client {
 class Brokers {
   public:
 
-  typedef std::vector<Comm::EndPoints> BrokersEndPoints;
+  typedef Core::Vector<Comm::EndPoints> BrokersEndPoints;
 
   struct BrokerIdx {
     size_t  pos;

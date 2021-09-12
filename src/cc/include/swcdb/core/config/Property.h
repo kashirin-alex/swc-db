@@ -14,9 +14,9 @@
 
 namespace SWC { namespace Config {
 
-typedef std::vector<std::string>  Strings;
-typedef std::vector<int64_t>      Int64s;
-typedef std::vector<double>       Doubles;
+typedef Core::Vector<std::string>  Strings;
+typedef Core::Vector<int64_t>      Int64s;
+typedef Core::Vector<double>       Doubles;
 
 const uint64_t K = 1000;
 const uint64_t KiB = 1024;

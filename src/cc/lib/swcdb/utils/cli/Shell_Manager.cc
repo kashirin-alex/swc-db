@@ -142,7 +142,7 @@ bool Mngr::managers_status(std::string& cmd) {
     if(!was_set)
       port = Env::Config::settings()->get_i16("swc.mngr.port");
 
-    std::vector<std::string> ips;
+    Config::Strings ips;
     std::string host;
     if(Comm::Resolver::is_ipv4_address(host_or_ips) ||
        Comm::Resolver::is_ipv6_address(host_or_ips))
@@ -150,7 +150,7 @@ bool Mngr::managers_status(std::string& cmd) {
     else
       host = host_or_ips;
 
-    hosts.push_back(
+    hosts.emplace_back(
       Comm::Resolver::get_endpoints(
         port, ips, host, {}, false
       )
@@ -166,7 +166,7 @@ bool Mngr::managers_status(std::string& cmd) {
     }
 
   } else { // reader.found_token("schemas", 7)
-    hosts.push_back({});
+    hosts.emplace_back();
   }
 
   Core::StateSynchronization res;

@@ -57,7 +57,7 @@ void Brokers::on_cfg_update() noexcept {
         Config::Property::from_string(host_str.substr(at + 1), &port);
         host_str = host_str.substr(0, at);
       }
-      std::vector<std::string> ips;
+      Config::Strings ips;
       std::string host;
       do {
         auto addr = host_str;
