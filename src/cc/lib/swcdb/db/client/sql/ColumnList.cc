@@ -11,7 +11,7 @@
 namespace SWC { namespace client { namespace SQL {
 
 ColumnList::ColumnList(const Clients::Ptr& clients, const std::string& sql,
-                       std::vector<DB::Schema::Ptr>& schemas,
+                       DB::SchemasVec& schemas,
                        std::string& message)
                       : Reader(sql, message),
                         clients(clients), schemas(schemas) {
@@ -101,8 +101,7 @@ void ColumnList::parse_list_columns() {
   }
 }
 
-void ColumnList::read_columns(std::vector<DB::Schema::Ptr>& cols,
-                              const char* stop) {
+void ColumnList::read_columns(DB::SchemasVec& cols, const char* stop) {
   std::string col_name;
   while(remain && !err) {
     if(found_char(',') || found_space())

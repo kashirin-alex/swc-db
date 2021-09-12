@@ -178,7 +178,7 @@ DB::Schema::Ptr Schemas::get(const std::string& name) {
 
 void
 Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
-             std::vector<DB::Schema::Ptr>& schemas, uint32_t timeout) {
+             DB::SchemasVec& schemas, uint32_t timeout) {
   _request(err, patterns, schemas, timeout);
 
   if(!err && schemas.empty()) {
@@ -193,10 +193,10 @@ Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
   }
 }
 
-std::vector<DB::Schema::Ptr>
+DB::SchemasVec
 Schemas::get(int& err, const DB::Schemas::SelectorPatterns& patterns,
              uint32_t timeout) {
-  std::vector<DB::Schema::Ptr> schemas;
+  DB::SchemasVec schemas;
   get(err, patterns, schemas, timeout);
   return schemas;
 }
@@ -207,7 +207,7 @@ void Schemas::set(const DB::Schema::Ptr& schema) {
   m_schemas[schema->cid].assign(ts, schema);
 }
 
-void Schemas::set(const std::vector<DB::Schema::Ptr>& schemas) {
+void Schemas::set(const DB::SchemasVec& schemas) {
   auto ts = Time::now_ms();
   Core::MutexSptd::scope lock(m_mutex);
   for(auto& schema : schemas) {
@@ -276,7 +276,7 @@ Schemas::_request(const std::string& name, uint32_t timeout) {
 
 void Schemas::_request(int& err,
                        const DB::Schemas::SelectorPatterns& patterns,
-                       std::vector<DB::Schema::Ptr>& schemas,
+                       DB::SchemasVec& schemas,
                        uint32_t timeout) {
   Comm::Protocol::Mngr::Params::ColumnListReq params(patterns);
   switch(_clients->flags) {

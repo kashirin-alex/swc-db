@@ -52,8 +52,8 @@ class ColumnListRsp final : public Serializable {
   SWC_CAN_INLINE
   ~ColumnListRsp() { }
 
-  uint64_t                     expected;
-  std::vector<DB::Schema::Ptr> schemas;
+  uint64_t       expected;
+  DB::SchemasVec schemas;
 
   private:
 

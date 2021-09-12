@@ -667,7 +667,7 @@ bool MngdColumns::columns_load() {
   if(groups.empty())
     SWC_LOG(LOG_WARN, "Empty Managers Groups")
 
-  std::vector<DB::Schema::Ptr> entries;
+  DB::SchemasVec entries;
   Env::Mngr::schemas()->all(entries);
   if(entries.empty())
     SWC_LOG(LOG_WARN, "Empty Schema Entries")

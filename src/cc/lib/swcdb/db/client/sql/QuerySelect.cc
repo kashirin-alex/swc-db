@@ -207,7 +207,7 @@ int QuerySelect::parse_dump(std::string& fs, std::string& filepath,
 
   seek_space();
   if(found_token(TOKEN_WHERE, LEN_WHERE)) {
-    std::vector<DB::Schema::Ptr> cols = {schema};
+    DB::SchemasVec cols(1, schema);
     read_cells_intervals(cols);
 
     for(auto& col : specs.columns)
@@ -289,7 +289,7 @@ void QuerySelect::read_columns_intervals() {
   DB::Schemas::SelectorPatterns schema_patterns;
 
   std::string col_name;
-  std::vector<DB::Schema::Ptr> cols;
+  DB::SchemasVec cols;
 
   while(remain && !err) {
     if(found_space())
@@ -405,7 +405,7 @@ DB::Schema::Ptr QuerySelect::add_column(const std::string& col) {
 }
 
 void QuerySelect::add_column(const DB::Schemas::SelectorPatterns& patterns,
-                             std::vector<DB::Schema::Ptr>& cols) {
+                             DB::SchemasVec& cols) {
   auto schemas = get_schema(clients, patterns);
   if(err)
   return;
@@ -423,8 +423,7 @@ void QuerySelect::add_column(const DB::Schemas::SelectorPatterns& patterns,
   }
 }
 
-void QuerySelect::read_cells_intervals(
-                              const std::vector<DB::Schema::Ptr>& cols) {
+void QuerySelect::read_cells_intervals(const DB::SchemasVec& cols) {
   bool token_cells = false;
   bool bracket_round = false;
   bool eq = false;

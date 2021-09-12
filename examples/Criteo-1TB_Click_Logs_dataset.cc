@@ -66,7 +66,7 @@ void generate_criteo_logs() {
   cell.flag = SWC::DB::Cells::INSERT;
   cell.set_time_order_desc(true);
 
-  std::vector<std::string> fractions;
+  SWC::Core::Vector<std::string> fractions;
   // [13-features + 26-categories]
   fractions.resize(39 + separate_days);
   // value (clicks)

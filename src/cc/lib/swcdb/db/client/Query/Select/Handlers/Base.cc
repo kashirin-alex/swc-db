@@ -52,7 +52,7 @@ void Base::default_executor(int& err, const DB::Specs::Scan& specs) {
   switch(executor) {
 
     case Clients::DEFAULT: {
-      std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
+      DB::SchemasVec schemas(specs.columns.size());
       auto it_seq = schemas.begin();
       size_t count = 0;
       for(auto& col : specs.columns) {
@@ -107,7 +107,7 @@ void Base::default_executor(int& err, DB::Specs::Scan&& specs) {
   switch(executor) {
 
     case Clients::DEFAULT: {
-      std::vector<DB::Schema::Ptr> schemas(specs.columns.size());
+      DB::SchemasVec schemas(specs.columns.size());
       auto it_seq = schemas.begin();
       size_t count = 0;
       for(auto& col : specs.columns) {

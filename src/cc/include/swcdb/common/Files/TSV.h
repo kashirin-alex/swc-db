@@ -277,8 +277,8 @@ class FileWriter {
   DB::Cells::Result              cells;
   bool                           has_encoder = false;
   size_t                         flush_vol = 0;
-  std::unordered_map<int64_t, DB::Schema::Ptr>  schemas;
-  std::unique_ptr<Core::BufferStreamOut>        _stream;
+  std::unordered_map<cid_t, DB::Schema::Ptr>  schemas;
+  std::unique_ptr<Core::BufferStreamOut>      _stream;
 
 };
 

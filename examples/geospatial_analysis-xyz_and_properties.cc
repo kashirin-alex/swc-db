@@ -153,7 +153,7 @@ void generate_sample_data() {
   size_t deg_c;
   size_t tc;
 
-  std::vector<std::string> fractions;
+  SWC::Core::Vector<std::string> fractions;
   fractions.resize(7);
 
 

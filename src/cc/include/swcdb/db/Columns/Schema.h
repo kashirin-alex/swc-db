@@ -182,8 +182,8 @@ struct SchemaPrimitives {
 class Schema final : public SchemaPrimitives {
   public:
 
-  typedef std::shared_ptr<Schema>  Ptr;
-  typedef std::vector<std::string> Tags;
+  typedef std::shared_ptr<Schema>   Ptr;
+  typedef Core::Vector<std::string> Tags;
 
   SWC_CAN_INLINE
   static Ptr make() {
@@ -207,7 +207,7 @@ class Schema final : public SchemaPrimitives {
 
   Schema(const uint8_t** bufp, size_t* remainp);
 
-  //~Schema() { }
+  ~Schema();
 
   bool equal(const Ptr& other, bool with_rev=true) const noexcept;
 
@@ -233,6 +233,10 @@ class Schema final : public SchemaPrimitives {
   std::string           col_name;
   Tags                  tags;
 };
+
+
+typedef Core::Vector<Schema::Ptr> SchemasVec;
+
 
 }} // SWC::DB namespace
 

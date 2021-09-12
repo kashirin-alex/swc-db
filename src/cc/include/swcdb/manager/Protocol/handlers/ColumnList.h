@@ -16,7 +16,7 @@ namespace Mngr { namespace Handler {
 void column_list(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
-  std::vector<DB::Schema::Ptr> schemas;
+  DB::SchemasVec schemas;
   try {
     const uint8_t *ptr = ev->data.base;
     size_t remain = ev->data.size;

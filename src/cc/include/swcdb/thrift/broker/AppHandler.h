@@ -85,7 +85,7 @@ class AppHandler final : virtual public BrokerIf {
   /* SQL SCHEMAS/COLUMNS */
   void sql_list_columns(Schemas& _return, const std::string& sql) override {
     int err = Error::OK;
-    std::vector<DB::Schema::Ptr> dbschemas;
+    DB::SchemasVec dbschemas;
     get_schemas(err, "list", sql, dbschemas);
     process_results(err, dbschemas, _return);
   }
@@ -108,7 +108,7 @@ class AppHandler final : virtual public BrokerIf {
   void sql_compact_columns(CompactResults& _return,
                            const std::string& sql) override {
     int err = Error::OK;
-    std::vector<DB::Schema::Ptr> dbschemas;
+    DB::SchemasVec dbschemas;
     get_schemas(err, "compact", sql, dbschemas);
     process_results(err, dbschemas, _return);
   }
@@ -226,7 +226,7 @@ class AppHandler final : virtual public BrokerIf {
   void list_columns(Schemas& _return,
                     const SpecSchemas& spec) override {
     int err = Error::OK;
-    std::vector<DB::Schema::Ptr> dbschemas;
+    DB::SchemasVec dbschemas;
     get_schemas(err, spec, dbschemas);
     process_results(err, dbschemas, _return);
   }
@@ -244,7 +244,7 @@ class AppHandler final : virtual public BrokerIf {
   void compact_columns(CompactResults& _return,
                        const SpecSchemas& spec) override {
     int err = Error::OK;
-    std::vector<DB::Schema::Ptr> dbschemas;
+    DB::SchemasVec dbschemas;
     get_schemas(err, spec, dbschemas);
     process_results(err, dbschemas, _return);
   }
@@ -598,7 +598,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void get_schemas(int& err, const char* cmd, const std::string& sql,
-                   std::vector<DB::Schema::Ptr>& dbschemas) {
+                   DB::SchemasVec& dbschemas) {
     Comm::Protocol::Mngr::Params::ColumnListReq params;
     std::string message;
     auto clients = Env::Clients::get();
@@ -609,7 +609,7 @@ class AppHandler final : virtual public BrokerIf {
 
     if(!params.patterns.names.empty() ||
         params.patterns.tags.comp != Condition::NONE) {
-      std::vector<DB::Schema::Ptr> schemas;
+      DB::SchemasVec schemas;
       clients->get_schema(err, params.patterns, schemas);
       if(err && err != Error::COLUMN_SCHEMA_MISSING)
         Converter::exception(
@@ -626,7 +626,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void get_schemas(int& err, const SpecSchemas& spec,
-                   std::vector<DB::Schema::Ptr>& dbschemas) {
+                   DB::SchemasVec& dbschemas) {
     auto clients = Env::Clients::get();
     bool has_patterns = !spec.patterns.names.empty() ||
                         !spec.patterns.tags.values.empty() ||
@@ -703,9 +703,8 @@ class AppHandler final : virtual public BrokerIf {
       Env::Clients::get()->schemas.remove(schema->col_name);
   }
 
-  static void process_results(
-          int&, std::vector<DB::Schema::Ptr>& dbschemas,
-          Schemas& _return) {
+  static void process_results(int&, DB::SchemasVec& dbschemas,
+                              Schemas& _return) {
     _return.resize(dbschemas.size());
     uint32_t c = 0;
     for(auto& dbschema : dbschemas) {
@@ -714,9 +713,8 @@ class AppHandler final : virtual public BrokerIf {
     }
   }
 
-  static void process_results(
-          int&, std::vector<DB::Schema::Ptr>& dbschemas,
-          CompactResults& _return) {
+  static void process_results(int&, DB::SchemasVec& dbschemas,
+                              CompactResults& _return) {
     size_t sz = dbschemas.size();
     _return.resize(sz);
     auto clients = Env::Clients::get();
@@ -880,7 +878,7 @@ class AppHandler final : virtual public BrokerIf {
     DB::Cells::Result cells;
 
     auto clients = Env::Clients::get();
-    std::vector<std::string> key;
+    Core::Vector<std::string> key;
 
     for(cid_t cid : hdlr->get_cids()) {
       cells.free();

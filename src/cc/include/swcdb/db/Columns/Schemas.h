@@ -122,10 +122,9 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
 
   Schema::Ptr get(const std::string& name) noexcept;
 
-  void all(std::vector<Schema::Ptr>& entries);
+  void all(SchemasVec& entries);
 
-  void matching(const SelectorPatterns& patterns,
-                std::vector<Schema::Ptr>& entries,
+  void matching(const SelectorPatterns& patterns, SchemasVec& entries,
                 bool no_sys=true);
 
   void reset();

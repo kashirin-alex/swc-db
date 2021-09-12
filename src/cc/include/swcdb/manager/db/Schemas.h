@@ -35,7 +35,7 @@ class Schemas final : public DB::Schemas {
     DynamicBuffer blk_buff;
     blk_buff.ensure(blksz);
 
-    std::vector<DB::Schema::Ptr> entries;
+    DB::SchemasVec entries;
     DB::Schemas::all(entries);
     for(auto it = entries.cbegin(); it != entries.cend(); ) {
       blk_buff.ensure((*it)->encoded_length());

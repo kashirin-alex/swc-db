@@ -153,7 +153,7 @@ DB::Schema::Ptr Reader::get_schema(const Clients::Ptr& clients,
   return schema;
 }
 
-std::vector<DB::Schema::Ptr>
+DB::SchemasVec
 Reader::get_schema(const Clients::Ptr& clients,
                    const DB::Schemas::SelectorPatterns& patterns) {
   auto schemas = clients->get_schema(err, patterns);

@@ -35,6 +35,8 @@ Schema::Schema(const uint8_t** bufp, size_t* remainp)
     tags(read_tags(bufp, remainp)) {
 }
 
+Schema::~Schema() { }
+
 uint32_t Schema::encoded_length() const noexcept {
   uint32_t sz = SchemaPrimitives::encoded_length();
   sz += Serialization::encoded_length_bytes(col_name.size());

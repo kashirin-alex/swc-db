@@ -42,7 +42,7 @@ class ColumnList_Sync {
 
   SWC_CAN_INLINE
   ColumnList_Sync(const SWC::client::Clients::Ptr& clients,
-                 int& err, std::vector<DB::Schema::Ptr>& schemas) noexcept
+                 int& err, DB::SchemasVec& schemas) noexcept
                  : clients(clients), err(err), schemas(schemas) {
   }
 
@@ -85,7 +85,7 @@ class ColumnList_Sync {
   SWC::client::Clients::Ptr     clients;
   int&                          err;
   Core::MutexSptd               m_mutex;
-  std::vector<DB::Schema::Ptr>& schemas;
+  DB::SchemasVec&               schemas;
 
 };
 

@@ -26,7 +26,7 @@ class ColumnList final : public Reader {
   DB::Schemas::SelectorPatterns patterns;
 
   ColumnList(const Clients::Ptr& clients, const std::string& sql,
-             std::vector<DB::Schema::Ptr>& schemas, std::string& message);
+             DB::SchemasVec& schemas, std::string& message);
 
   //~ColumnList() { }
 
@@ -40,10 +40,10 @@ class ColumnList final : public Reader {
 
   void parse_list_columns();
 
-  void read_columns(std::vector<DB::Schema::Ptr>& cols, const char* stop);
+  void read_columns(DB::SchemasVec& cols, const char* stop);
 
-  Clients::Ptr                  clients;
-  std::vector<DB::Schema::Ptr>& schemas;
+  Clients::Ptr     clients;
+  DB::SchemasVec&  schemas;
 };
 
 

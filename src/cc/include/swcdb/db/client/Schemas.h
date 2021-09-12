@@ -42,16 +42,14 @@ class Schemas final {
   DB::Schema::Ptr get(const std::string& name);
 
   void get(int& err, const DB::Schemas::SelectorPatterns& patterns,
-           std::vector<DB::Schema::Ptr>& schemas,
-           uint32_t timeout=300000);
+           DB::SchemasVec& schemas, uint32_t timeout=300000);
 
-  std::vector<DB::Schema::Ptr>
-  get(int& err, const DB::Schemas::SelectorPatterns& patterns,
-      uint32_t timeout=300000);
+  DB::SchemasVec get(int& err, const DB::Schemas::SelectorPatterns& patterns,
+                     uint32_t timeout=300000);
 
   void set(const DB::Schema::Ptr& schema);
 
-  void set(const std::vector<DB::Schema::Ptr>& schemas);
+  void set(const DB::SchemasVec& schemas);
 
   private:
 
@@ -71,8 +69,7 @@ class Schemas final {
   Pending _request(const std::string& name, uint32_t timeout);
 
   void _request(int& err, const DB::Schemas::SelectorPatterns& patterns,
-                std::vector<DB::Schema::Ptr>& schemas,
-                uint32_t timeout);
+                DB::SchemasVec& schemas, uint32_t timeout);
 
   struct SchemaData {
     int64_t         ts;

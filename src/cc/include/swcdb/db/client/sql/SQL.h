@@ -54,18 +54,18 @@ void parse_update(int& err, const std::string& sql,
 
 void parse_list_columns(int& err, const Clients::Ptr& clients,
                         const std::string& sql,
-                        std::vector<DB::Schema::Ptr>& schemas,
+                        DB::SchemasVec& schemas,
                         std::string& message, const char* expect_cmd);
 
 void parse_list_columns(int& err, const Clients::Ptr& clients,
                         const std::string& sql,
-                        std::vector<DB::Schema::Ptr>& schemas,
+                        DB::SchemasVec& schemas,
                         Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         std::string& message, const char* expect_cmd);
 
 void parse_list_columns(int& err, const Clients::Ptr& clients,
                         const std::string& sql,
-                        std::vector<DB::Schema::Ptr>& schemas,
+                        DB::SchemasVec& schemas,
                         Comm::Protocol::Mngr::Params::ColumnListReq& params,
                         uint8_t& output_flags,
                         std::string& message, const char* expect_cmd);

@@ -196,7 +196,7 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
     if(sz < intval.finish.size())
       sz = intval.finish.size();
   }
-  std::vector<std::string> key_range(sz + (ending && !rest));
+  Core::Vector<std::string> key_range(sz + (ending && !rest));
   bool initial = true;
   bool found = false;
   do_:

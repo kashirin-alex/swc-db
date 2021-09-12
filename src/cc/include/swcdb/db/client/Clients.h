@@ -140,13 +140,13 @@ class Clients : public std::enable_shared_from_this<Clients> {
 
   SWC_CAN_INLINE
   void get_schema(int& err, const DB::Schemas::SelectorPatterns& patterns,
-                  std::vector<DB::Schema::Ptr>& _schemas,
+                  DB::SchemasVec& _schemas,
                   uint32_t timeout=300000) {
     schemas.get(err, patterns, _schemas, timeout);
   }
 
   SWC_CAN_INLINE
-  std::vector<DB::Schema::Ptr>
+  DB::SchemasVec
   get_schema(int& err, const DB::Schemas::SelectorPatterns& patterns,
              uint32_t timeout=300000) {
     return schemas.get(err, patterns, timeout);

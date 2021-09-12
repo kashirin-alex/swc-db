@@ -518,7 +518,7 @@ class KeyGenerator {
   size_t                                        _ncells;
   size_t                                        _ncells_onlevel;
   uint24_t                                      _nfractions;
-  std::vector<std::unique_ptr<FractionState>>   _fractions_state;
+  Core::Vector<std::unique_ptr<FractionState>>  _fractions_state;
 };
 
 
@@ -553,7 +553,7 @@ class KeyGeneratorUpdate : public KeyGenerator {
   }
 
   private:
-  std::vector<std::string>    _fractions;
+  Core::Vector<std::string>    _fractions;
 };
 
 
@@ -590,8 +590,7 @@ class KeyGeneratorSelect : public KeyGenerator {
 
 
 
-void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
-                 size_t seed) {
+void update_data(const DB::SchemasVec& schemas, uint8_t flag, size_t seed) {
   auto settings = Env::Config::settings();
 
   uint32_t versions = flag == DB::Cells::INSERT
@@ -740,7 +739,7 @@ void update_data(const std::vector<DB::Schema::Ptr>& schemas, uint8_t flag,
 }
 
 
-void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
+void select_data(const DB::SchemasVec& schemas, size_t seed) {
   auto settings = Env::Config::settings();
 
   bool expect_empty = settings->get_bool("gen-select-empty");
@@ -874,7 +873,7 @@ void select_data(const std::vector<DB::Schema::Ptr>& schemas, size_t seed) {
 }
 
 
-void make_work_load(const std::vector<DB::Schema::Ptr>& schemas) {
+void make_work_load(const DB::SchemasVec& schemas) {
   auto settings = Env::Config::settings();
 
   size_t seed = settings->get_i64("gen-distrib-seed");
@@ -915,7 +914,7 @@ void generate() {
   DB::Schemas::SelectorPatterns patterns;
   patterns.names.push_back(DB::Schemas::Pattern(Condition::PF, col_name));
 
-  std::vector<DB::Schema::Ptr> schemas;
+  DB::SchemasVec schemas;
   int err = Error::OK;
   Env::Clients::get()->get_schema(err, patterns, schemas);
   if(schemas.size() == ncolumns) {

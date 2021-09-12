@@ -212,7 +212,7 @@ bool DbClient::mng_column(
 
 // COMPACT COLUMN
 bool DbClient::compact_column(std::string& cmd) {
-  std::vector<DB::Schema::Ptr> schemas;
+  DB::SchemasVec schemas;
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
   client::SQL::parse_list_columns(
@@ -224,7 +224,7 @@ bool DbClient::compact_column(std::string& cmd) {
       params.patterns.tags.comp != Condition::NONE ||
       schemas.empty()) {
     // get all schemas or on patterns
-    std::vector<DB::Schema::Ptr> _schemas;
+    DB::SchemasVec _schemas;
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
           params, 300000, clients, err, _schemas)
@@ -256,7 +256,7 @@ bool DbClient::compact_column(std::string& cmd) {
 
 // LIST COLUMN/s
 bool DbClient::list_columns(std::string& cmd) {
-  std::vector<DB::Schema::Ptr> schemas;
+  DB::SchemasVec schemas;
   Comm::Protocol::Mngr::Params::ColumnListReq params;
   std::string message;
   uint8_t output_flags = 0;
@@ -269,7 +269,7 @@ bool DbClient::list_columns(std::string& cmd) {
       params.patterns.tags.comp != Condition::NONE ||
       schemas.empty()) {
     // get all schemas or on patterns
-    std::vector<DB::Schema::Ptr> _schemas;
+    DB::SchemasVec _schemas;
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnList_Sync::request(
           params, 300000, clients, err, _schemas)

@@ -63,7 +63,7 @@ class Reader {
   DB::Schema::Ptr get_schema(const Clients::Ptr& clients,
                              const std::string& col);
 
-  std::vector<DB::Schema::Ptr>
+  DB::SchemasVec
   get_schema(const Clients::Ptr& clients,
              const DB::Schemas::SelectorPatterns& patterns);
 

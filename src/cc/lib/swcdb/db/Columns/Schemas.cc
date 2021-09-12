@@ -76,7 +76,7 @@ Schema::Ptr Schemas::_get(const std::string& name) const noexcept {
   return nullptr;
 }
 
-void Schemas::all(std::vector<Schema::Ptr>& entries) {
+void Schemas::all(SchemasVec& entries) {
   Core::MutexSptd::scope lock(m_mutex);
   entries.reserve(entries.size() + Map::size());
   for(const auto& it : *this)
@@ -92,7 +92,7 @@ bool is_matching(const Schema::Tags& s_tags,
 }
 
 void Schemas::matching(const Schemas::SelectorPatterns& patterns,
-                       std::vector<Schema::Ptr>& entries,
+                       SchemasVec& entries,
                        bool no_sys) {
   Core::Vector<bool> found;
   if(patterns.tags.comp == Condition::SBS ||
