@@ -36,7 +36,7 @@
 
 namespace SWC { namespace FS {
 
-typedef std::vector<uint64_t> IdEntries_t;
+typedef Core::Vector<uint64_t> IdEntries_t;
 const int   ID_SPLIT_LEN  = 3;
 const char  ID_SPLIT_LAST = 'g';
 
@@ -164,7 +164,7 @@ class FsInterface final {
 
   FsInterface(const SWC::Config::Settings::Ptr& settings, FS::Type typ);
 
-  //~FsInterface() { }
+  ~FsInterface() { }
 
   private:
   FS::Interface::Ptr  m_interface = nullptr;

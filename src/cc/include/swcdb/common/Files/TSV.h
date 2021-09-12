@@ -22,6 +22,7 @@ namespace TSV {
 class FileWriter {
   public:
   client::Clients::Ptr clients;
+  FS::Interface::Ptr   interface;
   int         err = Error::OK;
   std::string base_path;
   std::string file_ext = ".tsv";
@@ -55,8 +56,7 @@ class FileWriter {
     return Error::INVALID_ARGUMENT;
   }
 
-  void initialize(const FS::Interface::Ptr& _interface) {
-    interface = _interface;
+  void initialize() {
     if(base_path.back() != '/')
       base_path.append("/");
     interface->get_fs()->mkdirs(err, base_path);
@@ -254,7 +254,7 @@ class FileWriter {
     );
   }
 
-  void get_length(std::vector<FS::SmartFd::Ptr>& files) {
+  void get_length(Core::Vector<FS::SmartFd::Ptr>& files) {
     for(auto fd : fds) {
       fd->pos(interface->get_fs()->length(err, fd->filepath()));
       files.push_back(fd);
@@ -272,9 +272,8 @@ class FileWriter {
     }
   }
 
-  FS::Interface::Ptr             interface;
   FS::SmartFd::Ptr               smartfd = nullptr;
-  std::vector<FS::SmartFd::Ptr>  fds;
+  Core::Vector<FS::SmartFd::Ptr> fds;
   DB::Cells::Result              cells;
   bool                           has_encoder = false;
   size_t                         flush_vol = 0;
@@ -288,6 +287,7 @@ class FileWriter {
 class FileReader {
   public:
   client::Clients::Ptr clients;
+  FS::Interface::Ptr   interface;
   int             err = Error::CANCELLED;
   cid_t           cid = DB::Schema::NO_CID;
   std::string     base_path;
@@ -301,11 +301,13 @@ class FileReader {
             : clients(clients) {
   }
 
-  virtual ~FileReader() { }
+  ~FileReader() {
+    base_path.clear();
+    base_path.shrink_to_fit();
+  }
 
-  void initialize(const FS::Interface::Ptr& _interface) {
+  void initialize() {
     err = Error::OK;
-    interface = _interface;
     if(base_path.back() != '/')
       base_path.append("/");
 
@@ -314,7 +316,7 @@ class FileReader {
     if(err)
       return;
 
-    std::vector<FS::Dirent*> files;
+    Core::Vector<FS::Dirent*> files;
     files.reserve(entries.size());
     for(auto& entry : entries) {
       if(entry.is_dir)
@@ -332,8 +334,13 @@ class FileReader {
       }
     }
     fds.reserve(files.size());
-    for(auto file : files)
-      fds.emplace_back(new FS::SmartFd(base_path + file->name, 0));
+    for(auto file : files) {
+      std::string p;
+      p.reserve(base_path.size() + file->name.size());
+      p.append(base_path);
+      p.append(file->name);
+      fds.emplace_back(new FS::SmartFd(std::move(p), 0));
+    }
     if(fds.empty()) {
       err = ENOENT;
     } else {
@@ -388,9 +395,9 @@ class FileReader {
     bool ok;
     size_t cell_pos = 0;
     size_t cell_mark = 0;
-    std::vector<std::string> header;
-    bool                     has_ts = false;
-    StaticBuffer             buffer_read;
+    Core::Vector<std::string> header;
+    bool                      has_ts = false;
+    StaticBuffer              buffer_read;
 
     auto current_bytes = cells_bytes;
     do {
@@ -495,7 +502,7 @@ class FileReader {
   }
 
   bool header_read(const uint8_t** bufp, size_t* remainp, Types::Column, //typ
-                   bool& has_ts, std::vector<std::string>& header) {
+                   bool& has_ts, Core::Vector<std::string>& header) {
     const uint8_t* ptr = *bufp;
     size_t remain = *remainp;
 
@@ -546,7 +553,7 @@ class FileReader {
       --remain;
     }
 
-    std::vector<uint32_t> flen;
+    Core::Vector<uint32_t> flen;
     while(remain) {
       if(*ptr == ',' || *ptr == '\t') {
         flen.push_back(
@@ -681,8 +688,7 @@ class FileReader {
   }
 
   private:
-  FS::Interface::Ptr              interface;
-  std::vector<FS::SmartFd::Ptr>   fds;
+  Core::Vector<FS::SmartFd::Ptr>  fds;
 
 };
 

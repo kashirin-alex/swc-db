@@ -445,9 +445,8 @@ bool DbClient::load(std::string& cmd) {
   if(err)
     return error(reader.message);
 
-  FS::Interface::Ptr fs_interface;
   try {
-    fs_interface.reset(new FS::Interface(
+    reader.interface.reset(new FS::Interface(
       Env::Config::settings(),
       FS::fs_type(
         fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
@@ -456,7 +455,7 @@ bool DbClient::load(std::string& cmd) {
     err = e.code();
     return error(e.what());
   }
-  reader.initialize(fs_interface);
+  reader.initialize();
   err = reader.err;
   if(err)
     return error(reader.message);
@@ -477,6 +476,9 @@ bool DbClient::load(std::string& cmd) {
       reader.resend_cells
     );
   }
+
+  reader.interface->stop();
+
   if(err || (err = reader.err) || (err = hdlr->error())) {
     if(reader.message.empty()) {
       reader.message.append(Error::get_text(err));
@@ -484,8 +486,6 @@ bool DbClient::load(std::string& cmd) {
     }
     return error(reader.message);
   }
-
-  fs_interface = nullptr;
   return true;
 }
 
@@ -512,9 +512,8 @@ bool DbClient::dump(std::string& cmd) {
   if((err = writer.set_extension(ext, level)))
     return error("Problem with file Extension");
 
-  FS::Interface::Ptr fs_interface;
   try {
-    fs_interface.reset(new FS::Interface(
+    writer.interface.reset(new FS::Interface(
       Env::Config::settings(),
       FS::fs_type(
         fs.empty() ? Env::Config::settings()->get_str("swc.fs") : fs)));
@@ -523,7 +522,7 @@ bool DbClient::dump(std::string& cmd) {
     err = e.code();
     return error(e.what());
   }
-  writer.initialize(fs_interface);
+  writer.initialize();
   if((err = writer.err))
     return error(Error::get_text(err));
 
@@ -565,19 +564,20 @@ bool DbClient::dump(std::string& cmd) {
       writer.cells_count
     );
 
-    std::vector<FS::SmartFd::Ptr> files;
+    Core::Vector<FS::SmartFd::Ptr> files;
     writer.get_length(files);
-    if(err)
-      return error(Error::get_text(err));
-
-    SWC_PRINT << " Files Count:            " << files.size() << "\n";
-    for(auto& file : files)
-      SWC_LOG_OSTREAM << " File:                   " << file->filepath()
-                      << " (" << file->pos()  << " bytes)\n";
-    SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+    if(!writer.err) {
+      SWC_PRINT << " Files Count:            " << files.size() << "\n";
+      for(auto& file : files)
+        SWC_LOG_OSTREAM << " File:                   " << file->filepath()
+                        << " (" << file->pos()  << " bytes)\n";
+      SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+    } else if(!err) {
+      err = writer.err;
+    }
   }
 
-  fs_interface = nullptr;
+  writer.interface->stop();
   return err ? error(Error::get_text(err)) : true;
 }
 

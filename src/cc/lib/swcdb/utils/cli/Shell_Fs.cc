@@ -57,8 +57,8 @@ bool Fs::ls(const std::string& cmd) {
     return error("Problem reading '"+path+"'");
 
   size_t lname = 0;
-  std::vector<FS::Dirent*> dirs;
-  std::vector<FS::Dirent*> files;
+  Core::Vector<FS::Dirent*> dirs;
+  Core::Vector<FS::Dirent*> files;
   dirs.reserve(entries.size());
   files.reserve(entries.size());
   for(auto& entry : entries) {
