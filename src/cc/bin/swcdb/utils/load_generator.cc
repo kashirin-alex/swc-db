@@ -616,7 +616,7 @@ void update_data(const DB::SchemasVec& schemas, uint8_t flag, size_t seed) {
   auto cell_encoder = DB::Types::Encoder(settings->get_genum(
     "gen-cell-encoding"));
 
-  std::vector<client::Query::Update::Handlers::Base::Column*> colms;
+  client::Query::Update::Handlers::Base::Colms colms;
 
   auto hdlr = client::Query::Update::Handlers::Common::make(
     Env::Clients::get(),
@@ -626,7 +626,7 @@ void update_data(const DB::SchemasVec& schemas, uint8_t flag, size_t seed) {
       ? client::Clients::BROKER
       : client::Clients::DEFAULT
   );
-
+  colms.reserve(schemas.size());
   for(auto& schema : schemas)
     colms.push_back(hdlr->create(schema).get());
 

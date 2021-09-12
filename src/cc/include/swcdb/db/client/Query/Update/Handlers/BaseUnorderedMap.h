@@ -43,7 +43,7 @@ class BaseUnorderedMap
 
   virtual size_t size_bytes() noexcept override;
 
-  virtual void next(std::vector<Base::Column*>& cols) noexcept override;
+  virtual void next(Base::Colms& cols) noexcept override;
 
   virtual Base::Column* next(cid_t cid) noexcept override;
 

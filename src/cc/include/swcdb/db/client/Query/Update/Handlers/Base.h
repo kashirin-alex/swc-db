@@ -99,6 +99,7 @@ class Base : public std::enable_shared_from_this<Base> {
     virtual ~Column() { }
 
   };
+  typedef Core::Vector<Column*> Colms;
 
 
   Clients::Ptr                      clients;
@@ -136,7 +137,7 @@ class Base : public std::enable_shared_from_this<Base> {
 
   virtual size_t size_bytes() noexcept = 0;
 
-  virtual void next(std::vector<Column*>& cols) noexcept = 0;
+  virtual void next(Colms& cols) noexcept = 0;
 
   virtual Column* next(cid_t cid) noexcept = 0;
 
@@ -165,7 +166,7 @@ class Base : public std::enable_shared_from_this<Base> {
 
   void commit() {
     completion.increment();
-    std::vector<Column*> cols;
+    Colms cols;
     next(cols);
     for(auto colp : cols)
       commit(colp);

@@ -64,7 +64,7 @@ class BaseSingleColumn : public Base {
     return column.size_bytes();
   }
 
-  virtual void next(std::vector<Base::Column*>& cols) noexcept override {
+  virtual void next(Base::Colms& cols) noexcept override {
     cols.clear();
     if(requires_commit())
       cols.push_back(&column);
