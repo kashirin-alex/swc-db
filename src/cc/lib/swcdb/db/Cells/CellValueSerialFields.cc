@@ -118,13 +118,6 @@ void Field_BYTES::encode(uint8_t** bufp) const {
   Serialization::encode_bytes(bufp, base, size);
 }
 
-void Field_BYTES::convert_to(std::string& item) const {
-  if(size) {
-    item.clear();
-    item.append(reinterpret_cast<const char*>(base), size);
-  }
-}
-
 void Field_BYTES::print(std::ostream& out) const {
   out << fid << ':' << 'B' << ':' << '"';
   char hex[5];
@@ -182,18 +175,6 @@ void Field_KEY::print(std::ostream& out) const {
 
 
 // Field LIST_INT64
-Field_LIST_INT64::Field_LIST_INT64(uint24_t fid,
-                                   const std::vector<int64_t>& items)
-                                  : Field(fid) {
-  uint32_t len = 0;
-  for(int64_t v : items)
-    len += Serialization::encoded_length_vi64(v);
-  reallocate(len);
-  uint8_t* ptr = base;
-  for(int64_t v : items)
-    Serialization::encode_vi64(&ptr, v);
-}
-
 Field_LIST_INT64::Field_LIST_INT64(const uint8_t** bufp, size_t* remainp,
                                    bool take_ownership)
                                   : Field(bufp, remainp) {
@@ -214,14 +195,6 @@ void Field_LIST_INT64::encode(uint8_t** bufp) const {
   Serialization::encode_bytes(bufp, base, size);
 }
 
-void Field_LIST_INT64::convert_to(std::vector<int64_t>& items) const {
-  if(size) {
-    const uint8_t* ptr = base;
-    for(size_t remain = size; remain;)
-      items.push_back(Serialization::decode_vi64(&ptr, &remain));
-  }
-}
-
 void Field_LIST_INT64::print(std::ostream& out) const {
   out << fid << ":LI:[";
   if(size) {
@@ -240,18 +213,6 @@ void Field_LIST_INT64::print(std::ostream& out) const {
 
 
 // Field LIST_BYTES
-Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid,
-                                   const std::vector<std::string>& items)
-                                  : Field(fid) {
-  uint32_t len = 0;
-  for(auto& v : items)
-    len += Serialization::encoded_length_bytes(v.size());
-  reallocate(len);
-  uint8_t* ptr = base;
-  for(auto& v : items)
-    Serialization::encode_bytes(&ptr, v.data(), v.size());
-}
-
 Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
                                    bool take_ownership)
                                   : Field(bufp, remainp) {
@@ -270,18 +231,6 @@ size_t Field_LIST_BYTES::encoded_length() const noexcept {
 void Field_LIST_BYTES::encode(uint8_t** bufp) const {
   Field::encode(bufp, Type::LIST_BYTES);
   Serialization::encode_bytes(bufp, base, size);
-}
-
-void Field_LIST_BYTES::convert_to(std::vector<std::string>& items) const {
-  if(size) {
-    const uint8_t* ptr = base;
-    for(size_t remain = size; remain;) {
-      size_t len;
-      const char* cptr = reinterpret_cast<const char*>(
-        Serialization::decode_bytes(&ptr, &remain, &len));
-      items.emplace_back(cptr, len);
-    }
-  }
 }
 
 void Field_LIST_BYTES::print(std::ostream& out) const {
@@ -338,8 +287,18 @@ void FieldsWriter::add(uint24_t fid, const Key& key) {
   add(&field);
 }
 
+void FieldsWriter::add(uint24_t fid, const Core::Vector<int64_t>& items) {
+  Field_LIST_INT64 field(fid, items);
+  add(&field);
+}
+
 void FieldsWriter::add(uint24_t fid, const std::vector<int64_t>& items) {
   Field_LIST_INT64 field(fid, items);
+  add(&field);
+}
+
+void FieldsWriter::add(uint24_t fid, const Core::Vector<std::string>& items) {
+  Field_LIST_BYTES field(fid, items);
   add(&field);
 }
 

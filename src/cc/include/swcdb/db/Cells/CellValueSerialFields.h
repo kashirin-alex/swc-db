@@ -188,7 +188,15 @@ struct Field_BYTES : Field, StaticBuffer {
 
   void encode(uint8_t** bufp) const override;
 
-  void convert_to(std::string& item) const;
+  template<typename T>
+  void convert_to(T& item) const {
+    if(size) {
+      item.assign(
+        reinterpret_cast<const typename T::value_type*>(base),
+        size
+      );
+    }
+  }
 
   void print(std::ostream& out) const override;
 
@@ -233,7 +241,16 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
   SWC_CAN_INLINE
   Field_LIST_INT64() noexcept { }
 
-  Field_LIST_INT64(uint24_t fid, const std::vector<int64_t>& items);
+  template<typename T>
+  Field_LIST_INT64(uint24_t fid, const T& items) : Field(fid) {
+    uint32_t len = 0;
+    for(auto& v : items)
+      len += Serialization::encoded_length_vi64(v);
+    reallocate(len);
+    uint8_t* ptr = base;
+    for(auto& v : items)
+      Serialization::encode_vi64(&ptr, v);
+  }
 
   Field_LIST_INT64(const uint8_t** bufp, size_t* remainp,
                    bool take_ownership=false);
@@ -246,7 +263,14 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
 
   void encode(uint8_t** bufp) const override;
 
-  void convert_to(std::vector<int64_t>& items) const;
+  template<typename T>
+  void convert_to(T& items) const {
+    if(size) {
+      const uint8_t* ptr = base;
+      for(size_t remain = size; remain;)
+        items.push_back(Serialization::decode_vi64(&ptr, &remain));
+    }
+  }
 
   void print(std::ostream& out) const override;
 
@@ -261,7 +285,16 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
   SWC_CAN_INLINE
   Field_LIST_BYTES() noexcept { }
 
-  Field_LIST_BYTES(uint24_t fid, const std::vector<std::string>& items);
+  template<typename T>
+  Field_LIST_BYTES(uint24_t fid, const T& items) : Field(fid) {
+    uint32_t len = 0;
+    for(auto& v : items)
+      len += Serialization::encoded_length_bytes(v.size());
+    reallocate(len);
+    uint8_t* ptr = base;
+    for(auto& v : items)
+      Serialization::encode_bytes(&ptr, v.data(), v.size());
+  }
 
   Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
                    bool take_ownership=false);
@@ -274,7 +307,19 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
 
   void encode(uint8_t** bufp) const override;
 
-  void convert_to(std::vector<std::string>& items) const;
+  template<typename T>
+  void convert_to(T& items) const {
+    if(size) {
+      const uint8_t* ptr = base;
+      for(size_t remain = size; remain;) {
+        size_t len;
+        const char* cptr = reinterpret_cast<
+          const typename T::value_type::value_type*>(
+            Serialization::decode_bytes(&ptr, &remain, &len));
+        items.emplace_back(cptr, len);
+      }
+    }
+  }
 
   void print(std::ostream& out) const override;
 
@@ -313,7 +358,11 @@ struct FieldsWriter final : DynamicBuffer {
 
   void add(uint24_t fid, const Key& key);
 
+  void add(uint24_t fid, const Core::Vector<int64_t>& items);
+
   void add(uint24_t fid, const std::vector<int64_t>& items);
+
+  void add(uint24_t fid, const Core::Vector<std::string>& items);
 
   void add(uint24_t fid, const std::vector<std::string>& items);
 
@@ -359,7 +408,17 @@ struct FieldsWriter final : DynamicBuffer {
   }
 
   SWC_CAN_INLINE
+  void add(const Core::Vector<int64_t>& items) {
+    add(index_count++, items);
+  }
+
+  SWC_CAN_INLINE
   void add(const std::vector<int64_t>& items) {
+    add(index_count++, items);
+  }
+
+  SWC_CAN_INLINE
+  void add(const Core::Vector<std::string>& items) {
     add(index_count++, items);
   }
 
