@@ -105,11 +105,45 @@ class Key final {
   void add(const uint8_t* fraction, uint24_t len);
 
   template<typename T>
-  void add(const T cbegin, const T cend);
+  SWC_CAN_INLINE
+  void add(const T cbegin, const T cend) {
+    if(cbegin == cend)
+      return;
 
-  void add(const std::vector<std::string>& fractions);
+    const uint8_t* old = data;
+    uint32_t old_size = size;
 
-  void add(const std::vector<KeyVec::Fraction>& fractions);
+    for(auto it=cbegin; it != cend; ++it)
+      size += Serialization::encoded_length_vi24(it->size()) + it->size();
+
+    uint8_t* ptr = data = new uint8_t[size];
+    if(old) {
+      memcpy(ptr, old, old_size);
+      ptr += old_size;
+      if(own)
+        delete [] old;
+    }
+    for(auto it=cbegin; it != cend; ++it) {
+      Serialization::encode_vi24(&ptr, it->size());
+      memcpy(ptr, reinterpret_cast<const uint8_t*>(it->c_str()), it->size());
+      ptr += it->size();
+    }
+    count += cend - cbegin;
+    own = true;
+  }
+
+  template<typename T>
+  SWC_CAN_INLINE
+  void add(const T& key) {
+    add(key.cbegin(), key.cend());
+  }
+
+  template<typename T>
+  SWC_CAN_INLINE
+  void read(const T& key) {
+    free();
+    add(key);
+  }
 
   SWC_CAN_INLINE
   void insert(uint32_t idx, const std::string& fraction) {
@@ -159,13 +193,37 @@ class Key final {
 
   void decode(const uint8_t** bufp, size_t* remainp, bool owner);
 
-  void convert_to(std::vector<std::string>& key) const;
+  template<typename T>
+  SWC_CAN_INLINE
+  void convert_to(T& key) const {
+    uint24_t len;
+    const uint8_t* ptr = data;
+    key.clear();
+    key.resize(count);
+    for(auto it = key.begin(); it != key.cend(); ++it, ptr+=len) {
+      len = Serialization::decode_vi24(&ptr);
+      it->assign(
+        reinterpret_cast<const T::value_type::value_type*>(ptr), len);
+    }
+  }
 
-  void convert_to(std::vector<KeyVec::Fraction>& key) const;
+  template<typename T>
+  SWC_CAN_INLINE
+  bool equal(const T& key) const {
+    if(key.size() != count)
+      return false;
 
-  void read(const std::vector<std::string>& key);
-
-  bool equal(const std::vector<std::string>& key) const;
+    uint24_t len;
+    const uint8_t* ptr = data;
+    for(auto it = key.cbegin(); it != key.cend(); ++it, ptr+=len) {
+      len = Serialization::decode_vi24(&ptr);
+      if(!Condition::eq(
+            ptr, len,
+            reinterpret_cast<const uint8_t*>(it->c_str()), it->length()))
+        return false;
+    }
+    return true;
+  }
 
   SWC_CAN_INLINE
   std::string to_string() const {

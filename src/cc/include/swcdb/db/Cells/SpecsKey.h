@@ -18,58 +18,74 @@ namespace SWC { namespace DB { namespace Specs {
 struct Fraction final : public std::string {
 
   Condition::Comp comp;
-  mutable void*   compiled = nullptr;
+  mutable void*   compiled;
 
   SWC_CAN_INLINE
-  Fraction() { }
+  Fraction() noexcept : compiled(nullptr) { }
 
   SWC_CAN_INLINE
   Fraction(std::string&& fraction, Condition::Comp comp) noexcept
-          : std::string(std::move(fraction)), comp(comp) {
-  }
-
-  SWC_CAN_INLINE
-  Fraction(Fraction&& other) noexcept
-          : std::string(std::move(other)), comp(other.comp) {
-  }
-
-  SWC_CAN_INLINE
-  Fraction& operator=(Fraction&& other) noexcept {
-    std::string::operator=(std::move(other));
-    comp = other.comp;
-    return *this;
-  }
-
-  SWC_CAN_INLINE
-  Fraction& operator=(std::string&& other) noexcept {
-    std::string::operator=(std::move(other));
-    return *this;
+          : std::string(std::move(fraction)), comp(comp),
+            compiled(nullptr) {
   }
 
   SWC_CAN_INLINE
   Fraction(const char* buf, uint32_t len, Condition::Comp comp)
-          : std::string(buf, len), comp(comp) {
+          : std::string(buf, len), comp(comp), compiled(nullptr) {
   }
 
   SWC_CAN_INLINE
   Fraction(const Fraction& other)
-          : std::string(other), comp(other.comp) {
+          : std::string(other), comp(other.comp), compiled(nullptr) {
+  }
+
+  SWC_CAN_INLINE
+  Fraction(Fraction&& other) noexcept
+          : std::string(std::move(other)), comp(other.comp),
+            compiled(other.compiled) {
+    other.compiled = nullptr;
+  }
+
+  SWC_CAN_INLINE
+  ~Fraction() noexcept {
+    release();
+  }
+
+  SWC_CAN_INLINE
+  Fraction& operator=(Fraction&& other) noexcept {
+    release();
+    std::string::operator=(std::move(other));
+    comp = other.comp;
+    compiled = other.compiled;
+    other.compiled = nullptr;
+    return *this;
   }
 
   SWC_CAN_INLINE
   Fraction& operator=(const Fraction& other) {
+    release();
     std::string::operator=(other);
     comp = other.comp;
     return *this;
   }
 
   SWC_CAN_INLINE
-  ~Fraction() {
-    if(compiled) switch(comp) {
-      case Condition::RE:
-        delete static_cast<re2::RE2*>(compiled);
-        break;
-      default: break;
+  Fraction& operator=(std::string&& other) noexcept {
+    release();
+    std::string::operator=(std::move(other));
+    return *this;
+  }
+
+  SWC_CAN_INLINE
+  void release() noexcept {
+    if(compiled) {
+      switch(comp) {
+        case Condition::RE:
+          delete static_cast<re2::RE2*>(compiled);
+          break;
+        default: break;
+      }
+      compiled = nullptr;
     }
   }
 

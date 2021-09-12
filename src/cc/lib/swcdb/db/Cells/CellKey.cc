@@ -47,44 +47,6 @@ void Key::add(const uint8_t* fraction, uint24_t len) {
   own = true;
 }
 
-SWC_SHOULD_INLINE
-void Key::add(const std::vector<std::string>& fractions) {
-  add(fractions.cbegin(), fractions.cend());
-}
-
-SWC_SHOULD_INLINE
-void Key::add(const std::vector<KeyVec::Fraction>& fractions) {
-  add(fractions.cbegin(), fractions.cend());
-}
-
-template<typename T>
-SWC_SHOULD_INLINE
-void Key::add(const T cbegin,  const T cend) {
-  if(cbegin == cend)
-    return;
-
-  const uint8_t* old = data;
-  uint32_t old_size = size;
-
-  for(auto it=cbegin; it != cend; ++it)
-    size += Serialization::encoded_length_vi24(it->size()) + it->size();
-
-  uint8_t* ptr = data = new uint8_t[size];
-  if(old) {
-    memcpy(ptr, old, old_size);
-    ptr += old_size;
-    if(own)
-      delete [] old;
-  }
-  for(auto it=cbegin; it != cend; ++it) {
-    Serialization::encode_vi24(&ptr, it->size());
-    memcpy(ptr, reinterpret_cast<const uint8_t*>(it->c_str()), it->size());
-    ptr += it->size();
-  }
-  count += cend - cbegin;
-  own = true;
-}
-
 void Key::insert(uint32_t idx, const uint8_t* fraction, uint24_t len) {
   if(!data || idx >= count) {
     add(fraction, len);
@@ -175,52 +137,6 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
       }
     }
   }
-}
-
-SWC_SHOULD_INLINE
-void Key::convert_to(std::vector<std::string>& key) const {
-  uint24_t len;
-  const uint8_t* ptr = data;
-  key.clear();
-  key.resize(count);
-  for(auto it = key.begin(); it != key.cend(); ++it, ptr+=len) {
-    len = Serialization::decode_vi24(&ptr);
-    it->assign(reinterpret_cast<const char*>(ptr), len);
-  }
-}
-
-SWC_SHOULD_INLINE
-void Key::convert_to(std::vector<KeyVec::Fraction>& key) const {
-  uint24_t len;
-  const uint8_t* ptr = data;
-  key.clear();
-  key.resize(count);
-  for(auto it = key.begin(); it != key.cend(); ++it, ptr+=len) {
-    len = Serialization::decode_vi24(&ptr);
-    it->assign(ptr, len);
-  }
-}
-
-SWC_SHOULD_INLINE
-void Key::read(const std::vector<std::string>& key) {
-  free();
-  add(key.cbegin(), key.cend());
-}
-
-bool Key::equal(const std::vector<std::string>& key) const {
-  if(key.size() != count)
-    return false;
-
-  uint24_t len;
-  const uint8_t* ptr = data;
-  for(auto it = key.cbegin(); it != key.cend(); ++it, ptr+=len) {
-    len = Serialization::decode_vi24(&ptr);
-    if(!Condition::eq(
-          ptr, len,
-          reinterpret_cast<const uint8_t*>(it->c_str()), it->length()))
-      return false;
-  }
-  return true;
 }
 
 void Key::display_details(std::ostream& out, bool pretty) const {

@@ -93,8 +93,7 @@ Fraction& Key::insert(uint32_t idx, const char* buf, uint32_t len,
 
 void Key::get(DB::Cell::Key& key) const {
   key.free();
-  for(auto it = cbegin(); it != cend(); ++it)
-    key.add(*it);
+  key.add(*this);
 }
 
 void Key::remove(uint32_t idx, bool recursive) {
