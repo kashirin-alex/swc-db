@@ -18,7 +18,7 @@
 namespace SWC { namespace Utils { namespace shell {
 
 
-static const std::vector<std::string> default_stat_names = {
+static const Core::Vector<std::string> default_stat_names = {
   "host", "group", "role", "id", "component", "part", "type"
 };
 
@@ -173,7 +173,7 @@ bool Statistics::read(std::string& cmd, bool extended) {
         m_stat_names = default_stat_names;
         return true;
       }
-      std::vector<std::string> tmp;
+      Core::Vector<std::string> tmp;
       std::string buf;
       while(parser.remain && !err) {
         parser.seek_space();
@@ -326,11 +326,11 @@ Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell) {
   const uint8_t* ptr = v.base;
   size_t remain = v.size;
 
-  std::vector<int64_t>      ids;
-  std::vector<int64_t>      aggregations;
-  std::vector<int64_t>      relations;
-  std::vector<std::string>  names;
-  std::vector<std::string>  labels;
+  Core::Vector<int64_t>      ids;
+  Core::Vector<int64_t>      aggregations;
+  Core::Vector<int64_t>      relations;
+  Core::Vector<std::string>  names;
+  Core::Vector<std::string>  labels;
 
   while(remain) {
     switch(DB::Cell::Serial::Value::read_type(&ptr, &remain)) {
@@ -591,7 +591,7 @@ void Statistics::Stats::print(std::ostream& out, const ReadGroup& group,
   }
 }
 
-void Statistics::Stats::add(const std::vector<Stats>* datasp,
+void Statistics::Stats::add(const Core::Vector<Stats>* datasp,
                             size_t metric_idx, uint24_t field_id,
                             int64_t value) noexcept {
   size_t idx = 0;
@@ -694,7 +694,7 @@ bool Statistics::show() {
       g.print(SWC_LOG_OSTREAM << "# Group:", this);
     );
 
-    std::vector<Stats> stats_datas;
+    Core::Vector<Stats> stats_datas;
     auto hdlr = client::Query::Select::Handlers::Common::make(
       clients,
       [this, &g, datasp=&stats_datas]

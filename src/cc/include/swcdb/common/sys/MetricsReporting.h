@@ -203,11 +203,11 @@ class Item_Net : public Base {
       cell.key.add(key);
 
 
-      std::vector<int64_t>     ids;
-      std::vector<std::string> names;
-      std::vector<std::string> labels;
-      std::vector<int64_t>     aggregations;
-      std::vector<int64_t>     relations;
+      Core::Vector<int64_t>     ids;
+      Core::Vector<std::string> names;
+      Core::Vector<std::string> labels;
+      Core::Vector<int64_t>     aggregations;
+      Core::Vector<int64_t>     relations;
       ids.reserve(11 + CommandsT::MAX);
       names.reserve(ids.size());
       labels.reserve(ids.size());
@@ -395,7 +395,7 @@ class Item_Net : public Base {
 
 
   protected:
-  std::vector<std::unique_ptr<Addr>> m_addresses[2];
+  Core::Vector<std::unique_ptr<Addr>> m_addresses[2];
 };
 
 
@@ -441,7 +441,7 @@ class Item_Mem : public Base {
     cell.key.add(key);
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.add(std::vector<int64_t>({
+    wfields.add(Core::Vector<int64_t>({
       FIELD_RSS_FREE_MIN,
       FIELD_RSS_FREE_MAX,
       FIELD_RSS_FREE_AVG,
@@ -452,7 +452,7 @@ class Item_Mem : public Base {
       FIELD_RSS_USED_REG_MAX,
       FIELD_RSS_USED_REG_AVG,
     }));
-    wfields.add(std::vector<std::string>({
+    wfields.add(Core::Vector<std::string>({
       "rss_free_min",
       "rss_free_max",
       "rss_free_avg",
@@ -463,7 +463,7 @@ class Item_Mem : public Base {
       "rss_reg_max",
       "rss_reg_avg"
     }));
-    wfields.add(std::vector<std::string>({
+    wfields.add(Core::Vector<std::string>({
       "RSS Free Minimal",
       "RSS Free Maximal",
       "RSS Free Average",
@@ -474,7 +474,7 @@ class Item_Mem : public Base {
       "RSS Registred Maximal",
       "RSS Registred Average"
     }));
-    wfields.add(std::vector<int64_t>({
+    wfields.add(Core::Vector<int64_t>({
       Aggregation::MIN,
       Aggregation::MAX,
       Aggregation::AVG,
@@ -579,7 +579,7 @@ class Item_CPU : public Base {
     cell.key.add(key);
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.add(std::vector<int64_t>({
+    wfields.add(Core::Vector<int64_t>({
       FIELD_CPU_U_PERC_MIN,
       FIELD_CPU_U_PERC_MAX,
       FIELD_CPU_U_PERC_AVG,
@@ -590,7 +590,7 @@ class Item_CPU : public Base {
       FIELD_NTHREADS_MAX,
       FIELD_NTHREADS_AVG,
     }));
-    wfields.add(std::vector<std::string>({
+    wfields.add(Core::Vector<std::string>({
       "u_min",
       "u_max",
       "u_avg",
@@ -601,7 +601,7 @@ class Item_CPU : public Base {
       "t_max",
       "t_avg"
     }));
-    wfields.add(std::vector<std::string>({
+    wfields.add(Core::Vector<std::string>({
       "User %m Minimal",
       "User %m Maximal",
       "User %m Average",
@@ -612,7 +612,7 @@ class Item_CPU : public Base {
       "Threads Maximal",
       "Threads Average"
     }));
-    wfields.add(std::vector<int64_t>({
+    wfields.add(Core::Vector<int64_t>({
       Aggregation::MIN,
       Aggregation::MAX,
       Aggregation::AVG,
@@ -711,11 +711,11 @@ class Item_FS : public Base {
     cell.set_time_order_desc(true);
     cell.key.add(key);
 
-    std::vector<int64_t>     relations;
-    std::vector<int64_t>     ids;
-    std::vector<std::string> names;
-    std::vector<std::string> labels;
-    std::vector<int64_t>     aggregations;
+    Core::Vector<int64_t>     relations;
+    Core::Vector<int64_t>     ids;
+    Core::Vector<std::string> names;
+    Core::Vector<std::string> labels;
+    Core::Vector<int64_t>     aggregations;
     ids.reserve(1 + FS::Statistics::Command::MAX * 5);
     names.reserve(ids.size());
     labels.reserve(ids.size());

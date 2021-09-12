@@ -325,7 +325,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
             expect_token("[", 1, bracket_square);
             if(err)
               return;
-            std::vector<int64_t> items;
+            Core::Vector<int64_t> items;
             do {
               seek_space();
               if(!is_char(",]")) {
@@ -347,7 +347,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
             expect_token("[", 1, bracket_square);
             if(err)
               return;
-            std::vector<std::string> items;
+            Core::Vector<std::string> items;
             do {
               seek_space();
               if(!is_char(",]")) {
@@ -534,8 +534,12 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
   default:
     break;
   }
-
-  error_msg(Error::SQL_PARSE_ERROR, "unsupported cell flag='"+buf+"'");
+  std::string s;
+  s.reserve(24 + buf.size());
+  s.append("unsupported cell flag='");
+  s.append(buf);
+  s += '\'';
+  error_msg(Error::SQL_PARSE_ERROR, s);
 
 }
 

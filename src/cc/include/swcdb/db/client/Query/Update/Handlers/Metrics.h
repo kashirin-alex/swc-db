@@ -81,8 +81,8 @@ class Level : public Base {
   public:
   typedef std::unique_ptr<Level> Ptr;
 
-  const std::string      name;
-  std::vector<Base::Ptr> metrics;
+  const std::string       name;
+  Core::Vector<Base::Ptr> metrics;
 
   Level(const char* name) : name(name) { }
 
@@ -237,7 +237,7 @@ class Reporting : public BaseSingleColumn {
 
   const Comm::IoContextPtr           io;
   Config::Property::V_GINT32::Ptr    cfg_intval;
-  std::vector<Metric::Base::Ptr>     metrics;
+  Core::Vector<Metric::Base::Ptr>    metrics;
   Core::AtomicBool                   running;
 
   Reporting(const Clients::Ptr& clients,
