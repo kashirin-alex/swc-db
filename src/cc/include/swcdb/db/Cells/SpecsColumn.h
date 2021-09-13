@@ -9,52 +9,33 @@
 
 
 #include "swcdb/db/Cells/SpecsInterval.h"
+#include "swcdb/db/Columns/Schema.h"
 
 
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Column final : public std::vector<Interval::Ptr> {
+class Column final : public Core::Vector<Interval::Ptr> {
   public:
 
-  typedef std::vector<Interval::Ptr> Intervals;
-  typedef std::shared_ptr<Column>    Ptr;
+  typedef Core::Vector<Interval::Ptr> Intervals;
 
   SWC_CAN_INLINE
-  static Ptr make_ptr(cid_t cid=0, uint32_t reserve=0) {
-    return Ptr(new Column(cid, reserve));
-  }
+  explicit Column(cid_t cid=Schema::NO_CID) noexcept : cid(cid) { }
 
   SWC_CAN_INLINE
-  static Ptr make_ptr(cid_t cid, const Intervals& intervals) {
-    return Ptr(new Column(cid, intervals));
-  }
-
-  SWC_CAN_INLINE
-  static Ptr make_ptr(const uint8_t** bufp, size_t* remainp) {
-    return Ptr(new Column(bufp, remainp));
-  }
-
-  SWC_CAN_INLINE
-  static Ptr make_ptr(const Column& other) {
-    return Ptr(new Column(other));
-  }
-
-  SWC_CAN_INLINE
-  static Ptr make_ptr(Ptr other) {
-    return Ptr(new Column(*other.get()));
-  }
-
-
-  SWC_CAN_INLINE
-  explicit Column(cid_t cid=0, uint32_t _reserve=0)
-                  : cid(cid) {
+  explicit Column(cid_t cid, uint32_t _reserve) : cid(cid) {
     reserve(_reserve);
   }
 
   SWC_CAN_INLINE
   explicit Column(cid_t cid, const Intervals& intervals)
                   : Intervals(intervals), cid(cid) {
+  }
+
+  SWC_CAN_INLINE
+  explicit Column(cid_t cid, Intervals&& intervals) noexcept
+                  : Intervals(std::move(intervals)), cid(cid) {
   }
 
   SWC_CAN_INLINE
@@ -67,9 +48,28 @@ class Column final : public std::vector<Interval::Ptr> {
     copy(other);
   }
 
-  void copy(const Column &other);
+  SWC_CAN_INLINE
+  explicit Column(Column&& other) noexcept
+          : Intervals(std::move(other)), cid(other.cid) {
+  }
 
-  //~Column() { }
+  SWC_CAN_INLINE
+  ~Column() { }
+
+  SWC_CAN_INLINE
+  Column& operator=(Column&& other) noexcept {
+    Intervals::operator=(std::move(other));
+    cid = other.cid;
+    return *this;
+  }
+
+  SWC_CAN_INLINE
+  Column& operator=(const Column& other) {
+    copy(other);
+    return *this;
+  }
+
+  void copy(const Column &other);
 
   Interval::Ptr& add(Types::Column col_type);
 

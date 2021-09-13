@@ -56,23 +56,23 @@ void Base::default_executor(int& err, const DB::Specs::Scan& specs) {
       auto it_seq = schemas.begin();
       size_t count = 0;
       for(auto& col : specs.columns) {
-        auto schema = clients->get_schema(err, col->cid);
+        auto schema = clients->get_schema(err, col.cid);
         if(err)
           return;
         *it_seq++ = schema;
-        count += col->size();
+        count += col.size();
       }
       completion.increment(count);
 
       it_seq = schemas.begin();
       for(auto& col : specs.columns) {
-        for(auto& intval : *col.get()) {
+        for(auto& intval : col) {
           if(!intval->flags.max_buffer)
             intval->flags.max_buffer = buff_sz;
           if(!intval->values.empty())
             intval->values.col_type = (*it_seq)->col_type;
           Select::Scanner::execute(
-            hdlr, (*it_seq)->col_seq, col->cid, *intval.get());
+            hdlr, (*it_seq)->col_seq, col.cid, *intval.get());
         }
         ++it_seq;
       }
@@ -82,15 +82,15 @@ void Base::default_executor(int& err, const DB::Specs::Scan& specs) {
     case Clients::BROKER: {
       size_t count = 0;
       for(auto& col : specs.columns)
-        count += col->size();
+        count += col.size();
       completion.increment(count);
 
       for(auto& col : specs.columns) {
-        for(auto& intval : *col.get()) {
+        for(auto& intval : col) {
           if(!intval->flags.max_buffer)
             intval->flags.max_buffer = buff_sz;
           Select::BrokerScanner::execute(
-            hdlr, col->cid, *intval.get());
+            hdlr, col.cid, *intval.get());
         }
       }
       return;
@@ -111,23 +111,23 @@ void Base::default_executor(int& err, DB::Specs::Scan&& specs) {
       auto it_seq = schemas.begin();
       size_t count = 0;
       for(auto& col : specs.columns) {
-        auto schema = clients->get_schema(err, col->cid);
+        auto schema = clients->get_schema(err, col.cid);
         if(err)
           return;
         *it_seq++ = schema;
-        count += col->size();
+        count += col.size();
       }
       completion.increment(count);
 
       it_seq = schemas.begin();
       for(auto& col : specs.columns) {
-        for(auto& intval : *col.get()) {
+        for(auto& intval : col) {
           if(!intval->flags.max_buffer)
             intval->flags.max_buffer = buff_sz;
           if(!intval->values.empty())
             intval->values.col_type = (*it_seq)->col_type;
           Select::Scanner::execute(
-            hdlr, (*it_seq)->col_seq, col->cid, std::move(*intval.get()));
+            hdlr, (*it_seq)->col_seq, col.cid, std::move(*intval.get()));
         }
         ++it_seq;
       }
@@ -137,15 +137,15 @@ void Base::default_executor(int& err, DB::Specs::Scan&& specs) {
     case Clients::BROKER: {
       size_t count = 0;
       for(auto& col : specs.columns)
-        count += col->size();
+        count += col.size();
       completion.increment(count);
 
       for(auto& col : specs.columns) {
-        for(auto& intval : *col.get()) {
+        for(auto& intval : col) {
           if(!intval->flags.max_buffer)
             intval->flags.max_buffer = buff_sz;
           Select::BrokerScanner::execute(
-            hdlr, col->cid, std::move(*intval.get()));
+            hdlr, col.cid, std::move(*intval.get()));
         }
       }
       return;

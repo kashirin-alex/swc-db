@@ -86,10 +86,10 @@ struct KeyInterval {
 
 
 
-class KeyIntervals : public std::vector<KeyInterval> {
+class KeyIntervals : public Core::Vector<KeyInterval> {
   public:
 
-  typedef std::vector<KeyInterval> Vec;
+  typedef Core::Vector<KeyInterval> Vec;
   using Vec::insert;
   using Vec::emplace_back;
 

@@ -359,7 +359,7 @@ struct Fields {
 
   void print(std::ostream& out) const;
 
-  std::vector<Field::Ptr> fields;
+  Core::Vector<Field::Ptr> fields;
   Core::Vector<Field*>    _fields_ptr;
 
 };

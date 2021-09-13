@@ -456,12 +456,11 @@ void Statistics::StatsDefinition::print(std::ostream& out,
 void Statistics::set_definitions(DB::Specs::Scan& specs) {
   m_definitions.clear();
 
-  auto col = specs.columns.emplace_back(
-    DB::Specs::Column::make_ptr(
-      DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC, m_read_groups.size()));
+  auto& col = specs.columns.emplace_back(
+    DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC, m_read_groups.size());
 
   for(auto& g : m_read_groups) {
-    auto& key_intval = col->add(
+    auto& key_intval = col.add(
       DB::Types::Column::SERIAL)->key_intervals.add();
     if(!g.key.empty())
       key_intval.start.copy(g.key);
@@ -849,10 +848,10 @@ bool Statistics::truncate() {
   );
 
   DB::Specs::Scan specs;
-  auto col = specs.columns.emplace_back(
-    DB::Specs::Column::make_ptr(DB::Types::SystemColumn::SYS_CID_STATS));
+  auto& col = specs.columns.emplace_back(
+    DB::Types::SystemColumn::SYS_CID_STATS, m_read_groups.size());
   for(auto& g : m_read_groups) {
-    auto intval = col->add(DB::Types::Column::SERIAL);
+    auto& intval = col.add(DB::Types::Column::SERIAL);
     intval->flags.set_only_keys();
     auto& key_intval = intval->key_intervals.add();
 
@@ -885,7 +884,7 @@ bool Statistics::truncate() {
       g.print(SWC_LOG_OSTREAM << "\n\t", this);
   );
 
-  hdlr->scan(err, specs);
+  hdlr->scan(err, std::move(specs));
   state_error.store(err);
   if(!state_error) {
     hdlr->wait();

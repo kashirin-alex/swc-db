@@ -14,10 +14,10 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-class Values : public std::vector<Value> {
+class Values : public Core::Vector<Value> {
   public:
 
-  typedef std::vector<Value> Vec;
+  typedef Core::Vector<Value> Vec;
 
   using Vec::insert;
   using Vec::emplace_back;

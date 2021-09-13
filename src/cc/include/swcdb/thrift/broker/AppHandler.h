@@ -260,20 +260,15 @@ class AppHandler final : virtual public BrokerIf {
       Converter::set(spec.flags, specs.flags);
 
     DB::Schema::Ptr schema;
-    DB::Specs::Interval::Ptr dbintval;
 
     for(auto& col : spec.columns) {
       schema = hdlr->clients->get_schema(err, col.cid);
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
-      specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
-      auto& dbcol = specs.columns.back();
-
+      auto& dbcol = specs.columns.emplace_back(col.cid, col.intervals.size());
       for(auto& intval : col.intervals) {
-        dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
-        Converter::set(intval, *dbintval.get());
-        dbcol->push_back(dbintval);
+        Converter::set(intval, *dbcol.add(schema->col_type).get());
       }
     }
 
@@ -282,13 +277,9 @@ class AppHandler final : virtual public BrokerIf {
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
 
-      specs.columns.push_back(DB::Specs::Column::make_ptr(col.cid));
-      auto& dbcol = specs.columns.back();
-
+      auto& dbcol = specs.columns.emplace_back(col.cid, col.intervals.size());
       for(auto& intval : col.intervals) {
-        dbintval = DB::Specs::Interval::make_ptr(schema->col_type);
-        Converter::set(intval, *dbintval.get());
-        dbcol->push_back(dbintval);
+        Converter::set(intval, *dbcol.add(schema->col_type).get());
       }
     }
 

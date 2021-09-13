@@ -114,39 +114,37 @@ void test(int chk) {
     key_finish.add(a4, Condition::EQ);
     //std::cout << "- " << key_finish.to_string() << "\n";
 
-    Specs::Column::Ptr cs_is_1 = Specs::Column::make_ptr(5555, 1);
-
-    auto intval = cs_is_1->add(SWC::DB::Types::Column::PLAIN);
+    Specs::Column& cs_is_1 = ss.columns.emplace_back(5555, 1);
+    auto intval = cs_is_1.add(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start, key_finish);
     intval->ts_start.set(ts1, Condition::EQ);
     intval->ts_finish.set(ts2, Condition::EQ);
     intval->values.add().set(va1, Condition::EQ);
     intval->flags.copy(ss.flags);
-    //std::cout << "- " << cs_is_1->to_string() << "\n";
+    //std::cout << "- " << cs_is_1.to_string() << "\n";
 
     key_start.add(a3, Condition::EQ);
     key_start.add(a4, Condition::EQ);
     key_finish.add(a1, 2, Condition::EQ);
     key_finish.add(a2, 2, Condition::EQ);
 
-    intval = cs_is_1->add(SWC::DB::Types::Column::PLAIN);
+    intval = cs_is_1.add(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start, key_finish);
     intval->ts_start.set(ts3, Condition::EQ);
     intval->ts_finish.set(ts4, Condition::EQ);
     intval->values.add().set(va2, Condition::EQ);
     intval->flags.copy(ss.flags);
-    //std::cout << "- " << cs_is_1->to_string() << "\n";
+    //std::cout << "- " << cs_is_1.to_string() << "\n";
 
-    ss.columns.push_back(cs_is_1);
     //std::cout << "- " << ss.to_string() << "\n";
 
-    Specs::Column::Ptr cs_is_2 = Specs::Column::make_ptr(11111, 1);
-    intval = cs_is_2->add( SWC::DB::Types::Column::PLAIN);
+    Specs::Column& cs_is_2 = ss.columns.emplace_back(11111, 1);
+    intval = cs_is_2.add( SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start, key_finish);
     intval->ts_start.set(ts5, Condition::EQ);
     intval->ts_finish.set(ts6, Condition::EQ);
     intval->values.add().set(vb1, Condition::EQ);
-    //std::cout << "- " << cs_is_2->to_string() << "\n\n";
+    //std::cout << "- " << cs_is_2.to_string() << "\n\n";
 
     Specs::Key key_start2;
     key_start2.add(b1, Condition::EQ);
@@ -156,13 +154,12 @@ void test(int chk) {
     key_start2.add(b3, Condition::EQ);
     key_start2.add(b4, Condition::EQ);
 
-    intval = cs_is_2->add(SWC::DB::Types::Column::PLAIN);
+    intval = cs_is_2.add(SWC::DB::Types::Column::PLAIN);
     intval->key_intervals.add(key_start2, key_finish2);
     intval->ts_start.set(ts7, Condition::EQ);
     intval->ts_finish.set(ts8, Condition::EQ);
     intval->values.add().set(vb2, Condition::EQ);
 
-    ss.columns.push_back(cs_is_2);
     //std::cout << "- " << ss.to_string() << "\n\n";
 
 
@@ -171,7 +168,7 @@ void test(int chk) {
       exit(1);
     }
     Specs::Scan ss_copy;
-    ss_copy.copy(ss);
+    ss_copy = ss;
     if(!ss.equal(ss_copy)) {
       std::cout << "\nInit from\n";
       std::cout << "!ss.equal(ss_copy): ERROR\n\n";
@@ -179,51 +176,16 @@ void test(int chk) {
       std::cout << " new - " << ss_copy.to_string() << "\n";
       exit(1);
     }
-    if((*ss_copy.columns[0])[0]->key_intervals.empty()) {
+    if(ss_copy.columns[0][0]->key_intervals.empty()) {
       std::cout << "\nss_copy key_intervals.empty(): ERROR\n";
       exit(1);
     }
-    if(&(*ss.columns[0])[0]->key_intervals[0].start
-        == &(*ss_copy.columns[0])[0]->key_intervals[0].start) {
+    if(&ss.columns[0][0]->key_intervals[0].start
+        == &ss_copy.columns[0][0]->key_intervals[0].start) {
       std::cout << "\ncopy key.data ptr equal: ERROR\n";
       exit(1);
     }
     //std::cout << "\n OK \n";
-
-
-    Specs::Scan passed_ss2;
-    passed_ss2 = ss; // the same ptr instances
-
-    if(!ss.equal(passed_ss2)) {
-      std::cout << "\nAssign from\n";
-      std::cout << " old - " << ss.to_string() << "\n";
-      std::cout << " new - " << passed_ss2.to_string() << "\n";
-      std::cout << "!ss.equal(passed_ss2): ERROR\n";
-      exit(1);
-    }
-    if((*ss.columns[0])[0]->key_intervals.empty()) {
-      std::cout << "\nss key_intervals.empty(): ERROR\n";
-      exit(1);
-    }
-    if(&(*ss.columns[0])[0]->key_intervals[0].start
-        != &(*passed_ss2.columns[0])[0]->key_intervals[0].start) {
-      std::cout << "\nassign key.data ptr not equal: ERROR\n";
-      exit(1);
-    }
-
-    // sanity - no changes happened at 'equal'
-    if(!ss_copy.equal(passed_ss2)) {
-      std::cout << "\n!ss_copy.equal(passed_ss2): ERROR\n";
-      exit(1);
-    }
-    if(!ss_copy.equal(ss)) {
-      std::cout << "\n!ss_copy.equal(passed_ss2): ERROR\n";
-      exit(1);
-    }
-
-    //std::cout << "\n OK \n";
-
-
 
 
     for(size_t i=chk;i>0;--i){

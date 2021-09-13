@@ -828,11 +828,7 @@ void select_data(const DB::SchemasVec& schemas, size_t seed) {
   } else {
     DB::Specs::Scan specs;
     for(auto& schema : schemas) {
-      specs.columns.push_back(
-        DB::Specs::Column::make_ptr(
-          schema->cid, { DB::Specs::Interval::make_ptr() }
-        )
-      );
+      specs.columns.emplace_back(schema->cid).add(schema->col_type);
     }
     auto hdlr = client::Query::Select::Handlers::Common::make(
       Env::Clients::get(),

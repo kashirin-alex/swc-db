@@ -21,27 +21,58 @@ namespace Specs {
 class Scan final {
   public:
 
-  typedef std::vector<Column::Ptr> Columns;
+  typedef Core::Vector<Column> Columns;
 
-  explicit Scan(uint32_t reserve=0);
+  SWC_CAN_INLINE
+  explicit Scan() noexcept { }
 
-  explicit Scan(Columns& columns);
+  SWC_CAN_INLINE
+  explicit Scan(uint32_t reserve) {
+    columns.reserve(reserve);
+  }
 
-  explicit Scan(const uint8_t** bufp, size_t* remainp);
+  SWC_CAN_INLINE
+  explicit Scan(const Scan& other)
+                : columns(other.columns), flags(other.flags) {
+  }
 
-  explicit Scan(const Scan& specs);
+  SWC_CAN_INLINE
+  explicit Scan(Scan&& other) noexcept
+                : columns(std::move(other.columns)), flags(other.flags) {
+  }
 
-  explicit Scan(Scan&& specs) noexcept;
+  SWC_CAN_INLINE
+  explicit Scan(const Columns& columns) : columns(columns) { }
 
-  void copy(const Scan& other);
+  SWC_CAN_INLINE
+  explicit Scan(Columns&& columns) noexcept : columns(std::move(columns)) { }
 
-  Scan& operator=(const Scan&);
+  SWC_CAN_INLINE
+  explicit Scan(const uint8_t** bufp, size_t* remainp) {
+    decode(bufp, remainp);
+  }
 
-  Scan& operator=(Scan&& specs) noexcept;
+  SWC_CAN_INLINE
+  ~Scan() { }
 
-  //~Scan() { }
+  SWC_CAN_INLINE
+  Scan& operator=(Scan&& other) noexcept {
+    columns = std::move(other.columns);
+    flags.copy(other.flags);
+    return *this;
+  }
 
-  void free();
+  SWC_CAN_INLINE
+  Scan& operator=(const Scan& other) {
+    columns = other.columns;
+    flags.copy(other.flags);
+    return *this;
+  }
+
+  SWC_CAN_INLINE
+  void free() {
+    columns.clear();
+  }
 
   bool equal(const Scan &other) const noexcept;
 

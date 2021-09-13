@@ -89,7 +89,7 @@ int QuerySelect::parse_select() {
     if(specs.flags.was_set) {
       // apply global-scope flags to cells_intervals
       for(auto& col : specs.columns) {
-        for(auto& intval : *col.get()) {
+        for(auto& intval : col) {
           if(!intval->flags.was_set)
             intval->flags.copy(specs.flags);
         }
@@ -211,14 +211,14 @@ int QuerySelect::parse_dump(std::string& fs, std::string& filepath,
     read_cells_intervals(cols);
 
     for(auto& col : specs.columns)
-      if(!col->size()) {
+      if(!col.size()) {
         error_msg(Error::SQL_PARSE_ERROR, "missing cells-intervals");
         return err;
       }
 
   } else {
     for(auto& col : specs.columns)
-      col->push_back(DB::Specs::Interval::make_ptr());
+      col.emplace_back(DB::Specs::Interval::make_ptr());
   }
 
   return err;
@@ -392,15 +392,15 @@ void QuerySelect::read_columns_intervals() {
 
 }
 
-DB::Schema::Ptr QuerySelect::add_column(const std::string& col) {
-  auto schema = get_schema(clients, col);
+DB::Schema::Ptr QuerySelect::add_column(const std::string& col_str) {
+  auto schema = get_schema(clients, col_str);
   if(err)
     return nullptr;
   for(auto& col : specs.columns) {
-    if(schema->cid == col->cid)
+    if(schema->cid == col.cid)
       return schema;
   }
-  specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
+  specs.columns.emplace_back(schema->cid);
   return schema;
 }
 
@@ -410,16 +410,15 @@ void QuerySelect::add_column(const DB::Schemas::SelectorPatterns& patterns,
   if(err)
   return;
 
-  bool found;
   for(auto& schema : schemas) {
-  found = false;
-  for(auto& col : specs.columns) {
-    if((found = schema->cid == col->cid))
-      break;
-  }
-  if(!found)
-    specs.columns.push_back(DB::Specs::Column::make_ptr(schema->cid, {}));
-  cols.push_back(schema);
+    auto it = specs.columns.cbegin();
+    for(; it != specs.columns.cend(); ++it) {
+      if(schema->cid == it->cid)
+        break;
+    }
+    if(it == specs.columns.cend())
+      specs.columns.emplace_back(schema->cid);
+    cols.push_back(schema);
   }
 }
 
@@ -468,9 +467,8 @@ void QuerySelect::read_cells_intervals(const DB::SchemasVec& cols) {
 
       for(auto& col : specs.columns) {
         for(auto& schema : cols) {
-          if(col->cid == schema->cid)
-            col->push_back(
-              DB::Specs::Interval::make_ptr(*spec.get()));
+          if(col.cid == schema->cid)
+            col.emplace_back(DB::Specs::Interval::make_ptr(*spec.get()));
         }
       }
 

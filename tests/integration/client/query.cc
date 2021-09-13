@@ -197,12 +197,11 @@ class Test {
         : client::Clients::DEFAULT
     );
 
-    auto intval = DB::Specs::Interval::make_ptr();
+    DB::Specs::Scan specs;
+    auto& intval = specs.columns.emplace_back(
+      schema->cid).add(schema->col_type);
     intval->flags.offset = 0;
     intval->flags.limit = 1;
-    DB::Specs::Scan specs;
-    specs.columns.push_back(
-      DB::Specs::Column::make_ptr(schema->cid, {intval}));
 
     int err = Error::OK;
     hdlr->scan(err, specs);
@@ -234,12 +233,11 @@ class Test {
         : client::Clients::DEFAULT
     );
 
-    auto intval = DB::Specs::Interval::make_ptr();
+    DB::Specs::Scan specs;
+    auto& intval = specs.columns.emplace_back(
+      schema->cid).add(schema->col_type);
     intval->flags.offset = ncells * nfractions - 1;
     intval->flags.max_versions = 1;
-    DB::Specs::Scan specs;
-    specs.columns.push_back(
-      DB::Specs::Column::make_ptr(schema->cid, {intval}));
 
     int err = Error::OK;
     hdlr->scan(err, std::move(specs));

@@ -9,50 +9,7 @@
 
 namespace SWC { namespace DB { namespace Specs {
 
-Scan::Scan(uint32_t reserve): columns(0) {
-  columns.reserve(reserve);
-}
 
-Scan::Scan(Columns& columns): columns(columns) {}
-
-Scan::Scan(const uint8_t** bufp, size_t* remainp) {
-  decode(bufp, remainp);
-}
-
-Scan::Scan(const Scan& specs)
-          : columns(specs.columns),
-            flags(specs.flags) {
-}
-
-Scan::Scan(Scan&& specs) noexcept
-          : columns(std::move(specs.columns)),
-            flags(specs.flags) {
-}
-
-void Scan::copy(const Scan &other) {
-  free();
-  columns.resize(other.columns.size());
-  int i = 0;
-  for(const auto& col : other.columns)
-    columns[i++].reset(new Column(*col.get()));
-  flags.copy(other.flags);
-}
-
-Scan& Scan::operator=(Scan&& specs) noexcept {
-  columns = std::move(specs.columns);
-  flags.copy(specs.flags);
-  return *this;
-}
-
-Scan& Scan::operator=(const Scan& specs) {
-  columns = specs.columns;
-  flags.copy(specs.flags);
-  return *this;
-}
-
-void Scan::free() {
-  columns.clear();
-}
 
 bool Scan::equal(const Scan &other) const noexcept {
   if(columns.size() != other.columns.size() || !other.flags.equal(flags))
@@ -60,7 +17,7 @@ bool Scan::equal(const Scan &other) const noexcept {
 
   auto it2 = other.columns.cbegin();
   for(auto it1 = columns.cbegin(); it1 != columns.cend(); ++it1, ++it2)
-    if(!(*it1)->equal(*(*it2)))
+    if(!it1->equal(*it2))
       return false;
   return true;
 }
@@ -68,29 +25,30 @@ bool Scan::equal(const Scan &other) const noexcept {
 size_t Scan::encoded_length() const noexcept {
   size_t len = Serialization::encoded_length_vi32(columns.size());
   for(auto& col : columns)
-    len += col->encoded_length();
+    len += col.encoded_length();
   return len + flags.encoded_length();
 }
 
 void Scan::encode(uint8_t** bufp) const {
   Serialization::encode_vi32(bufp, columns.size());
   for(auto& col : columns)
-    col->encode(bufp);
+    col.encode(bufp);
   flags.encode(bufp);
 }
 
 void Scan::decode(const uint8_t** bufp, size_t* remainp) {
   free();
-  columns.resize(Serialization::decode_vi32(bufp, remainp));
-  for(auto& col : columns)
-    col.reset(new Column(bufp, remainp));
+  uint32_t len = Serialization::decode_vi32(bufp, remainp);
+  columns.reserve(len);
+  for(; len; --len)
+    columns.emplace_back(bufp, remainp);
   flags.decode(bufp, remainp);
 }
 
 void Scan::print(std::ostream& out) const {
   out << "Scan(columns=[";
   for(auto& col : columns) {
-    col->print(out);
+    col.print(out);
     out << ", ";
   }
   flags.print(out << "], flags=");
@@ -101,7 +59,7 @@ void Scan::display(std::ostream& out, bool pretty, std::string offset) const {
   out << offset << "SpecsScan(\n"
       << offset << " columns=[\n";
   for(auto& col : columns)
-    col->display(out, pretty, "  ");
+    col.display(out, pretty, "  ");
   out << offset << " ]\n";
 
   out << offset << " Flags(";
