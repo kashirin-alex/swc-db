@@ -54,7 +54,7 @@ class Interface {
   struct Option final {
     typedef std::function<bool(std::string&)> Call_t;
 
-    Option(std::string&& name, std::vector<std::string>&& desc,
+    Option(std::string&& name, Core::Vector<std::string>&& desc,
            Call_t&& call, const re2::RE2* re) noexcept
           : name(std::move(name)),
             desc(std::move(desc)),
@@ -66,15 +66,15 @@ class Interface {
         delete re;
     }
 
-    const std::string              name;
-    const std::vector<std::string> desc;
+    const std::string               name;
+    const Core::Vector<std::string> desc;
     const Call_t      call;
     const re2::RE2*   re;
   };
 
-  mutable int          err;
-  CLI                  _state;
-  std::vector<Option*> options;
+  mutable int           err;
+  CLI                   _state;
+  Core::Vector<Option*> options;
 
   bool error(const std::string& message);
 

@@ -19,8 +19,8 @@ typedef uint64_t rgrid_t;
 typedef uint32_t csid_t;
 
 
-typedef Core::Vector<cid_t> cids_t;
-typedef Core::Vector<rid_t> rids_t;
+typedef Core::Vector<cid_t, cid_t> cids_t;
+typedef Core::Vector<rid_t, rid_t> rids_t;
 
 
 

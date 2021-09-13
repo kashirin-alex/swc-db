@@ -15,7 +15,7 @@
 
 namespace SWC { namespace client { namespace Mngr {
 
-typedef std::vector<Comm::EndPoints>  Hosts;
+typedef Core::Vector<Comm::EndPoints>  Hosts;
 
 class Group final : private Hosts {
   public:
@@ -32,7 +32,7 @@ class Group final : private Hosts {
   Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
         const Hosts& hosts);
 
-  //~Group() { }
+  ~Group() { }
 
   Ptr copy();
 
@@ -57,7 +57,7 @@ class Group final : private Hosts {
 
 
 
-class Groups final : private std::vector<Group::Ptr>,
+class Groups final : private Core::Vector<Group::Ptr>,
                      public std::enable_shared_from_this<Groups>{
 
   public:
@@ -67,15 +67,16 @@ class Groups final : private std::vector<Group::Ptr>,
     cid_t           cid_begin;
     cid_t           cid_end;
     Comm::EndPoints endpoints;
+    ~GroupHost() { }
   };
   typedef std::shared_ptr<Groups> Ptr;
-  typedef std::vector<Group::Ptr> Vec;
+  typedef Core::Vector<Group::Ptr> Vec;
 
   Groups(const Config::Settings& settings);
 
   Groups(const Groups& other, Groups::Vec&&);
 
-  //~Groups() { }
+  ~Groups() { }
 
   Ptr init();
 
@@ -111,7 +112,7 @@ class Groups final : private std::vector<Group::Ptr>,
   const uint16_t                    cfg_port;
 
   Core::MutexSptd                   m_mutex;
-  std::vector<GroupHost>            m_active_g_host;
+  Core::Vector<GroupHost>           m_active_g_host;
   Comm::Networks                    m_nets;
 
 };
