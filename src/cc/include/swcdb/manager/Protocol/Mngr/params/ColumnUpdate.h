@@ -27,7 +27,7 @@ class ColumnUpdate final : public Serializable {
   SWC_CAN_INLINE
   ColumnUpdate(ColumnMng::Function function,
                cid_t cid_begin, cid_t cid_end, uint64_t total,
-               Core::Vector<cid_t>&& columns) noexcept
+               cids_t&& columns) noexcept
               : function(function), id(0),
                 columns(std::move(columns)),
                 cid_begin(cid_begin), cid_end(cid_end), total(total),
@@ -55,7 +55,7 @@ class ColumnUpdate final : public Serializable {
 
   ColumnMng::Function function;
   uint64_t            id;
-  Core::Vector<cid_t> columns;
+  cids_t              columns;
   cid_t               cid_begin;
   cid_t               cid_end;
   uint64_t            total;

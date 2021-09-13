@@ -242,8 +242,7 @@ void MngdColumns::action(const ColumnReq::Ptr& req) {
 }
 
 void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
-                             Core::Vector<cid_t>&& columns,
-                             bool initial) {
+                             cids_t&& columns, bool initial) {
   if(!initial &&
      Env::Mngr::role()->is_active_role(DB::Types::MngrRole::SCHEMAS))
     return;
@@ -707,7 +706,7 @@ bool MngdColumns::columns_load() {
       ++total;
     }
     g_batches = 0;
-    Core::Vector<cid_t> columns;
+    cids_t columns;
 
     make_batch:
       it_batch = it;
@@ -735,7 +734,7 @@ bool MngdColumns::columns_load() {
         // Cancel Expectations
         set_expect(
           g->cid_begin, g->cid_end,
-          STATE_COLUMNS_NOT_INITIALIZED, Core::Vector<cid_t>(), true
+          STATE_COLUMNS_NOT_INITIALIZED, cids_t(), true
         );
         m_columns_load.stop();
         return false;

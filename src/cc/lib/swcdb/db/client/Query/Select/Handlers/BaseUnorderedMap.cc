@@ -102,8 +102,8 @@ bool BaseUnorderedMap::empty() noexcept {
   return true;
 }
 
-std::vector<cid_t> BaseUnorderedMap::get_cids() {
-  std::vector<cid_t> list;
+cids_t BaseUnorderedMap::get_cids() {
+  cids_t list;
   Core::MutexSptd::scope lock(m_mutex);
   list.reserve(m_columns.size());
   for(const auto& col : m_columns)

@@ -89,7 +89,7 @@ class RspCids final : public Serializable {
 
   //~RspCids() { }
 
-  mutable std::vector<cid_t> cids;
+  mutable cids_t cids;
 
   void display(std::ostream& out, const std::string& offset = "") const;
 
@@ -113,7 +113,7 @@ class RspColumnRids final : public Serializable {
 
   //~RspColumnRids() { }
 
-  mutable std::vector<rid_t> rids;
+  mutable rids_t rids;
 
   void display(std::ostream& out, const std::string& offset = "") const;
 
@@ -161,7 +161,7 @@ class RspColumnsRanges final : public Serializable {
     cid_t                cid;
     DB::Types::KeySeq    col_seq;
     uint64_t             mem_bytes;
-    std::vector<Range*>  ranges;
+    Core::Vector<Range*> ranges;
 
     ~Column();
 
@@ -187,7 +187,7 @@ class RspColumnsRanges final : public Serializable {
 
   rgrid_t               rgrid;
   EndPoints             endpoints;
-  std::vector<Column*>  columns;
+  Core::Vector<Column*> columns;
 
   void display(std::ostream& out, bool pretty=true,
                const std::string& offset = "") const;

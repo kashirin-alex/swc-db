@@ -98,7 +98,7 @@ class BaseUnorderedMap : public Base {
 
   bool empty() noexcept;
 
-  std::vector<cid_t> get_cids();
+  cids_t get_cids();
 
   void remove(const cid_t cid);
 

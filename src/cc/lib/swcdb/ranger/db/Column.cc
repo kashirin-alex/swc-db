@@ -67,7 +67,7 @@ RangePtr Column::get_next(cid_t& last_rid, size_t &idx) {
   return nullptr;
 }
 
-void Column::get_rids(std::vector<rid_t>& rids) {
+void Column::get_rids(rids_t& rids) {
   Core::MutexSptd::scope lock(m_mutex);
   rids.reserve(size());
   for(auto it = cbegin(); it != cend(); ++it)

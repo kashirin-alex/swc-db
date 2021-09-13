@@ -122,7 +122,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   void assigned(rgrid_t rgrid, size_t num, Core::Vector<Range::Ptr>& ranges) {
     Column::Ptr chk;
-    Core::Vector<cid_t> chked;
+    cids_t chked;
     do {
       chk = nullptr;
       {

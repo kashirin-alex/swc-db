@@ -52,7 +52,7 @@ ColumnPtr Columns::get_next(cid_t& last_cid, size_t& idx) {
   return nullptr;
 }
 
-void Columns::get_cids(std::vector<cid_t>& cids) {
+void Columns::get_cids(cids_t& cids) {
   Core::MutexSptd::scope lock(m_mutex);
   cids.reserve(size());
   for(auto it = cbegin(); it != cend(); ++it)

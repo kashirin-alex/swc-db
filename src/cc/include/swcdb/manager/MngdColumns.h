@@ -72,7 +72,7 @@ class MngdColumns final {
   void action(const ColumnReq::Ptr& req);
 
   void set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
-                  Core::Vector<cid_t>&& columns, bool initial);
+                  cids_t&& columns, bool initial);
 
   void update_status(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
                      const DB::Schema::Ptr& schema, int err, uint64_t req_id,

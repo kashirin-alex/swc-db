@@ -47,7 +47,7 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
 
   ColumnPtr get_next(cid_t& last_cid, size_t& idx);
 
-  void get_cids(std::vector<cid_t>& cids);
+  void get_cids(cids_t& cids);
 
   void get_columns(Core::Vector<ColumnPtr>& columns);
 

@@ -59,7 +59,7 @@ class ColumnsUnloadRsp final : public Serializable {
   //~ColumnsUnloadRsp() { }
 
   int err;
-  std::unordered_map<cid_t, std::vector<rid_t>> columns;
+  std::unordered_map<cid_t, rids_t> columns;
 
   private:
 
