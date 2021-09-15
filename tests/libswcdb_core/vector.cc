@@ -139,10 +139,10 @@ void test_vector(const typename VecT::size_type _sz) {
   {
   std::cout << typeid(VecT).name() << " range insert it(end()+1) " << std::endl;
   VecT vec(sz-1);
-  auto it = vec.begin();
+  auto it2 = vec.begin();
   T end(1);
-  for(T n=sz; n > end; --n, ++it)
-    *it = n;
+  for(T n=sz; n > end; --n, ++it2)
+    *it2 = n;
   SWC_ASSERT(sz - 1 == vec.size());
   vec.insert(vec.end(), vec1.cend() - 1, vec1.cend());
   SWC_ASSERT(sz == vec.size());

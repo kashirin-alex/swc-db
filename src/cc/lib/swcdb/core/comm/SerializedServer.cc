@@ -17,32 +17,34 @@ struct Acceptor::Mixed {
   SWC_CAN_INLINE
   Mixed(Acceptor* acceptor) noexcept : acceptor(acceptor) { }
   void operator()(std::error_code ec, asio::ip::tcp::socket new_sock) {
-    if(ec) {
-      if(ec.value() != ECANCELED)
-        SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
-                  ec.value(), ec.message().c_str());
-      return;
-    }
     bool need_ssl = false;
-    if(new_sock.is_open()) try {
-      need_ssl = acceptor->m_ssl_cfg->need_ssl(
-        new_sock.local_endpoint(ec), new_sock.remote_endpoint(ec));
-     if(!ec) {
-        if(need_ssl) {
-          acceptor->m_ssl_cfg->make_server(acceptor->m_app_ctx, new_sock);
-        } else {
-          auto conn = ConnHandlerPlain::make(acceptor->m_app_ctx, new_sock);
-          conn->new_connection();
+    if(ec) {
+      if(ec.value() == ECANCELED)
+        return;
+      SWC_LOGF(LOG_WARN, "SRV-accept error=%d(%s)",
+               ec.value(), ec.message().c_str());
+
+    } else if(new_sock.is_open()) {
+      try {
+        need_ssl = acceptor->m_ssl_cfg->need_ssl(
+          new_sock.local_endpoint(ec), new_sock.remote_endpoint(ec));
+        if(!ec) {
+          if(need_ssl) {
+            acceptor->m_ssl_cfg->make_server(acceptor->m_app_ctx, new_sock);
+          } else {
+            auto conn = ConnHandlerPlain::make(acceptor->m_app_ctx, new_sock);
+            conn->new_connection();
+          }
+        } else if(new_sock.is_open()) {
+          new_sock.close(ec);
         }
-      } else if(new_sock.is_open()) {
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
         new_sock.close(ec);
       }
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-      new_sock.close(ec);
     }
-    acceptor->m_app_ctx->net_accepted(acceptor->local_endpoint(), need_ssl);
 
+    acceptor->m_app_ctx->net_accepted(acceptor->local_endpoint(), need_ssl);
     acceptor->async_accept(Mixed(acceptor));
   }
 };
@@ -53,22 +55,23 @@ struct Acceptor::Plain {
   Plain(Acceptor* acceptor) noexcept : acceptor(acceptor) { }
   void operator()(const std::error_code& ec, asio::ip::tcp::socket new_sock) {
     if(ec) {
-      if(ec.value() != ECANCELED)
-        SWC_LOGF(LOG_DEBUG, "SRV-accept error=%d(%s)",
-                  ec.value(), ec.message().c_str());
-      return;
+      if(ec.value() == ECANCELED)
+        return;
+      SWC_LOGF(LOG_WARN, "SRV-accept error=%d(%s)",
+               ec.value(), ec.message().c_str());
+
+    } else if(new_sock.is_open()) {
+      try {
+        auto conn = ConnHandlerPlain::make(acceptor->m_app_ctx, new_sock);
+        conn->new_connection();
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+        std::error_code _ec;
+        new_sock.close(_ec);
+      }
     }
 
-    if(new_sock.is_open()) try {
-      auto conn = ConnHandlerPlain::make(acceptor->m_app_ctx, new_sock);
-      conn->new_connection();
-    } catch(...) {
-      SWC_LOG_CURRENT_EXCEPTION("");
-      std::error_code ec;
-      new_sock.close(ec);
-    }
     acceptor->m_app_ctx->net_accepted(acceptor->local_endpoint(), false);
-
     acceptor->async_accept(Plain(acceptor));
   }
 };

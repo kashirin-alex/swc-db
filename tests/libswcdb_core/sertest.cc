@@ -44,6 +44,7 @@ void test_i8() {
 }
 
 void test_i16() {
+  {
   uint8_t buf[2], *p = buf;
   uint16_t input = 0xcafe;
   encode_i16(&p, input);
@@ -53,7 +54,7 @@ void test_i16() {
     SWC_ASSERT(decode_i16(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 2);
     SWC_ASSERT(!len));
-
+  }
   auto ns = Time::now_ns();
   for(uint16_t n=0; n<UINT16_MAX;++n){
     uint8_t buf[2], *p = buf;
@@ -70,6 +71,7 @@ void test_i16() {
 }
 
 void test_i24() {
+  {
   uint8_t buf[3], *p = buf;
   uint24_t input = 0xfebabe;
   encode_i24(&p, 0xfebabe);
@@ -79,7 +81,7 @@ void test_i24() {
     SWC_ASSERT(decode_i24(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 3);
     SWC_ASSERT(!len));
-
+  }
   auto ns = Time::now_ns();
   for(uint24_t n=0; n<UINT24_MAX;++n){
     uint8_t buf[3], *p = buf;
@@ -96,6 +98,7 @@ void test_i24() {
 }
 
 void test_i32() {
+  {
   uint8_t buf[4], *p = buf;
   uint32_t input = 0xcafebabe;
   encode_i32(&p, 0xcafebabe);
@@ -105,7 +108,7 @@ void test_i32() {
     SWC_ASSERT(decode_i32(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 4);
     SWC_ASSERT(!len));
-
+  }
   auto ns = Time::now_ns();
   for(uint32_t n=0; n<UINT32_MAX;++n){
     uint8_t buf[4], *p = buf;
@@ -122,6 +125,7 @@ void test_i32() {
 }
 
 void test_i64() {
+  {
   uint8_t buf[8], *p = buf;
   uint64_t input = 0xcafebabeabadbabeull;
   encode_i64(&p, input);
@@ -131,7 +135,7 @@ void test_i64() {
     SWC_ASSERT(decode_i64(&p2, &len) == input);
     SWC_ASSERT(p2 - buf == 8);
     SWC_ASSERT(!len));
-
+  }
   auto ns = Time::now_ns();
   for(uint64_t n=0; n<UINT64_MAX;++n){
     uint8_t buf[8], *p = buf;

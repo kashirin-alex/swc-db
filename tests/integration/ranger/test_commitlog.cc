@@ -160,9 +160,9 @@ int run() {
     auto& req = requests[i] = Ranger::ReqScanTest::make();
     req->spec.flags.limit = num_cells;
 
-    req->cb = [&req, &sem2, i](int err) { // , blocks=&blocks
+    req->cb = [&req, &sem2, i](int _err) { // , blocks=&blocks
       std::cout << " chk=" << i
-                << " err=" <<  err << "(" << Error::get_text(err) << ") \n" ;
+                << " err=" <<  _err << "(" << Error::get_text(_err) << ") \n" ;
       if(req->cells.size() != req->spec.flags.limit) {
         std::cerr << "one-ver, req->cells.size() != req->spec.flags.limit  \n"
                   << " " << req->cells.size()

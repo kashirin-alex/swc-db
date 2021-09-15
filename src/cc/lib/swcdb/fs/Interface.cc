@@ -467,7 +467,7 @@ void Interface::close(int& err, SmartFd::Ptr& smartfd) {
 void Interface::close(Callback::CloseCb_t&& cb,
                       SmartFd::Ptr& smartfd) {
   m_fs->close([cb=std::move(cb), ptr=ptr()]
-    (int err, SmartFd::Ptr smartfd) mutable {
+    (int err, SmartFd::Ptr _smartfd) mutable {
       switch(err) {
         case Error::OK:
         case EACCES:
@@ -476,14 +476,14 @@ void Interface::close(Callback::CloseCb_t&& cb,
         case EBADF:
         case Error::FS_BAD_FILE_HANDLE:
         case Error::SERVER_SHUTTING_DOWN:
-          return cb(err, smartfd);
+          return cb(err, _smartfd);
         default: {
-          if(!smartfd->valid())
-            return cb(EBADR, smartfd);
+          if(!_smartfd->valid())
+            return cb(EBADR, _smartfd);
           hold_delay();
           SWC_LOGF(LOG_WARN, "close, retrying to err=%d(%s) file(%s)",
-                   err, Error::get_text(err), smartfd->filepath().c_str());
-          ptr->close(std::move(cb), smartfd);
+                   err, Error::get_text(err), _smartfd->filepath().c_str());
+          ptr->close(std::move(cb), _smartfd);
         }
       }
     },

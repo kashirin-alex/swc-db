@@ -176,13 +176,12 @@ void read_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range,
 
   std::promise<void> r_promise;
   req->cb = [req, &blocks, expected_key,
-             await=&r_promise, took=SWC::Time::now_ns()]
-    (int err) {
+             await=&r_promise, took=SWC::Time::now_ns()] (int _err) {
     std::cout << " took=" <<  SWC::Time::now_ns()-took << " ";
     req->cells.print(std::cout);
     std::cout << "\n" ;
-    if(err) {
-      std::cout << " err=" <<  err << "(" << SWC::Error::get_text(err) << ") " ;
+    if(_err) {
+      std::cout << " err=" <<  _err << "(" << SWC::Error::get_text(_err) << ") " ;
       req->print(std::cout);
       std::cout << "\n";
     }
@@ -288,14 +287,15 @@ int run() {
       req->spec.flags.offset = match_on_offset;
       req->offset = req->spec.flags.offset;
       req->spec.flags.limit = 1;
-      req->cb = [req, csid, match_key, &blocks, took=SWC::Time::now_ns()](int err){
+      req->cb = [req, csid, match_key, &blocks, took=SWC::Time::now_ns()]
+      (int _err){
 
         std::cout << " chk-csid=" << csid ;
         std::cout << " took=" <<  SWC::Time::now_ns()-took << "\n" ;
 
-        if(err) {
-          std::cout << " err=" <<  err
-                    << "(" << SWC::Error::get_text(err) << ") ";
+        if(_err) {
+          std::cout << " err=" <<  _err
+                    << "(" << SWC::Error::get_text(_err) << ") ";
           req->print(std::cout);
           std::cout << "\n";
         }
@@ -303,8 +303,8 @@ int run() {
         if(req->cells.size() != req->spec.flags.limit) {
           blocks.print(std::cout << '\n', true);
           std::cout << '\n';
-          std::cout << " err=" <<  err
-                    << "(" << SWC::Error::get_text(err) << ")\n";
+          std::cout << " err=" <<  _err
+                    << "(" << SWC::Error::get_text(_err) << ")\n";
           std::cerr << "ERROR: req->cells.size()=" << req->cells.size()
                     << " expected=" << req->spec.flags.limit << " \n";
           req->print(std::cout);

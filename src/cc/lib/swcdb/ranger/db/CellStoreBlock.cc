@@ -257,22 +257,22 @@ void Read::load_open(int err) {
 
   cellstore->smartfd->valid()
     ? Env::FsInterface::fs()->pread(
-        [ptr=this](int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) {
+        [ptr=this](int _err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buff) {
           struct Task {
             Read*             ptr;
-            int               err;
+            int               error;
             StaticBuffer::Ptr buffer;
             SWC_CAN_INLINE
-            Task(Read* ptr, int err, const StaticBuffer::Ptr& buffer) noexcept
-                : ptr(ptr), err(err), buffer(buffer) { }
-            void operator()() { ptr->load_read(err, buffer); }
+            Task(Read* ptr, int error, const StaticBuffer::Ptr& buffer) noexcept
+                : ptr(ptr), error(error), buffer(buffer) { }
+            void operator()() { ptr->load_read(error, buffer); }
           };
-          Env::Rgr::post(Task(ptr, err, buffer));
+          Env::Rgr::post(Task(ptr, _err, buff));
         },
         cellstore->smartfd, header.offset_data, header.size_enc
       )
     : Env::FsInterface::fs()->open(
-        [this](int err, FS::SmartFd::Ptr) { load_open(err); },
+        [this](int _err, FS::SmartFd::Ptr) { load_open(_err); },
         cellstore->smartfd
       );
 }

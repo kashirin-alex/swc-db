@@ -77,8 +77,8 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
   sock->async_connect(
     m_endpoint,
     [sock, preserve, cb=std::move(cb), ptr=shared_from_this()]
-    (const std::error_code& ec) {
-      if(ec || !sock->is_open()) {
+    (const std::error_code& _ec) {
+      if(_ec || !sock->is_open()) {
         cb(nullptr);
         return;
       }
@@ -241,10 +241,10 @@ void Serialized::_get_connection(
     next = 0;
 
   auto srv = get_srv(endpoints[next]);
-  ConnHandlerPtr conn = nullptr;
-  srv->reusable(conn, preserve);
-  if(!m_run || conn || (probes && !tries)) {
-    cb(conn);
+  ConnHandlerPtr _conn = nullptr;
+  srv->reusable(_conn, preserve);
+  if(!m_run || _conn || (probes && !tries)) {
+    cb(_conn);
     m_calls.fetch_sub(1);
     return;
   }

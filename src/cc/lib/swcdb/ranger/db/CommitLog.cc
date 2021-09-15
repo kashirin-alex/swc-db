@@ -334,7 +334,7 @@ void Fragments::load_cells(BlockLoader* loader, bool& is_final,
   Core::SharedLock lock(m_mutex);
   _load_cells(loader, frags, vol);
   if(is_final && (is_final = base == vol)) {
-    Core::SharedLock lock(m_mutex_cells);
+    Core::SharedLock lock_cells(m_mutex_cells);
     loader->block->load_final(m_cells);
   }
 }
@@ -563,7 +563,7 @@ void Fragments::print(std::ostream& out, bool minimal) {
   out << "CommitLog(count=" << count
       << " cells=";
   {
-    Core::SharedLock lock(m_mutex_cells);
+    Core::SharedLock lock_cells(m_mutex_cells);
     out << m_cells.size();
   }
 
@@ -623,12 +623,11 @@ size_t Fragments::_need_compact(CompactGroups& groups,
       return need;
   }
 
-  auto it = fragments.cbegin();
-  groups.emplace_back().push_back(*it);
+  groups.emplace_back().push_back(fragments.front());
   ++need;
   Fragment::Ptr curt;
   Condition::Comp cond;
-  for(++it; it != fragments.cend(); ++it) {
+  for(auto it = fragments.cbegin() + 1; it != fragments.cend(); ++it) {
     auto const& last = *groups.back().back();
     if(!( (cond = DB::KeySeq::compare(m_cells.key_seq, last.interval.key_end,
                         (curt = *it)->interval.key_begin)) == Condition::LT ||

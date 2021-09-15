@@ -346,15 +346,15 @@ void Rangers::update_status(const RangerList& new_rgr_status, bool sync_all) {
       }
     }
 
-    for(auto& h : m_rangers)
-      h->interm_ranges.store(0);
+    for(auto& r : m_rangers)
+      r->interm_ranges.store(0);
   }
 
-  for(auto h : removing) {
+  for(auto& h : removing) {
     h->stop();
   }
 
-  for(auto h : balance_rangers) {
+  for(auto& h : balance_rangers) {
     Core::Vector<Range::Ptr> ranges;
     Env::Mngr::columns()->assigned(h->rgrid, 1, ranges);
     int err = Error::OK;
@@ -586,7 +586,6 @@ void Rangers::assign_ranges_run() {
 void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& _rgr_set) {
   size_t n_rgrs = 0;
   size_t avg_ranges = 0;
-  Ranger::Ptr rgr;
 
   const DB::RgrData& last_rgr = range->get_last_rgr();
   uint8_t state;

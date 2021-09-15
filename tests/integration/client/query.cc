@@ -131,16 +131,16 @@ class Test {
     schema->cell_versions = counter ? 1 : cell_versions;
 
     auto _cb = [this]
-      (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
-        if(err && err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
+      (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int _err) {
+        if(_err && _err != Error::COLUMN_SCHEMA_NAME_EXISTS) {
           SWC_PRINT << "ColumnMng::CREATE err="
-                    << err << "(" << Error::get_text(err) << ")"
+                    << _err << "(" << Error::get_text(_err) << ")"
                     << SWC_PRINT_CLOSE;
           return req_ptr->request_again();
         }
-        schema = Env::Clients::get()->get_schema(err, col_name);
+        schema = Env::Clients::get()->get_schema(_err, col_name);
         //auto data = ProtocolExecutor::Req::Functional_ColumnMng::cast(datap);
-        //schema = data->get_clients()->get_schema(err, col_name);
+        //schema = data->get_clients()->get_schema(_err, col_name);
         query_insert();
       };
 
@@ -389,19 +389,19 @@ class Test {
     auto hdlr = client::Query::Select::Handlers::Common::make(
       Env::Clients::get(),
       [this, ts=Time::now_ns(), key=DB::Cell::Key(key, true), i, f]
-      (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
         time_select += Time::now_ns() - ts;
 
         SWC_LOG_OUT(LOG_INFO,
           SWC_LOG_OSTREAM << "query_select:  \n";
-          hdlr->profile.print(SWC_LOG_OSTREAM);
+          _hdlr->profile.print(SWC_LOG_OSTREAM);
         );
 
-        SWC_ASSERT(!hdlr->state_error);
-        SWC_ASSERT(hdlr->get_size(schema->cid) == counter?1:cell_versions);
+        SWC_ASSERT(!_hdlr->state_error);
+        SWC_ASSERT(_hdlr->get_size(schema->cid) == counter?1:cell_versions);
 
         DB::Cells::Result cells;
-        hdlr->get_cells(schema->cid, cells);
+        _hdlr->get_cells(schema->cid, cells);
 
         for(auto cell : cells) {
           SWC_ASSERT(key.equal(cell->key));
@@ -434,12 +434,12 @@ class Test {
 
     auto hdlr = client::Query::Update::Handlers::Common::make(
       Env::Clients::get(),
-      [this](const client::Query::Update::Handlers::Common::Ptr& hdlr) {
+      [this](const client::Query::Update::Handlers::Common::Ptr& _hdlr) {
         SWC_PRINT << "query_delete: \n";
-        hdlr->profile.print(SWC_LOG_OSTREAM);
+        _hdlr->profile.print(SWC_LOG_OSTREAM);
         SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
 
-        SWC_ASSERT(!hdlr->error());
+        SWC_ASSERT(!_hdlr->error());
         expect_empty_column();
 
         delete_column([this]() noexcept {

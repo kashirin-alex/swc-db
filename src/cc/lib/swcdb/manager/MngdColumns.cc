@@ -395,10 +395,12 @@ void MngdColumns::update_status(ColumnMngFunc func,
 
 void MngdColumns::remove(const DB::Schema::Ptr& schema,
                          rgrid_t rgrid, uint64_t req_id) {
+  {
   int err = Error::OK;
   auto col = Env::Mngr::columns()->get_column(err, schema->cid);
   if(col && !col->finalize_remove(err, rgrid))
     return;
+  }
 
   Env::Mngr::rangers()->wait_health_check(schema->cid);
 
@@ -413,20 +415,20 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   auto hdlr = client::Query::Select::Handlers::Common::make(
     Env::Clients::get(),
     [this, req_id, schema]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+    (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
       cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
         schema->col_seq,
         DB::Types::SystemColumn::get_range_type(schema->cid)
       );
       DB::Cells::Result cells_meta;
       DB::Cells::Result cells_rgrdata;
-      int err = hdlr->state_error;
+      int err = _hdlr->state_error;
       if(!err) {
-        auto col = hdlr->get_columnn(meta_cid);
+        auto col = _hdlr->get_columnn(meta_cid);
         if(!(err = col->error()) && !col->empty())
           col->get_cells(cells_meta);
 
-        col = hdlr->get_columnn(DB::Types::SystemColumn::SYS_RGR_DATA);
+        col = _hdlr->get_columnn(DB::Types::SystemColumn::SYS_RGR_DATA);
         if(!col->error() && !col->empty())
           col->get_cells(cells_rgrdata);
       }
@@ -456,32 +458,32 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
       auto updater = client::Query::Update::Handlers::Common::make(
         Env::Clients::get(),
         [this, req_id, schema]
-        (const client::Query::Update::Handlers::Common::Ptr& hdlr) {
-          cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
+        (const client::Query::Update::Handlers::Common::Ptr& u_hdlr) {
+          cid_t u_meta_cid = DB::Types::SystemColumn::get_sys_cid(
             schema->col_seq,
             DB::Types::SystemColumn::get_range_type(schema->cid)
           );
-          int err = hdlr->error();
-          auto col = hdlr->get(meta_cid);
-          if(col && (err || col->error())) {
+          int u_err = u_hdlr->error();
+          auto u_col = u_hdlr->get(u_meta_cid);
+          if(u_col && (u_err || u_col->error())) {
             SWC_LOGF(LOG_WARN,
               "Column(cid=%lu meta_cid=%lu) "
               "Range MetaData might remained, "
               "updater-err=%d(%s) colm-err=%d(%s)",
-              schema->cid, meta_cid,
-              err, Error::get_text(err),
-              col->error(), Error::get_text(col->error())
+              schema->cid, u_meta_cid,
+              u_err, Error::get_text(u_err),
+              u_col->error(), Error::get_text(u_col->error())
             );
           }
-          col = hdlr->get(DB::Types::SystemColumn::SYS_RGR_DATA);
-          if(col && (err || col->error())) {
+          u_col = u_hdlr->get(DB::Types::SystemColumn::SYS_RGR_DATA);
+          if(u_col && (u_err || u_col->error())) {
             SWC_LOGF(LOG_WARN,
               "Column(cid=%lu rgrdata_cid=%lu) "
               "Range RgrData might remained, "
               "updater-err=%d(%s) colm-err=%d(%s)",
               schema->cid, DB::Types::SystemColumn::SYS_RGR_DATA,
-              err, Error::get_text(err),
-              col->error(), Error::get_text(col->error())
+              u_err, Error::get_text(u_err),
+              u_col->error(), Error::get_text(u_col->error())
             );
           }
           return update(
@@ -492,22 +494,22 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
 
       updater->completion.increment();
       if(!cells_meta.empty()) {
-        auto& col = updater->create(
+        auto& u_col = updater->create(
           meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
         for(auto cell : cells_meta) {
           cell->flag = DB::Cells::DELETE;
-          col->add(*cell);
-          updater->commit_or_wait(col.get(), 1);
+          u_col->add(*cell);
+          updater->commit_or_wait(u_col.get(), 1);
         }
       }
       if(!cells_rgrdata.empty()) {
-        auto& col = updater->create(
+        auto& u_col = updater->create(
           DB::Types::SystemColumn::SYS_RGR_DATA,
           DB::Types::KeySeq::VOLUME, 1, 0, DB::Types::Column::PLAIN);
         for(auto cell : cells_rgrdata) {
           cell->flag = DB::Cells::DELETE;
-          col->add(*cell);
-          updater->commit_or_wait(col.get(), 1);
+          u_col->add(*cell);
+          updater->commit_or_wait(u_col.get(), 1);
         }
       }
       updater->response(Error::OK);

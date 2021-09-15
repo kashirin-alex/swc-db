@@ -279,8 +279,8 @@ bool Interface::error(const std::string& message) {
 bool Interface::cmd_option(std::string& cmd) const {
   err = Error::OK;
   auto opt = std::find_if(options.cbegin(), options.cend(),
-              [cmd](const Option* opt){
-                return RE2::PartialMatch(cmd.c_str(), *opt->re);
+              [cmd](const Option* _opt){
+                return RE2::PartialMatch(cmd.c_str(), *_opt->re);
               });
   if(opt != options.cend())
     return (*opt)->call(cmd);

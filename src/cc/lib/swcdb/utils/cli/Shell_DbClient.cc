@@ -329,9 +329,9 @@ bool DbClient::select(std::string& cmd) {
   auto hdlr = client::Query::Select::Handlers::Common::make(
     clients,
     [this, &display_flags, &cells_count, &cells_bytes]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-      if(!hdlr->error())
-        display(hdlr, display_flags, cells_count, cells_bytes);
+    (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
+      if(!_hdlr->error())
+        display(_hdlr, display_flags, cells_count, cells_bytes);
     },
     true, // cb on partial rsp
     nullptr,
@@ -536,10 +536,10 @@ bool DbClient::dump(std::string& cmd) {
   auto hdlr = client::Query::Select::Handlers::Common::make(
     writer.clients,
     [&writer]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-      writer.write(hdlr);
+    (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
+      writer.write(_hdlr);
       if(writer.err)
-        hdlr->valid_state.store(false);
+        _hdlr->valid_state.store(false);
     },
     true, // cb on partial rsp
     nullptr,

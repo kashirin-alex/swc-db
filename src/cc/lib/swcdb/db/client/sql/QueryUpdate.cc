@@ -235,6 +235,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
     error_msg(Error::SQL_PARSE_ERROR, "bad datetime format");
     return;
   }
+  buf.clear();
 
   seek_space();
   if(err || !found_char(','))
@@ -303,11 +304,11 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
           }
 
           case DB::Cell::Serial::Value::Type::BYTES: {
-            std::string buf;
             read(buf, ",]");
             if(err)
               return;
             wfields.add(fid, buf);
+            buf.clear();
             break;
           }
 
@@ -397,11 +398,11 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
       read(value, ",)");
       if(err)
         return;
-      const uint8_t* buf = reinterpret_cast<const uint8_t*>(value.c_str());
+      const uint8_t* valp = reinterpret_cast<const uint8_t*>(value.c_str());
       size_t remain = value.length();
       uint8_t op;
       int64_t v;
-      op_from(&buf, &remain, op, v);
+      op_from(&valp, &remain, op, v);
       if(err) {
         error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
         return;

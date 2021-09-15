@@ -267,26 +267,26 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
 
     Env::FsInterface::fs()->write(
       [frag=ptr(), blk_replicas, blksz, buff_write, sem]
-      (int err, const FS::SmartFd::Ptr&) mutable {
+      (int _err, const FS::SmartFd::Ptr&) mutable {
         struct Task {
           Ptr               frag;
           StaticBuffer::Ptr buff_write;
           Core::Semaphore*  sem;
           int64_t           blksz;
-          int               err;
+          int               error;
           uint8_t           blk_replicas;
           SWC_CAN_INLINE
           Task(Ptr&& frag, uint8_t blk_replicas, int64_t blksz,
                const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem,
-               int err) noexcept
+               int error) noexcept
                : frag(std::move(frag)), buff_write(buff_write), sem(sem),
-                 blksz(blksz), err(err), blk_replicas(blk_replicas) { }
+                 blksz(blksz), error(error), blk_replicas(blk_replicas) { }
           void operator()() {
-            frag->write(err, blk_replicas, blksz, buff_write, sem);
+            frag->write(error, blk_replicas, blksz, buff_write, sem);
           }
         };
         Env::Rgr::post(
-          Task(std::move(frag), blk_replicas, blksz, buff_write, sem, err));
+          Task(std::move(frag), blk_replicas, blksz, buff_write, sem, _err));
       },
       m_smartfd, blk_replicas, blksz, *buff_write.get()
     );
@@ -624,8 +624,8 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
       );
       Env::FsInterface::fs()->combi_pread(
         [frag=ptr()]
-        (int err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buffer) mutable {
-          Env::Rgr::post(TaskLoadRead(std::move(frag), err, buffer));
+        (int _err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buff) mutable {
+          Env::Rgr::post(TaskLoadRead(std::move(frag), _err, buff));
         },
         m_smartfd, offset_data, size_enc
       );

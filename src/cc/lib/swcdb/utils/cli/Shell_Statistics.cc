@@ -476,10 +476,10 @@ void Statistics::set_definitions(DB::Specs::Scan& specs) {
   auto hdlr = client::Query::Select::Handlers::Common::make(
     clients,
     [this]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+    (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
       DB::Cells::Result cells;
-      for(cid_t cid : hdlr->get_cids()) {
-        hdlr->get_cells(cid, cells);
+      for(cid_t cid : _hdlr->get_cids()) {
+        _hdlr->get_cells(cid, cells);
         m_definitions.reserve(cells.size());
         for(auto cell : cells) {
           try {
@@ -697,15 +697,15 @@ bool Statistics::show() {
     auto hdlr = client::Query::Select::Handlers::Common::make(
       clients,
       [this, &g, datasp=&stats_datas]
-      (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
         DB::Cells::Result cells;
-        if(!err && !(err = hdlr->state_error)) {
-          auto col = hdlr->get_columnn(DB::Types::SystemColumn::SYS_CID_STATS);
+        if(!err && !(err = _hdlr->state_error)) {
+          auto col = _hdlr->get_columnn(DB::Types::SystemColumn::SYS_CID_STATS);
           if(!(err = col->error()) && !col->empty())
             col->get_cells(cells);
         }
         if(err) {
-          hdlr->valid_state.store(false);
+          _hdlr->valid_state.store(false);
           return;
         }
 
@@ -797,9 +797,9 @@ bool Statistics::truncate() {
   auto updater = client::Query::Update::Handlers::Common::make(
     clients,
     [state_errorp=&state_error]
-    (const client::Query::Update::Handlers::Common::Ptr& hdlr) noexcept {
-      if(hdlr->error())
-        state_errorp->store(hdlr->error());
+    (const client::Query::Update::Handlers::Common::Ptr& _hdlr) noexcept {
+      if(_hdlr->error())
+        state_errorp->store(_hdlr->error());
     },
     nullptr,
     with_broker
@@ -816,20 +816,20 @@ bool Statistics::truncate() {
     updater->clients,
     [updater, col_updated,
      state_errorp=&state_error, countp=&deleted_count]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-      if(hdlr->state_error && !state_errorp->load())
-        state_errorp->store(hdlr->state_error);
+    (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
+      if(_hdlr->state_error && !state_errorp->load())
+        state_errorp->store(_hdlr->state_error);
 
       DB::Cells::Result cells;
       if(!state_errorp->load()) {
-        auto col = hdlr->get_columnn(DB::Types::SystemColumn::SYS_CID_STATS);
+        auto col = _hdlr->get_columnn(DB::Types::SystemColumn::SYS_CID_STATS);
         if(col->error() && !state_errorp->load())
           state_errorp->store(col->error());
         if(!state_errorp->load() && !col->empty())
           col->get_cells(cells);
       }
       if(state_errorp->load()) {
-        hdlr->valid_state.store(false);
+        _hdlr->valid_state.store(false);
         return;
       }
 

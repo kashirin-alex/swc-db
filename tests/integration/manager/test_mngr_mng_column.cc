@@ -95,13 +95,13 @@ void check_delete(int num_of_cols, bool modified) {
             300000,
             Env::Clients::get(),
             [sem=sem]
-            (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
-              if(err)
-              SWC_PRINT << "ColumnMng DELETE err=" << err
-                        << "(" << Error::get_text(err) << ")"
+            (void*, Comm::client::ConnQueue::ReqBase::Ptr _req_ptr, int _err) {
+              if(_err)
+              SWC_PRINT << "ColumnMng DELETE err=" << _err
+                        << "(" << Error::get_text(_err) << ")"
                         << SWC_PRINT_CLOSE;
-              if(err == Error::REQUEST_TIMEOUT)
-                return req_ptr->request_again();
+              if(_err == Error::REQUEST_TIMEOUT)
+                return _req_ptr->request_again();
               sem->release();
             }
           );
@@ -403,12 +403,12 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
         300000,
         Env::Clients::get(),
         [latency=latency, start_ts=start_ts]
-        (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
-          if(err != Error::OK
-            && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
-            && err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
+        (void*, Comm::client::ConnQueue::ReqBase::Ptr _req_ptr, int _err) {
+          if(_err != Error::OK
+            && _err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
+            && _err != Error::COLUMN_SCHEMA_NOT_DIFFERENT){
 
-            req_ptr->request_again();
+            _req_ptr->request_again();
             return;
           }
           latency->add(Time::now_ns() - start_ts);

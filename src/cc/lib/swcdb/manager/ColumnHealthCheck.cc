@@ -133,8 +133,8 @@ void ColumnHealthCheck::run(bool initial) {
       Core::MutexSptd::scope lock(m_mutex);
       auto it = std::find_if(
         m_checkers.cbegin(), m_checkers.cend(),
-        [rgrid](const RangerCheck::Ptr& checker) {
-          return rgrid == checker->rgr->rgrid; }
+        [rgrid](const RangerCheck::Ptr& _checker) {
+          return rgrid == _checker->rgr->rgrid; }
       );
       checker = it == m_checkers.cend() ? nullptr : *it;
     }
@@ -209,10 +209,10 @@ void ColumnHealthCheck::finishing(bool finished_range) {
   auto hdlr = client::Query::Select::Handlers::Common::make(
     Env::Clients::get(),
     [merger, meta_cid]
-    (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
-      int err = hdlr->state_error;
+    (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
+      int err = _hdlr->state_error;
       if(!err) {
-        auto col = hdlr->get_columnn(meta_cid);
+        auto col = _hdlr->get_columnn(meta_cid);
         if(!(err = col->error()) && !col->empty())
           col->get_cells(merger->cells);
       }
@@ -380,7 +380,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::run() {
 }
 
 void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
-                                const Range::Ptr& range, int err,
+                                const Range::Ptr& _range, int err,
                                 bool empty) {
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -388,15 +388,15 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
       if(!m_err)
         m_err = err;
       m_ready.push_back(nullptr);
-    } else if(!empty && m_ranges.front() != range) {
+    } else if(!empty && m_ranges.front() != _range) {
       SWC_LOGF(LOG_WARN, "Column-Health MERGE-UNLOAD range(%lu/%lu)"
                          " NOT-EMPTY cancelling-merge",
-                          range->cfg->cid, range->rid);
-      m_ready.push_back(range);
+                          _range->cfg->cid, _range->rid);
+      m_ready.push_back(_range);
       if(!m_err)
         m_err = Error::CANCELLED;
-    } else if(col_merger->col_checker->col->set_merging(range)) {
-      m_ready.push_back(range);
+    } else if(col_merger->col_checker->col->set_merging(_range)) {
+      m_ready.push_back(_range);
     } else {
       m_ready.push_back(nullptr);
       if(!m_err)

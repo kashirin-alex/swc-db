@@ -673,8 +673,8 @@ void update_data(const DB::SchemasVec& schemas, uint8_t flag, size_t seed) {
                 wfields.add(int64_t(*it));
                 t = DB::Cell::Serial::Value::Type::DOUBLE;
               } else if(t == DB::Cell::Serial::Value::Type::DOUBLE) {
-                long double v(*it);
-                wfields.add(v);
+                long double v_d(*it);
+                wfields.add(v_d);
                 t = DB::Cell::Serial::Value::Type::BYTES;
               } else if(t == DB::Cell::Serial::Value::Type::BYTES) {
                 const uint8_t c = *it;
@@ -833,10 +833,10 @@ void select_data(const DB::SchemasVec& schemas, size_t seed) {
     auto hdlr = client::Query::Select::Handlers::Common::make(
       Env::Clients::get(),
       [&select_bytes, &select_count, &schemas]
-      (const client::Query::Select::Handlers::Common::Ptr& hdlr) {
+      (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
         for(auto& schema : schemas) {
           DB::Cells::Result cells;
-          hdlr->get_cells(schema->cid, cells);
+          _hdlr->get_cells(schema->cid, cells);
           select_count += cells.size();
           select_bytes += cells.size_bytes();
         }

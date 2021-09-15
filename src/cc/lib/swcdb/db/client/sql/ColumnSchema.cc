@@ -104,7 +104,7 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
   schema = DB::Schema::make();
 
   const char* stop = ", )";
-    std::string buff;
+  std::string buff;
 
   while(any && remain && !err) {
     if(found_space())
@@ -141,7 +141,6 @@ void ColumnSchema::read_schema_options(ColumnSchema::Func func) {
       while(remain && !err) {
         if(found_space() || found_char(','))
           continue;
-        std::string buff;
         read(buff, ",]");
         if(!buff.empty())
           schema->tags.emplace_back(std::move(buff));

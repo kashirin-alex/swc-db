@@ -117,13 +117,13 @@ int QuerySelect::parse_dump(std::string& fs, std::string& filepath,
   expect_eq();
   if(err)
     return err;
-  std::string col;
-  read(col);
-  if(!err && col.empty())
+  std::string buff;
+  read(buff);
+  if(!err && buff.empty())
     error_msg(Error::SQL_PARSE_ERROR, "missing col 'id|name'");
   if(err)
     return err;
-  auto schema = add_column(col);
+  auto schema = add_column(buff);
   if(err)
     return err;
 
