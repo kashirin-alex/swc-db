@@ -74,9 +74,6 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DASIO_STANDALONE -DASIO_NO_DEPRECATED"
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic") # -Weffc++
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-security -Wformat-nonliteral")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wnon-virtual-dtor")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local -Wshadow=compatible-local")
-
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=262144")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wzero-as-null-pointer-constant -Wno-error=zero-as-null-pointer-constant")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-cast")
@@ -92,9 +89,11 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-branches -Wno-error=duplicated-branches")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op -Wno-error=logical-op")
 
-  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)
-    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wmismatched-new-delete -Wmismatched-dealloc")
-  endif()
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local -Wshadow=compatible-local")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=262144")
+
+  # if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)
+  # endif()
 
 else()
   SET (SWC_MALLOC_NOT_INSISTENT ON)
