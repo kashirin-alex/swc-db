@@ -12,9 +12,30 @@ namespace SWC { namespace Core {
 
 template<typename T, typename SizeT=uint32_t, SizeT GROW_SZ=0>
 class Vector {
-  constexpr static bool is_SimpleType = std::is_pointer_v<T> ||
-                                        std::is_integral_v<T> ||
-                                        std::is_reference_v<T>;
+
+  constexpr static bool _Requires_Costructor
+    = std::is_const_v<T> ||
+      !(std::is_pointer_v<T> ||
+        std::is_integral_v<T> ||
+        (std::is_reference_v<T> &&
+         !std::is_const_v<std::remove_reference_t<const T&>>) );
+
+  constexpr static bool _Requires_Destructor
+    = !(std::is_pointer_v<T> ||
+        std::is_integral_v<T> ||
+        std::is_reference_v<T> ||
+        std::is_trivially_destructible_v<T> );
+
+  constexpr static bool _NoExceptCopy
+    = std::is_nothrow_constructible_v<T, const T&>;
+
+  constexpr static bool _NoExceptMove
+    = std::is_nothrow_constructible_v<T, T&&>;
+
+  constexpr static bool _NoExceptMoveAssign
+    = std::is_nothrow_move_assignable_v<T>;
+
+
   public:
 
   using value_type          = T;
@@ -82,9 +103,9 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  ~Vector() {
+  ~Vector() noexcept {
     if(_data) {
-      if(!is_SimpleType) {
+      if(_Requires_Destructor) {
         for(auto& it : *this)
           it.~value_type();
       }
@@ -94,11 +115,11 @@ class Vector {
 
   SWC_CAN_INLINE
   void clear() noexcept {
-    if(is_SimpleType) {
-      _size = 0;
-    } else {
+    if(_Requires_Destructor) {
       for(pointer ptr = _data; _size; --_size, ++ptr)
         ptr->~value_type();
+    } else {
+      _size = 0;
     }
   }
 
@@ -284,15 +305,19 @@ class Vector {
   void resize(size_type sz, ArgsT&&... args) {
     if(sz > _size) {
       reserve(sz);
-      for(pointer ptr = _data + _size; _size < sz; ++_size, ++ptr) {
-        _construct(ptr, std::forward<ArgsT>(args)...);
+      if(_Requires_Costructor || sizeof...(args) > 0) {
+        for(pointer ptr = _data + _size; _size < sz; ++_size, ++ptr) {
+          _construct(ptr, std::forward<ArgsT>(args)...);
+        }
+      } else {
+        _size = sz;
       }
     } else if(sz < _size) {
-      if(is_SimpleType) {
-        _size = sz;
-      } else {
+      if(_Requires_Destructor) {
         for(pointer ptr = _data + sz; sz < _size; --_size, ++ptr)
           ptr->~value_type();
+      } else {
+        _size = sz;
       }
     }
   }
@@ -306,9 +331,11 @@ class Vector {
     reserve();
     push_back_unsafe(std::forward<ArgsT>(args)...);
   }
+
   template<typename... ArgsT>
   SWC_CAN_INLINE
-  void push_back_unsafe(ArgsT&&... args) noexcept(is_SimpleType) {
+  void push_back_unsafe(ArgsT&&... args)
+          noexcept(std::is_nothrow_constructible_v<value_type, ArgsT...>) {
     _construct(_data + _size, std::forward<ArgsT>(args)...);
     ++_size;
   }
@@ -324,7 +351,8 @@ class Vector {
   }
   template<typename... ArgsT>
   SWC_CAN_INLINE
-  reference emplace_back_unsafe(ArgsT&&... args) noexcept(is_SimpleType) {
+  reference emplace_back_unsafe(ArgsT&&... args)
+          noexcept(std::is_nothrow_constructible_v<value_type, ArgsT...>) {
     reference ref = *_construct(_data + _size, std::forward<ArgsT>(args)...);
     ++_size;
     return ref;
@@ -369,7 +397,9 @@ class Vector {
   template<typename... ArgsT>
   SWC_CAN_INLINE
   iterator insert_unsafe(const_iterator it,
-                         ArgsT&&... args) noexcept(is_SimpleType) {
+                         ArgsT&&... args)
+          noexcept(_NoExceptMove &&
+                   std::is_nothrow_constructible_v<value_type, ArgsT...>) {
     size_type offset = it - _data;
     return offset >= _size
       ? &emplace_back_unsafe(std::forward<ArgsT>(args)...)
@@ -431,7 +461,7 @@ class Vector {
 
 
   SWC_CAN_INLINE
-  iterator erase(size_type offset) noexcept(is_SimpleType) {
+  iterator erase(size_type offset) noexcept(_NoExceptMoveAssign) {
     if(offset >= _size)
       return end();
 
@@ -440,19 +470,19 @@ class Vector {
     for(size_type remain= _size - offset; remain; --remain, ++ptr) {
       *ptr = std::move(*(ptr + 1));
     }
-    if(!is_SimpleType)
+    if(_Requires_Destructor)
       ptr->~value_type();
     return _data + offset;
   }
 
   SWC_CAN_INLINE
-  iterator erase(const_iterator it) noexcept(is_SimpleType) {
+  iterator erase(const_iterator it) noexcept(_NoExceptMoveAssign) {
     return erase(it - _data);
   }
 
   SWC_CAN_INLINE
   iterator erase(const_iterator first,
-                 const_iterator last) noexcept(is_SimpleType) {
+                 const_iterator last) noexcept(_NoExceptMoveAssign) {
     size_type offset = first - _data;
     if(offset >= _size)
       return end();
@@ -463,7 +493,7 @@ class Vector {
     for(size_type remain = _size - offset; remain; --remain, ++ptr) {
       *ptr = std::move(*(ptr + amt));
     }
-    if(!is_SimpleType) for(; ptr != last; ++ptr) {
+    if(_Requires_Destructor) for(; ptr != last; ++ptr) {
       ptr->~value_type();
     }
     return _data + offset;
@@ -473,7 +503,7 @@ class Vector {
   void pop_back() {
     if(_size) {
       --_size;
-      if(!is_SimpleType)
+      if(_Requires_Destructor)
         (_data + _size)->~value_type();
     }
   }
@@ -527,14 +557,14 @@ class Vector {
     size_type i = 0;
     for(; i < offset; ++ptr, ++ptr_prev, ++i) {
       _construct(ptr, std::move(*ptr_prev));
-      if(!is_SimpleType)
+      if(_Requires_Destructor)
         ptr_prev->~value_type();
     }
     _construct(ptr++, std::forward<ArgsT>(args)...);
 
     for(; i < size_prev; ++i, ++ptr, ++ptr_prev) {
       _construct(ptr, std::move(*ptr_prev));
-      if(!is_SimpleType)
+      if(_Requires_Destructor)
         ptr_prev->~value_type();
     }
     _deallocate(data_prev, size_prev);
@@ -553,7 +583,7 @@ class Vector {
     size_type i = 0;
     for(; i < offset; ++ptr, ++ptr_prev, ++i) {
       _construct(ptr, std::move(*ptr_prev));
-      if(!is_SimpleType)
+      if(_Requires_Destructor)
         ptr_prev->~value_type();
     }
     for(iterator it=const_cast<iterator>(first); it != last; ++ptr, ++it) {
@@ -561,7 +591,7 @@ class Vector {
     }
     for(; i < size_prev; ++i, ++ptr, ++ptr_prev) {
       _construct(ptr, std::move(*ptr_prev));
-      if(!is_SimpleType)
+      if(_Requires_Destructor)
         ptr_prev->~value_type();
     }
     _deallocate(data_prev, size_prev);
@@ -569,7 +599,7 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  static void _deallocate(pointer data, size_t) {
+  static void _deallocate(pointer data, size_t) noexcept {
     ::operator delete(
       data,
       std::align_val_t(std::alignment_of<value_type>::value)
@@ -581,7 +611,7 @@ class Vector {
   SWC_CAN_INLINE
   static pointer _allocate(size_type sz, ArgsT&&... args) {
     pointer data = _allocate_uinitialized(sz);
-    if(!is_SimpleType || sizeof...(args) > 0) {
+    if(_Requires_Costructor || sizeof...(args) > 0) {
       for(pointer ptr = data; sz; --sz, ++ptr)
         _construct(ptr, std::forward<ArgsT>(args)...);
     }
@@ -592,9 +622,10 @@ class Vector {
 
   template<typename... ArgsT>
   SWC_CAN_INLINE
-  static pointer _construct(pointer ptr,
-                            ArgsT&&... args) noexcept(is_SimpleType) {
-    new (ptr) value_type(std::forward<ArgsT>(args)...);
+  static pointer _construct(pointer ptr, ArgsT&&... args)
+          noexcept(std::is_nothrow_constructible_v<value_type, ArgsT...>) {
+    if(_Requires_Costructor || sizeof...(args) > 0)
+      new (ptr) value_type(std::forward<ArgsT>(args)...);
     return ptr;
   }
 
@@ -602,7 +633,7 @@ class Vector {
   SWC_CAN_INLINE
   static pointer _copy(pointer data,
                        const_pointer data_prev,
-                       size_type size_prev) noexcept(is_SimpleType) {
+                       size_type size_prev) noexcept(_NoExceptCopy) {
     for(pointer ptr=data; size_prev; --size_prev, ++ptr, ++data_prev)
       _construct(ptr, *data_prev);
     //std::uninitialized_copy_n(data_prev, size_prev, data);
@@ -612,10 +643,10 @@ class Vector {
   SWC_CAN_INLINE
   static pointer _move(pointer data,
                        pointer data_prev,
-                       size_type size_prev) noexcept(is_SimpleType) {
+                       size_type size_prev) noexcept(_NoExceptMove) {
     for(pointer ptr=data; size_prev; --size_prev, ++ptr, ++data_prev) {
       _construct(ptr, std::move(*data_prev));
-      if(!is_SimpleType)
+      if(_Requires_Destructor)
         data_prev->~value_type();
     }
     //std::uninitialized_move_n(data_prev, size_prev, data);
@@ -624,11 +655,11 @@ class Vector {
 
   SWC_CAN_INLINE
   static pointer _alter(pointer data, size_type remain,
-                        size_type amount) noexcept(is_SimpleType) {
+                        size_type amount) noexcept(_NoExceptMove) {
     pointer prev = data + remain - 1;
     for(pointer ptr = prev + amount; remain; --remain, --ptr, --prev) {
       _construct(ptr, std::move(*prev));
-      if(!is_SimpleType)
+      if(_Requires_Destructor)
         prev->~value_type();
     }
     return data;
