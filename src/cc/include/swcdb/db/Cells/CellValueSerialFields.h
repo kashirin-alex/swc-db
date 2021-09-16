@@ -75,7 +75,7 @@ struct Field {
   Field() noexcept { }
 
   constexpr SWC_CAN_INLINE
-  Field(uint24_t fid) noexcept : fid(fid) { }
+  Field(uint24_t a_fid) noexcept : fid(a_fid) { }
 
   SWC_CAN_INLINE
   Field(const uint8_t** bufp, size_t* remainp)
@@ -119,8 +119,8 @@ struct Field_INT64 : Field {
   Field_INT64() noexcept { }
 
   constexpr SWC_CAN_INLINE
-  Field_INT64(uint24_t fid, int64_t value) noexcept
-              : Field(fid), value(value) { }
+  Field_INT64(uint24_t a_fid, int64_t a_value) noexcept
+              : Field(a_fid), value(a_value) { }
 
   Field_INT64(const uint8_t** bufp, size_t* remainp);
 
@@ -148,8 +148,8 @@ struct Field_DOUBLE : Field {
   Field_DOUBLE() noexcept { }
 
   constexpr SWC_CAN_INLINE
-  Field_DOUBLE(uint24_t fid, const long double& value) noexcept
-              : Field(fid), value(value) { }
+  Field_DOUBLE(uint24_t a_fid, const long double& a_value) noexcept
+              : Field(a_fid), value(a_value) { }
 
   Field_DOUBLE(const uint8_t** bufp, size_t* remainp);
 
@@ -242,7 +242,7 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
   Field_LIST_INT64() noexcept { }
 
   template<typename T>
-  Field_LIST_INT64(uint24_t fid, const T& items) : Field(fid) {
+  Field_LIST_INT64(uint24_t a_fid, const T& items) : Field(a_fid) {
     uint32_t len = 0;
     for(auto& v : items)
       len += Serialization::encoded_length_vi64(v);
@@ -286,7 +286,7 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
   Field_LIST_BYTES() noexcept { }
 
   template<typename T>
-  Field_LIST_BYTES(uint24_t fid, const T& items) : Field(fid) {
+  Field_LIST_BYTES(uint24_t a_fid, const T& items) : Field(a_fid) {
     uint32_t len = 0;
     for(auto& v : items)
       len += Serialization::encoded_length_bytes(v.size());

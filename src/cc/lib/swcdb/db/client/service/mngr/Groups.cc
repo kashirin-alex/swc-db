@@ -10,16 +10,16 @@
 namespace SWC { namespace client { namespace Mngr {
 
 
-Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
+Group::Group(uint8_t a_role, cid_t a_cid_begin, cid_t a_cid_end,
              const Comm::EndPoints& endpoints)
             : Hosts(1, endpoints),
-              role(role), cid_begin(cid_begin), cid_end(cid_end) {
+              role(a_role), cid_begin(a_cid_begin), cid_end(a_cid_end) {
 }
 
-Group::Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
+Group::Group(uint8_t a_role, cid_t a_cid_begin, cid_t a_cid_end,
              const Hosts& hosts)
             : Hosts(hosts),
-              role(role), cid_begin(cid_begin), cid_end(cid_end) {
+              role(a_role), cid_begin(a_cid_begin), cid_end(a_cid_end) {
 }
 
 Group::Ptr Group::copy() {

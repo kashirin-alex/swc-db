@@ -28,9 +28,9 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
   bool            sent;
 
   SWC_CAN_INLINE
-  Selector(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
+  Selector(const ConnHandlerPtr& a_conn, const Event::Ptr& a_ev) noexcept
           : SWC::client::Query::Select::Handlers::Base(Env::Clients::get()),
-            conn(conn), ev(ev), sent(false) {
+            conn(a_conn), ev(a_ev), sent(false) {
   }
 
   virtual ~Selector() { }

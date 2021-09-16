@@ -194,18 +194,18 @@ void Item_CountVolume::report(uint64_t for_ns, Handlers::Base::Column* colp,
 
 
 
-Reporting::Reporting(const Clients::Ptr& clients,
-                     const Comm::IoContextPtr& io,
-                     Config::Property::V_GINT32::Ptr cfg_intval,
-                     Clients::Flag executor)
+Reporting::Reporting(const Clients::Ptr& a_clients,
+                     const Comm::IoContextPtr& a_io,
+                     Config::Property::V_GINT32::Ptr a_cfg_intval,
+                     Clients::Flag a_executor)
             : BaseSingleColumn(
-                clients,
+                a_clients,
                 DB::Types::SystemColumn::SYS_CID_DEFINE_LEXIC,
                 DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL,
-                executor
+                a_executor
               ),
-              io(io),
-              cfg_intval(cfg_intval),
+              io(a_io),
+              cfg_intval(a_cfg_intval),
               running(false),
               m_timer(io->executor()) {
 }
@@ -315,7 +315,7 @@ void Reporting::schedule() {
   struct TimerTask {
     Reporting* ptr;
     SWC_CAN_INLINE
-    TimerTask(Reporting* ptr) noexcept : ptr(ptr) { }
+    TimerTask(Reporting* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->report();

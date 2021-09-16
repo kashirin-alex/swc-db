@@ -21,21 +21,21 @@ class Column final : public Core::Vector<Interval::Ptr> {
   typedef Core::Vector<Interval::Ptr> Intervals;
 
   SWC_CAN_INLINE
-  explicit Column(cid_t cid=Schema::NO_CID) noexcept : cid(cid) { }
+  explicit Column(cid_t a_cid=Schema::NO_CID) noexcept : cid(a_cid) { }
 
   SWC_CAN_INLINE
-  explicit Column(cid_t cid, uint32_t _reserve) : cid(cid) {
+  explicit Column(cid_t a_cid, uint32_t _reserve) : cid(a_cid) {
     reserve(_reserve);
   }
 
   SWC_CAN_INLINE
-  explicit Column(cid_t cid, const Intervals& intervals)
-                  : Intervals(intervals), cid(cid) {
+  explicit Column(cid_t a_cid, const Intervals& intervals)
+                  : Intervals(intervals), cid(a_cid) {
   }
 
   SWC_CAN_INLINE
-  explicit Column(cid_t cid, Intervals&& intervals) noexcept
-                  : Intervals(std::move(intervals)), cid(cid) {
+  explicit Column(cid_t a_cid, Intervals&& intervals) noexcept
+                  : Intervals(std::move(intervals)), cid(a_cid) {
   }
 
   SWC_CAN_INLINE

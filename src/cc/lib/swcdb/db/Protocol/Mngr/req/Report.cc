@@ -14,32 +14,32 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace Mngr { namespace Req {
 
 
-Report::Report(const SWC::client::Clients::Ptr& clients,
+Report::Report(const SWC::client::Clients::Ptr& a_clients,
                Params::Report::Function func, const uint32_t timeout)
               : client::ConnQueue::ReqBase(Buffers::make(1)),
-                clients(clients) {
+                clients(a_clients) {
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const SWC::client::Clients::Ptr& clients,
-               const EndPoints& endpoints,
+Report::Report(const SWC::client::Clients::Ptr& a_clients,
+               const EndPoints& a_endpoints,
                Params::Report::Function func,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(Buffers::make(1)),
-                clients(clients), endpoints(endpoints) {
+                clients(a_clients), endpoints(a_endpoints) {
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const SWC::client::Clients::Ptr& clients,
+Report::Report(const SWC::client::Clients::Ptr& a_clients,
                const Serializable& params,
                Params::Report::Function func,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   Buffers::make(params, 1, REPORT, timeout)
                 ),
-                clients(clients) {
+                clients(a_clients) {
   cbp->append_i8(func);
 }
 
@@ -57,16 +57,16 @@ void Report::clear_endpoints() {
 
 
 
-ClusterStatus::ClusterStatus(const SWC::client::Clients::Ptr& clients,
-                             const EndPoints& endpoints,
-                             ClusterStatus::Cb_t&& cb,
+ClusterStatus::ClusterStatus(const SWC::client::Clients::Ptr& a_clients,
+                             const EndPoints& a_endpoints,
+                             ClusterStatus::Cb_t&& a_cb,
                              const uint32_t timeout)
                             : Report(
-                                clients,
-                                endpoints,
+                                a_clients,
+                                a_endpoints,
                                 Params::Report::Function::CLUSTER_STATUS,
                                 timeout
-                              ), cb(std::move(cb)) {
+                              ), cb(std::move(a_cb)) {
 }
 
 bool ClusterStatus::run() {
@@ -101,17 +101,17 @@ void ClusterStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-ColumnStatus::ColumnStatus(const SWC::client::Clients::Ptr& clients,
+ColumnStatus::ColumnStatus(const SWC::client::Clients::Ptr& a_clients,
                            const Params::Report::ReqColumnStatus& params,
-                           ColumnStatus::Cb_t&& cb,
+                           ColumnStatus::Cb_t&& a_cb,
                            const uint32_t timeout)
                           : Report(
-                              clients,
+                              a_clients,
                               params,
                               Params::Report::Function::COLUMN_STATUS,
                               timeout
                             ),
-                            cb(std::move(cb)), cid(params.cid) {
+                            cb(std::move(a_cb)), cid(params.cid) {
 }
 
 bool ColumnStatus::run() {
@@ -156,14 +156,14 @@ void ColumnStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-RangersStatus::RangersStatus(const SWC::client::Clients::Ptr& clients,
-                             cid_t cid, RangersStatus::Cb_t&& cb,
+RangersStatus::RangersStatus(const SWC::client::Clients::Ptr& a_clients,
+                             cid_t a_cid, RangersStatus::Cb_t&& a_cb,
                              const uint32_t timeout)
                             : Report(
-                                clients,
+                                a_clients,
                                 Params::Report::Function::RANGERS_STATUS,
                                 timeout
-                              ), cb(std::move(cb)), cid(cid) {
+                              ), cb(std::move(a_cb)), cid(a_cid) {
 }
 
 bool RangersStatus::run() {
@@ -217,16 +217,16 @@ void RangersStatus::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-ManagersStatus::ManagersStatus(const SWC::client::Clients::Ptr& clients,
-                               const EndPoints& endpoints,
-                               ManagersStatus::Cb_t&& cb,
+ManagersStatus::ManagersStatus(const SWC::client::Clients::Ptr& a_clients,
+                               const EndPoints& a_endpoints,
+                               ManagersStatus::Cb_t&& a_cb,
                                const uint32_t timeout)
                               : Report(
-                                  clients,
-                                  endpoints,
+                                  a_clients,
+                                  a_endpoints,
                                   Params::Report::Function::MANAGERS_STATUS,
                                   timeout
-                                ), cb(std::move(cb)) {
+                                ), cb(std::move(a_cb)) {
 }
 
 bool ManagersStatus::run() {

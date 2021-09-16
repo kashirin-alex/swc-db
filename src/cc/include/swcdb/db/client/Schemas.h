@@ -18,12 +18,12 @@ class Schemas final {
   public:
 
   SWC_CAN_INLINE
-  Schemas(Clients* _clients,
+  Schemas(Clients* a_clients,
           const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
-          : _clients(_clients), m_expiry_ms(expiry_ms) {
+          : _clients(a_clients), m_expiry_ms(expiry_ms) {
   }
 
-  //~Schemas() { }
+  ~Schemas() { }
 
   void remove(cid_t cid);
 
@@ -60,8 +60,10 @@ class Schemas final {
     SWC_CAN_INLINE
     Pending() noexcept : datap(nullptr) { }
     SWC_CAN_INLINE
-    Pending(const Comm::DispatchHandler::Ptr& req, ColumnGetData* datap)
-            noexcept : req(req), datap(datap) { }
+    Pending(const Comm::DispatchHandler::Ptr& a_req, ColumnGetData* a_datap)
+            noexcept : req(a_req), datap(a_datap) { }
+    SWC_CAN_INLINE
+    ~Pending() { }
   };
 
   Pending _request(cid_t cid, uint32_t timeout);
@@ -74,6 +76,8 @@ class Schemas final {
   struct SchemaData {
     int64_t         ts;
     DB::Schema::Ptr schema;
+    SWC_CAN_INLINE
+    ~SchemaData() { }
     SWC_CAN_INLINE
     void assign(int64_t _ts, const DB::Schema::Ptr& _schema) {
       ts = _ts;

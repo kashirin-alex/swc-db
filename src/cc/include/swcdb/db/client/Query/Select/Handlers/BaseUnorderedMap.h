@@ -24,9 +24,9 @@ class BaseUnorderedMap : public Base {
   typedef std::shared_ptr<BaseUnorderedMap>   Ptr;
 
   SWC_CAN_INLINE
-  BaseUnorderedMap(const Clients::Ptr& clients,
-                   Clients::Flag executor=Clients::DEFAULT) noexcept
-                  : Base(clients, executor) {
+  BaseUnorderedMap(const Clients::Ptr& a_clients,
+                   Clients::Flag a_executor=Clients::DEFAULT) noexcept
+                  : Base(a_clients, a_executor) {
   }
 
   virtual ~BaseUnorderedMap() { }

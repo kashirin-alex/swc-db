@@ -24,14 +24,14 @@ struct Fraction final : public std::string {
   Fraction() noexcept : compiled(nullptr) { }
 
   SWC_CAN_INLINE
-  Fraction(std::string&& fraction, Condition::Comp comp) noexcept
-          : std::string(std::move(fraction)), comp(comp),
+  Fraction(std::string&& fraction, Condition::Comp a_comp) noexcept
+          : std::string(std::move(fraction)), comp(a_comp),
             compiled(nullptr) {
   }
 
   SWC_CAN_INLINE
-  Fraction(const char* buf, uint32_t len, Condition::Comp comp)
-          : std::string(buf, len), comp(comp), compiled(nullptr) {
+  Fraction(const char* buf, uint32_t len, Condition::Comp a_comp)
+          : std::string(buf, len), comp(a_comp), compiled(nullptr) {
   }
 
   SWC_CAN_INLINE

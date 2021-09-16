@@ -33,11 +33,11 @@ class MutableVec final : private Core::Vector<Mutable*> {
   Types::Column       type;
 
   SWC_CAN_INLINE
-  explicit MutableVec(const Types::KeySeq key_seq, uint32_t split_size=100000,
-                      const uint32_t max_revs=1, const uint64_t ttl_ns=0,
-                      const Types::Column type=Types::Column::PLAIN) noexcept
-                      : key_seq(key_seq), split_size(split_size),
-                        max_revs(max_revs), ttl(ttl_ns), type(type) {
+  explicit MutableVec(const Types::KeySeq a_key_seq, uint32_t a_split_size=100000,
+                      const uint32_t a_max_revs=1, const uint64_t ttl_ns=0,
+                      const Types::Column a_type=Types::Column::PLAIN) noexcept
+                      : key_seq(a_key_seq), split_size(a_split_size),
+                        max_revs(a_max_revs), ttl(ttl_ns), type(a_type) {
   }
 
   MutableVec(const MutableVec&) = delete;

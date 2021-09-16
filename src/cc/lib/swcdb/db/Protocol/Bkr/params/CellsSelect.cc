@@ -56,9 +56,10 @@ void CellsSelectReqRef::internal_encode(uint8_t** bufp) const {
 
 
 
-CellsSelectRsp::CellsSelectRsp(int err, const uint8_t* ptr, size_t remain,
-                               StaticBuffer& data) noexcept
-                              : err(err), more(false), offset(0), data(data) {
+CellsSelectRsp::CellsSelectRsp(int a_err, const uint8_t* ptr, size_t remain,
+                               StaticBuffer& a_data) noexcept
+                              : err(a_err), more(false),
+                                offset(0), data(a_data) {
   if(!err) try {
     decode(&ptr, &remain);
   } catch(...) {

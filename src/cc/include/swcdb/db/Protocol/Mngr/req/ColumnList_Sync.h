@@ -41,12 +41,12 @@ class ColumnList_Sync {
   Core::StateSynchronization        await;
 
   SWC_CAN_INLINE
-  ColumnList_Sync(const SWC::client::Clients::Ptr& clients,
-                 int& err, DB::SchemasVec& schemas) noexcept
-                 : clients(clients), err(err), schemas(schemas) {
+  ColumnList_Sync(const SWC::client::Clients::Ptr& a_clients,
+                 int& a_err, DB::SchemasVec& a_schemas) noexcept
+                 : clients(a_clients), err(a_err), schemas(a_schemas) {
   }
 
-  // ~ColumnList_Sync() { }
+  ~ColumnList_Sync() { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

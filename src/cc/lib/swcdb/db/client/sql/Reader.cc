@@ -11,8 +11,8 @@
 namespace SWC { namespace client { namespace SQL {
 
 
-Reader::Reader(const std::string& sql, std::string& message)
-              : sql(sql), message(message),
+Reader::Reader(const std::string& a_sql, std::string& a_message)
+              : sql(a_sql), message(a_message),
                 ptr(sql.data()), remain(sql.length()),
                 err(Error::OK) {
 }

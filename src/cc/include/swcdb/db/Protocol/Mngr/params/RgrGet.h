@@ -21,8 +21,8 @@ class RgrGetReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RgrGetReq(cid_t cid=0, rid_t rid=0, bool next_range=false) noexcept
-            : cid(cid), rid(rid), next_range(next_range) {
+  RgrGetReq(cid_t a_cid=0, rid_t a_rid=0, bool a_next_range=false) noexcept
+            : cid(a_cid), rid(a_rid), next_range(a_next_range) {
   }
 
   SWC_CAN_INLINE
@@ -52,13 +52,13 @@ class RgrGetRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RgrGetRsp(int err = Error::OK) noexcept
-            : err(err), cid(0), rid(0), revision(0) {
+  RgrGetRsp(int a_err = Error::OK) noexcept
+            : err(a_err), cid(0), rid(0), revision(0) {
   }
 
   SWC_CAN_INLINE
-  RgrGetRsp(cid_t cid, rid_t rid) noexcept
-            : err(Error::OK), cid(cid), rid(rid), revision(0) {
+  RgrGetRsp(cid_t a_cid, rid_t a_rid) noexcept
+            : err(Error::OK), cid(a_cid), rid(a_rid), revision(0) {
   }
 
   RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept;

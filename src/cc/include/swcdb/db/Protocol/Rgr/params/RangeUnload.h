@@ -26,8 +26,8 @@ class RangeUnload final : public Serializable {
   RangeUnload() noexcept : cid(0), rid(0), flags(NONE) { }
 
   SWC_CAN_INLINE
-  RangeUnload(cid_t cid, rid_t rid, uint8_t flags=NONE) noexcept
-             : cid(cid), rid(rid), flags(flags) {
+  RangeUnload(cid_t a_cid, rid_t a_rid, uint8_t a_flags=NONE) noexcept
+             : cid(a_cid), rid(a_rid), flags(a_flags) {
   }
 
   //~RangeUnload() { }
@@ -68,7 +68,7 @@ class RangeUnloadRsp final : public Serializable {
   };
 
   SWC_CAN_INLINE
-  RangeUnloadRsp(int err) noexcept : err(err), flags(NONE) { }
+  RangeUnloadRsp(int a_err) noexcept : err(a_err), flags(NONE) { }
 
   //~RangeUnloadRsp() { }
 

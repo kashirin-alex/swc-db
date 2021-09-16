@@ -276,13 +276,13 @@ class RgrData final {
 
     virtual void callback() = 0;
 
-    void scan(cid_t cid, rid_t rid) {
+    void scan(cid_t a_cid, rid_t a_rid) {
       DB::Specs::Interval spec(DB::Types::Column::PLAIN);
       spec.flags.limit = 1;
       auto& key_intval = spec.key_intervals.add();
       key_intval.start.reserve(2);
-      key_intval.start.add(std::to_string(cid), Condition::EQ);
-      key_intval.start.add(std::to_string(rid), Condition::EQ);
+      key_intval.start.add(std::to_string(a_cid), Condition::EQ);
+      key_intval.start.add(std::to_string(a_rid), Condition::EQ);
       scan(
         DB::Types::KeySeq::VOLUME,
         DB::Types::SystemColumn::SYS_RGR_DATA,

@@ -38,8 +38,8 @@ class AppHandler final : virtual public BrokerIf {
 
   const std::shared_ptr<thrift::transport::TSocket> socket;
 
-  AppHandler(const std::shared_ptr<thrift::transport::TSocket>& socket)
-            : socket(socket) {
+  AppHandler(const std::shared_ptr<thrift::transport::TSocket>& a_socket)
+            : socket(a_socket) {
   }
 
   virtual ~AppHandler() { }

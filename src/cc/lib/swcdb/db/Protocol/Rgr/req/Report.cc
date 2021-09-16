@@ -14,25 +14,25 @@ namespace Rgr { namespace Req {
 
 
 
-Report::Report(const SWC::client::Clients::Ptr& clients,
-               const EndPoints& endpoints,
+Report::Report(const SWC::client::Clients::Ptr& a_clients,
+               const EndPoints& a_endpoints,
                Params::Report::Function func,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(Buffers::make(1)),
-                clients(clients), endpoints(endpoints) {
+                clients(a_clients), endpoints(a_endpoints) {
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
 
-Report::Report(const SWC::client::Clients::Ptr& clients,
-               const EndPoints& endpoints,
+Report::Report(const SWC::client::Clients::Ptr& a_clients,
+               const EndPoints& a_endpoints,
                Params::Report::Function func,
                const Serializable& params,
                const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   Buffers::make(params, 1, REPORT, timeout)
                 ),
-                clients(clients), endpoints(endpoints) {
+                clients(a_clients), endpoints(a_endpoints) {
   cbp->append_i8(func);
 }
 
@@ -45,16 +45,16 @@ bool Report::run() {
 
 
 
-ReportRes::ReportRes(const SWC::client::Clients::Ptr& clients,
-                     const EndPoints& endpoints,
-                     ReportRes::Cb_t&& cb,
+ReportRes::ReportRes(const SWC::client::Clients::Ptr& a_clients,
+                     const EndPoints& a_endpoints,
+                     ReportRes::Cb_t&& a_cb,
                      const uint32_t timeout)
                      : Report(
-                        clients,
-                        endpoints,
+                        a_clients,
+                        a_endpoints,
                         Params::Report::Function::RESOURCES,
                         timeout
-                      ), cb(std::move(cb)) {
+                      ), cb(std::move(a_cb)) {
 }
 
 void ReportRes::handle_no_conn() {
@@ -87,16 +87,16 @@ void ReportRes::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-ReportCids::ReportCids(const SWC::client::Clients::Ptr& clients,
-                       const EndPoints& endpoints,
-                       ReportCids::Cb_t&& cb,
+ReportCids::ReportCids(const SWC::client::Clients::Ptr& a_clients,
+                       const EndPoints& a_endpoints,
+                       ReportCids::Cb_t&& a_cb,
                        const uint32_t timeout)
                       : Report(
-                          clients,
-                          endpoints,
+                          a_clients,
+                          a_endpoints,
                           Params::Report::Function::CIDS,
                           timeout
-                        ), cb(std::move(cb)) {
+                        ), cb(std::move(a_cb)) {
 }
 
 void ReportCids::handle_no_conn() {
@@ -129,18 +129,18 @@ void ReportCids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 
-ReportColumnRids::ReportColumnRids(const SWC::client::Clients::Ptr& clients,
-                                   const EndPoints& endpoints,
+ReportColumnRids::ReportColumnRids(const SWC::client::Clients::Ptr& a_clients,
+                                   const EndPoints& a_endpoints,
                                    cid_t cid,
-                                   ReportColumnRids::Cb_t&& cb,
+                                   ReportColumnRids::Cb_t&& a_cb,
                                    const uint32_t timeout)
                                   : Report(
-                                      clients,
-                                      endpoints,
+                                      a_clients,
+                                      a_endpoints,
                                       Params::Report::Function::COLUMN_RIDS,
                                       Params::Report::ReqColumn(cid),
                                       timeout
-                                    ), cb(std::move(cb)) {
+                                    ), cb(std::move(a_cb)) {
 }
 
 void ReportColumnRids::handle_no_conn() {
@@ -174,31 +174,31 @@ void ReportColumnRids::handle(ConnHandlerPtr, const Event::Ptr& ev) {
 
 
 ReportColumnsRanges::ReportColumnsRanges(
-            const SWC::client::Clients::Ptr& clients,
-            const EndPoints& endpoints,
-            ReportColumnsRanges::Cb_t&& cb,
+            const SWC::client::Clients::Ptr& a_clients,
+            const EndPoints& a_endpoints,
+            ReportColumnsRanges::Cb_t&& a_cb,
             const uint32_t timeout)
             : Report(
-                clients,
-                endpoints,
+                a_clients,
+                a_endpoints,
                 Params::Report::Function::COLUMNS_RANGES,
                 timeout
-              ), cb(std::move(cb)) {
+              ), cb(std::move(a_cb)) {
 }
 
 ReportColumnsRanges::ReportColumnsRanges(
-          const SWC::client::Clients::Ptr& clients,
-          const EndPoints& endpoints,
+          const SWC::client::Clients::Ptr& a_clients,
+          const EndPoints& a_endpoints,
           cid_t cid,
-          ReportColumnsRanges::Cb_t&& cb,
+          ReportColumnsRanges::Cb_t&& a_cb,
           const uint32_t timeout)
           : Report(
-              clients,
-              endpoints,
+              a_clients,
+              a_endpoints,
               Params::Report::Function::COLUMN_RANGES,
               Params::Report::ReqColumn(cid),
               timeout
-            ), cb(std::move(cb)) {
+            ), cb(std::move(a_cb)) {
 }
 
 void ReportColumnsRanges::handle_no_conn() {

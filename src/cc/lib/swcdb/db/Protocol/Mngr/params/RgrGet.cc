@@ -55,8 +55,8 @@ void RgrGetReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 }
 
 
-RgrGetRsp::RgrGetRsp(int err, const uint8_t* ptr, size_t remain) noexcept
-                    : err(err) {
+RgrGetRsp::RgrGetRsp(int a_err, const uint8_t* ptr, size_t remain) noexcept
+                    : err(a_err) {
   if(!err) try {
     decode(&ptr, &remain);
   } catch(...) {

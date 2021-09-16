@@ -20,8 +20,8 @@ class RangeIsLoadedReq final : public Serializable {
   RangeIsLoadedReq() noexcept : cid(0), rid(0) { }
 
   SWC_CAN_INLINE
-  RangeIsLoadedReq(cid_t cid, rid_t rid) noexcept
-                : cid(cid), rid(rid) {
+  RangeIsLoadedReq(cid_t a_cid, rid_t a_rid) noexcept
+                : cid(a_cid), rid(a_rid) {
   }
 
   //~RangeIsLoadedReq() { }
@@ -58,8 +58,8 @@ class RangeIsLoadedRsp final : public Serializable {
   };
 
   SWC_CAN_INLINE
-  RangeIsLoadedRsp(int err) noexcept
-                   : err(err), flags(NONE) {
+  RangeIsLoadedRsp(int a_err) noexcept
+                   : err(a_err), flags(NONE) {
   }
 
   //~RangeIsLoadedRsp() { }

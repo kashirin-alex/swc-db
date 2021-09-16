@@ -33,14 +33,15 @@ class Managers  {
       Comm::EndPoints endpoints;
       int64_t         revision;
       SWC_CAN_INLINE
-      Range(const int64_t ts,
-            const rid_t rid,
+      Range(const int64_t a_ts,
+            const rid_t a_rid,
             const DB::Cell::Key& range_begin,
             const DB::Cell::Key& range_end,
-            const Comm::EndPoints& endpoints,
-            const int64_t revision)
-            : ts(ts), rid(rid), key_begin(range_begin), key_end(range_end),
-              endpoints(endpoints), revision(revision) {
+            const Comm::EndPoints& a_endpoints,
+            const int64_t a_revision)
+            : ts(a_ts), rid(a_rid),
+              key_begin(range_begin), key_end(range_end),
+              endpoints(a_endpoints), revision(a_revision) {
       }
       SWC_CAN_INLINE
       Range(Range&& other) noexcept

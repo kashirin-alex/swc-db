@@ -36,10 +36,10 @@ void BrokerCommitter::commit() {
     Profiling::Component::Start  profile;
     DynamicBuffer                cells_buff;
     SWC_CAN_INLINE
-    ReqData(const Ptr& committer, DynamicBuffer& cells_buff) noexcept
-            : committer(committer),
+    ReqData(const Ptr& a_committer, DynamicBuffer& a_cells_buff) noexcept
+            : committer(a_committer),
               profile(committer->hdlr->profile.bkr()),
-              cells_buff(std::move(cells_buff)) {
+              cells_buff(std::move(a_cells_buff)) {
     }
     SWC_CAN_INLINE
     client::Clients::Ptr& get_clients() noexcept {

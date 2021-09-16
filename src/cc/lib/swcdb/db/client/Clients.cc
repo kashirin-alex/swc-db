@@ -40,7 +40,7 @@ Clients::Ptr Clients::make(
 
 
 Clients::Clients(const Config::Settings& settings,
-                 const Comm::IoContextPtr& io_ctx,
+                 const Comm::IoContextPtr& a_io_ctx,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx,
                  const ContextBroker::Ptr& bkr_ctx)
@@ -68,7 +68,7 @@ Clients::Clients(const Config::Settings& settings,
         settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.timeout")),
 
-      io_ctx(io_ctx),
+      io_ctx(a_io_ctx),
       schemas(
         this,
         settings.get<Config::Property::V_GINT32>(
@@ -79,7 +79,7 @@ Clients::Clients(const Config::Settings& settings,
 }
 
 Clients::Clients(const Config::Settings& settings,
-                 const Comm::IoContextPtr& io_ctx,
+                 const Comm::IoContextPtr& a_io_ctx,
                  const ContextManager::Ptr& mngr_ctx,
                  const ContextRanger::Ptr& rgr_ctx)
     : running(true), flags(Flag::DEFAULT),
@@ -106,7 +106,7 @@ Clients::Clients(const Config::Settings& settings,
         settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.timeout")),
 
-      io_ctx(io_ctx),
+      io_ctx(a_io_ctx),
       schemas(
         this,
         settings.get<Config::Property::V_GINT32>(
@@ -116,7 +116,7 @@ Clients::Clients(const Config::Settings& settings,
 }
 
 Clients::Clients(const Config::Settings& settings,
-                 const Comm::IoContextPtr& io_ctx,
+                 const Comm::IoContextPtr& a_io_ctx,
                  const ContextBroker::Ptr& bkr_ctx)
     : running(true), flags(Flag::BROKER),
       cfg_send_buff_sz(
@@ -142,7 +142,7 @@ Clients::Clients(const Config::Settings& settings,
         settings.get<SWC::Config::Property::V_GINT32>(
           "swc.client.recv.timeout")),
 
-      io_ctx(io_ctx),
+      io_ctx(a_io_ctx),
       schemas(
         this,
         settings.get<Config::Property::V_GINT32>(

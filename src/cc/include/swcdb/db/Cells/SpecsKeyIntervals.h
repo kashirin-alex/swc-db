@@ -34,14 +34,14 @@ struct KeyInterval {
   }
 
   SWC_CAN_INLINE
-  KeyInterval(const Key& start, const Key& finish)
-              : start(start), finish(finish) {
+  KeyInterval(const Key& a_start, const Key& a_finish)
+              : start(a_start), finish(a_finish) {
   }
 
   SWC_CAN_INLINE
-  KeyInterval(Key&& start, Key&& finish) noexcept
-              : start(std::move(start)),
-                finish(std::move(finish)) {
+  KeyInterval(Key&& a_start, Key&& a_finish) noexcept
+              : start(std::move(a_start)),
+                finish(std::move(a_finish)) {
   }
 
   SWC_CAN_INLINE

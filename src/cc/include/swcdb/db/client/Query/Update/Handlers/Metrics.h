@@ -84,7 +84,7 @@ class Level : public Base {
   const std::string       name;
   Core::Vector<Base::Ptr> metrics;
 
-  Level(const char* name) : name(name) { }
+  Level(const char* a_name) : name(a_name) { }
 
   virtual ~Level() { }
 
@@ -112,7 +112,7 @@ class Item_MinMaxAvgCount :
 
   const std::string name;
 
-  Item_MinMaxAvgCount(const char* name) : name(name) { }
+  Item_MinMaxAvgCount(const char* a_name) : name(a_name) { }
 
   virtual ~Item_MinMaxAvgCount() { }
 
@@ -133,7 +133,7 @@ class Item_Count : public Base {
 
   const std::string name;
 
-  Item_Count(const char* name) : name(name), m_count(0) { }
+  Item_Count(const char* a_name) : name(a_name), m_count(0) { }
 
   virtual ~Item_Count() { }
 
@@ -162,7 +162,7 @@ class Item_Volume : public Base {
 
   const std::string name;
 
-  Item_Volume(const char* name) : name(name), m_volume(0) { }
+  Item_Volume(const char* a_name) : name(a_name), m_volume(0) { }
 
   virtual ~Item_Volume() { }
 
@@ -196,8 +196,8 @@ class Item_CountVolume : public Base {
 
   const std::string name;
 
-  Item_CountVolume(const char* name)
-                    : name(name), m_count(0), m_volume(0) { }
+  Item_CountVolume(const char* a_name)
+                    : name(a_name), m_count(0), m_volume(0) { }
 
   virtual ~Item_CountVolume() { }
 

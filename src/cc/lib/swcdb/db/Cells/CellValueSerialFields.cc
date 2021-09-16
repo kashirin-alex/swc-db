@@ -89,10 +89,10 @@ void Field_DOUBLE::print(std::ostream& out) const {
 
 
 // Field BYTES
-Field_BYTES::Field_BYTES(uint24_t fid,
+Field_BYTES::Field_BYTES(uint24_t a_fid,
                          const uint8_t* data, uint32_t len,
                          bool take_ownership)
-                        : Field(fid) {
+                        : Field(a_fid) {
   take_ownership
     ? assign(data, len)
     : set(const_cast<uint8_t*>(data), len, false);
@@ -140,8 +140,8 @@ void Field_BYTES::print(std::ostream& out) const {
 
 
 // Field KEY
-Field_KEY::Field_KEY(uint24_t fid, const Key& key, bool take_ownership)
-                    : Field(fid), key(key, take_ownership) {
+Field_KEY::Field_KEY(uint24_t a_fid, const Key& a_key, bool take_ownership)
+                    : Field(a_fid), key(a_key, take_ownership) {
 }
 
 Field_KEY::Field_KEY(const uint8_t** bufp, size_t* remainp,

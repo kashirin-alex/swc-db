@@ -22,9 +22,9 @@ class RangeQuerySelectReq final : public Serializable {
   RangeQuerySelectReq() noexcept { }
 
   SWC_CAN_INLINE
-  RangeQuerySelectReq(cid_t cid, rid_t rid,
-                      const DB::Specs::Interval& interval)
-                      : cid(cid), rid(rid), interval(interval) {
+  RangeQuerySelectReq(cid_t a_cid, rid_t a_rid,
+                      const DB::Specs::Interval& a_interval)
+                      : cid(a_cid), rid(a_rid), interval(a_interval) {
   }
 
   SWC_CAN_INLINE
@@ -52,9 +52,9 @@ class RangeQuerySelectReqRef final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeQuerySelectReqRef(cid_t cid, rid_t rid,
-                         const DB::Specs::Interval& interval) noexcept
-                         : cid(cid), rid(rid), interval(interval) {
+  RangeQuerySelectReqRef(cid_t a_cid, rid_t a_rid,
+                         const DB::Specs::Interval& a_interval) noexcept
+                         : cid(a_cid), rid(a_rid), interval(a_interval) {
   }
 
   //~RangeQuerySelectReqRef() { }
@@ -82,16 +82,16 @@ class RangeQuerySelectRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeQuerySelectRsp(int err = Error::OK, bool reached_limit=false,
-                      uint64_t offset=0) noexcept
-                      : err(err), reached_limit(reached_limit),
-                        offset(offset) {
+  RangeQuerySelectRsp(int a_err = Error::OK, bool a_reached_limit=false,
+                      uint64_t a_offset=0) noexcept
+                      : err(a_err), reached_limit(a_reached_limit),
+                        offset(a_offset) {
   }
 
   SWC_CAN_INLINE
-  RangeQuerySelectRsp(int err, StaticBuffer& data) noexcept
-                      : err(err), reached_limit(false),
-                        offset(0), data(data) {
+  RangeQuerySelectRsp(int a_err, StaticBuffer& a_data) noexcept
+                      : err(a_err), reached_limit(false),
+                        offset(0), data(a_data) {
   }
 
   RangeQuerySelectRsp(int err, const uint8_t *ptr, size_t remain,

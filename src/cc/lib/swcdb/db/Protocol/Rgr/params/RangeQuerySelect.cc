@@ -64,9 +64,9 @@ void RangeQuerySelectReqRef::internal_encode(uint8_t** bufp) const {
 
 
 RangeQuerySelectRsp::RangeQuerySelectRsp(
-              int err, const uint8_t* ptr, size_t remain,
-              StaticBuffer& data) noexcept
-              : err(err), reached_limit(false), offset(0), data(data) {
+              int a_err, const uint8_t* ptr, size_t remain,
+              StaticBuffer& a_data) noexcept
+              : err(a_err), reached_limit(false), offset(0), data(a_data) {
   if(!err) try {
     decode(&ptr, &remain);
   } catch(...) {

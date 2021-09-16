@@ -23,12 +23,12 @@ struct ColumnMng  {
   DB::Schema::Ptr schema;
 
   SWC_CAN_INLINE
-  ColumnMng(const ConnHandlerPtr& conn, const Event::Ptr& ev,
-            const DB::Schema::Ptr& schema) noexcept
-            : conn(conn), ev(ev), schema(schema) {
+  ColumnMng(const ConnHandlerPtr& a_conn, const Event::Ptr& a_ev,
+            const DB::Schema::Ptr& a_schema) noexcept
+            : conn(a_conn), ev(a_ev), schema(a_schema) {
   }
 
-  //~ColumnMng() { }
+  ~ColumnMng() { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

@@ -19,8 +19,8 @@ class MngrActiveReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  MngrActiveReq(uint8_t role=DB::Types::MngrRole::COLUMNS, cid_t cid=0)
-                noexcept : role(role), cid(cid) {
+  MngrActiveReq(uint8_t a_role=DB::Types::MngrRole::COLUMNS, cid_t a_cid=0)
+                noexcept : role(a_role), cid(a_cid) {
   }
 
   //~MngrActiveReq() { }
@@ -47,8 +47,8 @@ class MngrActiveRsp final : public Serializable {
   MngrActiveRsp() noexcept { }
 
   SWC_CAN_INLINE
-  MngrActiveRsp(const EndPoints& endpoints)
-                : endpoints(endpoints) {
+  MngrActiveRsp(const EndPoints& a_endpoints)
+                : endpoints(a_endpoints) {
   }
 
   //~MngrActiveRsp() { }

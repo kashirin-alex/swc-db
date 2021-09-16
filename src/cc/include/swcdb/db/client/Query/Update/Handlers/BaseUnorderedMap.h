@@ -23,9 +23,9 @@ class BaseUnorderedMap
   typedef std::unordered_map<cid_t, ColumnMutable::Ptr> Map;
 
   SWC_CAN_INLINE
-  BaseUnorderedMap(const Clients::Ptr& clients,
-                   Clients::Flag executor=Clients::DEFAULT) noexcept
-                  : Base(clients, executor) {
+  BaseUnorderedMap(const Clients::Ptr& a_clients,
+                   Clients::Flag a_executor=Clients::DEFAULT) noexcept
+                  : Base(a_clients, a_executor) {
   }
 
   BaseUnorderedMap(const BaseUnorderedMap&) = delete;

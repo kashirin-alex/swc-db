@@ -96,8 +96,8 @@ class CellsUpdate final : public client::ConnQueue::ReqBase {
 
   template<typename... DataArgsT>
   SWC_CAN_INLINE
-  CellsUpdate(Buffers::Ptr&& cbp, DataArgsT&&... args)
-              : client::ConnQueue::ReqBase(std::move(cbp)),
+  CellsUpdate(Buffers::Ptr&& a_cbp, DataArgsT&&... args)
+              : client::ConnQueue::ReqBase(std::move(a_cbp)),
                 data(args...) {
   }
 

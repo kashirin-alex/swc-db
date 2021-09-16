@@ -17,9 +17,9 @@ class ColumnsUnloadReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnsUnloadReq(cid_t cid_begin = DB::Schema::NO_CID,
-                   cid_t cid_end = DB::Schema::NO_CID) noexcept
-                  : cid_begin(cid_begin), cid_end(cid_end) {
+  ColumnsUnloadReq(cid_t a_cid_begin = DB::Schema::NO_CID,
+                   cid_t a_cid_end = DB::Schema::NO_CID) noexcept
+                  : cid_begin(a_cid_begin), cid_end(a_cid_end) {
   }
 
   //~ColumnsUnloadReq() { }
@@ -54,11 +54,12 @@ class ColumnsUnloadRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnsUnloadRsp(int err = Error::OK) noexcept : err(err) { }
+  ColumnsUnloadRsp(int a_err = Error::OK) noexcept : err(a_err) { }
 
-  //~ColumnsUnloadRsp() { }
+  SWC_CAN_INLINE
+  ~ColumnsUnloadRsp() { }
 
-  int err;
+  int                               err;
   std::unordered_map<cid_t, rids_t> columns;
 
   private:

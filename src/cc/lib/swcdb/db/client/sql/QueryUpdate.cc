@@ -21,10 +21,10 @@ namespace {
 }
 
 QueryUpdate::QueryUpdate(
-        const std::string& sql,
-        const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
-        std::string& message)
-        : Reader(sql, message), hdlr(hdlr) {
+        const std::string& a_sql,
+        const Query::Update::Handlers::BaseUnorderedMap::Ptr& a_hdlr,
+        std::string& a_message)
+        : Reader(a_sql, a_message), hdlr(a_hdlr) {
 }
 
 int QueryUpdate::parse_update() {
@@ -399,10 +399,10 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
       if(err)
         return;
       const uint8_t* valp = reinterpret_cast<const uint8_t*>(value.c_str());
-      size_t remain = value.length();
+      size_t _remain = value.length();
       uint8_t op;
       int64_t v;
-      op_from(&valp, &remain, op, v);
+      op_from(&valp, &_remain, op, v);
       if(err) {
         error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
         return;
@@ -421,16 +421,16 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
   }
 }
 
-void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
+void QueryUpdate::op_from(const uint8_t** ptrp, size_t* remainp,
                         uint8_t& op, int64_t& value) {
   if(!*remainp) {
     op = DB::Cells::OP_EQUAL;
     value = 0;
     return;
   }
-  if(**ptr == '=') {
+  if(**ptrp == '=') {
     op = DB::Cells::OP_EQUAL;
-    ++*ptr;
+    ++*ptrp;
     if(!--*remainp) {
       value = 0;
       return;
@@ -438,7 +438,7 @@ void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
   } else {
     op = 0;
   }
-  const char* p = reinterpret_cast<const char*>(*ptr);
+  const char* p = reinterpret_cast<const char*>(*ptrp);
   char *last = const_cast<char*>(p + (*remainp > 30 ? 30 : *remainp));
   errno = 0;
   value = strtoll(p, &last, 0);
@@ -446,7 +446,7 @@ void QueryUpdate::op_from(const uint8_t** ptr, size_t* remainp,
     err = errno;
   } else if(last > p) {
     *remainp -= last - p;
-    *ptr = reinterpret_cast<const uint8_t*>(last);
+    *ptrp = reinterpret_cast<const uint8_t*>(last);
   } else {
     err = EINVAL;
   }

@@ -17,8 +17,8 @@ class RangeCreateReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeCreateReq(cid_t cid=0, rgrid_t rgrid=0) noexcept
-                 : cid(cid), rgrid(rgrid) {
+  RangeCreateReq(cid_t a_cid=0, rgrid_t a_rgrid=0) noexcept
+                 : cid(a_cid), rgrid(a_rgrid) {
   }
 
   //~RangeCreateReq() { }
@@ -60,10 +60,10 @@ class RangeCreateRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeCreateRsp(int err = Error::OK) noexcept : err(err), rid(0) { }
+  RangeCreateRsp(int a_err = Error::OK) noexcept : err(a_err), rid(0) { }
 
-  RangeCreateRsp(int err, const uint8_t* ptr, size_t remain) noexcept
-                 : err(err) {
+  RangeCreateRsp(int a_err, const uint8_t* ptr, size_t remain) noexcept
+                 : err(a_err) {
     if(!err) try {
       decode(&ptr, &remain);
     } catch(...) {

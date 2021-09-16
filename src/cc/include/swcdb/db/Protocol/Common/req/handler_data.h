@@ -27,13 +27,13 @@ struct function {
   CbT                       cb;
 
   SWC_CAN_INLINE
-  function(SWC::client::Clients::Ptr& clients, const CbT& cb)
-          : clients(clients), cb(cb) {
+  function(SWC::client::Clients::Ptr& a_clients, const CbT& a_cb)
+          : clients(a_clients), cb(a_cb) {
   }
 
   SWC_CAN_INLINE
-  function(SWC::client::Clients::Ptr& clients, CbT&& cb) noexcept
-          : clients(clients), cb(std::move(cb)) {
+  function(SWC::client::Clients::Ptr& a_clients, CbT&& a_cb) noexcept
+          : clients(a_clients), cb(std::move(a_cb)) {
   }
 
   SWC_CAN_INLINE

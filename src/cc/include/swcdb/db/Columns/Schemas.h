@@ -29,13 +29,13 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     Pattern() noexcept { }
 
     SWC_CAN_INLINE
-    Pattern(Condition::Comp comp, std::string&& value) noexcept
-            : std::string(std::move(value)), comp(comp) {
+    Pattern(Condition::Comp a_comp, std::string&& value) noexcept
+            : std::string(std::move(value)), comp(a_comp) {
     }
 
     SWC_CAN_INLINE
-    Pattern(Condition::Comp comp, const std::string& value)
-            : std::string(value), comp(comp) {
+    Pattern(Condition::Comp a_comp, const std::string& value)
+            : std::string(value), comp(a_comp) {
     }
 
     SWC_CAN_INLINE

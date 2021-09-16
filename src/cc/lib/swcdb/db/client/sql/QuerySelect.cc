@@ -56,11 +56,11 @@ namespace {
 
 }
 
-QuerySelect::QuerySelect(const Clients::Ptr& clients,
-                         const std::string& sql, DB::Specs::Scan& specs,
-                         std::string& message)
-                        : Reader(sql, message),
-                          clients(clients), specs(specs) {
+QuerySelect::QuerySelect(const Clients::Ptr& a_clients,
+                         const std::string& a_sql, DB::Specs::Scan& a_specs,
+                         std::string& a_message)
+                        : Reader(a_sql, a_message),
+                          clients(a_clients), specs(a_specs) {
 }
 
 int QuerySelect::parse_select() {

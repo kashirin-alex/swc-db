@@ -310,8 +310,8 @@ Cell::Cell(const Cell& other, bool no_value)
 }
 
 SWC_CAN_INLINE
-Cell::Cell(const uint8_t** bufp, size_t* remainp, bool own)
-          : own(own),
+Cell::Cell(const uint8_t** bufp, size_t* remainp, bool a_own)
+          : own(a_own),
             flag(Serialization::decode_i8(bufp, remainp)) {
   key.decode(bufp, remainp, own);
   control = Serialization::decode_i8(bufp, remainp);

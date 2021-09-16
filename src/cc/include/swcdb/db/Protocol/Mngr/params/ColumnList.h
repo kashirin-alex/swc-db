@@ -22,8 +22,8 @@ class ColumnListReq final : public Serializable {
   ColumnListReq() noexcept { }
 
   SWC_CAN_INLINE
-  ColumnListReq(const DB::Schemas::SelectorPatterns& patterns)
-               : patterns(patterns) {
+  ColumnListReq(const DB::Schemas::SelectorPatterns& a_patterns)
+               : patterns(a_patterns) {
   }
 
   SWC_CAN_INLINE

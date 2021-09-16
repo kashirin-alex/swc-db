@@ -12,9 +12,10 @@ namespace SWC { namespace client { namespace SQL {
 
 
 
-ColumnSchema::ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
-                           std::string& message)
-                          : Reader(sql, message), schema(schema) {
+ColumnSchema::ColumnSchema(const std::string& a_sql,
+                           DB::Schema::Ptr& a_schema,
+                           std::string& a_message)
+                          : Reader(a_sql, a_message), schema(a_schema) {
 }
 
 int ColumnSchema::parse(ColumnSchema::Func* func) {

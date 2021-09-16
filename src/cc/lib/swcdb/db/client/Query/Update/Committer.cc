@@ -27,35 +27,35 @@ namespace SWC { namespace client { namespace Query { namespace Update {
 
 
 
-Committer::Committer(const DB::Types::Range type,
-                     const cid_t cid,
-                     Handlers::Base::Column* colp,
-                     const DB::Cell::Key::Ptr& key_start,
-                     const Handlers::Base::Ptr& hdlr,
-                     const ReqBase::Ptr& parent,
-                     const rid_t rid) noexcept
-  : type(type),
-    master_cid(DB::Types::SystemColumn::get_master_cid(colp->get_sequence())),
+Committer::Committer(const DB::Types::Range a_type,
+                     const cid_t a_cid,
+                     Handlers::Base::Column* a_colp,
+                     const DB::Cell::Key::Ptr& a_key_start,
+                     const Handlers::Base::Ptr& a_hdlr,
+                     const ReqBase::Ptr& a_parent,
+                     const rid_t a_rid) noexcept
+  : type(a_type),
+    master_cid(DB::Types::SystemColumn::get_master_cid(a_colp->get_sequence())),
     workload(0),
-    cid(cid), colp(colp),
-    key_start(key_start),
-    hdlr(hdlr), parent(parent), rid(rid) {
+    cid(a_cid), colp(a_colp),
+    key_start(a_key_start),
+    hdlr(a_hdlr), parent(a_parent), rid(a_rid) {
 }
 
-Committer::Committer(const DB::Types::Range type,
-                     const cid_t cid,
-                     Handlers::Base::Column* colp,
-                     const DB::Cell::Key::Ptr& key_start,
-                     const Handlers::Base::Ptr& hdlr,
-                     const ReqBase::Ptr& parent,
-                     const rid_t rid,
-                     const DB::Cell::Key& key_finish)
-  : type(type),
-    master_cid(DB::Types::SystemColumn::get_master_cid(colp->get_sequence())),
+Committer::Committer(const DB::Types::Range a_type,
+                     const cid_t a_cid,
+                     Handlers::Base::Column* a_colp,
+                     const DB::Cell::Key::Ptr& a_key_start,
+                     const Handlers::Base::Ptr& a_hdlr,
+                     const ReqBase::Ptr& a_parent,
+                     const rid_t a_rid,
+                     const DB::Cell::Key& a_key_finish)
+  : type(a_type),
+    master_cid(DB::Types::SystemColumn::get_master_cid(a_colp->get_sequence())),
     workload(0),
-    cid(cid), colp(colp),
-    key_start(key_start),
-    hdlr(hdlr), parent(parent), rid(rid), key_finish(key_finish) {
+    cid(a_cid), colp(a_colp),
+    key_start(a_key_start),
+    hdlr(a_hdlr), parent(a_parent), rid(a_rid), key_finish(a_key_finish) {
 }
 
 void Committer::print(std::ostream& out) {
@@ -72,7 +72,8 @@ void Committer::print(std::ostream& out) {
 struct ReqDataBase {
   Committer::Ptr committer;
   SWC_CAN_INLINE
-  ReqDataBase(const Committer::Ptr& inst) noexcept : committer(inst) { }
+  ReqDataBase(const Committer::Ptr& a_committer) noexcept
+              : committer(a_committer) { }
   SWC_CAN_INLINE
   client::Clients::Ptr& get_clients() noexcept {
     return committer->hdlr->clients;
@@ -103,9 +104,9 @@ void Committer::locate_on_manager() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& committer,
-            Profiling::Component::Start& profile) noexcept
-            : ReqDataBase(committer), profile(profile) { }
+    ReqData(const Ptr& a_committer,
+            Profiling::Component::Start& a_profile) noexcept
+            : ReqDataBase(a_committer), profile(a_profile) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -255,11 +256,11 @@ void Committer::locate_on_ranger(Comm::EndPoints&& endpoints,
     Profiling::Component::Start profile;
     Comm::EndPoints             endpoints;
     SWC_CAN_INLINE
-    ReqData(const Ptr& committer, Comm::EndPoints& endpoints,
+    ReqData(const Ptr& a_committer, Comm::EndPoints& a_endpoints,
             DB::Types::Range type) noexcept
-            : ReqDataBase(committer),
+            : ReqDataBase(a_committer),
               profile(committer->hdlr->profile.rgr_locate(type)),
-              endpoints(std::move(endpoints)) { }
+              endpoints(std::move(a_endpoints)) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
@@ -340,8 +341,8 @@ void Committer::resolve_on_manager() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& committer) noexcept
-            : ReqDataBase(committer),
+    ReqData(const Ptr& a_committer) noexcept
+            : ReqDataBase(a_committer),
               profile(committer->hdlr->profile.mngr_res()) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
@@ -465,12 +466,12 @@ void Committer::commit_data(
     DynamicBuffer                cells_buff;
     ReqBase::Ptr                 base;
     SWC_CAN_INLINE
-    ReqData(const Ptr& committer,
-            DynamicBuffer& cells_buff,
-            const ReqBase::Ptr& base) noexcept
-            : ReqDataBase(committer),
+    ReqData(const Ptr& a_committer,
+            DynamicBuffer& a_cells_buff,
+            const ReqBase::Ptr& a_base) noexcept
+            : ReqDataBase(a_committer),
               profile(committer->hdlr->profile.rgr_data()),
-              cells_buff(std::move(cells_buff)), base(base) {
+              cells_buff(std::move(a_cells_buff)), base(a_base) {
     }
     SWC_CAN_INLINE
     void callback(

@@ -18,7 +18,7 @@ class ColumnDelete : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnDelete(cid_t cid = DB::Schema::NO_CID) noexcept : cid(cid) { }
+  ColumnDelete(cid_t a_cid = DB::Schema::NO_CID) noexcept : cid(a_cid) { }
 
   //~ColumnDelete() { }
 

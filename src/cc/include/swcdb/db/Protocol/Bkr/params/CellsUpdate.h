@@ -21,7 +21,7 @@ class CellsUpdateReq final : public Serializable {
   CellsUpdateReq() noexcept { }
 
   SWC_CAN_INLINE
-  CellsUpdateReq(cid_t cid) noexcept : cid(cid) { }
+  CellsUpdateReq(cid_t a_cid) noexcept : cid(a_cid) { }
 
   //~CellsUpdateReq() { }
 
@@ -45,7 +45,7 @@ class CellsUpdateRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  CellsUpdateRsp(int err = Error::OK) noexcept : err(err) { }
+  CellsUpdateRsp(int a_err = Error::OK) noexcept : err(a_err) { }
 
   CellsUpdateRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
 

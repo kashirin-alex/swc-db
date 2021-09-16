@@ -33,13 +33,13 @@ static const uint8_t RETRY_POINT_DATA   = 3;
 
 
 Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
-                 const DB::Types::KeySeq col_seq,
-                 const DB::Specs::Interval& interval,
+                 const DB::Types::KeySeq a_col_seq,
+                 const DB::Specs::Interval& a_interval,
                  const cid_t cid)
             : completion(0),
               selector(hdlr),
-              col_seq(col_seq),
-              interval(interval),
+              col_seq(a_col_seq),
+              interval(a_interval),
               master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
               meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
               data_cid(cid),
@@ -56,13 +56,13 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
 }
 
 Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
-                 const DB::Types::KeySeq col_seq,
-                 DB::Specs::Interval&& interval,
+                 const DB::Types::KeySeq a_col_seq,
+                 DB::Specs::Interval&& a_interval,
                  const cid_t cid) noexcept
             : completion(0),
               selector(hdlr),
-              col_seq(col_seq),
-              interval(std::move(interval)),
+              col_seq(a_col_seq),
+              interval(std::move(a_interval)),
               master_cid(DB::Types::SystemColumn::get_master_cid(col_seq)),
               meta_cid(DB::Types::SystemColumn::get_meta_cid(col_seq)),
               data_cid(cid),
@@ -79,7 +79,7 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
 }
 
 Scanner::~Scanner() { }
-  
+
 void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
                               const Comm::EndPoints& endpoints) {
   SWC_LOG_OUT(LOG_DEBUG,
@@ -133,7 +133,8 @@ void Scanner::print(std::ostream& out) {
 struct ReqDataBase {
   Scanner::Ptr scanner;
   SWC_CAN_INLINE
-  ReqDataBase(const Scanner::Ptr& scanner) noexcept : scanner(scanner) { }
+  ReqDataBase(const Scanner::Ptr& a_scanner)
+              noexcept : scanner(a_scanner) { }
   SWC_CAN_INLINE
   client::Clients::Ptr& get_clients() noexcept {
     return scanner->selector->clients;
@@ -217,8 +218,9 @@ void Scanner::mngr_locate_master() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner, Profiling::Component::Start& profile) noexcept
-            : ReqDataBase(scanner), profile(profile) { }
+    ReqData(const Ptr& a_scanner,
+            Profiling::Component::Start& a_profile) noexcept
+            : ReqDataBase(a_scanner), profile(a_profile) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -370,8 +372,8 @@ void Scanner::rgr_locate_master() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner) noexcept
-            : ReqDataBase(scanner),
+    ReqData(const Ptr& a_scanner) noexcept
+            : ReqDataBase(a_scanner),
               profile(scanner->selector->profile.rgr_locate(
                 DB::Types::Range::MASTER)) { }
     SWC_CAN_INLINE
@@ -479,8 +481,9 @@ void Scanner::mngr_resolve_rgr_meta() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner, Profiling::Component::Start& profile) noexcept
-            : ReqDataBase(scanner), profile(profile) { }
+    ReqData(const Ptr& a_scanner,
+            Profiling::Component::Start& a_profile) noexcept
+            : ReqDataBase(a_scanner), profile(a_profile) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -566,8 +569,8 @@ void Scanner::rgr_locate_meta() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner) noexcept
-            : ReqDataBase(scanner),
+    ReqData(const Ptr& a_scanner) noexcept
+            : ReqDataBase(a_scanner),
               profile(scanner->selector->profile.rgr_locate(
                 DB::Types::Range::META)) { }
     SWC_CAN_INLINE
@@ -682,8 +685,9 @@ void Scanner::mngr_resolve_rgr_select() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner, Profiling::Component::Start& profile) noexcept
-            : ReqDataBase(scanner), profile(profile) { }
+    ReqData(const Ptr& a_scanner,
+            Profiling::Component::Start& a_profile) noexcept
+            : ReqDataBase(a_scanner), profile(a_profile) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -754,8 +758,8 @@ void Scanner::rgr_select() {
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner) noexcept
-            : ReqDataBase(scanner),
+    ReqData(const Ptr& a_scanner) noexcept
+            : ReqDataBase(a_scanner),
               profile(scanner->selector->profile.rgr_data()) { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,

@@ -27,14 +27,14 @@ class Updater final
 
   SWC_CAN_INLINE
   Updater(const DB::Schema::Ptr& schema,
-          const ConnHandlerPtr& conn, const Event::Ptr& ev)
+          const ConnHandlerPtr& a_conn, const Event::Ptr& a_ev)
           : SWC::client::Query::Update::Handlers::BaseSingleColumn(
               Env::Clients::get(),
               schema->cid, schema->col_seq,
               schema->cell_versions, schema->cell_ttl, schema->col_type,
-              ev->data_ext
+              a_ev->data_ext
             ),
-            conn(conn), ev(ev) {
+            conn(a_conn), ev(a_ev) {
     ev->data_ext.free();
   }
 

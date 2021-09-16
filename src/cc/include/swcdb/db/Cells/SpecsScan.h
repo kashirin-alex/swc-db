@@ -42,10 +42,11 @@ class Scan final {
   }
 
   SWC_CAN_INLINE
-  explicit Scan(const Columns& columns) : columns(columns) { }
+  explicit Scan(const Columns& a_columns) : columns(a_columns) { }
 
   SWC_CAN_INLINE
-  explicit Scan(Columns&& columns) noexcept : columns(std::move(columns)) { }
+  explicit Scan(Columns&& a_columns) noexcept
+                : columns(std::move(a_columns)) { }
 
   SWC_CAN_INLINE
   explicit Scan(const uint8_t** bufp, size_t* remainp) {

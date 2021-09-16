@@ -38,8 +38,8 @@ void BrokerScanner::select() {
     Ptr                         scanner;
     Profiling::Component::Start profile;
     SWC_CAN_INLINE
-    ReqData(const Ptr& scanner) noexcept
-            : scanner(scanner),
+    ReqData(const Ptr& a_scanner) noexcept
+            : scanner(a_scanner),
               profile(scanner->selector->profile.bkr()) {
     }
     SWC_CAN_INLINE

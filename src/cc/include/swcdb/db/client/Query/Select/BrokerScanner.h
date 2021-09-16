@@ -38,16 +38,18 @@ class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
 
   SWC_CAN_INLINE
   BrokerScanner(const Handlers::Base::Ptr& hdlr,
-                DB::Specs::Interval&& interval,
-                const cid_t cid) noexcept
-                : selector(hdlr), interval(std::move(interval)), cid(cid) {
+                DB::Specs::Interval&& a_interval,
+                const cid_t a_cid) noexcept
+                : selector(hdlr),
+                  interval(std::move(a_interval)), cid(a_cid) {
   }
 
   SWC_CAN_INLINE
   BrokerScanner(const Handlers::Base::Ptr& hdlr,
-                const DB::Specs::Interval& interval,
-                const cid_t cid)
-                : selector(hdlr), interval(interval), cid(cid) {
+                const DB::Specs::Interval& a_interval,
+                const cid_t a_cid)
+                : selector(hdlr),
+                  interval(a_interval), cid(a_cid) {
   }
 
   ~BrokerScanner();

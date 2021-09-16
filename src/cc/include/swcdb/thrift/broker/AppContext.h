@@ -137,10 +137,10 @@ class AppContext final : virtual public BrokerIfFactory,
 
   void shutting_down(const std::error_code& ec, const int& sig) {
     if(!sig) { // set signals listener
-      struct Handler {
+      struct Task {
         AppContext* ptr;
         SWC_CAN_INLINE
-        Handler(AppContext* ptr) noexcept : ptr(ptr) { }
+        Task(AppContext* a_ptr) noexcept : ptr(a_ptr) { }
         void operator()(const std::error_code& ec, const int &sig) {
           if(ec == asio::error::operation_aborted)
             return;
@@ -149,7 +149,7 @@ class AppContext final : virtual public BrokerIfFactory,
           ptr->shutting_down(ec, sig);
         }
       };
-      Env::IoCtx::io()->signals->async_wait(Handler(this));
+      Env::IoCtx::io()->signals->async_wait(Task(this));
 
       SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s",
               sig, ec.message().c_str());

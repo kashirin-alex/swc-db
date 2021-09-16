@@ -17,8 +17,8 @@ class RangeRemoveReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeRemoveReq(cid_t cid=0, rid_t rid=0) noexcept
-                : cid(cid), rid(rid) {
+  RangeRemoveReq(cid_t a_cid=0, rid_t a_rid=0) noexcept
+                : cid(a_cid), rid(a_rid) {
   }
 
   //~RangeRemoveReq() { }
@@ -60,10 +60,10 @@ class RangeRemoveRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeRemoveRsp(int err = Error::OK) noexcept : err(err) { }
+  RangeRemoveRsp(int a_err = Error::OK) noexcept : err(a_err) { }
 
-  RangeRemoveRsp(int err, const uint8_t* ptr, size_t remain) noexcept
-                : err(err) {
+  RangeRemoveRsp(int a_err, const uint8_t* ptr, size_t remain) noexcept
+                : err(a_err) {
     if(!err) try {
       decode(&ptr, &remain);
     } catch(...) {

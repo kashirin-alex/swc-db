@@ -38,20 +38,20 @@ class MngrActive : public client::ConnQueue::ReqBase {
   }
 
   SWC_CAN_INLINE
-  MngrActive(const SWC::client::Clients::Ptr& clients,
-             const uint8_t& role, const cid_t& cid,
-             const DispatchHandler::Ptr& hdlr, uint32_t timeout_ms)
+  MngrActive(const SWC::client::Clients::Ptr& a_clients,
+             const uint8_t& a_role, const cid_t& a_cid,
+             const DispatchHandler::Ptr& a_hdlr, uint32_t a_timeout_ms)
             : client::ConnQueue::ReqBase(
                 Buffers::make(
-                  Params::MngrActiveReq(role, cid),
-                  0, MNGR_ACTIVE, timeout_ms
+                  Params::MngrActiveReq(a_role, a_cid),
+                  0, MNGR_ACTIVE, a_timeout_ms
                 )
               ),
-              clients(clients),
-              role(role), cid(cid), hdlr(hdlr), nxt(0),
+              clients(a_clients),
+              role(a_role), cid(a_cid), hdlr(a_hdlr), nxt(0),
               timer(asio::high_resolution_timer(
                       clients->get_mngr_io()->executor())),
-              timeout_ms(timeout_ms) {
+              timeout_ms(a_timeout_ms) {
   }
 
   virtual ~MngrActive() { }

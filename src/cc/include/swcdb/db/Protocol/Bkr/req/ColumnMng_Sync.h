@@ -76,11 +76,12 @@ class ColumnMng_Sync {
   Core::StateSynchronization        await;
 
   SWC_CAN_INLINE
-  ColumnMng_Sync(const SWC::client::Clients::Ptr& clients, int& err) noexcept
-                : clients(clients), err(err) {
+  ColumnMng_Sync(const SWC::client::Clients::Ptr& a_clients,
+                 int& a_err) noexcept
+                : clients(a_clients), err(a_err) {
   }
 
-  // ~ColumnMng_Sync() { }
+  ~ColumnMng_Sync() { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

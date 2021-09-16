@@ -22,11 +22,11 @@ class CellsSelectReq final : public Serializable {
   CellsSelectReq() noexcept { }
 
   SWC_CAN_INLINE
-  CellsSelectReq(cid_t cid, const DB::Specs::Interval& interval)
-                : cid(cid), interval(interval) {
+  CellsSelectReq(cid_t a_cid, const DB::Specs::Interval& a_interval)
+                : cid(a_cid), interval(a_interval) {
   }
 
-  //~CellsSelectReq() { }
+  ~CellsSelectReq() { }
 
   void print(std::ostream& out) const;
 
@@ -49,8 +49,10 @@ class CellsSelectReqRef final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  CellsSelectReqRef(cid_t cid, const DB::Specs::Interval& interval) noexcept
-                    : cid(cid), interval(interval) { }
+  CellsSelectReqRef(cid_t a_cid,
+                    const DB::Specs::Interval& a_interval) noexcept
+                    : cid(a_cid), interval(a_interval) {
+  }
 
   //~CellsSelectReqRef() { }
 
@@ -76,15 +78,15 @@ class CellsSelectRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  CellsSelectRsp(int err = Error::OK, bool more=false,
-                 uint64_t offset=0) noexcept
-                : err(err), more(more), offset(offset) {
+  CellsSelectRsp(int a_err = Error::OK, bool a_more=false,
+                 uint64_t a_offset=0) noexcept
+                : err(a_err), more(a_more), offset(a_offset) {
   }
 
   CellsSelectRsp(int err, const uint8_t* ptr, size_t remain,
                  StaticBuffer& data) noexcept;
 
-  //~CellsSelectRsp() { }
+  ~CellsSelectRsp() { }
 
   void print(std::ostream& out) const;
 

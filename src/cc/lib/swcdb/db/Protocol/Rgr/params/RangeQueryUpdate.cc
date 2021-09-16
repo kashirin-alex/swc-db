@@ -37,10 +37,10 @@ void RangeQueryUpdateReq::internal_decode(const uint8_t** bufp,
 
 
 
-RangeQueryUpdateRsp::RangeQueryUpdateRsp(int err,
+RangeQueryUpdateRsp::RangeQueryUpdateRsp(int a_err,
                                          const uint8_t* ptr,
                                          size_t remain) noexcept
-                                        : err(err), cells_added(0) {
+                                        : err(a_err), cells_added(0) {
   if(!err) try {
     decode(&ptr, &remain);
   } catch(...) {

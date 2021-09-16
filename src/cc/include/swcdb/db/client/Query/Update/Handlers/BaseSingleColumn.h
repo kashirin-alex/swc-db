@@ -24,22 +24,22 @@ class BaseSingleColumn : public Base {
   ColumnMutable column;
 
   SWC_CAN_INLINE
-  BaseSingleColumn(const Clients::Ptr& clients,
+  BaseSingleColumn(const Clients::Ptr& a_clients,
                    const cid_t cid, DB::Types::KeySeq seq,
                    uint32_t versions, uint32_t ttl_secs,
                    DB::Types::Column type,
-                   Clients::Flag executor=Clients::DEFAULT)
-                  : Base(clients, executor),
+                   Clients::Flag a_executor=Clients::DEFAULT)
+                  : Base(a_clients, a_executor),
                     column(cid, seq, versions, ttl_secs, type) {
   }
 
   SWC_CAN_INLINE
-  BaseSingleColumn(const Clients::Ptr& clients,
+  BaseSingleColumn(const Clients::Ptr& a_clients,
                    const cid_t cid, DB::Types::KeySeq seq,
                    uint32_t versions, uint32_t ttl_secs,
                    DB::Types::Column type,
                    const StaticBuffer& buffer)
-                  : Base(clients),
+                  : Base(a_clients),
                     column(cid, seq, versions, ttl_secs, type, buffer) {
   }
 

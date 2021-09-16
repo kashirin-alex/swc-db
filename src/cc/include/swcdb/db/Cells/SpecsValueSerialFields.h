@@ -42,7 +42,7 @@ struct Field {
   uint24_t fid;
 
   constexpr SWC_CAN_INLINE
-  Field(uint24_t fid) noexcept : fid(fid) { }
+  Field(uint24_t a_fid) noexcept : fid(a_fid) { }
 
   SWC_CAN_INLINE
   Field(const uint8_t** bufp, size_t* remainp)
@@ -229,8 +229,8 @@ struct Field_LIST_INT64 : Field {
     SWC_CAN_INLINE
     Item() noexcept { }
     constexpr SWC_CAN_INLINE
-    Item(Condition::Comp comp, int64_t value) noexcept
-          : comp(comp), value(value) { }
+    Item(Condition::Comp a_comp, int64_t a_value) noexcept
+          : comp(a_comp), value(a_value) { }
   };
   typedef Core::Vector<Item> Vec;
 
@@ -282,8 +282,10 @@ struct Field_LIST_BYTES : Field {
     SWC_CAN_INLINE
     Item() noexcept { }
     SWC_CAN_INLINE
-    Item(Condition::Comp comp, const std::string& value)
-        : comp(comp), value(value) { }
+    ~Item() { }
+    SWC_CAN_INLINE
+    Item(Condition::Comp a_comp, const std::string& a_value)
+        : comp(a_comp), value(a_value) { }
   };
   typedef Core::Vector<Item> Vec;
 

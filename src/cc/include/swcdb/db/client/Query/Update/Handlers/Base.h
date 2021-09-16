@@ -114,15 +114,15 @@ class Base : public std::enable_shared_from_this<Base> {
   const Clients::Flag               executor;
 
   SWC_CAN_INLINE
-  Base(const Clients::Ptr& clients,
-       Clients::Flag executor=Clients::Flag::DEFAULT) noexcept
-      : clients(clients),
+  Base(const Clients::Ptr& a_clients,
+       Clients::Flag a_executor=Clients::Flag::DEFAULT) noexcept
+      : clients(a_clients),
         state_error(Error::OK), completion(0),
         timeout(clients->cfg_send_timeout->get()),
         timeout_ratio(clients->cfg_send_timeout_ratio->get()),
         buff_sz(clients->cfg_send_buff_sz->get()),
         buff_ahead(clients->cfg_send_ahead->get()),
-        executor(executor) {
+        executor(a_executor) {
     if(!timeout_ratio)
       timeout_ratio.store(1000);
   }

@@ -27,8 +27,8 @@ class Key final {
   typedef std::shared_ptr<Key> Ptr;
 
   constexpr SWC_CAN_INLINE
-  explicit Key(bool own = true) noexcept
-              : own(own), count(0), size(0), data(nullptr) {
+  explicit Key(bool a_own = true) noexcept
+              : own(a_own), count(0), size(0), data(nullptr) {
   }
 
   explicit Key(const Key& other);
@@ -259,9 +259,9 @@ class Key final {
 
   SWC_CAN_INLINE
   uint8_t* _data(const uint8_t* ptr) {
-    uint8_t* data = size ? new uint8_t[size] : nullptr;
-    return data
-      ? static_cast<uint8_t*>(memcpy(data, ptr, size))
+    uint8_t* a_data = size ? new uint8_t[size] : nullptr;
+    return a_data
+      ? static_cast<uint8_t*>(memcpy(a_data, ptr, size))
       : nullptr;
   }
 
@@ -276,8 +276,8 @@ Key::Key(const Key& other)
 }
 
 SWC_CAN_INLINE
-Key::Key(const Key& other, bool own)
-        : own(own), count(other.count), size(other.size),
+Key::Key(const Key& other, bool a_own)
+        : own(a_own), count(other.count), size(other.size),
           data(own ? _data(other.data): other.data) {
 }
 

@@ -25,14 +25,14 @@ class Interval final {
   const Types::KeySeq key_seq;
 
   SWC_CAN_INLINE
-  explicit Interval(const Types::KeySeq key_seq) noexcept
-                    : key_seq(key_seq) {
+  explicit Interval(const Types::KeySeq a_key_seq) noexcept
+                    : key_seq(a_key_seq) {
   }
 
   SWC_CAN_INLINE
-  explicit Interval(const Types::KeySeq key_seq,
+  explicit Interval(const Types::KeySeq a_key_seq,
                     const uint8_t **ptr, size_t *remain)
-                  : key_seq(key_seq) {
+                  : key_seq(a_key_seq) {
     decode(ptr, remain, true);
   }
 

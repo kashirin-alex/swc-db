@@ -18,7 +18,7 @@ class ColumnCompactReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnCompactReq(cid_t cid=0) noexcept : cid(cid) { }
+  ColumnCompactReq(cid_t a_cid=0) noexcept : cid(a_cid) { }
 
   //~ColumnCompactReq() { }
 
@@ -42,7 +42,7 @@ class ColumnCompactRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnCompactRsp(int err = Error::OK) noexcept : err(err) { }
+  ColumnCompactRsp(int a_err = Error::OK) noexcept : err(a_err) { }
 
   ColumnCompactRsp(int err, const uint8_t* ptr, size_t remain) noexcept;
 

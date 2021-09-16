@@ -18,9 +18,9 @@ class Value {
   public:
 
   constexpr SWC_CAN_INLINE
-  explicit Value(bool own=true,
-                 Condition::Comp comp=Condition::NONE) noexcept
-                : own(own), comp(comp),
+  explicit Value(bool a_own=true,
+                 Condition::Comp a_comp=Condition::NONE) noexcept
+                : own(a_own), comp(a_comp),
                   size(0), data(nullptr), matcher(nullptr) {
   }
 

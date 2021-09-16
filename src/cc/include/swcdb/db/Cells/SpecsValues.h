@@ -26,8 +26,8 @@ class Values : public Core::Vector<Value> {
   Types::Column col_type;
 
   SWC_CAN_INLINE
-  Values(Types::Column col_type = Types::Column::UNKNOWN) noexcept
-        : col_type(col_type) {
+  Values(Types::Column a_col_type = Types::Column::UNKNOWN) noexcept
+        : col_type(a_col_type) {
   }
 
   SWC_CAN_INLINE

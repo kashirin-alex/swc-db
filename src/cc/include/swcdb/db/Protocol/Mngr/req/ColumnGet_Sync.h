@@ -64,12 +64,12 @@ class ColumnGet_Sync {
   Core::StateSynchronization        await;
 
   SWC_CAN_INLINE
-  ColumnGet_Sync(const SWC::client::Clients::Ptr& clients,
-                 int& err, DB::Schema::Ptr& _schema) noexcept
-                 : clients(clients), err(err), _schema(_schema) {
+  ColumnGet_Sync(const SWC::client::Clients::Ptr& a_clients,
+                 int& a_err, DB::Schema::Ptr& a_schema) noexcept
+                 : clients(a_clients), err(a_err), _schema(a_schema) {
   }
 
-  // ~ColumnGet_Sync() { }
+  ~ColumnGet_Sync() { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

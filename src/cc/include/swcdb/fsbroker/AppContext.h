@@ -73,9 +73,9 @@ class AppContext final : public Comm::AppContext {
     Comm::ConnHandlerPtr conn;
     Comm::Event::Ptr     ev;
     SWC_CAN_INLINE
-    CommandHandler(const Comm::ConnHandlerPtr& conn,
-                   const Comm::Event::Ptr& ev) noexcept
-                  : conn(conn), ev(ev) {
+    CommandHandler(const Comm::ConnHandlerPtr& a_conn,
+                   const Comm::Event::Ptr& a_ev) noexcept
+                  : conn(a_conn), ev(a_ev) {
       Env::FsBroker::in_process(1);
     }
     void operator()() {
@@ -208,10 +208,10 @@ class AppContext final : public Comm::AppContext {
 
   void shutting_down(const std::error_code &ec, const int &sig) {
     if(!sig) { // set signals listener
-      struct Handler {
+      struct Task {
         AppContext* ptr;
         SWC_CAN_INLINE
-        Handler(AppContext* ptr) noexcept : ptr(ptr) { }
+        Task(AppContext* a_ptr) noexcept : ptr(a_ptr) { }
         void operator()(const std::error_code& ec, const int &sig) {
           if(ec == asio::error::operation_aborted)
             return;
@@ -220,7 +220,7 @@ class AppContext final : public Comm::AppContext {
           ptr->shutting_down(ec, sig);
         }
       };
-      Env::IoCtx::io()->signals->async_wait(Handler(this));
+      Env::IoCtx::io()->signals->async_wait(Task(this));
 
       SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s",
               sig, ec.message().c_str());

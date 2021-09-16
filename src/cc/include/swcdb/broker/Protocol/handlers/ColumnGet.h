@@ -22,13 +22,13 @@ struct ColumnGet {
   Mngr::Params::ColumnGetReq::Flag flag;
 
   SWC_CAN_INLINE
-  ColumnGet(const ConnHandlerPtr& conn,
-            const Event::Ptr& ev,
-            Mngr::Params::ColumnGetReq::Flag flag)
-            : conn(conn), ev(ev), flag(flag) {
+  ColumnGet(const ConnHandlerPtr& a_conn,
+            const Event::Ptr& a_ev,
+            Mngr::Params::ColumnGetReq::Flag a_flag)
+            : conn(a_conn), ev(a_ev), flag(a_flag) {
   }
 
-  //~ColumnGet() { }
+  ~ColumnGet() { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

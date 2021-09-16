@@ -10,10 +10,10 @@
 namespace SWC { namespace ThriftBroker { namespace Metric {
 
 
-Reporting::Reporting(const Comm::IoContextPtr& io,
-                     Config::Property::V_GINT32::Ptr cfg_intval)
+Reporting::Reporting(const Comm::IoContextPtr& a_io,
+                     Config::Property::V_GINT32::Ptr a_cfg_intval)
         : Common::Query::Update::Metric::Reporting(
-            Env::Clients::get(), io, cfg_intval),
+            Env::Clients::get(), a_io, a_cfg_intval),
           net(nullptr) {
 }
 

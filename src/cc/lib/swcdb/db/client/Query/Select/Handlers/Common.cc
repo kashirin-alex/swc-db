@@ -14,11 +14,11 @@ namespace SWC { namespace client { namespace Query { namespace Select {
 namespace Handlers {
 
 
-Common::Common(const Clients::Ptr& clients,
+Common::Common(const Clients::Ptr& a_clients,
                Cb_t&& cb, bool rsp_partials,
                const Comm::IoContextPtr& io,
-               Clients::Flag executor) noexcept
-              : BaseUnorderedMap(clients, executor),
+               Clients::Flag a_executor) noexcept
+              : BaseUnorderedMap(a_clients, a_executor),
                 valid_state(true),
                 m_cb(std::move(cb)), m_dispatcher_io(io),
                 m_notify(m_cb && rsp_partials),
@@ -114,7 +114,7 @@ void Common::send_result() {
   struct Task {
     Ptr hdlr;
     SWC_CAN_INLINE
-    Task(Ptr&& hdlr) noexcept : hdlr(std::move(hdlr)) { }
+    Task(Ptr&& a_hdlr) noexcept : hdlr(std::move(a_hdlr)) { }
     void operator()() {
       hdlr->m_cb(hdlr);
 

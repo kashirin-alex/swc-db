@@ -21,11 +21,11 @@ struct ColumnCompact {
   Event::Ptr     ev;
 
   SWC_CAN_INLINE
-  ColumnCompact(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
-                : conn(conn), ev(ev) {
+  ColumnCompact(const ConnHandlerPtr& a_conn, const Event::Ptr& a_ev) noexcept
+                : conn(a_conn), ev(a_ev) {
   }
 
-  //~ColumnCompact() { }
+  ~ColumnCompact() { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

@@ -27,27 +27,27 @@ class ReqScan : public Comm::ResponseCallback {
   }
 
   SWC_CAN_INLINE
-  ReqScan(const DB::Specs::Interval& spec)
+  ReqScan(const DB::Specs::Interval& a_spec)
           : Comm::ResponseCallback(nullptr, nullptr),
-            spec(spec),
+            spec(a_spec),
             only_keys(spec.flags.is_only_keys()),
             offset(spec.flags.offset) {
   }
 
   SWC_CAN_INLINE
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          DB::Specs::Interval&& spec)
+          DB::Specs::Interval&& a_spec)
           : Comm::ResponseCallback(conn, ev),
-            spec(std::move(spec)),
+            spec(std::move(a_spec)),
             only_keys(spec.flags.is_only_keys()),
             offset(spec.flags.offset) {
   }
 
   SWC_CAN_INLINE
   ReqScan(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
-          const DB::Specs::Interval& spec)
+          const DB::Specs::Interval& a_spec)
           : Comm::ResponseCallback(conn, ev),
-            spec(spec),
+            spec(a_spec),
             only_keys(spec.flags.is_only_keys()),
             offset(spec.flags.offset) {
   }

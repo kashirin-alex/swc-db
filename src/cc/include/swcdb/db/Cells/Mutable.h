@@ -80,20 +80,22 @@ class Mutable final {
 
 
   SWC_CAN_INLINE
-  Mutable(const Types::KeySeq key_seq,
-          const uint32_t max_revs=1, const uint64_t ttl_ns=0,
-          const Types::Column type=Types::Column::PLAIN)
+  Mutable(const Types::KeySeq a_key_seq,
+          const uint32_t a_max_revs=1, const uint64_t ttl_ns=0,
+          const Types::Column a_type=Types::Column::PLAIN)
           : _bytes(0), _size(0),
-            key_seq(key_seq), type(type), max_revs(max_revs), ttl(ttl_ns) {
+            key_seq(a_key_seq), type(a_type), max_revs(a_max_revs),
+            ttl(ttl_ns) {
   }
 
   SWC_CAN_INLINE
-  Mutable(const Types::KeySeq key_seq,
-          const uint32_t max_revs, const uint64_t ttl_ns,
-          const Types::Column type,
+  Mutable(const Types::KeySeq a_key_seq,
+          const uint32_t a_max_revs, const uint64_t ttl_ns,
+          const Types::Column a_type,
           const StaticBuffer& buffer)
           : _bytes(0), _size(0),
-            key_seq(key_seq), type(type), max_revs(max_revs), ttl(ttl_ns) {
+            key_seq(a_key_seq), type(a_type), max_revs(a_max_revs),
+            ttl(ttl_ns) {
     add_sorted(buffer.base, buffer.size);
   }
 

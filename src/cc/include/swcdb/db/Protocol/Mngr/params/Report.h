@@ -37,8 +37,8 @@ class ReqColumnStatus final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ReqColumnStatus(cid_t cid = DB::Schema::NO_CID)
-                  noexcept : cid(cid) {
+  ReqColumnStatus(cid_t a_cid = DB::Schema::NO_CID)
+                  noexcept : cid(a_cid) {
   }
 
   //~ReqColumnStatus() { }

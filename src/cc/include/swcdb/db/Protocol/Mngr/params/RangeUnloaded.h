@@ -17,8 +17,8 @@ class RangeUnloadedReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeUnloadedReq(cid_t cid=0, rid_t rid=0) noexcept
-                  : cid(cid), rid(rid) {
+  RangeUnloadedReq(cid_t a_cid=0, rid_t a_rid=0) noexcept
+                  : cid(a_cid), rid(a_rid) {
   }
 
   //~RangeUnloadedReq() { }
@@ -60,10 +60,10 @@ class RangeUnloadedRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeUnloadedRsp(int err = Error::OK) noexcept : err(err) { }
+  RangeUnloadedRsp(int a_err = Error::OK) noexcept : err(a_err) { }
 
-  RangeUnloadedRsp(int err, const uint8_t* ptr, size_t remain) noexcept
-                  : err(err) {
+  RangeUnloadedRsp(int a_err, const uint8_t* ptr, size_t remain) noexcept
+                  : err(a_err) {
     if(!err) try {
       decode(&ptr, &remain);
     } catch(...) {

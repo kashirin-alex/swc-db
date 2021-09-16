@@ -21,8 +21,8 @@ class RangeLoad final : public Serializable {
   RangeLoad() noexcept : rid(0) { }
 
   SWC_CAN_INLINE
-  RangeLoad(const DB::Schema::Ptr& schema, rid_t rid) noexcept
-            : schema_primitives(*schema.get()), rid(rid) {
+  RangeLoad(const DB::Schema::Ptr& schema, rid_t a_rid) noexcept
+            : schema_primitives(*schema.get()), rid(a_rid) {
   }
 
   //~RangeLoad() { }
@@ -55,11 +55,12 @@ class RangeLoaded final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeLoaded(const DB::Types::KeySeq key_seq, int64_t revision=0) noexcept
-              : intval(false), interval(key_seq), revision(revision) {
+  RangeLoaded(const DB::Types::KeySeq key_seq, int64_t a_revision=0) noexcept
+              : intval(false), interval(key_seq), revision(a_revision) {
   }
 
-  //~RangeLoaded() { }
+  SWC_CAN_INLINE
+  ~RangeLoaded() { }
 
   bool                intval;
   DB::Cells::Interval interval;

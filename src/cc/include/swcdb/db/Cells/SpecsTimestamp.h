@@ -24,8 +24,8 @@ class Timestamp {
   }
 
   constexpr SWC_CAN_INLINE
-  explicit Timestamp(int64_t timestamp, Condition::Comp comp) noexcept
-                    : value(timestamp), comp(comp), was_set(true) {
+  explicit Timestamp(int64_t timestamp, Condition::Comp a_comp) noexcept
+                    : value(timestamp), comp(a_comp), was_set(true) {
   }
 
   //~Timestamp() { }

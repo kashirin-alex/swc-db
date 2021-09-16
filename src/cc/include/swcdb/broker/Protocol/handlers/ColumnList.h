@@ -22,11 +22,11 @@ struct ColumnList {
   Core::Atomic<size_t> remain;
   Core::StateRunning   processed;
   SWC_CAN_INLINE
-  ColumnList(const ConnHandlerPtr& conn, const Event::Ptr& ev) noexcept
-            : conn(conn), ev(ev), remain(0), processed(false) {
+  ColumnList(const ConnHandlerPtr& a_conn, const Event::Ptr& a_ev) noexcept
+            : conn(a_conn), ev(a_ev), remain(0), processed(false) {
   }
 
-  //~ColumnList() { }
+  ~ColumnList() { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

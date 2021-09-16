@@ -14,8 +14,9 @@ namespace Serial { namespace Value {
 
 
 // Field INT64
-Field_INT64::Field_INT64(uint24_t fid, Condition::Comp comp, int64_t value)
-                        : Field(fid), comp(comp), value(value) {
+Field_INT64::Field_INT64(uint24_t a_fid,
+                         Condition::Comp a_comp, int64_t a_value)
+                        : Field(a_fid), comp(a_comp), value(a_value) {
 }
 
 Field_INT64::Field_INT64(const uint8_t** bufp, size_t* remainp)
@@ -50,9 +51,9 @@ void Field_INT64::print(std::ostream& out) const {
 
 
 // Field DOUBLE
-Field_DOUBLE::Field_DOUBLE(uint24_t fid, Condition::Comp comp,
-                           const long double& value)
-                          : Field(fid), comp(comp), value(value) {
+Field_DOUBLE::Field_DOUBLE(uint24_t a_fid, Condition::Comp a_comp,
+                           const long double& a_value)
+                          : Field(a_fid), comp(a_comp), value(a_value) {
 }
 
 Field_DOUBLE::Field_DOUBLE(const uint8_t** bufp, size_t* remainp)
@@ -87,10 +88,10 @@ void Field_DOUBLE::print(std::ostream& out) const {
 
 
 // Field BYTES
-Field_BYTES::Field_BYTES(uint24_t fid, Condition::Comp comp,
+Field_BYTES::Field_BYTES(uint24_t a_fid, Condition::Comp a_comp,
                          const uint8_t* ptr, size_t len,
                          bool take_ownership)
-                        : Field(fid), comp(comp) {
+                        : Field(a_fid), comp(a_comp) {
   take_ownership
     ? value.assign(ptr, len)
     : value.set(const_cast<uint8_t*>(ptr), len, false);
@@ -149,12 +150,12 @@ void Field_BYTES::print(std::ostream& out) const {
 
 // Field KEY
 
-Field_KEY::Field_KEY(uint24_t fid, Types::KeySeq seq)
-                    : Field(fid), seq(seq) {
+Field_KEY::Field_KEY(uint24_t a_fid, Types::KeySeq a_seq)
+                    : Field(a_fid), seq(a_seq) {
 }
 
-Field_KEY::Field_KEY(uint24_t fid, Types::KeySeq seq, const Key& key)
-                    : Field(fid), seq(seq), key(key) {
+Field_KEY::Field_KEY(uint24_t a_fid, Types::KeySeq a_seq, const Key& a_key)
+                    : Field(a_fid), seq(a_seq), key(a_key) {
 }
 
 Field_KEY::Field_KEY(const uint8_t** bufp, size_t* remainp)
@@ -187,14 +188,14 @@ void Field_KEY::print(std::ostream& out) const {
 
 
 // Field LIST_INT64
-Field_LIST_INT64::Field_LIST_INT64(uint24_t fid, Condition::Comp comp)
-                                  : Field(fid), comp(comp) {
+Field_LIST_INT64::Field_LIST_INT64(uint24_t a_fid, Condition::Comp a_comp)
+                                  : Field(a_fid), comp(a_comp) {
 }
 
-Field_LIST_INT64::Field_LIST_INT64(uint24_t fid, Condition::Comp comp,
-                                   const Field_LIST_INT64::Vec& items)
-                                  : Field(fid),
-                                    comp(comp), items(items) {
+Field_LIST_INT64::Field_LIST_INT64(uint24_t a_fid, Condition::Comp a_comp,
+                                   const Field_LIST_INT64::Vec& a_items)
+                                  : Field(a_fid),
+                                    comp(a_comp), items(a_items) {
 }
 
 Field_LIST_INT64::Field_LIST_INT64(const uint8_t** bufp, size_t* remainp)
@@ -402,14 +403,14 @@ void Field_LIST_INT64::print(std::ostream& out) const {
 
 
 // Field LIST_BYTES
-Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp)
-                                  : Field(fid), comp(comp) {
+Field_LIST_BYTES::Field_LIST_BYTES(uint24_t a_fid, Condition::Comp a_comp)
+                                  : Field(a_fid), comp(a_comp) {
 }
 
-Field_LIST_BYTES::Field_LIST_BYTES(uint24_t fid, Condition::Comp comp,
-                                   const Field_LIST_BYTES::Vec& items)
-                                  : Field(fid),
-                                    comp(comp), items(items) {
+Field_LIST_BYTES::Field_LIST_BYTES(uint24_t a_fid, Condition::Comp a_comp,
+                                   const Field_LIST_BYTES::Vec& a_items)
+                                  : Field(a_fid),
+                                    comp(a_comp), items(a_items) {
 }
 
 Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp)

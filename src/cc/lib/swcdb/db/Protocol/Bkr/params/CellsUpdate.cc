@@ -32,8 +32,8 @@ void CellsUpdateReq::internal_decode(const uint8_t** bufp,
 
 
 
-CellsUpdateRsp::CellsUpdateRsp(int err, const uint8_t* ptr, size_t remain)
-                               noexcept : err(err) {
+CellsUpdateRsp::CellsUpdateRsp(int a_err, const uint8_t* ptr, size_t remain)
+                               noexcept : err(a_err) {
   if(!err) try {
     decode(&ptr, &remain);
   } catch(...) {

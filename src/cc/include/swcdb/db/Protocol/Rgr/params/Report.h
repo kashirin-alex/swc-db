@@ -32,7 +32,7 @@ class ReqColumn final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ReqColumn(cid_t cid = 0) noexcept : cid(cid) { }
+  ReqColumn(cid_t a_cid = 0) noexcept : cid(a_cid) { }
 
   //~ReqColumn() { }
 
@@ -57,8 +57,8 @@ class RspRes final : public Serializable {
   RspRes() noexcept { }
 
   SWC_CAN_INLINE
-  RspRes(uint32_t mem, uint32_t cpu, size_t ranges) noexcept
-        : mem(mem), cpu(cpu), ranges(ranges) {
+  RspRes(uint32_t a_mem, uint32_t a_cpu, size_t a_ranges) noexcept
+        : mem(a_mem), cpu(a_cpu), ranges(a_ranges) {
   }
 
   //~RspRes() { }

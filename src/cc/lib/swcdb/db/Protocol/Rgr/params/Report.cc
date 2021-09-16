@@ -213,9 +213,9 @@ void RspColumnsRanges::Column::display(std::ostream& out, bool pretty,
 
 
 
-RspColumnsRanges::RspColumnsRanges(rgrid_t rgrid,
-                                   const EndPoints& endpoints)
-                                  : rgrid(rgrid), endpoints(endpoints) {
+RspColumnsRanges::RspColumnsRanges(rgrid_t a_rgrid,
+                                   const EndPoints& a_endpoints)
+                                  : rgrid(a_rgrid), endpoints(a_endpoints) {
 }
 
 RspColumnsRanges::~RspColumnsRanges() {
