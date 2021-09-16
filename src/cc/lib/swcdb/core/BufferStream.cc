@@ -37,8 +37,8 @@ void BufferStreamOut::get(StaticBuffer& output) {
 
 
 BufferStreamOut_ZSTD_OnAdd::BufferStreamOut_ZSTD_OnAdd(
-                      int level, size_t pre_alloc, size_t commit_size)
-                      : BufferStreamOut(pre_alloc, commit_size),
+                      int level, size_t a_pre_alloc, size_t a_commit_size)
+                      : BufferStreamOut(a_pre_alloc, a_commit_size),
                         cstream(ZSTD_createCStream()),
                         has_data(false), plain_size(0) {
   if(ZSTD_isError(
@@ -120,8 +120,8 @@ void BufferStreamOut_ZSTD_OnAdd::get(StaticBuffer& output) {
 
 
 BufferStreamOut_ZSTD::BufferStreamOut_ZSTD(
-                    int level, size_t pre_alloc, size_t commit_size)
-                    : BufferStreamOut(pre_alloc, commit_size),
+                    int level, size_t a_pre_alloc, size_t a_commit_size)
+                    : BufferStreamOut(a_pre_alloc, a_commit_size),
                       cstream(ZSTD_createCStream()) {
   if(ZSTD_isError(
       ZSTD_initCStream(cstream, level ? level : ZSTD_CLEVEL_DEFAULT)))
@@ -158,9 +158,9 @@ void BufferStreamOut_ZSTD::get(StaticBuffer& output) {
 
 
 BufferStreamOut_ENCODER::BufferStreamOut_ENCODER(
-                Encoder::Type encoder, size_t pre_alloc, size_t commit_size)
-                : BufferStreamOut(pre_alloc, commit_size),
-                  encoder(encoder) {
+            Encoder::Type a_encoder, size_t a_pre_alloc, size_t a_commit_size)
+            : BufferStreamOut(a_pre_alloc, a_commit_size),
+              encoder(a_encoder) {
 }
 
 void BufferStreamOut_ENCODER::get(StaticBuffer& output) {

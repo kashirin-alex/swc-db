@@ -22,7 +22,7 @@ struct A1 {
   static A1* make(size_t n) {
     return new A1(n);
   }
-  A1(size_t n) : n(n) { }
+  A1(size_t a_n) : n(a_n) { }
   void done() {
     delete this;
   }
@@ -34,7 +34,7 @@ struct A2 : Core::QueuePointer<A2*>::Pointer {
   static A2* make(size_t n) {
     return new A2(n);
   }
-  A2(size_t n) : n(n) { }
+  A2(size_t a_n) : n(a_n) { }
   void done() {
     delete this;
   }
@@ -46,7 +46,7 @@ struct A3 : Core::QueuePointer<std::shared_ptr<A3>>::Pointer {
   static std::shared_ptr<A3> make(size_t n) {
     return std::shared_ptr<A3>(new A3(n));
   }
-  A3(size_t n) : n(n) { }
+  A3(size_t a_n) : n(a_n) { }
   void done() {}
   size_t n;
 };
@@ -56,7 +56,7 @@ struct A4  {
   static std::shared_ptr<A4> make(size_t n) {
     return std::shared_ptr<A4>(new A4(n));
   }
-  A4(size_t n) : n(n) { }
+  A4(size_t a_n) : n(a_n) { }
   void done() {}
   size_t n;
 };

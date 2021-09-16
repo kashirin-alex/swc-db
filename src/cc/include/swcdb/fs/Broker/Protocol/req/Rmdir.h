@@ -20,17 +20,17 @@ class Rmdir final : public Base {
 
   SWC_CAN_INLINE
   Rmdir(FS::Statistics& stats,
-        uint32_t timeout, const std::string& name,
-        FS::Callback::RmdirCb_t&& cb)
+        uint32_t timeout, const std::string& a_name,
+        FS::Callback::RmdirCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::RMDIR_ASYNC,
             Buffers::make(
-              Params::RmdirReq(name),
+              Params::RmdirReq(a_name),
               0,
               FUNCTION_RMDIR, timeout
             )
           ),
-          name(name), cb(std::move(cb)) {
+          name(a_name), cb(std::move(a_cb)) {
 }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

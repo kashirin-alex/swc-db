@@ -22,18 +22,18 @@ class AppendSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   AppendSync(FS::Statistics& stats,
-             uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+             uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
              StaticBuffer& buffer, FS::Flags flags)
         : Base(
             stats, FS::Statistics::APPEND_SYNC,
             Buffers::make(
-              Params::AppendReq(smartfd->fd(), flags),
+              Params::AppendReq(a_smartfd->fd(), flags),
               buffer,
               0,
               FUNCTION_APPEND, timeout
             )
           ),
-          amount(0), smartfd(smartfd) {
+          amount(0), smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

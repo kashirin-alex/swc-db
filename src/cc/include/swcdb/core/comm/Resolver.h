@@ -36,10 +36,12 @@ struct Network {
   const asio::ip::network_v6  v6;
 
   SWC_CAN_INLINE
-  Network(const asio::ip::network_v4& v4) noexcept : is_v4(true), v4(v4) { }
+  Network(const asio::ip::network_v4& a_v4) noexcept
+          : is_v4(true), v4(a_v4) { }
 
   SWC_CAN_INLINE
-  Network(const asio::ip::network_v6& v6) noexcept : is_v4(false), v6(v6) { }
+  Network(const asio::ip::network_v6& a_v6) noexcept
+          : is_v4(false), v6(a_v6) { }
 
   SWC_CAN_INLINE
   Network(const Network& net) noexcept

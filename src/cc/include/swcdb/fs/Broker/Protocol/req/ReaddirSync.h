@@ -22,17 +22,17 @@ class ReaddirSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   ReaddirSync(FS::Statistics& stats,
-              uint32_t timeout, const std::string& name,
-              FS::DirentList& listing)
+              uint32_t timeout, const std::string& a_name,
+              FS::DirentList& a_listing)
               : Base(
                   stats, FS::Statistics::READDIR_SYNC,
                   Buffers::make(
-                    Params::ReaddirReq(name),
+                    Params::ReaddirReq(a_name),
                     0,
                     FUNCTION_READDIR, timeout
                   )
                 ),
-                listing(listing), name(name) {
+                listing(a_listing), name(a_name) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

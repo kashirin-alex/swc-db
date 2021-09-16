@@ -35,9 +35,10 @@ class Base : public DispatchHandler {
   protected:
 
   SWC_CAN_INLINE
-  Base(FS::Statistics& stats, FS::Statistics::Command cmd, Buffers::Ptr&& cbp)
-        noexcept
-      : tracker(stats.tracker(cmd)), error(Error::OK), cbp(std::move(cbp)) {
+  Base(FS::Statistics& stats, FS::Statistics::Command cmd,
+       Buffers::Ptr&& a_cbp) noexcept
+      : tracker(stats.tracker(cmd)), error(Error::OK),
+        cbp(std::move(a_cbp)) {
   }
 
   /* common (Sync & Async) handlers */

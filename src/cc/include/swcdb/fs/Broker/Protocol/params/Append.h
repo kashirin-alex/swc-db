@@ -22,7 +22,8 @@ class AppendReq final : public Serializable {
   AppendReq() noexcept : fd(-1), flags(0) { }
 
   SWC_CAN_INLINE
-  AppendReq(int32_t fd, uint8_t flags) noexcept : fd(fd), flags(flags) { }
+  AppendReq(int32_t a_fd, uint8_t a_flags) noexcept
+            : fd(a_fd), flags(a_flags) { }
 
   int32_t fd;
   uint8_t flags;
@@ -47,8 +48,8 @@ class AppendRsp final : public Serializable {
   AppendRsp() noexcept : amount(0) { }
 
   SWC_CAN_INLINE
-  AppendRsp(uint64_t offset, uint32_t amount) noexcept
-            : offset(offset), amount(amount) { }
+  AppendRsp(uint64_t a_offset, uint32_t a_amount) noexcept
+            : offset(a_offset), amount(a_amount) { }
 
   uint64_t offset {};
   uint32_t amount {};

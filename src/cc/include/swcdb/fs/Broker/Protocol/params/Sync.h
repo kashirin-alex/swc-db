@@ -20,7 +20,7 @@ class SyncReq final : public Serializable {
   SyncReq() noexcept : fd(-1) { }
 
   SWC_CAN_INLINE
-  SyncReq(int32_t fd) noexcept : fd(fd) { }
+  SyncReq(int32_t a_fd) noexcept : fd(a_fd) { }
 
   int32_t fd;
 

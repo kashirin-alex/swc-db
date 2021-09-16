@@ -183,7 +183,7 @@ class Resources final {
     struct TimerTask {
       Resources* ptr;
       SWC_CAN_INLINE
-      TimerTask(Resources* ptr) noexcept : ptr(ptr) { }
+      TimerTask(Resources* a_ptr) noexcept : ptr(a_ptr) { }
       void operator()(const asio::error_code& ec) {
         if(ec != asio::error::operation_aborted)
           ptr->checker();

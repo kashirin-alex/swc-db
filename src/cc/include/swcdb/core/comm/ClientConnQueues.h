@@ -48,12 +48,12 @@ class ConnQueues final :
   const Config::Property::V_GINT32::Ptr    cfg_again_delay_ms;
 
   SWC_CAN_INLINE
-  ConnQueues(const Serialized::Ptr service,
+  ConnQueues(const Serialized::Ptr a_service,
              const Config::Property::V_GINT32::Ptr timeout,
              const Config::Property::V_GINT32::Ptr probes,
              const Config::Property::V_GINT32::Ptr keepalive_ms,
              const Config::Property::V_GINT32::Ptr again_delay_ms) noexcept
-            : service(service),
+            : service(a_service),
               cfg_conn_timeout(timeout),
               cfg_conn_probes(probes),
               cfg_keepalive_ms(keepalive_ms),
@@ -79,11 +79,11 @@ class ConnQueues final :
 
 
 SWC_CAN_INLINE
-Host::Host(const ConnQueuesPtr queues, const EndPoints& endpoints,
+Host::Host(const ConnQueuesPtr a_queues, const EndPoints& a_endpoints,
            const Config::Property::V_GINT32::Ptr keepalive_ms,
            const Config::Property::V_GINT32::Ptr again_delay_ms)
           : ConnQueue(queues->service->io(), keepalive_ms, again_delay_ms),
-            endpoints(endpoints), queues(queues) {
+            endpoints(a_endpoints), queues(a_queues) {
 }
 
 

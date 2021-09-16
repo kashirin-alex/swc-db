@@ -110,9 +110,9 @@ void ConnQueue::delay(ConnQueue::ReqBase::Ptr&& req) {
     ReqBase::Ptr                  req;
     asio::high_resolution_timer*  tm;
     SWC_CAN_INLINE
-    TimerTask(ConnQueue* queue, ReqBase::Ptr&& req,
-              asio::high_resolution_timer* tm) noexcept
-              : queue(queue), req(std::move(req)), tm(tm) {
+    TimerTask(ConnQueue* a_queue, ReqBase::Ptr&& a_req,
+              asio::high_resolution_timer* a_tm) noexcept
+              : queue(a_queue), req(std::move(a_req)), tm(a_tm) {
     }
     void operator()(const asio::error_code& ec) {
       if(ec == asio::error::operation_aborted) {
@@ -154,7 +154,7 @@ void ConnQueue::exec_queue() {
   struct Task {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
-    Task(ConnQueuePtr&& queue) noexcept : queue(std::move(queue)) { }
+    Task(ConnQueuePtr&& a_queue) noexcept : queue(std::move(a_queue)) { }
     void operator()() { queue->run_queue(); }
   };
   m_ioctx->post(Task(shared_from_this()));
@@ -222,7 +222,7 @@ void ConnQueue::schedule_close(bool closing) {
   struct TimerTask {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
-    TimerTask(ConnQueuePtr&& queue) noexcept : queue(std::move(queue)) { }
+    TimerTask(ConnQueuePtr&& a_queue) noexcept : queue(std::move(a_queue)) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
         queue->schedule_close(true);

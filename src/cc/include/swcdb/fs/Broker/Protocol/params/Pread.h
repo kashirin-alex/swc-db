@@ -21,8 +21,8 @@ class PreadReq final : public Serializable {
   PreadReq() noexcept : fd(-1) { }
 
   SWC_CAN_INLINE
-  PreadReq(int32_t fd, uint64_t offset, uint32_t amount) noexcept
-          : fd(fd), offset(offset), amount(amount) { }
+  PreadReq(int32_t a_fd, uint64_t a_offset, uint32_t a_amount) noexcept
+          : fd(a_fd), offset(a_offset), amount(a_amount) { }
 
   int32_t   fd;
   uint64_t  offset;

@@ -59,14 +59,14 @@ class Mem {
   Mem(Config::Property::V_GINT32::Ptr ram_percent_allowed,
       Config::Property::V_GINT32::Ptr ram_percent_reserved,
       Config::Property::V_GINT32::Ptr ram_release_rate,
-      Notifier* notifier,
-      ReleaseCall_t&& release_call=nullptr) noexcept
+      Notifier* a_notifier,
+      ReleaseCall_t&& a_release_call=nullptr) noexcept
       : cfg_percent_allowed(ram_percent_allowed),
         cfg_percent_reserved(ram_percent_reserved),
         cfg_release_rate(ram_release_rate),
         free(0), used(0), used_reg(0), used_releasable(0), used_future(0),
         total(0), allowed(0), reserved(0), mem_buff_ms(0),
-        notifier(notifier), release_call(std::move(release_call)),
+        notifier(a_notifier), release_call(std::move(a_release_call)),
         page_size(sysconf(_SC_PAGE_SIZE)),
         chk_stat_ts(0), chk_statm_ts(0), chk_low_state_ts(0),
         chk_release_ts(0) {
@@ -324,10 +324,10 @@ class Mem {
       struct mallinfo2 mi;
       mi = ::mallinfo2();
       bytes = mi.uordblks;
-      
+
     #elif defined(SWC_ENABLE_SANITIZER)
       bytes = used;
-    
+
     #else
       struct mallinfo mi;
       static_assert(

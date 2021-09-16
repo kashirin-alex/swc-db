@@ -20,17 +20,17 @@ class Read final : public Base {
 
   SWC_CAN_INLINE
   Read(FS::Statistics& stats,
-       uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t len,
-       FS::Callback::ReadCb_t&& cb)
+       uint32_t timeout, FS::SmartFd::Ptr& a_smartfd, size_t len,
+       FS::Callback::ReadCb_t&& a_cb)
       : Base(
           stats, FS::Statistics::READ_ASYNC,
           Buffers::make(
-            Params::ReadReq(smartfd->fd(), len),
+            Params::ReadReq(a_smartfd->fd(), len),
             0,
             FUNCTION_READ, timeout
           )
         ),
-        smartfd(smartfd), cb(std::move(cb)) {
+        smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

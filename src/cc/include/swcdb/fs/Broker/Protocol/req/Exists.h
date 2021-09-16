@@ -20,17 +20,17 @@ class Exists final : public Base {
 
   SWC_CAN_INLINE
   Exists(FS::Statistics& stats,
-         uint32_t timeout, const std::string& name,
-         FS::Callback::ExistsCb_t&& cb)
+         uint32_t timeout, const std::string& a_name,
+         FS::Callback::ExistsCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::EXISTS_ASYNC,
             Buffers::make(
-              Params::ExistsReq(name),
+              Params::ExistsReq(a_name),
               0,
               FUNCTION_EXISTS, timeout
             )
           ),
-          name(name), cb(std::move(cb)) {
+          name(a_name), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

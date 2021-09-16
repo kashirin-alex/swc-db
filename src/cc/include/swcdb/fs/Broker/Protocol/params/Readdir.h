@@ -22,7 +22,7 @@ class ReaddirReq final : public Serializable {
   ReaddirReq() noexcept { }
 
   SWC_CAN_INLINE
-  ReaddirReq(const std::string& dirname) : dirname(dirname) { }
+  ReaddirReq(const std::string& a_dirname) : dirname(a_dirname) { }
 
   std::string dirname;
 

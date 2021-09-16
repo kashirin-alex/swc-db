@@ -20,17 +20,17 @@ class Rename final : public Base {
 
   SWC_CAN_INLINE
   Rename(FS::Statistics& stats,
-         uint32_t timeout, const std::string& from, const std::string& to,
-         FS::Callback::RenameCb_t&& cb)
+         uint32_t timeout, const std::string& a_from, const std::string& a_to,
+         FS::Callback::RenameCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::RENAME_ASYNC,
             Buffers::make(
-              Params::RenameReq(from, to),
+              Params::RenameReq(a_from, a_to),
               0,
               FUNCTION_RENAME, timeout
             )
           ),
-          from(from), to(to), cb(std::move(cb)) {
+          from(a_from), to(a_to), cb(std::move(a_cb)) {
   }
 
   SWC_CAN_INLINE

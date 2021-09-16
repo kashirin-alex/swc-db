@@ -21,7 +21,8 @@ class SeekReq final : public Serializable {
   SeekReq() noexcept : fd(-1) { }
 
   SWC_CAN_INLINE
-  SeekReq(int32_t fd, size_t offset) noexcept : fd(fd), offset(offset) { }
+  SeekReq(int32_t a_fd, size_t a_offset) noexcept
+          : fd(a_fd), offset(a_offset) { }
 
   int32_t   fd;
   uint64_t  offset;
@@ -46,7 +47,7 @@ class SeekRsp final : public Serializable {
   SeekRsp() noexcept { }
 
   SWC_CAN_INLINE
-  SeekRsp(size_t offset) noexcept : offset(offset) { }
+  SeekRsp(size_t a_offset) noexcept : offset(a_offset) { }
 
   uint64_t offset;
 

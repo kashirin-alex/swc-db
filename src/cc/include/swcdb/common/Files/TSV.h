@@ -32,8 +32,8 @@ class FileWriter {
   size_t      cells_count = 0;
   size_t      cells_bytes = 0;
   size_t      file_num = 0;
-  FileWriter(const client::Clients::Ptr& clients)
-            : clients(clients) {
+  FileWriter(const client::Clients::Ptr& a_clients)
+            : clients(a_clients) {
   }
 
   virtual ~FileWriter() { }
@@ -297,8 +297,8 @@ class FileReader {
   size_t          resend_cells = 0;
   size_t          cells_bytes = 0;
 
-  FileReader(const client::Clients::Ptr& clients)
-            : clients(clients) {
+  FileReader(const client::Clients::Ptr& a_clients)
+            : clients(a_clients) {
   }
 
   ~FileReader() {

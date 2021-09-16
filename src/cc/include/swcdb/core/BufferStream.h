@@ -24,9 +24,10 @@ class BufferStreamOut {
   int error;
 
   SWC_CAN_INLINE
-  BufferStreamOut(size_t pre_alloc = 12582912, size_t commit_size = 8388608)
-                  noexcept  : error(Error::OK),
-                              pre_alloc(pre_alloc), commit_size(commit_size) {
+  BufferStreamOut(size_t a_pre_alloc = 12582912,
+                  size_t a_commit_size = 8388608) noexcept
+                  : error(Error::OK),
+                    pre_alloc(a_pre_alloc), commit_size(a_commit_size) {
   }
 
   virtual ~BufferStreamOut() { }

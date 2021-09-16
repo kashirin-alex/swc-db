@@ -20,17 +20,17 @@ class Seek final : public Base {
 
   SWC_CAN_INLINE
   Seek(FS::Statistics& stats,
-       uint32_t timeout, FS::SmartFd::Ptr& smartfd, size_t offset,
-       FS::Callback::SeekCb_t&& cb)
+       uint32_t timeout, FS::SmartFd::Ptr& a_smartfd, size_t offset,
+       FS::Callback::SeekCb_t&& a_cb)
       : Base(
          stats, FS::Statistics::SEEK_ASYNC,
           Buffers::make(
-            Params::SeekReq(smartfd->fd(), offset),
+            Params::SeekReq(a_smartfd->fd(), offset),
             0,
             FUNCTION_SEEK, timeout
           )
         ),
-        smartfd(smartfd), cb(std::move(cb)) {
+        smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

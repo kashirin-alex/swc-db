@@ -20,17 +20,17 @@ class Remove final : public Base {
 
   SWC_CAN_INLINE
   Remove(FS::Statistics& stats,
-         uint32_t timeout, const std::string& name,
-         FS::Callback::RemoveCb_t&& cb)
+         uint32_t timeout, const std::string& a_name,
+         FS::Callback::RemoveCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::REMOVE_ASYNC,
             Buffers::make(
-              Params::RemoveReq(name),
+              Params::RemoveReq(a_name),
               0,
               FUNCTION_REMOVE, timeout
             )
           ),
-          name(name), cb(std::move(cb)) {
+          name(a_name), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

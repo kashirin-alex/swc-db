@@ -50,8 +50,8 @@ struct Configurables {
   Config::Property::V_GINT32::Ptr cfg_fds_max;
   std::string                     path_root;
   bool                            stats_enabled;
-  Configurables(const Config::Settings::Ptr& settings) noexcept
-                : settings(settings),
+  Configurables(const Config::Settings::Ptr& a_settings) noexcept
+                : settings(a_settings),
                   cfg_fds_max(nullptr), stats_enabled(false) {
   }
 };

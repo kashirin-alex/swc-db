@@ -20,17 +20,17 @@ class ReadAll final : public Base {
 
   SWC_CAN_INLINE
   ReadAll(FS::Statistics& stats,
-          uint32_t timeout, const std::string& name,
-          FS::Callback::ReadAllCb_t&& cb)
+          uint32_t timeout, const std::string& a_name,
+          FS::Callback::ReadAllCb_t&& a_cb)
           : Base(
               stats, FS::Statistics::READ_ALL_ASYNC,
               Buffers::make(
-                Params::ReadAllReq(name),
+                Params::ReadAllReq(a_name),
                 0,
                 FUNCTION_READ_ALL, timeout
               )
             ),
-            name(name), cb(std::move(cb)) {
+            name(a_name), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

@@ -21,7 +21,7 @@ class FlushReq final : public Serializable {
   FlushReq() noexcept : fd(-1) { }
 
   SWC_CAN_INLINE
-  FlushReq(int32_t fd) noexcept : fd(fd) { }
+  FlushReq(int32_t a_fd) noexcept : fd(a_fd) { }
 
   int32_t fd;
 

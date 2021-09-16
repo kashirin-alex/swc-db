@@ -62,7 +62,7 @@ void Value::assure_match(Type t1, Type t2) {
   );
 }
 
-Value::Value(uint8_t flags) noexcept : flags(flags) { }
+Value::Value(uint8_t a_flags) noexcept : flags(a_flags) { }
 
 Value::Value(Value::Ptr ptr) noexcept : flags(ptr->flags.load()) { }
 
@@ -212,8 +212,8 @@ void from_string(const std::string& s, int32_t* value) {
 
 
 
-V_BOOL::V_BOOL(const bool& v, uint8_t flags) noexcept
-              : Value(flags), value(v) {
+V_BOOL::V_BOOL(const bool& v, uint8_t a_flags) noexcept
+              : Value(a_flags), value(v) {
 }
 
 V_BOOL::V_BOOL(V_BOOL* ptr) noexcept : Value(ptr), value(ptr->get()) { }
@@ -248,8 +248,8 @@ std::string V_BOOL::to_string() const {
 
 
 
-V_UINT8::V_UINT8(const uint8_t& v, uint8_t flags) noexcept
-                : Value(flags), value(v) {
+V_UINT8::V_UINT8(const uint8_t& v, uint8_t a_flags) noexcept
+                : Value(a_flags), value(v) {
 }
 
 V_UINT8::V_UINT8(V_UINT8* ptr) noexcept : Value(ptr), value(ptr->get()) { }
@@ -281,8 +281,8 @@ std::string V_UINT8::to_string() const {
 
 
 
-V_UINT16::V_UINT16(const uint16_t& v, uint8_t flags) noexcept
-                  : Value(flags), value(v) { }
+V_UINT16::V_UINT16(const uint16_t& v, uint8_t a_flags) noexcept
+                  : Value(a_flags), value(v) { }
 
 V_UINT16::V_UINT16(V_UINT16* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
@@ -313,8 +313,8 @@ std::string V_UINT16::to_string() const {
 
 
 
-V_INT32::V_INT32(const int32_t& v, uint8_t flags) noexcept
-                : Value(flags), value(v) { }
+V_INT32::V_INT32(const int32_t& v, uint8_t a_flags) noexcept
+                : Value(a_flags), value(v) { }
 
 V_INT32::V_INT32(V_INT32* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
@@ -345,8 +345,8 @@ std::string V_INT32::to_string() const {
 
 
 
-V_INT64::V_INT64(const int64_t& v, uint8_t flags) noexcept
-                 : Value(flags), value(v) { }
+V_INT64::V_INT64(const int64_t& v, uint8_t a_flags) noexcept
+                 : Value(a_flags), value(v) { }
 
 V_INT64::V_INT64(V_INT64* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
@@ -377,8 +377,8 @@ std::string V_INT64::to_string() const {
 
 
 
-V_DOUBLE::V_DOUBLE(const double& v, uint8_t flags) noexcept
-                  : Value(flags), value(v) { }
+V_DOUBLE::V_DOUBLE(const double& v, uint8_t a_flags) noexcept
+                  : Value(a_flags), value(v) { }
 
 V_DOUBLE::V_DOUBLE(V_DOUBLE* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
@@ -409,8 +409,8 @@ std::string V_DOUBLE::to_string() const {
 
 
 
-V_STRING::V_STRING(std::string&& v, uint8_t flags) noexcept
-                  : Value(flags), value(std::move(v)) {
+V_STRING::V_STRING(std::string&& v, uint8_t a_flags) noexcept
+                  : Value(a_flags), value(std::move(v)) {
 }
 
 V_STRING::V_STRING(V_STRING* ptr) : Value(ptr), value(ptr->get()) { }
@@ -445,8 +445,8 @@ std::string V_STRING::to_string() const {
 V_ENUM::V_ENUM(const int32_t& v,
                FromString_t&& from_string,
                Repr_t&& repr,
-               uint8_t flags)
-              : Value(flags), value(v),
+               uint8_t a_flags)
+              : Value(a_flags), value(v),
                 call_from_string(std::move(from_string)),
                 call_repr(std::move(repr)) {
 }
@@ -499,8 +499,8 @@ std::string V_ENUM::to_string() const {
 
 
 // lists
-V_STRINGS::V_STRINGS(Strings&& v, uint8_t flags) noexcept
-                    : Value(flags), value(std::move(v)) {
+V_STRINGS::V_STRINGS(Strings&& v, uint8_t a_flags) noexcept
+                    : Value(a_flags), value(std::move(v)) {
 }
 
 V_STRINGS::V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
@@ -532,8 +532,8 @@ std::string V_STRINGS::to_string() const {
 
 
 
-V_INT64S::V_INT64S(Int64s&& v, uint8_t flags) noexcept
-                  : Value(flags), value(std::move(v)) {
+V_INT64S::V_INT64S(Int64s&& v, uint8_t a_flags) noexcept
+                  : Value(a_flags), value(std::move(v)) {
 }
 
 V_INT64S::V_INT64S(V_INT64S* ptr) : Value(ptr), value(ptr->get()) { }
@@ -570,8 +570,8 @@ std::string V_INT64S::to_string() const {
 
 
 
-V_DOUBLES::V_DOUBLES(Doubles&& v, uint8_t flags) noexcept
-                     : Value(flags), value(std::move(v)) {
+V_DOUBLES::V_DOUBLES(Doubles&& v, uint8_t a_flags) noexcept
+                     : Value(a_flags), value(std::move(v)) {
 }
 
 V_DOUBLES::V_DOUBLES(V_DOUBLES* ptr) : Value(ptr), value(ptr->get()) { }
@@ -609,8 +609,8 @@ std::string V_DOUBLES::to_string() const {
 
 
 // Guarded Atomic
-V_GBOOL::V_GBOOL(const bool& v, V_GBOOL::OnChg_t&& cb, uint8_t flags)
-                : Value(flags | Value::GUARDED),
+V_GBOOL::V_GBOOL(const bool& v, V_GBOOL::OnChg_t&& cb, uint8_t a_flags)
+                : Value(a_flags | Value::GUARDED),
                   value(v), on_chg_cb(std::move(cb)) {
 }
 
@@ -669,8 +669,8 @@ void V_GBOOL::set_cb_on_chg(V_GBOOL::OnChg_t&& cb) {
 
 
 
-V_GUINT8::V_GUINT8(const uint8_t& v, V_GUINT8::OnChg_t&& cb, uint8_t flags)
-                  : Value(flags | Value::GUARDED),
+V_GUINT8::V_GUINT8(const uint8_t& v, V_GUINT8::OnChg_t&& cb, uint8_t a_flags)
+                  : Value(a_flags | Value::GUARDED),
                     value(v), on_chg_cb(std::move(cb)) {
 }
 
@@ -723,8 +723,8 @@ void V_GUINT8::set_cb_on_chg(V_GUINT8::OnChg_t&& cb) {
 
 
 V_GUINT16::V_GUINT16(const uint16_t& v,
-                      V_GUINT16::OnChg_t&& cb, uint8_t flags)
-                    : Value(flags | Value::GUARDED),
+                      V_GUINT16::OnChg_t&& cb, uint8_t a_flags)
+                    : Value(a_flags | Value::GUARDED),
                       value(v), on_chg_cb(std::move(cb)) {
 }
 
@@ -776,8 +776,8 @@ void V_GUINT16::set_cb_on_chg(V_GUINT16::OnChg_t&& cb) {
 
 
 
-V_GINT32::V_GINT32(const int32_t& v, V_GINT32::OnChg_t&& cb, uint8_t flags)
-                  : Value(flags | Value::GUARDED),
+V_GINT32::V_GINT32(const int32_t& v, V_GINT32::OnChg_t&& cb, uint8_t a_flags)
+                  : Value(a_flags | Value::GUARDED),
                     value(v), on_chg_cb(std::move(cb)) {
 }
 
@@ -830,8 +830,8 @@ void V_GINT32::set_cb_on_chg(V_GINT32::OnChg_t&& cb) {
 
 
 V_GUINT64::V_GUINT64(const uint64_t& v,
-                      V_GUINT64::OnChg_t&& cb, uint8_t flags)
-                    : Value(flags | Value::GUARDED),
+                      V_GUINT64::OnChg_t&& cb, uint8_t a_flags)
+                    : Value(a_flags | Value::GUARDED),
                       value(v), on_chg_cb(std::move(cb)) {
 }
 
@@ -887,8 +887,8 @@ V_GENUM::V_GENUM(const int32_t& v,
                  V_GENUM::OnChg_t&& cb,
                  V_GENUM::FromString_t&& from_string,
                  V_GENUM::Repr_t&& repr,
-                 uint8_t flags)
-                : Value(flags | Value::GUARDED), value(v),
+                 uint8_t a_flags)
+                : Value(a_flags | Value::GUARDED), value(v),
                   on_chg_cb(std::move(cb)),
                   call_from_string(std::move(from_string)),
                   call_repr(std::move(repr)) {
@@ -963,8 +963,8 @@ void V_GENUM::set_cb_on_chg(V_GENUM::OnChg_t&& cb) {
 
 // Guarded Mutex
 V_GSTRINGS::V_GSTRINGS(Strings&& v, V_GSTRINGS::OnChg_t&& cb,
-                       uint8_t flags) noexcept
-                      : Value(flags | Value::GUARDED),
+                       uint8_t a_flags) noexcept
+                      : Value(a_flags | Value::GUARDED),
                         value(std::move(v)), on_chg_cb(std::move(cb)) {
 }
 

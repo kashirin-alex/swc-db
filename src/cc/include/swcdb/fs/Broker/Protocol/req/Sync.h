@@ -20,17 +20,17 @@ class Sync final : public Base {
 
   SWC_CAN_INLINE
   Sync(FS::Statistics& stats,
-       uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-       FS::Callback::SyncCb_t&& cb)
+       uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
+       FS::Callback::SyncCb_t&& a_cb)
        : Base(
           stats, FS::Statistics::SYNC_ASYNC,
           Buffers::make(
-            Params::SyncReq(smartfd->fd()),
+            Params::SyncReq(a_smartfd->fd()),
             0,
             FUNCTION_SYNC, timeout
           )
         ),
-        smartfd(smartfd), cb(std::move(cb)) {
+        smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

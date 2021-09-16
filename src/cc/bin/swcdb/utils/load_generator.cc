@@ -302,7 +302,7 @@ void quit_error(int err) {
 
 
 struct FractionState {
-  FractionState(size_t value) : value(value) { }
+  FractionState(size_t a_value) : value(a_value) { }
   virtual ~FractionState() { }
   virtual void reset() {
     value = 0;
@@ -312,9 +312,9 @@ struct FractionState {
 };
 
 struct FractionStateDistSeq : public FractionState {
-  FractionStateDistSeq(size_t ncells, bool reverse)
-    : FractionState(reverse ? (ncells + 1) : 0),
-      ncells(ncells), reverse(reverse) {
+  FractionStateDistSeq(size_t a_ncells, bool a_reverse)
+    : FractionState(a_reverse ? (a_ncells + 1) : 0),
+      ncells(a_ncells), reverse(a_reverse) {
   }
   virtual void set_value() override {
     if(reverse) {
@@ -331,9 +331,9 @@ struct FractionStateDistSeq : public FractionState {
 };
 
 struct FractionStateDistStepping : public FractionState {
-  FractionStateDistStepping(size_t ncells, size_t step, bool reverse)
-    : FractionState(reverse ? (ncells + 1) : 0),
-      ncells(ncells), step(step), reverse(reverse), offset(0) {
+  FractionStateDistStepping(size_t a_ncells, size_t a_step, bool a_reverse)
+    : FractionState(a_reverse ? (a_ncells + 1) : 0),
+      ncells(a_ncells), step(a_step), reverse(a_reverse), offset(0) {
   }
 
   virtual void reset() override {
@@ -367,8 +367,8 @@ struct FractionStateDistStepping : public FractionState {
 };
 
 struct FractionStateDistUniform : public FractionState {
-  FractionStateDistUniform(size_t ncells, size_t seed)
-    : FractionState(0), gen(seed), distrib(1, ncells) {
+  FractionStateDistUniform(size_t a_ncells, size_t seed)
+    : FractionState(0), gen(seed), distrib(1, a_ncells) {
   }
   virtual void set_value() override {
     value = distrib(gen);
@@ -388,12 +388,12 @@ class KeyGenerator {
   const Distrib       distribution;
   const DistribCourse  course;
 
-  KeyGenerator(size_t ncells, size_t ncells_onlevel,
-                uint24_t fraction_size, uint24_t nfractions,
-                Distrib distribution, DistribCourse course, size_t seed)
-              : ncells(ncells), ncells_onlevel(ncells_onlevel),
-                nfractions(nfractions), fraction_size(fraction_size),
-                distribution(distribution), course(course),
+  KeyGenerator(size_t a_ncells, size_t a_ncells_onlevel,
+                uint24_t a_fraction_size, uint24_t a_nfractions,
+                Distrib a_distribution, DistribCourse a_course, size_t seed)
+              : ncells(a_ncells), ncells_onlevel(a_ncells_onlevel),
+                nfractions(a_nfractions), fraction_size(a_fraction_size),
+                distribution(a_distribution), course(a_course),
                 _ncells(0), _ncells_onlevel(0), _nfractions(0) {
     if(ncells_onlevel > 1 && (
         course == DistribCourse::SINGLE ||
@@ -524,13 +524,13 @@ class KeyGenerator {
 
 class KeyGeneratorUpdate : public KeyGenerator {
   public:
-  KeyGeneratorUpdate(size_t ncells, size_t ncells_onlevel,
-                     uint24_t fraction_size, uint24_t nfractions,
-                     Distrib distribution, DistribCourse course, size_t seed)
+  KeyGeneratorUpdate(size_t a_ncells, size_t a_ncells_onlevel,
+                     uint24_t a_fraction_size, uint24_t a_nfractions,
+                     Distrib a_distribution, DistribCourse a_course, size_t seed)
           : KeyGenerator(
-              ncells, ncells_onlevel,
-              fraction_size, nfractions,
-              distribution, course, seed) {
+              a_ncells, a_ncells_onlevel,
+              a_fraction_size, a_nfractions,
+              a_distribution, a_course, seed) {
     _fractions.reserve(nfractions);
   }
 
@@ -559,13 +559,13 @@ class KeyGeneratorUpdate : public KeyGenerator {
 
 class KeyGeneratorSelect : public KeyGenerator {
   public:
-  KeyGeneratorSelect(size_t ncells, size_t ncells_onlevel,
-                     uint24_t fraction_size, uint24_t nfractions,
-                     Distrib distribution, DistribCourse course, size_t seed)
+  KeyGeneratorSelect(size_t a_ncells, size_t a_ncells_onlevel,
+                     uint24_t a_fraction_size, uint24_t a_nfractions,
+                     Distrib a_distribution, DistribCourse a_course, size_t seed)
           : KeyGenerator(
-              ncells, ncells_onlevel,
-              fraction_size, nfractions,
-              distribution, course, seed) {
+              a_ncells, a_ncells_onlevel,
+              a_fraction_size, a_nfractions,
+              a_distribution, a_course, seed) {
   }
 
   bool next(DB::Specs::Key& key) {

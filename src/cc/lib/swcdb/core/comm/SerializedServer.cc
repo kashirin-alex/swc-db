@@ -15,7 +15,7 @@ namespace SWC { namespace Comm { namespace server {
 struct Acceptor::Mixed {
   Acceptor* acceptor;
   SWC_CAN_INLINE
-  Mixed(Acceptor* acceptor) noexcept : acceptor(acceptor) { }
+  Mixed(Acceptor* a_acceptor) noexcept : acceptor(a_acceptor) { }
   void operator()(std::error_code ec, asio::ip::tcp::socket new_sock) {
     bool need_ssl = false;
     if(ec) {
@@ -52,7 +52,7 @@ struct Acceptor::Mixed {
 struct Acceptor::Plain {
   Acceptor* acceptor;
   SWC_CAN_INLINE
-  Plain(Acceptor* acceptor) noexcept : acceptor(acceptor) { }
+  Plain(Acceptor* a_acceptor) noexcept : acceptor(a_acceptor) { }
   void operator()(const std::error_code& ec, asio::ip::tcp::socket new_sock) {
     if(ec) {
       if(ec.value() == ECANCELED)

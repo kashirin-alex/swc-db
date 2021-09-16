@@ -21,7 +21,7 @@ class ReadAllReq final : public Serializable {
   ReadAllReq() noexcept { }
 
   SWC_CAN_INLINE
-  ReadAllReq(const std::string& name) : name(name) { }
+  ReadAllReq(const std::string& a_name) : name(a_name) { }
 
   std::string name;
 

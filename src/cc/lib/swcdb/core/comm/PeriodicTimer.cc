@@ -25,7 +25,7 @@ void PeriodicTimer::schedule() {
   struct TimerTask {
     PeriodicTimer* tm;
     SWC_CAN_INLINE
-    TimerTask(PeriodicTimer* tm) noexcept : tm(tm) { }
+    TimerTask(PeriodicTimer* a_tm) noexcept : tm(a_tm) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
         tm->m_call();

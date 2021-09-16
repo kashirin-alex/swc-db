@@ -95,8 +95,8 @@ struct ConnHandler::Sender_noAck final {
   ConnHandlerPtr        conn;
   Buffers::Ptr          cbuf;
   SWC_CAN_INLINE
-  Sender_noAck(ConnHandlerPtr&& conn, const Buffers::Ptr& cbuf) noexcept
-              : conn(std::move(conn)), cbuf(cbuf) {
+  Sender_noAck(ConnHandlerPtr&& a_conn, const Buffers::Ptr& a_cbuf) noexcept
+              : conn(std::move(a_conn)), cbuf(a_cbuf) {
   }
   void operator()(const asio::error_code& ec, uint32_t bytes) {
     if(ec) {
@@ -115,9 +115,9 @@ struct ConnHandler::Sender_Ack final {
   Buffers::Ptr          cbuf;
   DispatchHandler::Ptr  hdlr;
   SWC_CAN_INLINE
-  Sender_Ack(ConnHandlerPtr&& conn, const Buffers::Ptr& cbuf,
-             DispatchHandler::Ptr&& hdlr) noexcept
-            : conn(std::move(conn)), cbuf(cbuf), hdlr(std::move(hdlr)) {
+  Sender_Ack(ConnHandlerPtr&& a_conn, const Buffers::Ptr& a_cbuf,
+             DispatchHandler::Ptr&& a_hdlr) noexcept
+            : conn(std::move(a_conn)), cbuf(a_cbuf), hdlr(std::move(a_hdlr)) {
   }
   void operator()(const asio::error_code& ec, uint32_t bytes) {
     if(!ec)
@@ -194,8 +194,8 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
       struct TimerTask {
         ConnHandlerPtr        conn;
         Buffers::Ptr          cbuf;
-        TimerTask(ConnHandlerPtr&& conn, const Buffers::Ptr& cbuf)
-                  noexcept : conn(std::move(conn)), cbuf(cbuf) { }
+        TimerTask(ConnHandlerPtr&& a_conn, const Buffers::Ptr& a_cbuf)
+                  noexcept : conn(std::move(a_conn)), cbuf(a_cbuf) { }
         void operator()(const asio::error_code& ec) {
           if(ec == asio::error::operation_aborted)
             return;
@@ -223,8 +223,8 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
 struct ConnHandler::Receiver_HeaderPrefix final {
   ConnHandlerPtr  conn;
   SWC_CAN_INLINE
-  Receiver_HeaderPrefix(ConnHandlerPtr&& conn) noexcept
-                        : conn(std::move(conn)) { }
+  Receiver_HeaderPrefix(ConnHandlerPtr&& a_conn) noexcept
+                        : conn(std::move(a_conn)) { }
   void operator()(const asio::error_code& ec, size_t filled);
 };
 
@@ -232,8 +232,8 @@ struct ConnHandler::Receiver_Header final {
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
   SWC_CAN_INLINE
-  Receiver_Header(const ConnHandlerPtr& conn, Event::Ptr&& ev) noexcept
-                 : conn(conn), ev(std::move(ev)) { }
+  Receiver_Header(const ConnHandlerPtr& a_conn, Event::Ptr&& a_ev) noexcept
+                 : conn(a_conn), ev(std::move(a_ev)) { }
   void operator()(asio::error_code ec, size_t filled);
 };
 
@@ -241,8 +241,8 @@ struct ConnHandler::Receiver_Buffer final {
   ConnHandlerPtr  conn;
   Event::Ptr      ev;
   SWC_CAN_INLINE
-  Receiver_Buffer(ConnHandlerPtr&& conn, Event::Ptr&& ev) noexcept
-                  : conn(std::move(conn)), ev(std::move(ev)) { }
+  Receiver_Buffer(ConnHandlerPtr&& a_conn, Event::Ptr&& a_ev) noexcept
+                  : conn(std::move(a_conn)), ev(std::move(a_ev)) { }
   void operator()(asio::error_code ec, size_t filled);
 };
 
@@ -439,9 +439,10 @@ void ConnHandler::run_pending(Event::Ptr&& ev) {
       ConnHandlerPtr        conn;
       DispatchHandler::Ptr  hdlr;
       Event::Ptr            ev;
-      Task(ConnHandlerPtr&& conn, DispatchHandler::Ptr&& hdlr,
-           Event::Ptr&& ev) noexcept
-          : conn(std::move(conn)), hdlr(std::move(hdlr)), ev(std::move(ev)) {
+      Task(ConnHandlerPtr&& a_conn, DispatchHandler::Ptr&& a_hdlr,
+           Event::Ptr&& a_ev) noexcept
+          : conn(std::move(a_conn)), hdlr(std::move(a_hdlr)),
+            ev(std::move(a_ev)) {
       }
       void operator()() {
         if(!ev->error && ev->header.buffers)
@@ -458,8 +459,8 @@ void ConnHandler::run_pending(Event::Ptr&& ev) {
     struct Task {
       ConnHandlerPtr        conn;
       Event::Ptr            ev;
-      Task(ConnHandlerPtr&& conn, Event::Ptr&& ev) noexcept
-          : conn(std::move(conn)), ev(std::move(ev)) { }
+      Task(ConnHandlerPtr&& a_conn, Event::Ptr&& a_ev) noexcept
+          : conn(std::move(a_conn)), ev(std::move(a_ev)) { }
       void operator()() {
         if(!ev->error && ev->header.buffers)
           ev->decode_buffers();
@@ -479,9 +480,9 @@ ConnHandlerPlain::make(AppContext::Ptr& app_ctx, SocketPlain& socket) {
   return ConnHandlerPlain::Ptr(new ConnHandlerPlain(app_ctx, socket));
 }
 
-ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& app_ctx,
+ConnHandlerPlain::ConnHandlerPlain(AppContext::Ptr& a_app_ctx,
                                    SocketPlain& socket) noexcept
-                                  : ConnHandler(app_ctx),
+                                  : ConnHandler(a_app_ctx),
                                     m_sock(std::move(socket)) {
   m_sock.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
 }
@@ -571,10 +572,10 @@ ConnHandlerSSL::make(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
   return ConnHandlerSSL::Ptr(new ConnHandlerSSL(app_ctx, ssl_ctx, socket));
 }
 
-ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& app_ctx,
+ConnHandlerSSL::ConnHandlerSSL(AppContext::Ptr& a_app_ctx,
                                asio::ssl::context& ssl_ctx,
                                SocketPlain& socket) noexcept
-                              : ConnHandler(app_ctx),
+                              : ConnHandler(a_app_ctx),
                                 m_sock(std::move(socket), ssl_ctx),
                                 m_strand(m_sock.get_executor()) {
   m_sock.lowest_layer().set_option(asio::ip::tcp::no_delay(true));

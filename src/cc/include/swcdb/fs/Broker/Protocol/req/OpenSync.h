@@ -19,18 +19,19 @@ class OpenSync final : public BaseSync, public Base {
   typedef std::shared_ptr<OpenSync> Ptr;
 
   SWC_CAN_INLINE
-  OpenSync(const FS::FileSystem::Ptr& fs,
-           uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  OpenSync(const FS::FileSystem::Ptr& a_fs,
+           uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
            int32_t bufsz)
           : Base(
-              fs->statistics, FS::Statistics::OPEN_SYNC,
+              a_fs->statistics, FS::Statistics::OPEN_SYNC,
               Buffers::make(
-                Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz),
+                Params::OpenReq(
+                  a_smartfd->filepath(), a_smartfd->flags(), bufsz),
                 0,
                 FUNCTION_OPEN, timeout
               )
             ),
-            fs(fs), smartfd(smartfd) {
+            fs(a_fs), smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

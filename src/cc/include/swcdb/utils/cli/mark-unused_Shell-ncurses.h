@@ -23,9 +23,9 @@ int run();
 class Interface {
 
   public:
-  Interface(const std::string& prompt="CLI>", 
-            const char* history="/tmp/.swc-cli-history")
-            : prompt(prompt), history(history) {
+  Interface(const std::string& a_prompt="CLI>", 
+            const char* a_history="/tmp/.swc-cli-history")
+            : prompt(a_prompt), history(a_history) {
     ::initscr(); 
     ::cbreak(); 
     ::noecho();
@@ -158,9 +158,9 @@ class Interface {
   struct Option final {
     typedef std::function<bool(const std::string&)> Call_t;
 
-    Option(const std::string& name, const std::string& desc, 
-            const Call_t& call, const re2::RE2* re) 
-          : name(name), desc(desc), call(call), re(re) { }
+    Option(const std::string& a_name, const std::string& a_desc, 
+            const Call_t& a_call, const re2::RE2* a_re) 
+          : name(a_name), desc(a_desc), call(a_call), re(a_re) { }
     ~Option() {
       if(re)
         delete re;

@@ -21,7 +21,7 @@ class LengthReq final : public Serializable {
   LengthReq() noexcept { }
 
   SWC_CAN_INLINE
-  LengthReq(const std::string& fname) : fname(fname) { }
+  LengthReq(const std::string& a_fname) : fname(a_fname) { }
 
   std::string fname;
 
@@ -44,7 +44,7 @@ class LengthRsp final : public Serializable {
   LengthRsp() noexcept { }
 
   SWC_CAN_INLINE
-  LengthRsp(size_t length) noexcept : length(length) { }
+  LengthRsp(size_t a_length) noexcept : length(a_length) { }
 
   size_t length;
 

@@ -20,9 +20,9 @@ struct Dirent final  {
   Dirent() noexcept { }
 
   SWC_CAN_INLINE
-  Dirent(const char* s, int64_t mod_time, bool is_dir, uint64_t length)
+  Dirent(const char* s, int64_t mod_time, bool a_is_dir, uint64_t a_length)
         : name(s), last_modification_time(mod_time),
-          is_dir(is_dir), length(length) {
+          is_dir(a_is_dir), length(a_length) {
   }
 
   SWC_CAN_INLINE

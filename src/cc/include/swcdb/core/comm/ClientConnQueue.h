@@ -27,13 +27,13 @@ class ConnQueueReqBase : public DispatchHandler {
   ConnQueuePtr                              queue;
 
   SWC_CAN_INLINE
-  ConnQueueReqBase(Buffers::Ptr&& cbp) noexcept
-                  : cbp(std::move(cbp)), queue(nullptr) { }
+  ConnQueueReqBase(Buffers::Ptr&& a_cbp) noexcept
+                  : cbp(std::move(a_cbp)), queue(nullptr) { }
 
   SWC_CAN_INLINE
-  ConnQueueReqBase(Buffers::Ptr&& cbp,
-                   const ConnQueuePtr& queue) noexcept
-                  : cbp(std::move(cbp)), queue(queue) { }
+  ConnQueueReqBase(Buffers::Ptr&& a_cbp,
+                   const ConnQueuePtr& a_queue) noexcept
+                  : cbp(std::move(a_cbp)), queue(a_queue) { }
 
   SWC_CAN_INLINE
   Ptr req() noexcept {

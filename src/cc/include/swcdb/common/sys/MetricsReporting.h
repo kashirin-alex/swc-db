@@ -694,7 +694,7 @@ class Item_FS : public Base {
   typedef std::unique_ptr<Item_FS> Ptr;
   FS::FileSystem::Ptr              fs;
 
-  Item_FS(const FS::FileSystem::Ptr& fs) noexcept : fs(fs) { }
+  Item_FS(const FS::FileSystem::Ptr& a_fs) noexcept : fs(a_fs) { }
 
   virtual ~Item_FS() { }
 
@@ -856,12 +856,12 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
 
   typedef std::shared_ptr<Reporting> Ptr;
 
-  Reporting(const SWC::client::Clients::Ptr& clients,
-            const Comm::IoContextPtr& io,
-            Config::Property::V_GINT32::Ptr cfg_intval,
-            client::Clients::Flag executor=client::Clients::DEFAULT)
+  Reporting(const SWC::client::Clients::Ptr& a_clients,
+            const Comm::IoContextPtr& a_io,
+            Config::Property::V_GINT32::Ptr a_cfg_intval,
+            client::Clients::Flag a_executor=client::Clients::DEFAULT)
       : client::Query::Update::Handlers::Metric::Reporting(
-          clients, io, cfg_intval, executor),
+          a_clients, a_io, a_cfg_intval, a_executor),
         system(this), cpu(nullptr), mem(nullptr) {
   }
 
@@ -891,8 +891,11 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
     Item_CPU*  cpu;
     Item_Mem*  mem;
 
-    System(Reporting* reporting)
-          : reporting(reporting), cpu(new Item_CPU()), mem(new Item_Mem()) { }
+    System(Reporting* a_reporting)
+          : reporting(a_reporting),
+            cpu(new Item_CPU()),
+            mem(new Item_Mem()) {
+    }
 
     void rss_used_reg(size_t bytes) noexcept override {
       mem->rss_used_reg.add(bytes / 1048576);

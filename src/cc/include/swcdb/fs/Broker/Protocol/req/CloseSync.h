@@ -19,17 +19,17 @@ class CloseSync final : public BaseSync, public Base {
   typedef std::shared_ptr<CloseSync> Ptr;
 
   SWC_CAN_INLINE
-  CloseSync(const FS::FileSystem::Ptr& fs, uint32_t timeout,
-            FS::SmartFd::Ptr& smartfd)
+  CloseSync(const FS::FileSystem::Ptr& a_fs, uint32_t timeout,
+            FS::SmartFd::Ptr& a_smartfd)
             : Base(
-                fs->statistics, FS::Statistics::CLOSE_SYNC,
+                a_fs->statistics, FS::Statistics::CLOSE_SYNC,
                 Buffers::make(
-                  Params::CloseReq(smartfd->fd()),
+                  Params::CloseReq(a_smartfd->fd()),
                   0,
                   FUNCTION_CLOSE, timeout
                 )
               ),
-              fs(fs), smartfd(smartfd) {
+              fs(a_fs), smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

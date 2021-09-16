@@ -20,19 +20,19 @@ class Append final : public Base {
 
   SWC_CAN_INLINE
   Append(FS::Statistics& stats,
-         uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+         uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
          StaticBuffer& buffer, FS::Flags flags,
-         FS::Callback::AppendCb_t&& cb)
+         FS::Callback::AppendCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::APPEND_ASYNC,
             Buffers::make(
-              Params::AppendReq(smartfd->fd(), flags),
+              Params::AppendReq(a_smartfd->fd(), flags),
               buffer,
               0,
               FUNCTION_APPEND, timeout
             )
           ),
-          smartfd(smartfd), cb(std::move(cb)) {
+          smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

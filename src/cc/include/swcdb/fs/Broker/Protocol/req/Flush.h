@@ -20,17 +20,17 @@ class Flush final : public Base {
 
   SWC_CAN_INLINE
   Flush(FS::Statistics& stats,
-        uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-        FS::Callback::FlushCb_t&& cb)
+        uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
+        FS::Callback::FlushCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::FLUSH_ASYNC,
             Buffers::make(
-              Params::FlushReq(smartfd->fd()),
+              Params::FlushReq(a_smartfd->fd()),
               0,
               FUNCTION_FLUSH, timeout
             )
           ),
-          smartfd(smartfd), cb(std::move(cb)) {
+          smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

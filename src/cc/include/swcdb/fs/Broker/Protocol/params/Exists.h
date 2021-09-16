@@ -21,7 +21,7 @@ class ExistsReq final : public Serializable {
   ExistsReq() noexcept { }
 
   SWC_CAN_INLINE
-  ExistsReq(const std::string& fname) : fname(fname) { }
+  ExistsReq(const std::string& a_fname) : fname(a_fname) { }
 
   std::string fname;
 
@@ -45,7 +45,7 @@ class ExistsRsp final : public Serializable {
   ExistsRsp() noexcept { }
 
   SWC_CAN_INLINE
-  ExistsRsp(bool exists) noexcept : exists(exists) { }
+  ExistsRsp(bool a_exists) noexcept : exists(a_exists) { }
 
   bool exists;
 

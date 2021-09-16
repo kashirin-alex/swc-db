@@ -21,16 +21,16 @@ class RenameSync final : public BaseSync, public Base {
   SWC_CAN_INLINE
   RenameSync(FS::Statistics& stats,
              uint32_t timeout,
-             const std::string& from, const std::string& to)
+             const std::string& a_from, const std::string& a_to)
             : Base(
                 stats, FS::Statistics::RENAME_SYNC,
                 Buffers::make(
-                  Params::RenameReq(from, to),
+                  Params::RenameReq(a_from, a_to),
                   0,
                   FUNCTION_RENAME, timeout
                 )
               ),
-              from(from), to(to) {
+              from(a_from), to(a_to) {
   }
 
   SWC_CAN_INLINE

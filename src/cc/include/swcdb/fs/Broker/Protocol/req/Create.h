@@ -20,22 +20,22 @@ class Create final : public Base {
   typedef std::shared_ptr<Create> Ptr;
 
   SWC_CAN_INLINE
-  Create(const FS::FileSystem::Ptr& fs,
-         uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  Create(const FS::FileSystem::Ptr& a_fs,
+         uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
          int32_t bufsz, uint8_t replication, int64_t blksz,
-         FS::Callback::CreateCb_t&& cb)
+         FS::Callback::CreateCb_t&& a_cb)
          : Base(
-            fs->statistics, FS::Statistics::CREATE_ASYNC,
+            a_fs->statistics, FS::Statistics::CREATE_ASYNC,
             Buffers::make(
               Params::CreateReq(
-                smartfd->filepath(), smartfd->flags(),
+                a_smartfd->filepath(), a_smartfd->flags(),
                 bufsz, replication, blksz
               ),
               0,
               FUNCTION_CREATE, timeout
             )
           ),
-          fs(fs), smartfd(smartfd), cb(std::move(cb)) {
+          fs(a_fs), smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

@@ -20,16 +20,16 @@ class RemoveSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   RemoveSync(FS::Statistics& stats,
-             uint32_t timeout, const std::string& name)
+             uint32_t timeout, const std::string& a_name)
             : Base(
                 stats, FS::Statistics::REMOVE_SYNC,
                 Buffers::make(
-                  Params::RemoveReq(name),
+                  Params::RemoveReq(a_name),
                   0,
                   FUNCTION_REMOVE, timeout
                 )
               ),
-              name(name) {
+              name(a_name) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

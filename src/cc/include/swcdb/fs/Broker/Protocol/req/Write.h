@@ -20,14 +20,14 @@ class Write final : public Base {
 
   SWC_CAN_INLINE
   Write(FS::Statistics& stats,
-        uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+        uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
         uint8_t replication, int64_t blksz, StaticBuffer& buffer,
-        FS::Callback::WriteCb_t&& cb)
+        FS::Callback::WriteCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::WRITE_ASYNC,
             Buffers::make(
               Params::WriteReq(
-                smartfd->filepath(), smartfd->flags(),
+                a_smartfd->filepath(), a_smartfd->flags(),
                 replication, blksz
               ),
               buffer,
@@ -35,7 +35,7 @@ class Write final : public Base {
               FUNCTION_WRITE, timeout
             )
           ),
-          smartfd(smartfd), cb(std::move(cb)) {
+          smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

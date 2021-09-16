@@ -21,17 +21,17 @@ class CombiPreadSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   CombiPreadSync(FS::Statistics& stats,
-                 uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
+                 uint32_t timeout, const FS::SmartFd::Ptr& a_smartfd,
                  uint64_t offset, uint32_t amount, StaticBuffer* dst)
                 : Base(
                     stats, FS::Statistics::COMBI_PREAD_SYNC,
                     Buffers::make(
-                      Params::CombiPreadReq(smartfd, offset, amount),
+                      Params::CombiPreadReq(a_smartfd, offset, amount),
                       0,
                       FUNCTION_COMBI_PREAD, timeout
                     )
                   ),
-                  buffer(dst), smartfd(smartfd) {
+                  buffer(dst), smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

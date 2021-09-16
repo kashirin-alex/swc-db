@@ -21,7 +21,7 @@ class CloseReq final : public Serializable {
   CloseReq() noexcept : fd(-1) { }
 
   SWC_CAN_INLINE
-  CloseReq(int32_t fd) noexcept : fd(fd) { }
+  CloseReq(int32_t a_fd) noexcept : fd(a_fd) { }
 
   int32_t fd;
 

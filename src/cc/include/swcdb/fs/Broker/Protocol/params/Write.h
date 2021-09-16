@@ -21,10 +21,10 @@ class WriteReq final : public Serializable {
   WriteReq() noexcept { }
 
   SWC_CAN_INLINE
-  WriteReq(const std::string& fname, uint32_t flags,
-            uint8_t replication, int64_t blksz)
-          : fname(fname), flags(flags),
-            replication(replication), blksz(blksz) {
+  WriteReq(const std::string& a_fname, uint32_t a_flags,
+            uint8_t a_replication, int64_t a_blksz)
+          : fname(a_fname), flags(a_flags),
+            replication(a_replication), blksz(a_blksz) {
   }
 
   std::string fname;

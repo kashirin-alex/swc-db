@@ -143,12 +143,13 @@ Config::Property::V_DOUBLES::Ptr Config::f64s() {
 namespace Config {
 
 
-ParserConfig::ParserConfig(int line_len, bool own) noexcept
-                          : line_length(line_len), own(own) {
+ParserConfig::ParserConfig(int line_len, bool a_own) noexcept
+                          : line_length(line_len), own(a_own) {
 }
 
-ParserConfig::ParserConfig(const char* usage, int line_len, bool own)
-                          : usage(usage), line_length(line_len), own(own) {
+ParserConfig::ParserConfig(const char* a_usage, int line_len, bool a_own)
+                          : usage(a_usage), line_length(line_len),
+                            own(a_own) {
 }
 
 ParserConfig::ParserConfig(const ParserConfig& other) {
@@ -354,7 +355,7 @@ Strings Parser::args_to_strings(int argc, char *argv[]) {
   return raw_strings;
 }
 
-Parser::Options::Options(bool own) noexcept : own(own) { }
+Parser::Options::Options(bool a_own) noexcept : own(a_own) { }
 
 Parser::Options::~Options() {
   free();

@@ -24,17 +24,18 @@ class ReadSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   ReadSync(FS::Statistics& stats,
-           uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-           void* dst, size_t len, bool allocated)
+           uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
+           void* dst, size_t len, bool a_allocated)
           : Base(
               stats, FS::Statistics::READ_SYNC,
               Buffers::make(
-                Params::ReadReq(smartfd->fd(), len),
+                Params::ReadReq(a_smartfd->fd(), len),
                 0,
                 FUNCTION_READ, timeout
               )
             ),
-            buffer(dst), allocated(allocated), amount(0), smartfd(smartfd) {
+            buffer(dst), allocated(a_allocated), amount(0),
+            smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

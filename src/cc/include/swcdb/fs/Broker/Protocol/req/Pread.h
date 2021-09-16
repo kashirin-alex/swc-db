@@ -20,18 +20,18 @@ class Pread final : public Base {
 
   SWC_CAN_INLINE
   Pread(FS::Statistics& stats,
-        uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+        uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
         uint64_t offset, size_t len,
-        FS::Callback::PreadCb_t&& cb)
+        FS::Callback::PreadCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::PREAD_ASYNC,
             Buffers::make(
-              Params::PreadReq(smartfd->fd(), offset, len),
+              Params::PreadReq(a_smartfd->fd(), offset, len),
               0,
               FUNCTION_PREAD, timeout
             )
           ),
-          smartfd(smartfd), cb(std::move(cb)) {
+          smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

@@ -20,13 +20,13 @@ class WriteSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   WriteSync(FS::Statistics& stats,
-            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+            uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
             uint8_t replication, int64_t blksz, StaticBuffer& buffer)
             : Base(
                 stats, FS::Statistics::WRITE_SYNC,
                 Buffers::make(
                   Params::WriteReq(
-                    smartfd->filepath(), smartfd->flags(),
+                    a_smartfd->filepath(), a_smartfd->flags(),
                     replication, blksz
                   ),
                   buffer,
@@ -34,7 +34,7 @@ class WriteSync final : public BaseSync, public Base {
                   FUNCTION_WRITE, timeout
                 )
               ),
-              smartfd(smartfd) {
+              smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

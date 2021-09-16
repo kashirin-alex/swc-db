@@ -20,16 +20,16 @@ class RmdirSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   RmdirSync(FS::Statistics& stats,
-            uint32_t timeout, const std::string& name)
+            uint32_t timeout, const std::string& a_name)
             : Base(
                 stats, FS::Statistics::RMDIR_SYNC,
                 Buffers::make(
-                  Params::RmdirReq(name),
+                  Params::RmdirReq(a_name),
                   0,
                   FUNCTION_RMDIR, timeout
                 )
               ),
-              name(name) {
+              name(a_name) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

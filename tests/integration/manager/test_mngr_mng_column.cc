@@ -36,9 +36,10 @@ using namespace SWC;
 
 struct ExpctedRsp final {
   public:
-  ExpctedRsp(std::string name, DB::Types::Encoder blk_encoding, bool exists)
-            : name(name), blk_encoding(blk_encoding),
-              exists(exists), chks(0) { }
+  ExpctedRsp(std::string a_name, DB::Types::Encoder a_blk_encoding,
+             bool a_exists)
+            : name(a_name), blk_encoding(a_blk_encoding),
+              exists(a_exists), chks(0) { }
 
   std::string name;
   DB::Types::Encoder  blk_encoding;
@@ -72,11 +73,11 @@ void check_delete(int num_of_cols, bool modified) {
   struct ReqData : ReqDataBase {
     Core::Semaphore* sem;
     SWC_CAN_INLINE
-    ReqData(Core::Semaphore* sem) noexcept : sem(sem) { }
+    ReqData(Core::Semaphore* a_sem) noexcept : sem(a_sem) { }
     SWC_CAN_INLINE
     void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,
                   int err,
-                  const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) { 
+                  const Comm::Protocol::Mngr::Params::ColumnGetRsp& rsp) {
       if(err)
         SWC_PRINT << "ColumnGet err=" << err
                   << "(" << Error::get_text(err) << ")"
@@ -130,18 +131,18 @@ void check_get(size_t num_of_cols, bool modified,
       exist
     ));
   }
-  
+
   struct ReqDataByName : ReqDataBase {
     std::shared_ptr<ExpctedRsp>           req;
     std::shared_ptr<Common::Stats::Stat>  latency;
     bool                                  verbose;
     int64_t                               start_ts;
     SWC_CAN_INLINE
-    ReqDataByName(const std::shared_ptr<ExpctedRsp>& req,
-                  const std::shared_ptr<Common::Stats::Stat>& latency,
-                  bool verbose) noexcept 
-            : req(req), latency(latency),
-              verbose(verbose), start_ts(Time::now_ns()) {
+    ReqDataByName(const std::shared_ptr<ExpctedRsp>& a_req,
+                  const std::shared_ptr<Common::Stats::Stat>& a_latency,
+                  bool a_verbose) noexcept
+            : req(a_req), latency(a_latency),
+              verbose(a_verbose), start_ts(Time::now_ns()) {
     }
     SWC_CAN_INLINE
     void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,
@@ -211,11 +212,11 @@ void check_get(size_t num_of_cols, bool modified,
     bool                                  verbose;
     int64_t                               start_ts;
     SWC_CAN_INLINE
-    ReqDataByCID(const std::shared_ptr<ExpctedRsp>& req,
-                 const std::shared_ptr<Common::Stats::Stat>& latency,
-                 bool verbose) noexcept 
-            : req(req), latency(latency),
-              verbose(verbose), start_ts(Time::now_ns()) {
+    ReqDataByCID(const std::shared_ptr<ExpctedRsp>& a_req,
+                 const std::shared_ptr<Common::Stats::Stat>& a_latency,
+                 bool a_verbose) noexcept
+            : req(a_req), latency(a_latency),
+              verbose(a_verbose), start_ts(Time::now_ns()) {
     }
     SWC_CAN_INLINE
     void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,
@@ -369,11 +370,11 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
     bool                                  verbose;
     int64_t                               start_ts;
     SWC_CAN_INLINE
-    ReqData(size_t n,
-            const std::shared_ptr<Common::Stats::Stat>& latency,
-            bool verbose) noexcept 
-            : n(n), latency(latency),
-              verbose(verbose), start_ts(Time::now_ns()) {
+    ReqData(size_t a_n,
+            const std::shared_ptr<Common::Stats::Stat>& a_latency,
+            bool a_verbose) noexcept
+            : n(a_n), latency(a_latency),
+              verbose(a_verbose), start_ts(Time::now_ns()) {
     }
     SWC_CAN_INLINE
     void callback(const Comm::client::ConnQueue::ReqBase::Ptr& req_ptr,

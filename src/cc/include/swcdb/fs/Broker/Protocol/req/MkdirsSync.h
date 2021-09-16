@@ -20,16 +20,16 @@ class MkdirsSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   MkdirsSync(FS::Statistics& stats,
-             uint32_t timeout, const std::string& name)
+             uint32_t timeout, const std::string& a_name)
             : Base(
                 stats, FS::Statistics::MKDIRS_SYNC,
                 Buffers::make(
-                  Params::MkdirsReq(name),
+                  Params::MkdirsReq(a_name),
                   0,
                   FUNCTION_MKDIRS, timeout
                 )
               ),
-              name(name) {
+              name(a_name) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

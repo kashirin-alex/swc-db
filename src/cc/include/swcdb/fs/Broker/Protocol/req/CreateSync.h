@@ -20,21 +20,21 @@ class CreateSync final : public BaseSync, public Base {
   typedef std::shared_ptr<CreateSync> Ptr;
 
   SWC_CAN_INLINE
-  CreateSync(const FS::FileSystem::Ptr& fs,
-             uint32_t timeout, FS::SmartFd::Ptr& smartfd,
+  CreateSync(const FS::FileSystem::Ptr& a_fs,
+             uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
              int32_t bufsz, uint8_t replication, int64_t blksz)
             : Base(
-                fs->statistics, FS::Statistics::CREATE_SYNC,
+                a_fs->statistics, FS::Statistics::CREATE_SYNC,
                 Buffers::make(
                   Params::CreateReq(
-                    smartfd->filepath(), smartfd->flags(),
+                    a_smartfd->filepath(), a_smartfd->flags(),
                     bufsz, replication, blksz
                   ),
                   0,
                   FUNCTION_CREATE, timeout
                 )
               ),
-              fs(fs), smartfd(smartfd) {
+              fs(a_fs), smartfd(a_smartfd) {
 }
 
 

@@ -20,16 +20,16 @@ class SyncSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   SyncSync(FS::Statistics& stats,
-           uint32_t timeout, FS::SmartFd::Ptr& smartfd)
+           uint32_t timeout, FS::SmartFd::Ptr& a_smartfd)
           : Base(
               stats, FS::Statistics::SYNC_SYNC,
               Buffers::make(
-                Params::SyncReq(smartfd->fd()),
+                Params::SyncReq(a_smartfd->fd()),
                 0,
                 FUNCTION_SYNC, timeout
               )
             ),
-            smartfd(smartfd) {
+            smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

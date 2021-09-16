@@ -37,8 +37,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     Outgoing() noexcept : cbuf(nullptr), hdlr(nullptr) { }
 
     SWC_CAN_INLINE
-    Outgoing(Buffers::Ptr&& cbuf, DispatchHandler::Ptr&& hdlr) noexcept
-            : cbuf(std::move(cbuf)), hdlr(std::move(hdlr)) {
+    Outgoing(Buffers::Ptr&& a_cbuf, DispatchHandler::Ptr&& a_hdlr) noexcept
+            : cbuf(std::move(a_cbuf)), hdlr(std::move(a_hdlr)) {
     }
 
     SWC_CAN_INLINE
@@ -66,8 +66,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     Pending() noexcept : hdlr(nullptr), timer(nullptr) { }
 
     SWC_CAN_INLINE
-    Pending(DispatchHandler::Ptr&& hdlr) noexcept
-           : hdlr(std::move(hdlr)), timer(nullptr) {
+    Pending(DispatchHandler::Ptr&& a_hdlr) noexcept
+           : hdlr(std::move(a_hdlr)), timer(nullptr) {
     }
 
     SWC_CAN_INLINE
@@ -156,8 +156,8 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
   protected:
 
   SWC_CAN_INLINE
-  ConnHandler(AppContext::Ptr& app_ctx) noexcept
-              : connected(true), app_ctx(app_ctx), m_next_req_id(0),
+  ConnHandler(AppContext::Ptr& a_app_ctx) noexcept
+              : connected(true), app_ctx(a_app_ctx), m_next_req_id(0),
                 m_recv_bytes(0) {
   }
 

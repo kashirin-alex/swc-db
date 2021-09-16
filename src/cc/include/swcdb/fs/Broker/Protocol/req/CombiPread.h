@@ -20,18 +20,18 @@ class CombiPread final : public Base {
 
   SWC_CAN_INLINE
   CombiPread(FS::Statistics& stats,
-             uint32_t timeout, const FS::SmartFd::Ptr& smartfd,
+             uint32_t timeout, const FS::SmartFd::Ptr& a_smartfd,
              uint64_t offset, uint32_t amount,
-             FS::Callback::CombiPreadCb_t&& cb)
+             FS::Callback::CombiPreadCb_t&& a_cb)
             : Base(
                 stats, FS::Statistics::COMBI_PREAD_ASYNC,
                 Buffers::make(
-                  Params::CombiPreadReq(smartfd, offset, amount),
+                  Params::CombiPreadReq(a_smartfd, offset, amount),
                   0,
                   FUNCTION_COMBI_PREAD, timeout
                 )
               ),
-              smartfd(smartfd), cb(std::move(cb)) {
+              smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

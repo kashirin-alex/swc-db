@@ -54,11 +54,11 @@ class Interface {
   struct Option final {
     typedef std::function<bool(std::string&)> Call_t;
 
-    Option(std::string&& name, Core::Vector<std::string>&& desc,
-           Call_t&& call, const re2::RE2* re) noexcept
-          : name(std::move(name)),
-            desc(std::move(desc)),
-            call(std::move(call)), re(re) {
+    Option(std::string&& a_name, Core::Vector<std::string>&& a_desc,
+           Call_t&& a_call, const re2::RE2* a_re) noexcept
+          : name(std::move(a_name)),
+            desc(std::move(a_desc)),
+            call(std::move(a_call)), re(a_re) {
     }
 
     ~Option() {

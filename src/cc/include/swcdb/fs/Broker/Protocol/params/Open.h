@@ -21,8 +21,8 @@ class OpenReq final : public Serializable {
   OpenReq() noexcept { }
 
   SWC_CAN_INLINE
-  OpenReq(const std::string& fname, uint32_t flags, int32_t bufsz)
-          : fname(fname), flags(flags), bufsz(bufsz) { }
+  OpenReq(const std::string& a_fname, uint32_t a_flags, int32_t a_bufsz)
+          : fname(a_fname), flags(a_flags), bufsz(a_bufsz) { }
 
   std::string fname;
   uint32_t    flags;
@@ -48,7 +48,7 @@ class OpenRsp final : public Serializable {
   OpenRsp() noexcept : fd(-1) { }
 
   SWC_CAN_INLINE
-  OpenRsp(int32_t fd) noexcept : fd(fd) { }
+  OpenRsp(int32_t a_fd) noexcept : fd(a_fd) { }
 
   int32_t fd;
 

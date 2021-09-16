@@ -70,8 +70,8 @@ class Statistics final : public Interface {
   };
 
   struct Stats {
-    Stats(const StatsDefinition* defined, time_t ts) noexcept
-          : defined(defined), ts(ts) { }
+    Stats(const StatsDefinition* a_defined, time_t a_ts) noexcept
+          : defined(a_defined), ts(a_ts) { }
     ~Stats() { }
     void print(std::ostream& out, const ReadGroup& group,
                Statistics* ptr) const;
@@ -83,8 +83,8 @@ class Statistics final : public Interface {
       int64_t        total;
       int64_t        count;
       int64_t        last;
-      Data(uint24_t id) noexcept
-          : id(id), flag(0), total(0), count(0), last(0) { }
+      Data(uint24_t a_id) noexcept
+          : id(a_id), flag(0), total(0), count(0), last(0) { }
     };
     const StatsDefinition*  defined;
     const time_t            ts;

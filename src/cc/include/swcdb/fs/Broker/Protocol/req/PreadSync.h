@@ -24,17 +24,18 @@ class PreadSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   PreadSync(FS::Statistics& stats,
-            uint32_t timeout, FS::SmartFd::Ptr& smartfd,
-            uint64_t offset, void* dst, size_t len, bool allocated)
+            uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
+            uint64_t offset, void* dst, size_t len, bool a_allocated)
             : Base(
                 stats, FS::Statistics::PREAD_SYNC,
                 Buffers::make(
-                  Params::PreadReq(smartfd->fd(), offset, len),
+                  Params::PreadReq(a_smartfd->fd(), offset, len),
                   0,
                   FUNCTION_PREAD, timeout
                 )
               ),
-              buffer(dst), allocated(allocated), amount(0), smartfd(smartfd) {
+              buffer(dst), allocated(a_allocated), amount(0),
+              smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

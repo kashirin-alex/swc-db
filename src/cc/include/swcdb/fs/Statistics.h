@@ -73,7 +73,7 @@ struct Statistics {
                 m(nullptr) {
       }
       SWC_CAN_INLINE
-      Tracker(Metric* m) noexcept : m(m) { }
+      Tracker(Metric* a_m) noexcept : m(a_m) { }
       void stop(bool err) noexcept {
         if(m) m->add(err, elapsed());
       }
@@ -109,7 +109,7 @@ struct Statistics {
   };
 
   constexpr
-  Statistics(bool enabled) noexcept : enabled(enabled), fds_count(0) { }
+  Statistics(bool a_enabled) noexcept : enabled(a_enabled), fds_count(0) { }
   Statistics(const Statistics&)            = delete;
   Statistics(Statistics&&)                 = delete;
   Statistics& operator=(const Statistics&) = delete;

@@ -22,16 +22,16 @@ class LengthSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   LengthSync(FS::Statistics& stats,
-             uint32_t timeout, const std::string& name)
+             uint32_t timeout, const std::string& a_name)
             : Base(
                 stats, FS::Statistics::LENGTH_SYNC,
                 Buffers::make(
-                  Params::LengthReq(name),
+                  Params::LengthReq(a_name),
                   0,
                   FUNCTION_LENGTH, timeout
                 )
               ),
-              length(0), name(name) {
+              length(0), name(a_name) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

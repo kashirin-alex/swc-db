@@ -20,16 +20,16 @@ class FlushSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   FlushSync(FS::Statistics& stats,
-            uint32_t timeout, FS::SmartFd::Ptr& smartfd)
+            uint32_t timeout, FS::SmartFd::Ptr& a_smartfd)
             : Base(
                 stats, FS::Statistics::FLUSH_SYNC,
                 Buffers::make(
-                  Params::FlushReq(smartfd->fd()),
+                  Params::FlushReq(a_smartfd->fd()),
                   0,
                   FUNCTION_FLUSH, timeout
                 )
               ),
-              smartfd(smartfd) {
+              smartfd(a_smartfd) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

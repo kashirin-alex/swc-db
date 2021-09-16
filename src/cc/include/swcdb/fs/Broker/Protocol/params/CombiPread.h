@@ -21,9 +21,9 @@ class CombiPreadReq final : public Serializable {
   CombiPreadReq() noexcept { }
 
   SWC_CAN_INLINE
-  CombiPreadReq(const FS::SmartFd::Ptr& smartfd,
-                uint64_t offset, uint32_t amount) noexcept
-                : smartfd(smartfd), offset(offset), amount(amount) { }
+  CombiPreadReq(const FS::SmartFd::Ptr& a_smartfd,
+                uint64_t a_offset, uint32_t a_amount) noexcept
+                : smartfd(a_smartfd), offset(a_offset), amount(a_amount) { }
 
   FS::SmartFd::Ptr  smartfd;
   uint64_t          offset;

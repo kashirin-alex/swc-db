@@ -20,7 +20,7 @@ class RmdirReq final : public Serializable {
   RmdirReq() noexcept { }
 
   SWC_CAN_INLINE
-  RmdirReq(const std::string& dname) : dname(dname) { }
+  RmdirReq(const std::string& a_dname) : dname(a_dname) { }
 
   std::string dname;
 

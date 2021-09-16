@@ -20,17 +20,17 @@ class Readdir final : public Base {
 
   SWC_CAN_INLINE
   Readdir(FS::Statistics& stats,
-          uint32_t timeout, const std::string& name,
-          FS::Callback::ReaddirCb_t&& cb)
+          uint32_t timeout, const std::string& a_name,
+          FS::Callback::ReaddirCb_t&& a_cb)
           : Base(
               stats, FS::Statistics::READDIR_ASYNC,
               Buffers::make(
-                Params::ReaddirReq(name),
+                Params::ReaddirReq(a_name),
                 0,
                 FUNCTION_READDIR, timeout
               )
             ),
-            name(name), cb(std::move(cb)) {
+            name(a_name), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

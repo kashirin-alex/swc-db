@@ -72,9 +72,10 @@ int run() {
   return 0;
 }
 
-Interface::Interface(std::string&& prompt, std::string&& history)
+Interface::Interface(std::string&& a_prompt, std::string&& a_history)
                     : err(Error::OK), _state(CLI::QUIT_CLI),
-                      prompt(std::move(prompt)), history(std::move(history)) {
+                      prompt(std::move(a_prompt)),
+                      history(std::move(a_history)) {
   init();
 }
 

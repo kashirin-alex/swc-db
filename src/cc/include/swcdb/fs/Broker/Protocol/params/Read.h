@@ -21,7 +21,8 @@ class ReadReq final : public Serializable {
   ReadReq() noexcept : fd(-1) { }
 
   SWC_CAN_INLINE
-  ReadReq(int32_t fd, uint32_t amount) noexcept : fd(fd), amount(amount) { }
+  ReadReq(int32_t a_fd, uint32_t a_amount) noexcept
+          : fd(a_fd), amount(a_amount) { }
 
 
   int32_t   fd;
@@ -46,7 +47,7 @@ class ReadRsp final : public Serializable {
   ReadRsp() noexcept { }
 
   SWC_CAN_INLINE
-  ReadRsp(uint64_t offset) noexcept : offset(offset) { }
+  ReadRsp(uint64_t a_offset) noexcept : offset(a_offset) { }
 
   uint64_t offset;
 

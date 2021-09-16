@@ -19,18 +19,18 @@ class Open final : public Base {
   typedef std::shared_ptr<Open> Ptr;
 
   SWC_CAN_INLINE
-  Open(const FS::FileSystem::Ptr& fs,
-       uint32_t timeout, FS::SmartFd::Ptr& smartfd, int32_t bufsz,
-       FS::Callback::OpenCb_t&& cb)
+  Open(const FS::FileSystem::Ptr& a_fs,
+       uint32_t timeout, FS::SmartFd::Ptr& a_smartfd, int32_t bufsz,
+       FS::Callback::OpenCb_t&& a_cb)
       : Base(
-          fs->statistics, FS::Statistics::OPEN_ASYNC,
+          a_fs->statistics, FS::Statistics::OPEN_ASYNC,
           Buffers::make(
-            Params::OpenReq(smartfd->filepath(), smartfd->flags(), bufsz),
+            Params::OpenReq(a_smartfd->filepath(), a_smartfd->flags(), bufsz),
             0,
             FUNCTION_OPEN, timeout
           )
         ),
-        fs(fs), smartfd(smartfd), cb(std::move(cb)) {
+        fs(a_fs), smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

@@ -19,18 +19,18 @@ class Close final : public Base {
   typedef std::shared_ptr<Close> Ptr;
 
   SWC_CAN_INLINE
-  Close(const FS::FileSystem::Ptr& fs, uint32_t timeout,
-        FS::SmartFd::Ptr& smartfd,
-        FS::Callback::CloseCb_t&& cb)
+  Close(const FS::FileSystem::Ptr& a_fs, uint32_t timeout,
+        FS::SmartFd::Ptr& a_smartfd,
+        FS::Callback::CloseCb_t&& a_cb)
         : Base(
-            fs->statistics, FS::Statistics::CLOSE_ASYNC,
+            a_fs->statistics, FS::Statistics::CLOSE_ASYNC,
             Buffers::make(
-              Params::CloseReq(smartfd->fd()),
+              Params::CloseReq(a_smartfd->fd()),
               0,
               FUNCTION_CLOSE, timeout
             )
           ),
-          fs(fs), smartfd(smartfd), cb(std::move(cb)) {
+          fs(a_fs), smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

@@ -21,16 +21,16 @@ class ReadAllSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   ReadAllSync(FS::Statistics& stats,
-              uint32_t timeout, const std::string& name, StaticBuffer* dst)
+              uint32_t timeout, const std::string& a_name, StaticBuffer* dst)
               : Base(
                   stats, FS::Statistics::READ_ALL_SYNC,
                   Buffers::make(
-                    Params::ReadAllReq(name),
+                    Params::ReadAllReq(a_name),
                     0,
                     FUNCTION_READ_ALL, timeout
                   )
                 ),
-                buffer(dst), name(name) {
+                buffer(dst), name(a_name) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

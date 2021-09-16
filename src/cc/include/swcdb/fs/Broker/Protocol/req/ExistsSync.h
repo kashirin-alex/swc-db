@@ -22,16 +22,16 @@ class ExistsSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   ExistsSync(FS::Statistics& stats,
-             uint32_t timeout, const std::string& name)
+             uint32_t timeout, const std::string& a_name)
             : Base(
                 stats, FS::Statistics::EXISTS_SYNC,
                 Buffers::make(
-                  Params::ExistsReq(name),
+                  Params::ExistsReq(a_name),
                   0,
                   FUNCTION_EXISTS, timeout
                 )
               ),
-              state(false), name(name) {
+              state(false), name(a_name) {
   }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

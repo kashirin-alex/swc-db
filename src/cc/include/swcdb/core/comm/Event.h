@@ -22,7 +22,7 @@ class Event final {
   private:
 
   SWC_CAN_INLINE
-  explicit Event(int error) noexcept : expiry_ms(0), error(error) { }
+  explicit Event(int a_error) noexcept : expiry_ms(0), error(a_error) { }
 
   public:
 

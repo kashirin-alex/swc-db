@@ -88,7 +88,7 @@ void test_map(size_t sz, uint8_t probes) {
 
 struct Type1 {
   Type1() noexcept { }
-  Type1(size_t sz) : sz(sz), n(std::to_string(sz)) {
+  Type1(size_t a_sz) : sz(a_sz), n(std::to_string(sz)) {
     n.reserve(32);
   }
   Type1(const Type1& other) : sz(other.sz), n(other.n) {

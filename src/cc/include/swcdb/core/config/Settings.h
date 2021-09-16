@@ -71,8 +71,8 @@ class Settings final : public Properties {
     const std::string filename;
     time_t            modified;
     SWC_CAN_INLINE
-    DynFile(std::string&& filename) noexcept
-            : filename(std::move(filename)), modified(0) {
+    DynFile(std::string&& a_filename) noexcept
+            : filename(std::move(a_filename)), modified(0) {
     }
     SWC_CAN_INLINE
     bool operator==(const DynFile& other) const noexcept {

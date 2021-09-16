@@ -23,9 +23,9 @@ class CPU {
   Core::Atomic<uint32_t>                        usage;
   Core::Atomic<uint32_t>                        threads;
 
-  CPU(Notifier* notifier) noexcept
+  CPU(Notifier* a_notifier) noexcept
       : concurrency(std::thread::hardware_concurrency()), mhz(0), usage(0),
-        notifier(notifier), ms_intval(10000),
+        notifier(a_notifier), ms_intval(10000),
         stat_chk(0), stat_utime(0), stat_stime(0) {
   }
 

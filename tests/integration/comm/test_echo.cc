@@ -38,9 +38,12 @@ class Checker {
   Core::Atomic<size_t>  failures;
   Core::Atomic<ssize_t> expected;
 
-  Checker(int num_req, int batch_sz, int threads_conn)
-          : failures(0), expected(num_req * batch_sz * threads_conn),
-            num_req(num_req), batch_sz(batch_sz), threads_conn(threads_conn) {
+  Checker(int a_num_req, int a_batch_sz, int a_threads_conn)
+          : failures(0),
+            expected(a_num_req * a_batch_sz * a_threads_conn),
+            num_req(a_num_req),
+            batch_sz(a_batch_sz),
+            threads_conn(a_threads_conn) {
   }
 
   void run(Comm::ConnHandlerPtr conn, int req_n = 0){
