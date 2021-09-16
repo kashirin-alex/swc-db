@@ -311,6 +311,7 @@ size_t Blocks::release(size_t bytes) {
 }
 
 size_t Blocks::release(size_t bytes, uint8_t level) {
+  processing_increment();
   size_t released;
   switch(level) {
     case 0: {
@@ -342,9 +343,8 @@ size_t Blocks::release(size_t bytes, uint8_t level) {
       released = 0;
       bool support;
       if(m_mutex.try_full_lock(support)) {
-        if(m_block && !_processing()) {
-          processing_increment();
-          if(!range->compacting()) {
+        if(m_block) {
+          if(m_processing.fetch_add(1) == 1 && !range->compacting()) {
             for(Block::Ptr blk = m_block; blk; blk = blk->next) {
               released += blk->_releasing_size();
             }
@@ -360,6 +360,7 @@ size_t Blocks::release(size_t bytes, uint8_t level) {
       released = 0;
       break;
   }
+  processing_decrement();
   return released;
 }
 

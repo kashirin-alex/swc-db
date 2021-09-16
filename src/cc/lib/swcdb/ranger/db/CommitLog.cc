@@ -72,10 +72,10 @@ void Fragments::commit() {
 }
 
 size_t Fragments::commit_release() {
-  if(!m_releasable_bytes || !m_mutex.try_lock())
+  if(!m_releasable_bytes || !m_mutex.try_lock_shared())
     return 0;
   bool ok = !m_compacting && !m_commit.running();
-  m_mutex.unlock();
+  m_mutex.unlock_shared();
   return ok ? _commit(true) : 0;
 }
 
@@ -360,12 +360,13 @@ void Fragments::get(Fragments::Vec& fragments) {
 
 size_t Fragments::release(size_t bytes) {
   size_t released = 0;
-  Core::SharedLock lock(m_mutex);
-
-  for(auto& frag : *this) {
-    released += frag->release();
-    if(released >= bytes)
-      break;
+  if(m_mutex.try_lock_shared()) {
+    for(auto& frag : *this) {
+      released += frag->release();
+      if(released >= bytes)
+        break;
+    }
+    m_mutex.unlock_shared();
   }
   return released;
 }
