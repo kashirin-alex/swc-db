@@ -217,8 +217,8 @@ struct Column::TaskRunMngReq {
   ColumnPtr                 ptr;
   Callback::ManageBase::Ptr req;
   SWC_CAN_INLINE
-  TaskRunMngReq(ColumnPtr&& ptr, Callback::ManageBase::Ptr&& req)
-                noexcept : ptr(std::move(ptr)), req(std::move(req)) {
+  TaskRunMngReq(ColumnPtr&& a_ptr, Callback::ManageBase::Ptr&& a_req)
+                noexcept : ptr(std::move(a_ptr)), req(std::move(a_req)) {
   }
   void operator()() {
     switch(req->action) {

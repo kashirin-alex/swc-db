@@ -65,7 +65,7 @@ void Fragments::commit() {
   struct Task {
     Fragments* ptr;
     SWC_CAN_INLINE
-    Task(Fragments* ptr) noexcept : ptr(ptr) { }
+    Task(Fragments* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()() { ptr->_commit(false); }
   };
   Env::Rgr::post(Task(this));

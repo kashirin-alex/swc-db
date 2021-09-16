@@ -21,9 +21,9 @@ struct RangeQueryUpdate : Core::QueuePointer<RangeQueryUpdate*>::Pointer {
   Comm::Protocol::Rgr::Params::RangeQueryUpdateRsp  rsp;
 
   SWC_CAN_INLINE
-  RangeQueryUpdate(const Comm::ConnHandlerPtr& conn,
-                   const Comm::Event::Ptr& ev)
-                  : conn(conn), ev(ev), rsp(Error::OK) {
+  RangeQueryUpdate(const Comm::ConnHandlerPtr& a_conn,
+                   const Comm::Event::Ptr& a_ev)
+                  : conn(a_conn), ev(a_ev), rsp(Error::OK) {
     Env::Rgr::res().more_mem_future(ev->data_ext.size);
   }
 

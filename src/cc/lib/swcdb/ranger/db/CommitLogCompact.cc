@@ -8,9 +8,9 @@
 namespace SWC { namespace Ranger { namespace CommitLog {
 
 SWC_CAN_INLINE
-Compact::Group::Group(Compact* compact, uint8_t worker)
-                      : worker(worker), error(Error::OK),
-                        compact(compact),
+Compact::Group::Group(Compact* a_compact, uint8_t a_worker)
+                      : worker(a_worker), error(Error::OK),
+                        compact(a_compact),
                         m_idx(0), m_running(0), m_finishing(0),
                         m_cells(
                           compact->log->range->cfg->key_seq,
@@ -51,8 +51,8 @@ void Compact::Group::loaded(Fragment::Ptr&& frag) {
     Group*        g;
     Fragment::Ptr frag;
     SWC_CAN_INLINE
-    Task(Group* g, Fragment::Ptr&& frag) noexcept
-        : g(g), frag(std::move(frag)) { }
+    Task(Group* a_g, Fragment::Ptr&& a_frag) noexcept
+        : g(a_g), frag(std::move(a_frag)) { }
     void operator()() { g->_loaded(frag); }
   };
   Env::Rgr::post(Task(this, std::move(frag)));
@@ -157,7 +157,7 @@ void Compact::Group::finalize() {
   struct Task {
     Compact* compact;
     SWC_CAN_INLINE
-    Task(Compact* compact) noexcept : compact(compact) { }
+    Task(Compact* a_compact) noexcept : compact(a_compact) { }
     void operator()() { compact->finalized(); }
   };
   Env::Rgr::post(Task(compact));
@@ -165,13 +165,14 @@ void Compact::Group::finalize() {
 
 
 
-Compact::Compact(Fragments* log, uint32_t repetition,
+Compact::Compact(Fragments* a_log, uint32_t a_repetition,
                  const Fragments::CompactGroups& groups,
                  uint8_t cointervaling,
                  Compact::Cb_t&& cb)
-                : log(log),
+                : log(a_log),
                   preload(log->range->cfg->log_fragment_preload()),
-                  repetition(repetition), ngroups(groups.size()), nfrags(0),
+                  repetition(a_repetition),
+                  ngroups(groups.size()), nfrags(0),
                   m_cb(std::move(cb)) {
   for(auto frags : groups)
     nfrags += frags.size();
@@ -249,7 +250,7 @@ void Compact::finished(Group* group, size_t cells_count) {
   struct Task {
     Group* g;
     SWC_CAN_INLINE
-    Task(Group* g) noexcept : g(g) { }
+    Task(Group* a_g) noexcept : g(a_g) { }
     void operator()() {
       g->finalize();
       delete g;

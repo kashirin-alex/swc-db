@@ -35,9 +35,9 @@ class ManageBase : public Comm::ResponseCallback {
   SWC_CAN_INLINE
   ManageBase(const Comm::ConnHandlerPtr& conn,
              const Comm::Event::Ptr& ev,
-             Action action)
+             Action a_action)
             : Comm::ResponseCallback(conn, ev),
-              action(action) {
+              action(a_action) {
     Env::Rgr::in_process(1);
   }
 

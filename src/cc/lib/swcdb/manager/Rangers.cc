@@ -93,7 +93,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   struct TimerTask {
     Rangers* ptr;
     SWC_CAN_INLINE
-    TimerTask(Rangers* ptr) noexcept : ptr(ptr) { }
+    TimerTask(Rangers* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->schedule_run();
@@ -526,7 +526,7 @@ void Rangers::assign_ranges() {
   struct Task {
     Rangers* ptr;
     SWC_CAN_INLINE
-    Task(Rangers* ptr) noexcept : ptr(ptr) { }
+    Task(Rangers* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()() { ptr->assign_ranges_run(); }
   };
   if(m_run && !m_assign.running())
@@ -648,7 +648,7 @@ void Rangers::health_check_columns() {
     struct Task {
       ColumnHealthCheck::Ptr ptr;
       SWC_CAN_INLINE
-      Task(const ColumnHealthCheck::Ptr& ptr) noexcept : ptr(ptr) { }
+      Task(const ColumnHealthCheck::Ptr& a_ptr) noexcept : ptr(a_ptr) { }
       void operator()() { ptr->run(); }
     };
     m_columns_check_ts = ts;

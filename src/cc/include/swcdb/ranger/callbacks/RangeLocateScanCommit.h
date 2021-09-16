@@ -19,12 +19,13 @@ class RangeLocateScanCommit : public RangeLocateScan {
   SWC_CAN_INLINE
   RangeLocateScanCommit(const Comm::ConnHandlerPtr& conn,
                         const Comm::Event::Ptr& ev,
-                        const DB::Cell::Key& range_begin,
-                        const RangePtr& range,
-                        uint8_t flags)
+                        const DB::Cell::Key& a_range_begin,
+                        const RangePtr& a_range,
+                        uint8_t a_flags)
                         : RangeLocateScan(
                             conn, ev,
-                            range_begin, DB::Cell::Key(), range, flags) {
+                            a_range_begin, DB::Cell::Key(), a_range, a_flags
+                          ) {
   }
 
   virtual ~RangeLocateScanCommit() { }

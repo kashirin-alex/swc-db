@@ -20,12 +20,12 @@ class RangeQuerySelect : public ReqScan {
   RangeQuerySelect(const Comm::ConnHandlerPtr& conn,
                    const Comm::Event::Ptr& ev,
                    DB::Specs::Interval&& req_spec,
-                   const RangePtr& range)
+                   const RangePtr& a_range)
                   : ReqScan(
                       conn, ev,
-                      std::move(req_spec), range->cfg->block_size()
+                      std::move(req_spec), a_range->cfg->block_size()
                     ),
-                    range(range) {
+                    range(a_range) {
     if(!spec.values.empty())
       spec.values.col_type = range->cfg->column_type();
     if(!spec.flags.max_versions)

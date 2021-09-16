@@ -12,16 +12,16 @@ namespace Rgr { namespace Req {
 
 
 SWC_CAN_INLINE
-ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& rgr,
-                           const DB::Schema::Ptr& schema,
-                           uint64_t req_id)
+ColumnDelete::ColumnDelete(const Manager::Ranger::Ptr& a_rgr,
+                           const DB::Schema::Ptr& a_schema,
+                           uint64_t a_req_id)
           : client::ConnQueue::ReqBase(
               Buffers::make(
-                Params::ColumnDelete(schema->cid),
+                Params::ColumnDelete(a_schema->cid),
                 0,
                 COLUMN_DELETE, 3600000)
             ),
-            rgr(rgr), schema(schema), req_id(req_id) {
+            rgr(a_rgr), schema(a_schema), req_id(a_req_id) {
 }
 
 void ColumnDelete::handle(ConnHandlerPtr, const Event::Ptr& ev) {

@@ -210,7 +210,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
   struct Task {
     CompactRange::Ptr req;
     SWC_CAN_INLINE
-    Task(CompactRange* req) noexcept : req(req) { }
+    Task(CompactRange* a_req) noexcept : req(a_req) { }
     void operator()() { req->initialize(); }
   };
 
@@ -257,7 +257,7 @@ void Compaction::compacted() {
     struct Task {
       Compaction* ptr;
       SWC_CAN_INLINE
-      Task(Compaction* ptr) noexcept : ptr(ptr) { }
+      Task(Compaction* a_ptr) noexcept : ptr(a_ptr) { }
       void operator()() { ptr->run(false); }
     };
     Env::Rgr::maintenance_post(Task(this));
@@ -286,7 +286,7 @@ void Compaction::_schedule(uint32_t t_ms) {
   struct TimerTask {
     Compaction* ptr;
     SWC_CAN_INLINE
-    TimerTask(Compaction* ptr) noexcept : ptr(ptr) { }
+    TimerTask(Compaction* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->run();

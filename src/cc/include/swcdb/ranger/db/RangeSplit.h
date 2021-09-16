@@ -20,8 +20,8 @@ static void mngr_remove_range(const RangePtr& new_range) {
     const RangePtr&             new_range;
     Core::StateSynchronization& res;
     SWC_CAN_INLINE
-    ReqData(const RangePtr& new_range, Core::StateSynchronization& res)
-            noexcept : new_range(new_range), res(res) {
+    ReqData(const RangePtr& a_new_range, Core::StateSynchronization& a_res)
+            noexcept : new_range(a_new_range), res(a_res) {
     }
     SWC_CAN_INLINE
     cid_t get_cid() const noexcept {
@@ -70,8 +70,8 @@ class RangeSplit final {
   public:
 
 
-  RangeSplit(const RangePtr& range, const size_t split_at)
-            : range(range), split_at(split_at) {
+  RangeSplit(const RangePtr& a_range, const size_t a_split_at)
+            : range(a_range), split_at(a_split_at) {
     SWC_LOGF(LOG_INFO, "COMPACT-SPLIT RANGE START %lu/%lu at=%lu",
              range->cfg->cid, range->rid, split_at);
   }
@@ -167,8 +167,8 @@ class RangeSplit final {
           const cid_t cid;
           const rid_t new_rid;
           SWC_CAN_INLINE
-          ReqData(cid_t cid, rid_t new_rid) noexcept
-                  : cid(cid), new_rid(new_rid) {
+          ReqData(cid_t a_cid, rid_t a_new_rid) noexcept
+                  : cid(a_cid), new_rid(a_new_rid) {
           }
           SWC_CAN_INLINE
           cid_t get_cid() const noexcept {
@@ -232,9 +232,9 @@ class RangeSplit final {
       rid_t&                      new_rid;
       Core::StateSynchronization& res;
       SWC_CAN_INLINE
-      ReqData(cid_t cid, int& err, rid_t& new_rid,
-              Core::StateSynchronization& res) noexcept
-              : cid(cid), err(err), new_rid(new_rid), res(res) {
+      ReqData(cid_t a_cid, int& a_err, rid_t& a_new_rid,
+              Core::StateSynchronization& a_res) noexcept
+              : cid(a_cid), err(a_err), new_rid(a_new_rid), res(a_res) {
       }
       SWC_CAN_INLINE
       cid_t get_cid() const noexcept {

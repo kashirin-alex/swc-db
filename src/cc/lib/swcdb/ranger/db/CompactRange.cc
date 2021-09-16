@@ -122,16 +122,19 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 };
 
 
-CompactRange::CompactRange(Compaction* compactor, const RangePtr& range,
-                           const uint32_t cs_size, const uint32_t blk_size)
+CompactRange::CompactRange(Compaction* a_compactor,
+                           const RangePtr& a_range,
+                           const uint32_t a_cs_size,
+                           const uint32_t a_blk_size)
             : ReqScan(
                 ReqScan::Type::COMPACTION, true,
-                compactor->cfg_read_ahead->get()/2, blk_size),
-              compactor(compactor), range(range),
-              cs_size(cs_size),
+                a_compactor->cfg_read_ahead->get()/2, a_blk_size
+              ),
+              compactor(a_compactor), range(a_range),
+              cs_size(a_cs_size),
               blk_cells(range->cfg->block_cells()),
               blk_encoding(range->cfg->block_enc()),
-              m_inblock(new InBlock(range->cfg->key_seq, blk_size)),
+              m_inblock(new InBlock(range->cfg->key_seq, a_blk_size)),
               m_processing(0),
               total_cells(0), total_blocks(0),
               time_intval(0), time_encode(0), time_write(0),
@@ -324,7 +327,7 @@ void CompactRange::response(int& err) {
     struct Task {
       Ptr ptr;
       SWC_CAN_INLINE
-      Task(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+      Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
       void operator()() { ptr->quit(); }
     };
     Env::Rgr::maintenance_post(Task(shared()));
@@ -372,7 +375,7 @@ void CompactRange::response(int& err) {
   struct NextTask {
     Ptr ptr;
     SWC_CAN_INLINE
-    NextTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
     void operator()() { ptr->process_interval(); }
   };
   if(m_q_intval.push_and_is_1st(in_block))
@@ -477,7 +480,7 @@ void CompactRange::progress_check_timer() {
   struct TimerTask {
     Ptr ptr;
     SWC_CAN_INLINE
-    TimerTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    TimerTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->progress_check_timer();
@@ -508,7 +511,7 @@ void CompactRange::request_more() {
   struct Task {
     Ptr ptr;
     SWC_CAN_INLINE
-    Task(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
     void operator()() { ptr->range->scan_internal(ptr); }
   };
   if(!m_get.running())
@@ -520,7 +523,7 @@ void CompactRange::process_interval() {
   struct NextTask {
     Ptr ptr;
     SWC_CAN_INLINE
-    NextTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
     void operator()() { ptr->process_encode(); }
   };
   Time::Measure_ns t_measure;
@@ -546,7 +549,7 @@ void CompactRange::process_encode() {
   struct NextTask {
     Ptr ptr;
     SWC_CAN_INLINE
-    NextTask(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+    NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
     void operator()() { ptr->process_write(); }
   };
   Time::Measure_ns t_measure;
@@ -791,8 +794,8 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
     CompactRange::Ptr ptr;
     uint32_t          split_at;
     SWC_CAN_INLINE
-    ReqData(const CompactRange::Ptr& ptr, uint32_t split_at)
-            noexcept : ptr(ptr), split_at(split_at) {
+    ReqData(const CompactRange::Ptr& a_ptr, uint32_t a_split_at)
+            noexcept : ptr(a_ptr), split_at(a_split_at) {
     }
     SWC_CAN_INLINE
     cid_t get_cid() const noexcept {
@@ -841,7 +844,7 @@ template<bool clear>
 struct CompactRange::TaskFinished {
   Ptr ptr;
   SWC_CAN_INLINE
-  TaskFinished(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+  TaskFinished(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
   void operator()() { ptr->finished(clear); }
 };
 
@@ -921,8 +924,8 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
         CompactRange::Ptr ptr;
         const rid_t       new_rid;
         SWC_CAN_INLINE
-        ReqData(const CompactRange::Ptr& ptr, rid_t new_rid)
-                noexcept : ptr(ptr), new_rid(new_rid) {
+        ReqData(const CompactRange::Ptr& a_ptr, rid_t a_new_rid)
+                noexcept : ptr(a_ptr), new_rid(a_new_rid) {
         }
         SWC_CAN_INLINE
         cid_t get_cid() const noexcept {

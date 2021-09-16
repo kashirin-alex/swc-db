@@ -211,13 +211,13 @@ class AppContext final : public Comm::AppContext {
       //&Comm::Protocol::Rgr::Handler::status,
       /*
       case Comm::Protocol::Rgr::Handler::shutdown: {
-        struct Handler {
+        struct Task {
           AppContext* ptr;
           SWC_CAN_INLINE
-          Handler(AppContext* ptr) noexcept : ptr(ptr) { }
+          Task(AppContext* a_ptr) noexcept : ptr(a_ptr) { }
           void operator()() { ptr->shutting_down(std::error_code(), SIGINT); }
         };
-        Env::Rgr::post(Handler(this));
+        Env::Rgr::post(Task(this));
         conn->response_ok(ev);
         break;
       }
@@ -255,10 +255,10 @@ class AppContext final : public Comm::AppContext {
 
   void shutting_down(const std::error_code &ec, const int &sig) {
     if(!sig) { // set signals listener
-      struct Handler {
+      struct Task {
         AppContext* ptr;
         SWC_CAN_INLINE
-        Handler(AppContext* ptr) noexcept : ptr(ptr) { }
+        Task(AppContext* a_ptr) noexcept : ptr(a_ptr) { }
         void operator()(const std::error_code& ec, const int &sig) {
           if(ec == asio::error::operation_aborted)
             return;
@@ -267,7 +267,7 @@ class AppContext final : public Comm::AppContext {
           ptr->shutting_down(ec, sig);
         }
       };
-      Env::Rgr::io()->signals->async_wait(Handler(this));
+      Env::Rgr::io()->signals->async_wait(Task(this));
 
       SWC_LOGF(LOG_INFO, "Listening for Shutdown signal, set at sig=%d ec=%s",
               sig, ec.message().c_str());

@@ -8,9 +8,9 @@ namespace SWC { namespace Ranger { namespace Callback {
 
 
 SWC_CAN_INLINE
-ColumnsUnloadAll::ColumnsUnloadAll(bool validation)
+ColumnsUnloadAll::ColumnsUnloadAll(bool a_validation)
       : ColumnsUnload(nullptr, nullptr, false, 0, 0),
-        validation(validation)  {
+        validation(a_validation)  {
 }
 
 void ColumnsUnloadAll::unloaded(RangePtr range) {

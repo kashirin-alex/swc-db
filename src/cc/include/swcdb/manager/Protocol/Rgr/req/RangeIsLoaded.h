@@ -21,16 +21,18 @@ class RangeIsLoaded : public client::ConnQueue::ReqBase {
   const Manager::Range::Ptr                            range;
 
   SWC_CAN_INLINE
-  RangeIsLoaded(const Manager::ColumnHealthCheck::RangerCheck::Ptr& checker,
-                const Manager::Range::Ptr& range, uint32_t timeout=60000)
+  RangeIsLoaded(const Manager::ColumnHealthCheck::RangerCheck::Ptr& a_checker,
+                const Manager::Range::Ptr& a_range, uint32_t timeout=60000)
                 : client::ConnQueue::ReqBase(
                     Buffers::make(
-                      Params::RangeIsLoadedReq(range->cfg->cid, range->rid),
+                      Params::RangeIsLoadedReq(
+                        a_range->cfg->cid, a_range->rid
+                      ),
                       0,
                       RANGE_IS_LOADED, timeout
                     )
                   ),
-                  checker(checker), range(range) {
+                  checker(a_checker), range(a_range) {
   }
 
   virtual ~RangeIsLoaded() { }

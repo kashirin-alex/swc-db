@@ -202,7 +202,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
     struct TimerTask {
       RgrMngId* ptr;
       SWC_CAN_INLINE
-      TimerTask(RgrMngId* ptr) noexcept : ptr(ptr) { }
+      TimerTask(RgrMngId* a_ptr) noexcept : ptr(a_ptr) { }
       void operator()(const asio::error_code& ec) {
         if(ec != asio::error::operation_aborted)
           ptr->request();

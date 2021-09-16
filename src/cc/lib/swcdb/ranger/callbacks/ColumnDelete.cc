@@ -10,9 +10,9 @@ namespace SWC { namespace Ranger { namespace Callback {
 SWC_CAN_INLINE
 ColumnDelete::ColumnDelete(const Comm::ConnHandlerPtr& conn,
                            const Comm::Event::Ptr& ev,
-                           const cid_t cid) noexcept
+                           const cid_t a_cid) noexcept
                           : ManageBase(conn, ev, ManageBase::COLUMN_DELETE),
-                            cid(cid) {
+                            cid(a_cid) {
 }
 
 void ColumnDelete::add(const RangePtr& range) {

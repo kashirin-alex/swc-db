@@ -18,11 +18,11 @@ void CheckMeta::run(const RangePtr& range,
 }
 
 SWC_CAN_INLINE
-CheckMeta::CheckMeta(const RangePtr& range,
-                     const Callback::RangeLoad::Ptr& req)
+CheckMeta::CheckMeta(const RangePtr& a_range,
+                     const Callback::RangeLoad::Ptr& a_req)
           : client::Query::Select::Handlers::BaseSingleColumn(
-              Env::Clients::get(), range->cfg->meta_cid),
-            range(range), req(req), spec(DB::Types::Column::SERIAL) {
+              Env::Clients::get(), a_range->cfg->meta_cid),
+            range(a_range), req(a_req), spec(DB::Types::Column::SERIAL) {
     auto& key_intval = spec.key_intervals.add();
     key_intval.start.reserve(2);
     key_intval.start.add(std::to_string(range->cfg->cid), Condition::EQ);
@@ -49,7 +49,7 @@ void CheckMeta::response(int err) {
   struct Task {
     Ptr hdlr;
     SWC_CAN_INLINE
-    Task(Ptr&& hdlr) noexcept : hdlr(std::move(hdlr)) { }
+    Task(Ptr&& a_hdlr) noexcept : hdlr(std::move(a_hdlr)) { }
     void operator()() { hdlr->range->check_meta(hdlr); }
   };
   Env::Rgr::post(

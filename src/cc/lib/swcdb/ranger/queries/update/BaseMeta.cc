@@ -11,13 +11,13 @@ namespace SWC { namespace Ranger { namespace Query { namespace Update {
 
 
 SWC_CAN_INLINE
-BaseMeta::BaseMeta(const RangePtr& range)
+BaseMeta::BaseMeta(const RangePtr& a_range)
                   : client::Query::Update::Handlers::BaseSingleColumn(
                       Env::Clients::get(),
-                      range->cfg->meta_cid, range->cfg->key_seq, 1, 0,
+                      a_range->cfg->meta_cid, a_range->cfg->key_seq, 1, 0,
                       DB::Types::Column::SERIAL
                     ),
-                    range(range) {
+                    range(a_range) {
 }
 
 bool BaseMeta::valid() noexcept {

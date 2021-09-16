@@ -11,9 +11,9 @@ namespace Rgr { namespace Req {
 
 
 SWC_CAN_INLINE
-ReportRes::ReportRes(const Manager::Ranger::Ptr& rgr)
+ReportRes::ReportRes(const Manager::Ranger::Ptr& a_rgr)
                     : client::ConnQueue::ReqBase(Buffers::make(1)),
-                      rgr(rgr) {
+                      rgr(a_rgr) {
   cbp->append_i8(Params::Report::Function::RESOURCES);
   cbp->header.set(REPORT, 60000);
 }

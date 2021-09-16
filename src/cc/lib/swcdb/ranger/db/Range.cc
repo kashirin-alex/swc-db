@@ -31,8 +31,9 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
   Callback::RangeLoad::Ptr req;
 
   SWC_CAN_INLINE
-  MetaRegOnLoadReq(const RangePtr& range, const Callback::RangeLoad::Ptr& req)
-                  : Query::Update::BaseMeta(range), req(req) {
+  MetaRegOnLoadReq(const RangePtr& a_range,
+                   const Callback::RangeLoad::Ptr& a_req)
+                  : Query::Update::BaseMeta(a_range), req(a_req) {
   }
 
   virtual ~MetaRegOnLoadReq() { }
@@ -41,7 +42,7 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
     struct Task {
       Ptr ptr;
       SWC_CAN_INLINE
-      Task(Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+      Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
       void operator()() { ptr->callback(); }
     };
     if(is_last_rsp(err)) {
@@ -79,22 +80,22 @@ const char* to_string(Range::State state) noexcept {
 struct Range::TaskRunQueueScan {
   RangePtr ptr;
   SWC_CAN_INLINE
-  TaskRunQueueScan(RangePtr&& ptr) noexcept : ptr(std::move(ptr)) { }
+  TaskRunQueueScan(RangePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
   void operator()() { ptr->_run_scan_queue(); }
 };
 
 struct Range::TaskRunQueueAdd {
   RangePtr ptr;
   SWC_CAN_INLINE
-  TaskRunQueueAdd(const RangePtr& ptr) noexcept : ptr(ptr) { }
-  TaskRunQueueAdd(RangePtr&& ptr) noexcept : ptr(std::move(ptr)) { }
+  TaskRunQueueAdd(const RangePtr& a_ptr) noexcept : ptr(a_ptr) { }
+  TaskRunQueueAdd(RangePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
   void operator()() { ptr->_run_add_queue(); }
 };
 
 
 SWC_CAN_INLINE
-Range::Range(const ColumnCfg::Ptr& cfg, const rid_t rid)
-            : cfg(cfg), rid(rid),
+Range::Range(const ColumnCfg::Ptr& a_cfg, const rid_t a_rid)
+            : cfg(a_cfg), rid(a_rid),
               blocks(cfg->key_seq),
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
               m_interval(cfg->key_seq), m_load_revision(0),
@@ -284,8 +285,8 @@ void Range::_run_scan_queue() {
     RangePtr     ptr;
     ReqScan::Ptr req;
     SWC_CAN_INLINE
-    Task(RangePtr&& _ptr, ReqScan::Ptr&& req) noexcept
-        : ptr(std::move(_ptr)), req(std::move(req)) {
+    Task(RangePtr&& a_ptr, ReqScan::Ptr&& a_req) noexcept
+        : ptr(std::move(a_ptr)), req(std::move(a_req)) {
       ptr->blocks.processing_increment();
     }
     void operator()() {
@@ -361,15 +362,15 @@ void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& re
     typedef std::shared_ptr<SetRgr> Ptr;
     RangePtr                        range;
     Callback::RangeLoad::Ptr        req;
-    SetRgr(RangePtr&& range,
-           const Callback::RangeLoad::Ptr& req) noexcept
-          : range(std::move(range)), req(req) { }
+    SetRgr(RangePtr&& a_range,
+           const Callback::RangeLoad::Ptr& a_req) noexcept
+          : range(std::move(a_range)), req(a_req) { }
     virtual ~SetRgr() { }
     void callback() override {
       struct Task {
         SetRgr::Ptr ptr;
         SWC_CAN_INLINE
-        Task(SetRgr::Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+        Task(SetRgr::Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
         void operator()() {
           int err = ptr->error();
           err
@@ -778,13 +779,13 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
     RangePtr                          range;
     Callback::RangeLoad::Ptr          req;
     SWC_CAN_INLINE
-    GetRgr(RangePtr&& range, const Callback::RangeLoad::Ptr& req)
-           noexcept : range(std::move(range)), req(req) { }
+    GetRgr(RangePtr&& a_range, const Callback::RangeLoad::Ptr& a_req)
+           noexcept : range(std::move(a_range)), req(a_req) { }
     void callback() override {
       struct Task {
         GetRgr::Ptr ptr;
         SWC_CAN_INLINE
-        Task(GetRgr::Ptr&& ptr) noexcept : ptr(std::move(ptr)) { }
+        Task(GetRgr::Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
         void operator()() {
           int err = Error::OK;
           DB::RgrData rgr_last;
@@ -1039,8 +1040,8 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
   Callback::RangeQueryUpdate* req;
 
   SWC_CAN_INLINE
-  MetaRegOnAddReq(const RangePtr& range, Callback::RangeQueryUpdate* req)
-                : Query::Update::BaseMeta(range), req(req) {
+  MetaRegOnAddReq(const RangePtr& a_range, Callback::RangeQueryUpdate* a_req)
+                : Query::Update::BaseMeta(a_range), req(a_req) {
   }
 
   virtual ~MetaRegOnAddReq() {

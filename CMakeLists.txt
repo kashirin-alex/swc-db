@@ -89,7 +89,7 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-branches -Wno-error=duplicated-branches")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op -Wno-error=logical-op")
 
-  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local -Wshadow=compatible-local")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=compatible-local -Wshadow=local -Wshadow=global -Wshadow")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=262144")
 
   # if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)

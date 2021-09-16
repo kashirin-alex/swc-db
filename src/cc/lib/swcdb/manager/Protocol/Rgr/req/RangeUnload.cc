@@ -12,19 +12,20 @@ namespace Rgr { namespace Req {
 
 
 SWC_CAN_INLINE
-RangeUnload::RangeUnload(const Manager::Ranger::Ptr& rgr,
-                         const Manager::Column::Ptr& col,
-                         const Manager::Range::Ptr& range,
-                         bool ignore_error,
+RangeUnload::RangeUnload(const Manager::Ranger::Ptr& a_rgr,
+                         const Manager::Column::Ptr& a_col,
+                         const Manager::Range::Ptr& a_range,
+                         bool a_ignore_error,
                          uint32_t timeout)
         : client::ConnQueue::ReqBase(
             Buffers::make(
-              Params::RangeUnload(range->cfg->cid, range->rid),
+              Params::RangeUnload(a_range->cfg->cid, a_range->rid),
               0,
               RANGE_UNLOAD, timeout
             )
           ),
-          rgr(rgr), col(col), range(range), ignore_error(ignore_error) {
+          rgr(a_rgr), col(a_col), range(a_range),
+          ignore_error(a_ignore_error) {
 }
 
 bool RangeUnload::valid() {

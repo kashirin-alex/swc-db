@@ -82,7 +82,7 @@ SWC_CAN_INLINE
 Host::Host(const ConnQueuesPtr a_queues, const EndPoints& a_endpoints,
            const Config::Property::V_GINT32::Ptr keepalive_ms,
            const Config::Property::V_GINT32::Ptr again_delay_ms)
-          : ConnQueue(queues->service->io(), keepalive_ms, again_delay_ms),
+          : ConnQueue(a_queues->service->io(), keepalive_ms, again_delay_ms),
             endpoints(a_endpoints), queues(a_queues) {
 }
 

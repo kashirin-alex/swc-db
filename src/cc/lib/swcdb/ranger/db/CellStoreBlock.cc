@@ -76,8 +76,8 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 }
 
 SWC_CAN_INLINE
-Read::Read(Header&& header) noexcept
-          : header(std::move(header)), cellstore(nullptr),
+Read::Read(Header&& a_header) noexcept
+          : header(std::move(a_header)), cellstore(nullptr),
             m_state(header.size_plain ? State::NONE : State::LOADED),
             m_err(Error::OK), m_cells_remain(header.cells_count),
             m_processing(0) {
@@ -129,7 +129,7 @@ void Read::load() {
   struct Task {
     Read* ptr;
     SWC_CAN_INLINE
-    Task(Read* ptr) noexcept : ptr(ptr) { }
+    Task(Read* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()() { ptr->load_open(Error::OK); }
   };
   Env::Rgr::post(Task(this));
@@ -263,8 +263,8 @@ void Read::load_open(int err) {
             int               error;
             StaticBuffer::Ptr buffer;
             SWC_CAN_INLINE
-            Task(Read* ptr, int error, const StaticBuffer::Ptr& buffer) noexcept
-                : ptr(ptr), error(error), buffer(buffer) { }
+            Task(Read* a_ptr, int a_error, const StaticBuffer::Ptr& a_buffer)
+                noexcept : ptr(a_ptr), error(a_error), buffer(a_buffer) { }
             void operator()() { ptr->load_read(error, buffer); }
           };
           Env::Rgr::post(Task(ptr, _err, buff));
@@ -330,7 +330,7 @@ void Read::load_finish(int err) {
   struct Task {
     Read* ptr;
     SWC_CAN_INLINE
-    Task(Read* ptr) noexcept : ptr(ptr) { }
+    Task(Read* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()() { ptr->cellstore->_run_queued(); }
   };
   Env::Rgr::post(Task(this));
@@ -352,7 +352,7 @@ void Read::load_finish(int err) {
 
 
 SWC_CAN_INLINE
-Write::Write(Header&& header) noexcept : header(std::move(header)) { }
+Write::Write(Header&& a_header) noexcept : header(std::move(a_header)) { }
 
 SWC_CAN_INLINE
 void Write::encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,

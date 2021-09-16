@@ -19,18 +19,19 @@ class ColumnUpdate final : public Serializable {
   ColumnUpdate() noexcept { }
 
   SWC_CAN_INLINE
-  ColumnUpdate(ColumnMng::Function function,
-               const DB::Schema::Ptr& schema, int err, uint64_t id) noexcept
-              : function(function), id(id), schema(schema), err(err) {
+  ColumnUpdate(ColumnMng::Function a_function,
+               const DB::Schema::Ptr& a_schema,
+               int a_err, uint64_t a_id) noexcept
+              : function(a_function), id(a_id), schema(a_schema), err(a_err) {
   }
 
   SWC_CAN_INLINE
-  ColumnUpdate(ColumnMng::Function function,
-               cid_t cid_begin, cid_t cid_end, uint64_t total,
-               cids_t&& columns) noexcept
-              : function(function), id(0),
-                columns(std::move(columns)),
-                cid_begin(cid_begin), cid_end(cid_end), total(total),
+  ColumnUpdate(ColumnMng::Function a_function,
+               cid_t a_cid_begin, cid_t a_cid_end, uint64_t a_total,
+               cids_t&& a_columns) noexcept
+              : function(a_function), id(0),
+                columns(std::move(a_columns)),
+                cid_begin(a_cid_begin), cid_end(a_cid_end), total(a_total),
                 err(Error::OK) {
   }
 

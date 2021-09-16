@@ -219,18 +219,20 @@ void Fragment::write(int& err,
 
 SWC_CAN_INLINE
 Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
-                   const uint8_t version,
-                   DB::Cells::Interval&& interval,
-                   const DB::Types::Encoder encoder,
-                   const size_t size_plain, const size_t size_enc,
-                   const uint32_t cell_revs, const uint32_t cells_count,
-                   const uint32_t data_checksum, const uint32_t offset_data,
+                   const uint8_t a_version,
+                   DB::Cells::Interval&& a_interval,
+                   const DB::Types::Encoder a_encoder,
+                   const size_t a_size_plain, const size_t a_size_enc,
+                   const uint32_t a_cell_revs,  const uint32_t a_cells_count,
+                   const uint32_t a_data_checksum,
+                   const uint32_t a_offset_data,
                    Fragment::State state) noexcept
-                  : version(version), interval(std::move(interval)),
-                    encoder(encoder),
-                    size_plain(size_plain), size_enc(size_enc),
-                    cell_revs(cell_revs), cells_count(cells_count),
-                    data_checksum(data_checksum), offset_data(offset_data),
+                  : version(a_version), interval(std::move(a_interval)),
+                    encoder(a_encoder),
+                    size_plain(a_size_plain), size_enc(a_size_enc),
+                    cell_revs(a_cell_revs), cells_count(a_cells_count),
+                    data_checksum(a_data_checksum),
+                    offset_data(a_offset_data),
                     m_state(state), m_marked_removed(false), m_err(Error::OK),
                     m_processing(m_state == State::WRITING),
                     m_cells_remain(cells_count),
@@ -276,11 +278,14 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
           int               error;
           uint8_t           blk_replicas;
           SWC_CAN_INLINE
-          Task(Ptr&& frag, uint8_t blk_replicas, int64_t blksz,
-               const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem,
-               int error) noexcept
-               : frag(std::move(frag)), buff_write(buff_write), sem(sem),
-                 blksz(blksz), error(error), blk_replicas(blk_replicas) { }
+          Task(Ptr&& a_frag, uint8_t a_blk_replicas, int64_t a_blksz,
+               const StaticBuffer::Ptr& a_buff_write,
+               Core::Semaphore* a_sem, int a_error) noexcept
+               : frag(std::move(a_frag)),
+                 buff_write(a_buff_write), sem(a_sem),
+                 blksz(a_blksz), error(a_error),
+                 blk_replicas(a_blk_replicas) {
+          }
           void operator()() {
             frag->write(error, blk_replicas, blksz, buff_write, sem);
           }
@@ -316,7 +321,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
     struct Task {
       Ptr frag;
       SWC_CAN_INLINE
-      Task(Ptr&& frag) noexcept : frag(std::move(frag)) { }
+      Task(Ptr&& a_frag) noexcept : frag(std::move(a_frag)) { }
       void operator()() { frag->run_queued(); }
     };
     Env::Rgr::post(Task(ptr()));
@@ -330,9 +335,9 @@ struct Fragment::TaskLoadRead {
   int               err;
   StaticBuffer::Ptr buffer;
   SWC_CAN_INLINE
-  TaskLoadRead(Ptr&& frag, int err,
-               const StaticBuffer::Ptr& buffer) noexcept
-              : frag(std::move(frag)), err(err), buffer(buffer) { }
+  TaskLoadRead(Ptr&& a_frag, int a_err,
+               const StaticBuffer::Ptr& a_buffer) noexcept
+              : frag(std::move(a_frag)), err(a_err), buffer(a_buffer) { }
   void operator()() { frag->load_read(err, buffer); }
 };
 
@@ -352,7 +357,7 @@ void Fragment::load(Fragment::LoadCallback* cb) {
       struct Task {
         Ptr frag;
         SWC_CAN_INLINE
-        Task(Ptr&& frag) noexcept : frag(std::move(frag)) { }
+        Task(Ptr&& a_frag) noexcept : frag(std::move(a_frag)) { }
         void operator()() {
           Env::FsInterface::fs()->combi_pread(
             [frag=frag]

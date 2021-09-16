@@ -252,20 +252,20 @@ void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
 //
 
 SWC_CAN_INLINE
-Read::Read(const csid_t csid,
-           DB::Cell::Key&& prev_key_end,
-           DB::Cell::Key&& key_end,
-           DB::Cells::Interval&& interval,
+Read::Read(const csid_t a_csid,
+           DB::Cell::Key&& a_prev_key_end,
+           DB::Cell::Key&& a_key_end,
+           DB::Cells::Interval&& a_interval,
            Blocks&& blks,
-           const uint32_t cell_revs,
-           const FS::SmartFd::Ptr& smartfd) noexcept
-          : csid(csid),
-            prev_key_end(std::move(prev_key_end)),
-            key_end(std::move(key_end)),
-            interval(std::move(interval)),
+           const uint32_t a_cell_revs,
+           const FS::SmartFd::Ptr& a_smartfd) noexcept
+          : csid(a_csid),
+            prev_key_end(std::move(a_prev_key_end)),
+            key_end(std::move(a_key_end)),
+            interval(std::move(a_interval)),
             blocks(std::move(blks)),
-            cell_revs(cell_revs),
-            smartfd(smartfd) {
+            cell_revs(a_cell_revs),
+            smartfd(a_smartfd) {
   for(auto blk : blocks)
     blk->init(this);
 }
@@ -414,18 +414,18 @@ void Read::print(std::ostream& out, bool minimal) const {
 
 
 SWC_CAN_INLINE
-Write::Write(const csid_t csid, std::string&& filepath,
-             const RangePtr& range, uint32_t cell_revs,
-             const DB::Cell::Key& prev_key_end)
-            : csid(csid),
+Write::Write(const csid_t a_csid, std::string&& filepath,
+             const RangePtr& range, uint32_t a_cell_revs,
+             const DB::Cell::Key& a_prev_key_end)
+            : csid(a_csid),
               smartfd(
                 FS::SmartFd::make_ptr(
                   std::move(filepath), FS::OpenFlags::OPEN_FLAG_OVERWRITE)
               ),
               encoder(range->cfg->block_enc()),
               block_size(range->cfg->block_size()),
-              cell_revs(cell_revs),
-              prev_key_end(prev_key_end),
+              cell_revs(a_cell_revs),
+              prev_key_end(a_prev_key_end),
               size(0) {
 }
 

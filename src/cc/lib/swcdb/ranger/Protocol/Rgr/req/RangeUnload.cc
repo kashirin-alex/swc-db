@@ -14,16 +14,16 @@ namespace Rgr { namespace Req {
 
 
 SWC_CAN_INLINE
-RangeUnload::RangeUnload(const Ranger::RangePtr& range,
-                         const Ranger::Callback::RangeLoad::Ptr& req,
+RangeUnload::RangeUnload(const Ranger::RangePtr& a_range,
+                         const Ranger::Callback::RangeLoad::Ptr& a_req,
                          uint32_t timeout)
         : client::ConnQueue::ReqBase(
             Buffers::make(
-              Params::RangeUnload(range->cfg->cid, range->rid),
+              Params::RangeUnload(a_range->cfg->cid, a_range->rid),
               0,
               RANGE_UNLOAD, timeout)
           ),
-          req(req), range(range) {
+          req(a_req), range(a_range) {
 }
 
 void RangeUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {

@@ -11,8 +11,8 @@ namespace SWC { namespace Ranger {
 
 
 SWC_CAN_INLINE
-BlockLoader::BlockLoader(Block::Ptr block)
-                        : block(block),
+BlockLoader::BlockLoader(Block::Ptr a_block)
+                        : block(a_block),
                           count_cs_blocks(0), count_fragments(0),
                           error(Error::OK),
                           preload(
@@ -50,7 +50,7 @@ void BlockLoader::loaded_blk() {
   struct Task {
     BlockLoader* ptr;
     SWC_CAN_INLINE
-    Task(BlockLoader* ptr) noexcept : ptr(ptr) { }
+    Task(BlockLoader* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()() { ptr->load_cellstores_cells(); }
   };
   Env::Rgr::post(Task(this));
@@ -151,7 +151,7 @@ void BlockLoader::loaded(CommitLog::Fragment::Ptr&& frag) {
   struct Task {
     BlockLoader* ptr;
     SWC_CAN_INLINE
-    Task(BlockLoader* ptr) noexcept : ptr(ptr) { }
+    Task(BlockLoader* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()() { ptr->load_log_cells(); }
   };
   Env::Rgr::post(Task(this));
@@ -190,7 +190,7 @@ void BlockLoader::load_log_cells() {
       struct Task {
         BlockLoader* ptr;
         SWC_CAN_INLINE
-        Task(BlockLoader* ptr) noexcept : ptr(ptr) { }
+        Task(BlockLoader* a_ptr) noexcept : ptr(a_ptr) { }
         void operator()() { ptr->load_log(false, true); }
       };
       Env::Rgr::post(Task(this));

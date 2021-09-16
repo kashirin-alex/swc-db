@@ -14,10 +14,10 @@ namespace SWC { namespace Manager {
 struct RangerResources {
 
   SWC_CAN_INLINE
-  RangerResources(rgrid_t rgrid = 0,
-                  uint32_t mem = 0, uint32_t cpu = 0, size_t ranges = 0)
+  RangerResources(rgrid_t a_rgrid = 0,
+                  uint32_t a_mem = 0, uint32_t a_cpu = 0, size_t a_ranges = 0)
                   noexcept
-                  : rgrid(rgrid), mem(mem), cpu(cpu), ranges(ranges),
+                  : rgrid(a_rgrid), mem(a_mem), cpu(a_cpu), ranges(a_ranges),
                     load_scale(0), rebalance(0) {
   }
 
@@ -74,7 +74,7 @@ class RangersResources final : private Core::Vector<RangerResources> {
     if(m_mutex.try_full_lock(support)) {
       if(!m_due) {
         int64_t ts = Time::now_ms();
-        
+
         if(ts - m_last_check >= chk) {
           m_last_check = ts;
           for(auto& rgr : rangers) {

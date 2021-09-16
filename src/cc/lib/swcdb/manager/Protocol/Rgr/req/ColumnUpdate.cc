@@ -12,15 +12,15 @@ namespace Rgr { namespace Req {
 
 
 SWC_CAN_INLINE
-ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& rgr,
-                           const Manager::Column::Ptr& col,
-                           const DB::Schema::Ptr& schema,
-                           uint64_t req_id)
+ColumnUpdate::ColumnUpdate(const Manager::Ranger::Ptr& a_rgr,
+                           const Manager::Column::Ptr& a_col,
+                           const DB::Schema::Ptr& a_schema,
+                           uint64_t a_req_id)
               : client::ConnQueue::ReqBase(
                   Buffers::make(
-                    Params::ColumnUpdate(schema), 0, SCHEMA_UPDATE, 60000)
+                    Params::ColumnUpdate(a_schema), 0, SCHEMA_UPDATE, 60000)
                 ),
-                rgr(rgr), col(col), schema(schema), req_id(req_id) {
+                rgr(a_rgr), col(a_col), schema(a_schema), req_id(a_req_id) {
 }
 
 void ColumnUpdate::handle(ConnHandlerPtr, const Event::Ptr& ev) {

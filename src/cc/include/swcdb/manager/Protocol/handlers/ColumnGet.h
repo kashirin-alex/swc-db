@@ -35,14 +35,14 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
   typedef std::shared_ptr<MngrColumnGet> Ptr;
 
   SWC_CAN_INLINE
-  MngrColumnGet(const ConnHandlerPtr& conn, const Event::Ptr& ev,
-                Params::ColumnGetReq::Flag flag,
+  MngrColumnGet(const ConnHandlerPtr& a_conn, const Event::Ptr& a_ev,
+                Params::ColumnGetReq::Flag a_flag,
                 const Params::ColumnGetReq& params)
                 : client::ConnQueue::ReqBase(
                     Buffers::make(
-                      params, 0, COLUMN_GET, ev->header.timeout_ms)
+                      params, 0, COLUMN_GET, a_ev->header.timeout_ms)
                   ),
-                  conn(conn), ev(ev), flag(flag) {
+                  conn(a_conn), ev(a_ev), flag(a_flag) {
   }
 
   virtual ~MngrColumnGet() { }
@@ -61,13 +61,13 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
         conn, ev, Error::SERVER_SHUTTING_DOWN, flag, nullptr);
   }
 
-  void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
+  void handle(ConnHandlerPtr, const Event::Ptr& a_ev) override {
     Params::ColumnGetRsp params;
-    int err = ev->response_code();
+    int err = a_ev->response_code();
     if(!err) {
       try {
-        const uint8_t *ptr = ev->data.base + 4;
-        size_t remain = ev->data.size - 4;
+        const uint8_t *ptr = a_ev->data.base + 4;
+        size_t remain = a_ev->data.size - 4;
         params.decode(&ptr, &remain);
         if(params.schema &&
            Env::Mngr::mngd_columns()->is_active(params.schema->cid)) {

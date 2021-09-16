@@ -10,11 +10,11 @@ namespace SWC { namespace Ranger { namespace Callback {
 SWC_CAN_INLINE
 RangeUnload::RangeUnload(const Comm::ConnHandlerPtr& conn,
                          const Comm::Event::Ptr& ev,
-                         const cid_t cid, const rid_t rid,
-                         const bool completely) noexcept
+                         const cid_t a_cid, const rid_t a_rid,
+                         const bool a_completely) noexcept
                         : ManageBase(conn, ev, ManageBase::RANGE_UNLOAD),
-                          cid(cid), rid(rid),
-                          completely(completely), rsp_params(Error::OK) {
+                          cid(a_cid), rid(a_rid),
+                          completely(a_completely), rsp_params(Error::OK) {
 }
 
 void RangeUnload::response_params() {

@@ -19,9 +19,9 @@ struct RgrUpdate {
   Comm::Event::Ptr     ev;
 
   SWC_CAN_INLINE
-  RgrUpdate(const Comm::ConnHandlerPtr& conn,
-            const Comm::Event::Ptr& ev) noexcept
-            : conn(conn), ev(ev) {
+  RgrUpdate(const Comm::ConnHandlerPtr& a_conn,
+            const Comm::Event::Ptr& a_ev) noexcept
+            : conn(a_conn), ev(a_ev) {
   }
 
   void operator()() {

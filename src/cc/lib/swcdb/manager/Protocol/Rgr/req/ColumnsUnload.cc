@@ -13,7 +13,7 @@ namespace Rgr { namespace Req {
 
 
 SWC_CAN_INLINE
-ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
+ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& a_rgr,
                              cid_t cid_begin, cid_t cid_end)
             : client::ConnQueue::ReqBase(
                 Buffers::make(
@@ -22,7 +22,7 @@ ColumnsUnload::ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                   COLUMNS_UNLOAD, 60000
                 )
               ),
-              rgr(rgr) {
+              rgr(a_rgr) {
 }
 
 void ColumnsUnload::handle(ConnHandlerPtr, const Event::Ptr& ev) {

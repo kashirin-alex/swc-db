@@ -234,7 +234,7 @@ void MngdColumns::action(const ColumnReq::Ptr& req) {
   struct Task {
     MngdColumns* ptr;
     SWC_CAN_INLINE
-    Task(MngdColumns* ptr) noexcept : ptr(ptr) { }
+    Task(MngdColumns* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()() { ptr->run_actions(); }
   };
   if(m_actions.push_and_is_1st(req))
@@ -600,14 +600,14 @@ bool MngdColumns::initialize() {
     FS::IdEntries_t::const_iterator it_end;
     uint8_t                         replicas;
     SWC_CAN_INLINE
-    Task(MngdColumns* ptr,
-         Core::Semaphore* pending,
-         FS::IdEntries_t::const_iterator it_begin,
-         FS::IdEntries_t::const_iterator it_end,
-         uint8_t replicas) noexcept
-        : ptr(ptr), pending(pending),
-          it_begin(it_begin), it_end(it_end),
-          replicas(replicas) {
+    Task(MngdColumns* a_ptr,
+         Core::Semaphore* a_pending,
+         FS::IdEntries_t::const_iterator a_it_begin,
+         FS::IdEntries_t::const_iterator a_it_end,
+         uint8_t a_replicas) noexcept
+        : ptr(a_ptr), pending(a_pending),
+          it_begin(a_it_begin), it_end(a_it_end),
+          replicas(a_replicas) {
     }
     void operator()() {
       DB::Schema::Ptr schema;

@@ -30,8 +30,8 @@ class Ranger final {
   */
 
   SWC_CAN_INLINE
-  Ranger(rgrid_t rgrid, const Comm::EndPoints& endpoints)
-        : rgrid(rgrid), endpoints(endpoints),
+  Ranger(rgrid_t a_rgrid, const Comm::EndPoints& a_endpoints)
+        : rgrid(a_rgrid), endpoints(a_endpoints),
           interm_ranges(0), failures(0), load_scale(0),
           state(RangerState::NONE), m_rebalance(0),
           m_queue(nullptr) {
@@ -49,9 +49,9 @@ class Ranger final {
   }
 
   SWC_CAN_INLINE
-  Ranger(const Ranger& other, const Comm::EndPoints& endpoints)
+  Ranger(const Ranger& other, const Comm::EndPoints& a_endpoints)
         : rgrid(other.rgrid.load()),
-          endpoints(endpoints),
+          endpoints(a_endpoints),
           interm_ranges(other.interm_ranges.load()),
           failures(other.failures.load()),
           load_scale(other.load_scale.load()),

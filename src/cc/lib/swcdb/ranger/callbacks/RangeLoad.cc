@@ -12,9 +12,9 @@ namespace SWC { namespace Ranger { namespace Callback {
 SWC_CAN_INLINE
 RangeLoad::RangeLoad(const Comm::ConnHandlerPtr& conn,
                      const Comm::Event::Ptr& ev,
-                     const cid_t cid, const rid_t rid) noexcept
+                     const cid_t a_cid, const rid_t a_rid) noexcept
                     : ManageBase(conn, ev, ManageBase::RANGE_LOAD),
-                      cid(cid), rid(rid) {
+                      cid(a_cid), rid(a_rid) {
 }
 
 void RangeLoad::loaded(int& err) {

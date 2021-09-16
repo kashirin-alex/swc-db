@@ -17,9 +17,9 @@ namespace SWC { namespace Manager {
 
 SWC_CAN_INLINE
 ColumnHealthCheck::RangerCheck::RangerCheck(
-                const ColumnHealthCheck::Ptr& col_checker,
-                const Ranger::Ptr& rgr)
-                : col_checker(col_checker), rgr(rgr), m_checkings(0),
+                const ColumnHealthCheck::Ptr& a_col_checker,
+                const Ranger::Ptr& a_rgr)
+                : col_checker(a_col_checker), rgr(a_rgr), m_checkings(0),
                   m_success(0), m_failures(0) {
 }
 
@@ -108,10 +108,12 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
 
 
 SWC_CAN_INLINE
-ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& col,
-                                     int64_t check_ts, uint32_t check_intval)
-                                    : col(col), check_ts(check_ts),
-                                      check_intval(check_intval),
+ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& a_col,
+                                     int64_t a_check_ts,
+                                     uint32_t a_check_intval)
+                                    : col(a_col),
+                                      check_ts(a_check_ts),
+                                      check_intval(a_check_intval),
                                       completion(1) {
   SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu)", col->cfg->cid);
 }
@@ -212,9 +214,9 @@ void ColumnHealthCheck::finishing(bool finished_range) {
     (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
       int err = _hdlr->state_error;
       if(!err) {
-        auto col = _hdlr->get_columnn(meta_cid);
-        if(!(err = col->error()) && !col->empty())
-          col->get_cells(merger->cells);
+        auto _col = _hdlr->get_columnn(meta_cid);
+        if(!(err = _col->error()) && !_col->empty())
+          _col->get_cells(merger->cells);
       }
       (err || merger->cells.empty())
         ? merger->completion()
@@ -230,9 +232,10 @@ void ColumnHealthCheck::finishing(bool finished_range) {
 
 SWC_CAN_INLINE
 ColumnHealthCheck::ColumnMerger::ColumnMerger(
-            const ColumnHealthCheck::Ptr& col_checker,
+            const ColumnHealthCheck::Ptr& a_col_checker,
             Core::Vector<Range::Ptr>&& ranges) noexcept
-            : col_checker(col_checker), m_ranges(std::move(ranges)) {
+            : col_checker(a_col_checker),
+              m_ranges(std::move(ranges)) {
 }
 
 void ColumnHealthCheck::ColumnMerger::run_master() {
@@ -353,9 +356,9 @@ void ColumnHealthCheck::ColumnMerger::completion() {
 
 SWC_CAN_INLINE
 ColumnHealthCheck::ColumnMerger::RangesMerger::RangesMerger(
-                const ColumnMerger::Ptr& col_merger,
+                const ColumnMerger::Ptr& a_col_merger,
                 Core::Vector<Range::Ptr>&& ranges) noexcept
-      : col_merger(col_merger), m_err(Error::OK),
+      : col_merger(a_col_merger), m_err(Error::OK),
         m_ranges(std::move(ranges)) {
 }
 

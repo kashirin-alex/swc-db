@@ -11,7 +11,7 @@ namespace Mngr {namespace Req {
 
 
 SWC_CAN_INLINE
-MngrState::MngrState(const ResponseCallback::Ptr& cb,
+MngrState::MngrState(const ResponseCallback::Ptr& a_cb,
                      const Manager::MngrsStatus& states,
                      uint64_t token,
                      const EndPoint& mngr_host,
@@ -23,7 +23,7 @@ MngrState::MngrState(const ResponseCallback::Ptr& cb,
                   MNGR_STATE, timeout
                 )
               ),
-              cb(cb) {
+              cb(a_cb) {
 }
 
 void MngrState::handle(ConnHandlerPtr conn, const Event::Ptr& ev) {

@@ -11,20 +11,20 @@ namespace Rgr { namespace Req {
 
 SWC_CAN_INLINE
 RangeUnoadForMerge::RangeUnoadForMerge(
-    const Manager::Ranger::Ptr& rgr,
-    const Manager::ColumnHealthCheck::ColumnMerger::RangesMerger::Ptr& merger,
-    const Manager::Range::Ptr& range,
-    uint32_t timeout)
+  const Manager::Ranger::Ptr& a_rgr,
+  const Manager::ColumnHealthCheck::ColumnMerger::RangesMerger::Ptr& a_merger,
+  const Manager::Range::Ptr& a_range,
+  uint32_t timeout)
         : client::ConnQueue::ReqBase(
             Buffers::make(
               Params::RangeUnload(
-                range->cfg->cid, range->rid,
+                a_range->cfg->cid, a_range->rid,
                 Params::RangeUnload::Flag::CHECK_EMPTY),
               0,
               RANGE_UNLOAD, timeout
             )
           ),
-          rgr(rgr), merger(merger), range(range) {
+          rgr(a_rgr), merger(a_merger), range(a_range) {
 }
 
 bool RangeUnoadForMerge::valid() {

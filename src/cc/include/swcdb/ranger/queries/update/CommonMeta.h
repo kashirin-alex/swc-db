@@ -23,8 +23,8 @@ class CommonMeta : public BaseMeta {
   const Cb_t cb;
 
   SWC_CAN_INLINE
-  CommonMeta(const RangePtr& range, Cb_t&& cb)
-            : BaseMeta(range), cb(std::move(cb)) {
+  CommonMeta(const RangePtr& a_range, Cb_t&& a_cb)
+            : BaseMeta(a_range), cb(std::move(a_cb)) {
   }
 
   virtual ~CommonMeta() { }
@@ -33,7 +33,7 @@ class CommonMeta : public BaseMeta {
     struct Task {
       Ptr hdlr;
       SWC_CAN_INLINE
-      Task(Ptr&& hdlr) noexcept : hdlr(std::move(hdlr)) { }
+      Task(Ptr&& a_hdlr) noexcept : hdlr(std::move(a_hdlr)) { }
       void operator()() { hdlr->cb(hdlr); }
     };
     if(is_last_rsp(err)) {

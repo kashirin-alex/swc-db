@@ -21,12 +21,12 @@ class MngrStatus final {
   typedef std::shared_ptr<MngrStatus> Ptr;
 
   SWC_CAN_INLINE
-  MngrStatus(uint8_t role, cid_t begin, cid_t end,
-             const Comm::EndPoints& endpoints,
+  MngrStatus(uint8_t a_role, cid_t begin, cid_t end,
+             const Comm::EndPoints& a_endpoints,
              Comm::ConnHandlerPtr c, uint32_t pr)
-             : priority(pr), state(DB::Types::MngrState::NOTSET), role(role),
-               cid_begin(begin), cid_end(end),
-               endpoints(endpoints),
+             : priority(pr), state(DB::Types::MngrState::NOTSET),
+               role(a_role), cid_begin(begin), cid_end(end),
+               endpoints(a_endpoints),
                conn(c), failures(0) {
   }
 

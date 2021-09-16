@@ -20,8 +20,8 @@ Block::Ptr Block::make(const DB::Cells::Interval& interval,
 
 SWC_CAN_INLINE
 Block::Block(const DB::Cells::Interval& interval,
-             Blocks* blocks, State state)
-            : blocks(blocks), next(nullptr), prev(nullptr),
+             Blocks* a_blocks, State state)
+            : blocks(a_blocks), next(nullptr), prev(nullptr),
               m_cells(
                 DB::Cells::Mutable(
                   blocks->range->cfg->key_seq,
@@ -147,8 +147,8 @@ void Block::preload() {
     Block*   blk;
     uint32_t sz;
     SWC_CAN_INLINE
-    Task(Block* blk) noexcept
-        : blk(blk), sz(blk->blocks->range->cfg->block_size()) {
+    Task(Block* a_blk) noexcept
+        : blk(a_blk), sz(blk->blocks->range->cfg->block_size()) {
       Env::Rgr::res().more_mem_future(sz);
     }
     void operator()() {
@@ -309,8 +309,8 @@ void Block::loader_loaded() {
           Block*        blk;
           ReqScan::Ptr  req;
           SWC_CAN_INLINE
-          Task(Block* blk, ReqScan::Ptr&& req) noexcept
-              : blk(blk), req(std::move(req)) { }
+          Task(Block* a_blk, ReqScan::Ptr&& a_req) noexcept
+              : blk(a_blk), req(std::move(a_req)) { }
           void operator()() { blk->_scan(req); }
         };
         if(!m_loader->error) {

@@ -20,24 +20,24 @@ class RangeLocateScan : public ReqScan {
   SWC_CAN_INLINE
   RangeLocateScan(const Comm::ConnHandlerPtr& conn,
                   const Comm::Event::Ptr& ev,
-                  const DB::Cell::Key& range_begin,
-                  const DB::Cell::Key& range_end,
-                  const RangePtr& range,
-                  uint8_t flags)
+                  const DB::Cell::Key& a_range_begin,
+                  const DB::Cell::Key& a_range_end,
+                  const RangePtr& a_range,
+                  uint8_t a_flags)
                   : ReqScan(
                       conn, ev,
-                      range_begin, range_end,
-                      range->cfg->block_size()
+                      a_range_begin, a_range_end,
+                      a_range->cfg->block_size()
                     ),
-                    range(range), flags(flags),
+                    range(a_range), flags(a_flags),
                     any_is(range->cfg->range_type != DB::Types::Range::DATA),
-                    range_begin(range_begin, false) {
+                    range_begin(a_range_begin, false) {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : uint24_t(1), true);
     if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::KEY_EQUAL)
       spec.set_opt__key_equal();
     if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::RANGE_END_REST ||
-       range_end.count == any_is)
+       a_range_end.count == any_is)
       spec.set_opt__range_end_rest();
     /*
     SWC_PRINT << "--------------------- "

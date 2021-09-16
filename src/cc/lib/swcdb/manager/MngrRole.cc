@@ -56,7 +56,7 @@ void MngrRole::schedule_checkin(uint32_t t_ms) {
   struct TimerTask {
     MngrRole* ptr;
     SWC_CAN_INLINE
-    TimerTask(MngrRole* ptr) noexcept : ptr(ptr) { }
+    TimerTask(MngrRole* a_ptr) noexcept : ptr(a_ptr) { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->managers_checkin();

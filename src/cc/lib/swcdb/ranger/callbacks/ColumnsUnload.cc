@@ -10,11 +10,11 @@ namespace SWC { namespace Ranger { namespace Callback {
 SWC_CAN_INLINE
 ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn,
                              const Comm::Event::Ptr& ev,
-                             bool completely,
-                             cid_t cid_begin, cid_t cid_end) noexcept
+                             bool a_completely,
+                             cid_t a_cid_begin, cid_t a_cid_end) noexcept
                         : ManageBase(conn, ev, ManageBase::COLUMNS_UNLOAD),
-                          completely(completely),
-                          cid_begin(cid_begin), cid_end(cid_end) {
+                          completely(a_completely),
+                          cid_begin(a_cid_begin), cid_end(a_cid_end) {
 }
 
 void ColumnsUnload::add(const ColumnPtr& col) {

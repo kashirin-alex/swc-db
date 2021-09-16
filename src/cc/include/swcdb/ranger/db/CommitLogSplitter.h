@@ -15,10 +15,10 @@ class Splitter final : private Fragment::LoadCallback {
   public:
 
 
-  Splitter(const DB::Cell::Key& key, Fragments::Vec& fragments,
-           Fragments::Ptr log_left, Fragments::Ptr log_right)
+  Splitter(const DB::Cell::Key& a_key, Fragments::Vec& fragments,
+           Fragments::Ptr a_log_left, Fragments::Ptr a_log_right)
           : m_sem(4), m_fragments(fragments),
-            key(key), log_left(log_left), log_right(log_right) {
+            key(a_key), log_left(a_log_left), log_right(a_log_right) {
   }
 
   Splitter(const Splitter&) = delete;
@@ -91,7 +91,7 @@ class Splitter final : private Fragment::LoadCallback {
       struct Task {
         Splitter* ptr;
         SWC_CAN_INLINE
-        Task(Splitter* ptr) noexcept : ptr(ptr) { }
+        Task(Splitter* a_ptr) noexcept : ptr(a_ptr) { }
         void operator()() { ptr->split(); }
       };
       Env::Rgr::post(Task(this));

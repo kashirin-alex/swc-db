@@ -20,9 +20,9 @@ class RangeUnloadInternal final : public ManageBase {
   const rid_t                                   rid;
 
   SWC_CAN_INLINE
-  RangeUnloadInternal(const cid_t cid, const rid_t rid) noexcept
+  RangeUnloadInternal(const cid_t a_cid, const rid_t a_rid) noexcept
         : ManageBase(nullptr, nullptr, ManageBase::RANGE_UNLOAD_INTERNAL),
-          cid(cid), rid(rid) {
+          cid(a_cid), rid(a_rid) {
   }
 
   virtual ~RangeUnloadInternal() { }
@@ -48,7 +48,7 @@ class RangeUnloadInternal final : public ManageBase {
     const cid_t cid;
     const rid_t rid;
     SWC_CAN_INLINE
-    ReqData(cid_t cid, rid_t rid) noexcept : cid(cid), rid(rid) { }
+    ReqData(cid_t a_cid, rid_t a_rid) noexcept : cid(a_cid), rid(a_rid) { }
     SWC_CAN_INLINE
     cid_t get_cid() const noexcept {
       return cid;

@@ -18,9 +18,9 @@ struct RgrMngId {
   Comm::Event::Ptr     ev;
 
   SWC_CAN_INLINE
-  RgrMngId(const Comm::ConnHandlerPtr& conn,
-           const Comm::Event::Ptr& ev) noexcept
-          : conn(conn), ev(ev) {
+  RgrMngId(const Comm::ConnHandlerPtr& a_conn,
+           const Comm::Event::Ptr& a_ev) noexcept
+          : conn(a_conn), ev(a_ev) {
   }
 
   void operator()() {

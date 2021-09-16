@@ -11,18 +11,18 @@ namespace Rgr { namespace Req {
 
 
 SWC_CAN_INLINE
-RangeLoad::RangeLoad(const Manager::Ranger::Ptr& rgr,
-                     const Manager::Column::Ptr& col,
-                     const Manager::Range::Ptr& range,
+RangeLoad::RangeLoad(const Manager::Ranger::Ptr& a_rgr,
+                     const Manager::Column::Ptr& a_col,
+                     const Manager::Range::Ptr& a_range,
                      const DB::Schema::Ptr& schema)
         : client::ConnQueue::ReqBase(
             Buffers::make(
-              Params::RangeLoad(schema, range->rid),
+              Params::RangeLoad(schema, a_range->rid),
               0,
               RANGE_LOAD, 3600000
             )
           ),
-          rgr(rgr), col(col), range(range),
+          rgr(a_rgr), col(a_col), range(a_range),
           schema_revision(schema->revision) {
   SWC_LOG_OUT(LOG_INFO, range->print(SWC_LOG_OSTREAM  << "RANGE-LOAD "); );
 }
