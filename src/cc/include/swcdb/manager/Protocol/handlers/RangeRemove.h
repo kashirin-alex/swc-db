@@ -24,6 +24,8 @@ struct RangeRemove {
               : conn(a_conn), ev(a_ev) {
   }
 
+  ~RangeRemove() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

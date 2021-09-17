@@ -68,7 +68,7 @@ class CommClient {
       transport->close();
   }
 
-  virtual ~CommClient() {
+  virtual ~CommClient() noexcept {
     if(transport) {
        try { close(); } catch(...) {}
     }
@@ -96,7 +96,7 @@ class Client : public CommClient, public ServiceClient {
           ServiceClient(protocol) {
   }
 
-  virtual ~Client() { }
+  virtual ~Client() noexcept { }
 
 };
 

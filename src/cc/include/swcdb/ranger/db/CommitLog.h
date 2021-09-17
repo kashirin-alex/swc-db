@@ -41,13 +41,13 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
 
   Fragments& operator=(const Fragments&) = delete;
 
-  ~Fragments();
+  ~Fragments() noexcept;
 
   void schema_update();
 
   void add(const DB::Cells::Cell& cell);
 
-  void commit();
+  void commit() noexcept;
 
   size_t commit_release();
 

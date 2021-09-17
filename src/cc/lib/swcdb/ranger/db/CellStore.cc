@@ -270,7 +270,7 @@ Read::Read(const csid_t a_csid,
     blk->init(this);
 }
 
-Read::~Read() {
+Read::~Read() noexcept {
   for(auto blk : blocks)
     delete blk;
 }

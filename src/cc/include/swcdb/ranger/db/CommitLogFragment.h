@@ -30,7 +30,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   typedef std::shared_ptr<Fragment>  Ptr;
   struct LoadCallback {
-    virtual ~LoadCallback() { }
+    virtual ~LoadCallback() noexcept { }
     virtual void loaded(Ptr&& frag) = 0;
   };
 
@@ -105,7 +105,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   Fragment& operator=(const Fragment&) = delete;
 
-  ~Fragment();
+  ~Fragment() noexcept;
 
   Ptr ptr();
 

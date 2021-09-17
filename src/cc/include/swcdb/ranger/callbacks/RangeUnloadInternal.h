@@ -25,7 +25,7 @@ class RangeUnloadInternal final : public ManageBase {
           cid(a_cid), rid(a_rid) {
   }
 
-  virtual ~RangeUnloadInternal() { }
+  virtual ~RangeUnloadInternal() noexcept { }
 
   void run() override { }
 

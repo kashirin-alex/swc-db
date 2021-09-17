@@ -80,6 +80,8 @@ class Mem {
     #endif
   }
 
+  ~Mem() noexcept { }
+
   uint64_t check(uint64_t ts) noexcept {
     try {
       if(ts >= (chk_stat_ts + (is_low_mem_state() ? URGENT_MS

@@ -26,6 +26,7 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
   struct ReqQueue {
     ReqScan::Ptr  req;
     const int64_t ts;
+    ~ReqQueue() noexcept { }
   };
   std::queue<ReqQueue> q_req; // synced by Block mutex
   Core::Atomic<int>    error;
@@ -40,7 +41,7 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
 
   BlockLoader& operator=(const BlockLoader&) = delete;
 
-  //~BlockLoader() { }
+  ~BlockLoader() noexcept { }
 
   void add(const ReqScan::Ptr& req);
 

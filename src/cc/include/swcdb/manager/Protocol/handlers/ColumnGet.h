@@ -45,7 +45,7 @@ class MngrColumnGet : public client::ConnQueue::ReqBase {
                   conn(a_conn), ev(a_ev), flag(a_flag) {
   }
 
-  virtual ~MngrColumnGet() { }
+  virtual ~MngrColumnGet() noexcept { }
 
   bool valid() override {
     return !ev->expired() &&

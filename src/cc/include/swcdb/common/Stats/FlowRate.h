@@ -64,7 +64,7 @@ struct Data {
 
   }
 
-  //~Data() { }
+  //~Data() noexcept { }
 
   void print_cells_statistics(std::ostream& out, size_t cells_count,
                               size_t resend_cells) const {

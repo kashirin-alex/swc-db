@@ -23,7 +23,7 @@ class Column final :
 
   Column(const cid_t cid, const DB::SchemaPrimitives& schema);
 
-  ~Column();
+  ~Column() noexcept;
 
   size_t ranges_count() noexcept;
 

@@ -49,6 +49,7 @@ class AppContext final : public Comm::AppContext {
                 : conn(a_conn), ev(a_ev) {
       Env::Bkr::in_process(1);
     }
+    ~CommandHandler() noexcept { }
     void operator()() {
       ev->expired() || !conn->is_open()
         ? Env::Bkr::processed()
@@ -123,7 +124,7 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() noexcept { }
 
   void handle_established(Comm::ConnHandlerPtr conn) override {
     m_srv->connection_add(conn);

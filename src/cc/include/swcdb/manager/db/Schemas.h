@@ -21,6 +21,8 @@ class Schemas final : public DB::Schemas {
   SWC_CAN_INLINE
   Schemas() noexcept { }
 
+  ~Schemas() noexcept { }
+
   void store_create(int& err, uint8_t replicas, uint32_t blksz,
                     const DB::Types::Encoder cfg_encoder) {
     auto& fs_if = Env::FsInterface::interface();

@@ -92,7 +92,7 @@ class Bkr final {
 
   explicit Bkr();
 
-  ~Bkr();
+  ~Bkr() noexcept;
 
   private:
 
@@ -147,8 +147,7 @@ Bkr::Bkr()
       m_not_accepting(false), m_in_process(0) {
 }
 
-Bkr::~Bkr() {
-}
+Bkr::~Bkr() noexcept { }
 
 void Bkr::start() {
 }

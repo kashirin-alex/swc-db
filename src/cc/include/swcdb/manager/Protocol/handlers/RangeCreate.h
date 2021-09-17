@@ -24,6 +24,8 @@ struct RangeCreate {
               : conn(a_conn), ev(a_ev) {
   }
 
+  ~RangeCreate() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

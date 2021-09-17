@@ -26,7 +26,7 @@ class ColumnsUnload : public ManageBase {
   ColumnsUnload(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
                 bool completely, cid_t cid_begin, cid_t cid_end) noexcept;
 
-  virtual ~ColumnsUnload() { }
+  virtual ~ColumnsUnload() noexcept { }
 
   void add(const ColumnPtr& col);
 

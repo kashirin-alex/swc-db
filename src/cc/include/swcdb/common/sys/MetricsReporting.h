@@ -117,7 +117,7 @@ class Item_Net : public Base {
     }
   }
 
-  virtual ~Item_Net() { }
+  virtual ~Item_Net() noexcept { }
 
   SWC_CAN_INLINE
   Addr* get(const asio::ip::address& for_addr, bool secure) const noexcept {
@@ -426,7 +426,7 @@ class Item_Mem : public Base {
 
   Item_Mem() noexcept { }
 
-  virtual ~Item_Mem() { }
+  virtual ~Item_Mem() noexcept { }
 
   virtual void definitions(client::Query::Update::Handlers::Base::Column* colp,
                            const DB::Cell::KeyVec& parent_key) override {
@@ -564,7 +564,7 @@ class Item_CPU : public Base {
 
   Item_CPU() noexcept { }
 
-  virtual ~Item_CPU() { }
+  virtual ~Item_CPU() noexcept { }
 
   virtual void definitions(client::Query::Update::Handlers::Base::Column* colp,
                            const DB::Cell::KeyVec& parent_key) override {
@@ -696,7 +696,7 @@ class Item_FS : public Base {
 
   Item_FS(const FS::FileSystem::Ptr& a_fs) noexcept : fs(a_fs) { }
 
-  virtual ~Item_FS() { }
+  virtual ~Item_FS() noexcept { }
 
   virtual void definitions(client::Query::Update::Handlers::Base::Column* colp,
                            const DB::Cell::KeyVec& parent_key) override {
@@ -883,7 +883,7 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
     return level;
   }
 
-  virtual ~Reporting() { }
+  virtual ~Reporting() noexcept { }
 
 
   struct System final : SWC::System::Notifier {

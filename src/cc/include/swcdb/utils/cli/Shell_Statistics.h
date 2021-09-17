@@ -46,7 +46,7 @@ class Statistics final : public Interface {
     std::string     metric;
     ReadGroup() noexcept : last(0), since(0), agg(0) { }
     void print(std::ostream& out, const Statistics* ptr) const;
-    ~ReadGroup() { }
+    ~ReadGroup() noexcept { }
   };
 
   struct MetricDefinition {
@@ -55,14 +55,14 @@ class Statistics final : public Interface {
     uint8_t     agg;
     std::string name;
     std::string label;
-    ~MetricDefinition() { }
+    ~MetricDefinition() noexcept { }
   };
 
   struct StatsDefinition {
     DB::Specs::Key                 property;
     Core::Vector<MetricDefinition> metrics;
     StatsDefinition(const DB::Cells::Cell& cell);
-    ~StatsDefinition() { }
+    ~StatsDefinition() noexcept { }
     bool has_metric(const std::string& name, uint24_t fid,
                     size_t& metric_idx) const noexcept;
     void print(std::ostream& out, const Statistics* ptr,
@@ -72,7 +72,7 @@ class Statistics final : public Interface {
   struct Stats {
     Stats(const StatsDefinition* a_defined, time_t a_ts) noexcept
           : defined(a_defined), ts(a_ts) { }
-    ~Stats() { }
+    ~Stats() noexcept { }
     void print(std::ostream& out, const ReadGroup& group,
                Statistics* ptr) const;
     void add(const Core::Vector<Stats>* datasp,

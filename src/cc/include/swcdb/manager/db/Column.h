@@ -45,7 +45,7 @@ class Column final : private Core::Vector<Range::Ptr> {
           m_state(State::LOADING), m_check_ts(0) {
   }
 
-  //~Column() { }
+  ~Column() noexcept { }
 
   void init(int &err);
 

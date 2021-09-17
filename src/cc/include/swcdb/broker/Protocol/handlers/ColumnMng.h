@@ -28,7 +28,7 @@ struct ColumnMng  {
             : conn(a_conn), ev(a_ev), schema(a_schema) {
   }
 
-  ~ColumnMng() { }
+  ~ColumnMng() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

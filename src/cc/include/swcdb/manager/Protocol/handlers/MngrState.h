@@ -22,6 +22,8 @@ struct MngrState {
             : conn(a_conn), ev(a_ev) {
   }
 
+  ~MngrState() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

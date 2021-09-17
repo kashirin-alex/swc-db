@@ -24,7 +24,6 @@ class MngrState final : public Serializable {
             : states(a_states), token(a_token), mngr_host(a_mngr_host) {
   }
 
-  SWC_CAN_INLINE
   ~MngrState() noexcept { }
 
   Manager::MngrsStatus  states;

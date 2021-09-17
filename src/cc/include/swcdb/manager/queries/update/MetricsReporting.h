@@ -29,7 +29,7 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
 
   void configure_mngr(const char*, const Comm::EndPoints& endpoints);
 
-  virtual ~Reporting() { }
+  virtual ~Reporting() noexcept { }
 
   Item_Net<Comm::Protocol::Mngr::Commands>* net;
 

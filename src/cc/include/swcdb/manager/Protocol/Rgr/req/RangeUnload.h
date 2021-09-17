@@ -22,7 +22,7 @@ class RangeUnload : public client::ConnQueue::ReqBase {
               bool ignore_error=false,
               uint32_t timeout=60000);
 
-  virtual ~RangeUnload() { }
+  virtual ~RangeUnload() noexcept { }
 
   bool valid() override;
 

@@ -41,7 +41,7 @@ class ManageBase : public Comm::ResponseCallback {
     Env::Rgr::in_process(1);
   }
 
-  virtual ~ManageBase() {
+  virtual ~ManageBase() noexcept {
     Env::Rgr::in_process(-1);
   }
 

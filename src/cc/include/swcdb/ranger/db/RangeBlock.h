@@ -56,7 +56,7 @@ class Block final {
 
   Block& operator=(const Block&) = delete;
 
-  ~Block();
+  ~Block() noexcept;
 
   size_t _releasing_size() const noexcept;
 

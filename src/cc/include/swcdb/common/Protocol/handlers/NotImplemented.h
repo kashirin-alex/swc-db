@@ -32,8 +32,10 @@ class NotImplemented : public AppHandler {
     not_implemented(m_conn, m_ev);
   }
 
+  virtual ~NotImplemented() noexcept { }
+
 };
-  
+
 
 
 }}}}}

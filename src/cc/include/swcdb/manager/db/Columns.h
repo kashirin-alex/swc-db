@@ -34,7 +34,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   Columns() noexcept : m_health_last_cid(DB::Schema::NO_CID) { }
 
-  //~Columns() { }
+  ~Columns() noexcept { }
 
   void reset() {
     {
@@ -197,6 +197,8 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
     AssignGroup(const AssignGroup&)            = delete;
     AssignGroup& operator=(AssignGroup&&)      = delete;
     AssignGroup& operator=(const AssignGroup&) = delete;
+
+    ~AssignGroup() noexcept { }
 
     SWC_CAN_INLINE
     Range::Ptr get() {

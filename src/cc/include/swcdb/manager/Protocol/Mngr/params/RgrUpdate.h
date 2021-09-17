@@ -23,6 +23,8 @@ class RgrUpdate final : public Serializable {
             : hosts(a_hosts), sync_all(a_sync_all) {
   }
 
+  ~RgrUpdate() noexcept { }
+
   void print(std::ostream& out) const {
     out << "Rangers-params:";
     for(auto& h : hosts)

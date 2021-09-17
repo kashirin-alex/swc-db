@@ -28,7 +28,7 @@ struct RangeQueryUpdate : Core::QueuePointer<RangeQueryUpdate*>::Pointer {
   }
 
   SWC_CAN_INLINE
-  ~RangeQueryUpdate() {
+  ~RangeQueryUpdate() noexcept {
     Env::Rgr::res().less_mem_future(ev->data_ext.size);
   }
 

@@ -40,7 +40,7 @@ class BaseMeta : public client::Query::Update::Handlers::BaseSingleColumn {
 
   protected:
 
-  virtual ~BaseMeta() { }
+  virtual ~BaseMeta() noexcept { }
 
 };
 

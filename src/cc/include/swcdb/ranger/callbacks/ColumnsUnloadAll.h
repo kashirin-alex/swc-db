@@ -23,7 +23,7 @@ class ColumnsUnloadAll : private Core::StateSynchronization,
 
   ColumnsUnloadAll(bool validation);
 
-  virtual ~ColumnsUnloadAll() { }
+  virtual ~ColumnsUnloadAll() noexcept { }
 
   void unloaded(RangePtr range) override;
 

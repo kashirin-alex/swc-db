@@ -87,7 +87,7 @@ class Read final {
 
   Read& operator=(const Read&) = delete;
 
-  ~Read();
+  ~Read() noexcept;
 
   // size_t size_of() const noexcept;
 
@@ -145,7 +145,7 @@ class Write final {
         const RangePtr& range, uint32_t cell_revs,
         const DB::Cell::Key& prev_key_end);
 
-  //~Write() { }
+  ~Write() noexcept { }
 
   void create(int& err,
               int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1);

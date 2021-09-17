@@ -109,7 +109,7 @@ class Mngr final {
         m_rangers(app_io) {
   }
 
-  //~Mngr() { }
+  ~Mngr() noexcept { }
 
   Comm::IoContextPtr                  app_io;
 

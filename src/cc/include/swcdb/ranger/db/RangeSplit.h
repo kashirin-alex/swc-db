@@ -82,7 +82,7 @@ class RangeSplit final {
 
   RangeSplit& operator=(const RangeSplit&) = delete;
 
-  //~RangeSplit() { }
+  ~RangeSplit() noexcept { }
 
   int run() {
     Time::Measure_ns t_measure;

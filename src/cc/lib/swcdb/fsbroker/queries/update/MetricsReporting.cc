@@ -15,7 +15,7 @@ class Item_Fds : public Item_CountVolume {
   public:
   Item_Fds() : Item_CountVolume("fds") { }
 
-  virtual ~Item_Fds() { }
+  virtual ~Item_Fds() noexcept { }
 
   void definitions(client::Query::Update::Handlers::Base::Column* colp,
                    const DB::Cell::KeyVec& parent_key) override {

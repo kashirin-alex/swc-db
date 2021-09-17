@@ -29,7 +29,7 @@ class Rangers final {
 
   Rangers(const Comm::IoContextPtr& app_io);
 
-  //~Rangers() { }
+  ~Rangers() noexcept { }
 
   SWC_CAN_INLINE
   bool running() const noexcept {

@@ -26,7 +26,7 @@ struct ColumnList {
             : conn(a_conn), ev(a_ev), remain(0), processed(false) {
   }
 
-  ~ColumnList() { }
+  ~ColumnList() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

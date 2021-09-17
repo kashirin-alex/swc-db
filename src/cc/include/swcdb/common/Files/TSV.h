@@ -36,7 +36,7 @@ class FileWriter {
             : clients(a_clients) {
   }
 
-  virtual ~FileWriter() { }
+  virtual ~FileWriter() noexcept { }
 
   int set_extension(const std::string& ext, int level) {
     if(ext.empty()) {
@@ -301,7 +301,7 @@ class FileReader {
             : clients(a_clients) {
   }
 
-  ~FileReader() {
+  ~FileReader() noexcept {
     base_path.clear();
     base_path.shrink_to_fit();
   }

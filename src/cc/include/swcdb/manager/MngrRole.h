@@ -20,7 +20,7 @@ class MngrRole final {
   MngrRole(const Comm::IoContextPtr& app_io,
            const Comm::EndPoints& endpoints);
 
-  //~MngrRole() { }
+  ~MngrRole() noexcept { }
 
   SWC_CAN_INLINE
   bool running() const noexcept {

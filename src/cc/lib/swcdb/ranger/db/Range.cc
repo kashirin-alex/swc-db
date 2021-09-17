@@ -36,13 +36,14 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
                   : Query::Update::BaseMeta(a_range), req(a_req) {
   }
 
-  virtual ~MetaRegOnLoadReq() { }
+  virtual ~MetaRegOnLoadReq() noexcept { }
 
   virtual void response(int err=Error::OK) override {
     struct Task {
       Ptr ptr;
       SWC_CAN_INLINE
       Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+      ~Task() noexcept { }
       void operator()() { ptr->callback(); }
     };
     if(is_last_rsp(err)) {
@@ -81,6 +82,7 @@ struct Range::TaskRunQueueScan {
   RangePtr ptr;
   SWC_CAN_INLINE
   TaskRunQueueScan(RangePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+  ~TaskRunQueueScan() noexcept { }
   void operator()() { ptr->_run_scan_queue(); }
 };
 
@@ -89,6 +91,7 @@ struct Range::TaskRunQueueAdd {
   SWC_CAN_INLINE
   TaskRunQueueAdd(const RangePtr& a_ptr) noexcept : ptr(a_ptr) { }
   TaskRunQueueAdd(RangePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+  ~TaskRunQueueAdd() noexcept { }
   void operator()() { ptr->_run_add_queue(); }
 };
 
@@ -111,7 +114,7 @@ void Range::init() {
   blocks.init(shared_from_this());
 }
 
-Range::~Range() {
+Range::~Range() noexcept {
   Env::Rgr::in_process_ranges(-1);
 }
 
@@ -289,6 +292,7 @@ void Range::_run_scan_queue() {
         : ptr(std::move(a_ptr)), req(std::move(a_req)) {
       ptr->blocks.processing_increment();
     }
+    ~Task() noexcept { }
     void operator()() {
       ptr->blocks.scan(std::move(req));
       ptr->blocks.processing_decrement();
@@ -365,12 +369,13 @@ void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& re
     SetRgr(RangePtr&& a_range,
            const Callback::RangeLoad::Ptr& a_req) noexcept
           : range(std::move(a_range)), req(a_req) { }
-    virtual ~SetRgr() { }
+    virtual ~SetRgr() noexcept { }
     void callback() override {
       struct Task {
         SetRgr::Ptr ptr;
         SWC_CAN_INLINE
         Task(SetRgr::Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+        ~Task() noexcept { }
         void operator()() {
           int err = ptr->error();
           err
@@ -781,11 +786,13 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
     SWC_CAN_INLINE
     GetRgr(RangePtr&& a_range, const Callback::RangeLoad::Ptr& a_req)
            noexcept : range(std::move(a_range)), req(a_req) { }
+    virtual ~GetRgr() noexcept { }
     void callback() override {
       struct Task {
         GetRgr::Ptr ptr;
         SWC_CAN_INLINE
         Task(GetRgr::Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+        ~Task() noexcept { }
         void operator()() {
           int err = Error::OK;
           DB::RgrData rgr_last;
@@ -1044,7 +1051,7 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
                 : Query::Update::BaseMeta(a_range), req(a_req) {
   }
 
-  virtual ~MetaRegOnAddReq() {
+  virtual ~MetaRegOnAddReq() noexcept {
     bool added = req->rsp.cells_added;
     delete req;
     if(added)

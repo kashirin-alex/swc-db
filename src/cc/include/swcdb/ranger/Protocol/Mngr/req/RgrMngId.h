@@ -29,7 +29,7 @@ class RgrMngId: public client::ConnQueue::ReqBase {
             m_run(true), m_failures(0) {
   }
 
-  virtual ~RgrMngId() { }
+  virtual ~RgrMngId() noexcept { }
 
   void create(const Params::RgrMngId& params) {
     Core::MutexAtomic::scope lock(m_mutex);

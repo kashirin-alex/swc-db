@@ -88,7 +88,7 @@ void Read::init(CellStore::Read* _cellstore) noexcept {
   cellstore = _cellstore;
 }
 
-Read::~Read() {
+Read::~Read() noexcept {
   if(m_state == State::LOADED)
     Env::Rgr::res().less_mem_releasable(header.size_plain);
 }
@@ -265,6 +265,7 @@ void Read::load_open(int err) {
             SWC_CAN_INLINE
             Task(Read* a_ptr, int a_error, const StaticBuffer::Ptr& a_buffer)
                 noexcept : ptr(a_ptr), error(a_error), buffer(a_buffer) { }
+            ~Task() noexcept { }
             void operator()() { ptr->load_read(error, buffer); }
           };
           Env::Rgr::post(Task(ptr, _err, buff));

@@ -105,7 +105,7 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() noexcept { }
 
   void handle_established(Comm::ConnHandlerPtr conn) override {
     m_srv->connection_add(conn);

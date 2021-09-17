@@ -38,7 +38,7 @@ class Updater final
     ev->data_ext.free();
   }
 
-  virtual ~Updater() { }
+  virtual ~Updater() noexcept { }
 
   bool valid() noexcept override {
     return !error() && !ev->expired() && conn->is_open() &&

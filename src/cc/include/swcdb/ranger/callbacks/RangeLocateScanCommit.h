@@ -28,7 +28,7 @@ class RangeLocateScanCommit : public RangeLocateScan {
                           ) {
   }
 
-  virtual ~RangeLocateScanCommit() { }
+  virtual ~RangeLocateScanCommit() noexcept { }
 
   bool selector(const DB::Types::KeySeq key_seq,
                 const DB::Cells::Cell& cell, bool& stop) override {

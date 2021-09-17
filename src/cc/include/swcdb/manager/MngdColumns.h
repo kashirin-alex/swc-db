@@ -23,6 +23,7 @@ class MngdColumns final {
     ColumnReq(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev)
               noexcept : Comm::ResponseCallback(conn, ev), id(0) {
     }
+    ~ColumnReq() noexcept { }
   };
 
 
@@ -35,7 +36,7 @@ class MngdColumns final {
 
   MngdColumns();
 
-  //~MngdColumns() { }
+  ~MngdColumns() noexcept { }
 
   SWC_CAN_INLINE
   bool running() const noexcept {

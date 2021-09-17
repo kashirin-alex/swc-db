@@ -14,9 +14,9 @@
 
 
 
-const char* swcdb_version();
+const char* swcdb_version() noexcept;
 
-const char* swcdb_copyrights();
+const char* swcdb_copyrights() noexcept;
 
 
 #endif // swcdb_core_Version_h

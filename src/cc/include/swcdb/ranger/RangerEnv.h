@@ -179,7 +179,7 @@ class Rgr final {
 
   explicit Rgr();
 
-  ~Rgr();
+  ~Rgr() noexcept;
 
   private:
   inline static std::shared_ptr<Rgr>  m_env = nullptr;
@@ -280,7 +280,7 @@ Rgr::Rgr()
       m_scan_reserved_bytes(0) {
 }
 
-Rgr::~Rgr() {
+Rgr::~Rgr() noexcept {
   if(_compaction)
     delete _compaction;
   delete _columns;

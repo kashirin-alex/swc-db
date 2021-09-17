@@ -23,7 +23,7 @@ ColumnHealthCheck::RangerCheck::RangerCheck(
                   m_success(0), m_failures(0) {
 }
 
-ColumnHealthCheck::RangerCheck::~RangerCheck() {
+ColumnHealthCheck::RangerCheck::~RangerCheck() noexcept {
   if(!m_success && m_failures) // && m_success < m_failures)
     rgr->failures.fetch_add(1);
 }

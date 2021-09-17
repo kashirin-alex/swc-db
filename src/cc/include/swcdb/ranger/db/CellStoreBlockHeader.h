@@ -42,7 +42,7 @@ struct Header final {
 
   Header(Header&& other) noexcept;
 
-  //~Header() { }
+  ~Header() noexcept { }
 
   void encode(uint8_t** bufp);
 

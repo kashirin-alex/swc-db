@@ -29,7 +29,7 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
 
   void configure_fsbroker(const char*, const Comm::EndPoints& endpoints);
 
-  virtual ~Reporting() { }
+  virtual ~Reporting() noexcept { }
 
   Item_Net<Comm::Protocol::FsBroker::Commands>* net;
   Item_CountVolume*                             fds;

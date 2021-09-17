@@ -75,7 +75,7 @@ class AppContext final : virtual public BrokerIfFactory,
     }
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() noexcept { }
 
   void wait_while_run() {
     Core::UniqueLock lock_wait(m_mutex);

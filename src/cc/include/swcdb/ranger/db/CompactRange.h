@@ -21,7 +21,7 @@ class CompactRange final : public ReqScan {
   CompactRange(Compaction* compactor, const RangePtr& range,
                const uint32_t cs_size, const uint32_t blk_size);
 
-  virtual ~CompactRange();
+  virtual ~CompactRange() noexcept;
 
   Ptr shared();
 

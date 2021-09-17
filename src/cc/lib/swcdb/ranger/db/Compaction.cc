@@ -211,6 +211,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
     CompactRange::Ptr req;
     SWC_CAN_INLINE
     Task(CompactRange* a_req) noexcept : req(a_req) { }
+    ~Task() noexcept { }
     void operator()() { req->initialize(); }
   };
 

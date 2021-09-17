@@ -41,7 +41,7 @@ class RangeQuerySelect : public ReqScan {
     */
   }
 
-  virtual ~RangeQuerySelect() { }
+  virtual ~RangeQuerySelect() noexcept { }
 
   SWC_CAN_INLINE
   void ensure_size() {

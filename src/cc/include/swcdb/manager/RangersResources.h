@@ -21,7 +21,7 @@ struct RangerResources {
                     load_scale(0), rebalance(0) {
   }
 
-  //~RangerResources() { }
+  //~RangerResources() noexcept { }
 
   rgrid_t     rgrid;
   uint32_t    mem;
@@ -57,7 +57,7 @@ class RangersResources final : private Core::Vector<RangerResources> {
         m_due(0), m_last_check(0) {
   }
 
-  //~RangersResources() { }
+  ~RangersResources() noexcept { }
 
   void print(std::ostream& out) {
     out << "RangersResources(rangers=";

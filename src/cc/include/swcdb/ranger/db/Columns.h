@@ -39,7 +39,7 @@ class Columns final : private std::unordered_map<cid_t, ColumnPtr> {
   SWC_CAN_INLINE
   Columns() noexcept { }
 
-  //~Columns() { }
+  ~Columns() noexcept { }
 
   ColumnPtr get_column(const cid_t cid);
 

@@ -19,7 +19,7 @@ class ColumnDelete : public client::ConnQueue::ReqBase  {
                const DB::Schema::Ptr& schema,
                uint64_t req_id);
 
-  virtual ~ColumnDelete() { }
+  virtual ~ColumnDelete() noexcept { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 

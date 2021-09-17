@@ -37,7 +37,7 @@ Block::Block(const DB::Cells::Interval& interval,
 }
 
 SWC_CAN_INLINE
-Block::~Block() {
+Block::~Block() noexcept {
   if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
     Env::Rgr::res().less_mem_releasable(
       sizeof(*this) + sizeof(Ptr) + m_releasable_bytes);
@@ -311,6 +311,7 @@ void Block::loader_loaded() {
           SWC_CAN_INLINE
           Task(Block* a_blk, ReqScan::Ptr&& a_req) noexcept
               : blk(a_blk), req(std::move(a_req)) { }
+          ~Task() noexcept { }
           void operator()() { blk->_scan(req); }
         };
         if(!m_loader->error) {

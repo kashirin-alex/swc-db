@@ -42,7 +42,7 @@ class Blocks final {
 
   Ptr ptr();
 
-  //~Blocks() { }
+  ~Blocks() noexcept { }
 
   void schema_update();
 

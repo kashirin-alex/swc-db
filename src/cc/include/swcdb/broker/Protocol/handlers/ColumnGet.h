@@ -28,7 +28,7 @@ struct ColumnGet {
             : conn(a_conn), ev(a_ev), flag(a_flag) {
   }
 
-  ~ColumnGet() { }
+  ~ColumnGet() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

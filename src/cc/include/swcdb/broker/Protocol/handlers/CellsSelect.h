@@ -33,7 +33,7 @@ class Selector final : public SWC::client::Query::Select::Handlers::Base {
             conn(a_conn), ev(a_ev), sent(false) {
   }
 
-  virtual ~Selector() { }
+  virtual ~Selector() noexcept { }
 
   bool valid() noexcept override  {
     return !state_error && !ev->expired() && conn->is_open() &&

@@ -79,7 +79,7 @@ Interface::Interface(std::string&& a_prompt, std::string&& a_history)
   init();
 }
 
-Interface::~Interface() {
+Interface::~Interface() noexcept {
   for(auto o : options)
     delete o;
 }

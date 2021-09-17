@@ -20,7 +20,7 @@ class RangeUnload : public client::ConnQueue::ReqBase {
               const Ranger::Callback::RangeLoad::Ptr& req,
               uint32_t timeout=60000);
 
-  virtual ~RangeUnload() { }
+  virtual ~RangeUnload() noexcept { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 

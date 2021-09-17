@@ -46,7 +46,7 @@ class RangeLocateScan : public ReqScan {
     */
   }
 
-  virtual ~RangeLocateScan() { }
+  virtual ~RangeLocateScan() noexcept { }
 
   bool selector(const DB::Types::KeySeq key_seq,
                 const DB::Cells::Cell& cell, bool& stop) override {

@@ -242,7 +242,7 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
 }
 
 SWC_CAN_INLINE
-Fragment::~Fragment() {
+Fragment::~Fragment() noexcept {
   if(m_state == State::LOADED && !m_marked_removed)
     Env::Rgr::res().less_mem_releasable(size_plain);
 }
@@ -286,6 +286,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
                  blksz(a_blksz), error(a_error),
                  blk_replicas(a_blk_replicas) {
           }
+          ~Task() noexcept { }
           void operator()() {
             frag->write(error, blk_replicas, blksz, buff_write, sem);
           }
@@ -322,6 +323,7 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
       Ptr frag;
       SWC_CAN_INLINE
       Task(Ptr&& a_frag) noexcept : frag(std::move(a_frag)) { }
+      ~Task() noexcept { }
       void operator()() { frag->run_queued(); }
     };
     Env::Rgr::post(Task(ptr()));
@@ -338,6 +340,7 @@ struct Fragment::TaskLoadRead {
   TaskLoadRead(Ptr&& a_frag, int a_err,
                const StaticBuffer::Ptr& a_buffer) noexcept
               : frag(std::move(a_frag)), err(a_err), buffer(a_buffer) { }
+  ~TaskLoadRead() noexcept { }
   void operator()() { frag->load_read(err, buffer); }
 };
 
@@ -358,6 +361,7 @@ void Fragment::load(Fragment::LoadCallback* cb) {
         Ptr frag;
         SWC_CAN_INLINE
         Task(Ptr&& a_frag) noexcept : frag(std::move(a_frag)) { }
+        ~Task() noexcept { }
         void operator()() {
           Env::FsInterface::fs()->combi_pread(
             [frag=frag]

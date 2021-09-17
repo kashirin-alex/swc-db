@@ -25,6 +25,8 @@ struct RangeLoad {
             : conn(a_conn), ev(a_ev) {
   }
 
+  ~RangeLoad() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

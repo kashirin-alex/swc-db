@@ -60,7 +60,7 @@ class Ranger final {
           m_queue(nullptr) {
   }
 
-  //~Ranger() { }
+  ~Ranger() noexcept { }
 
   void print(std::ostream& out) const {
     out << "[rgrid="          << rgrid.load()

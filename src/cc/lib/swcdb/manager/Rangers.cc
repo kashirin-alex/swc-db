@@ -649,6 +649,7 @@ void Rangers::health_check_columns() {
       ColumnHealthCheck::Ptr ptr;
       SWC_CAN_INLINE
       Task(const ColumnHealthCheck::Ptr& a_ptr) noexcept : ptr(a_ptr) { }
+      ~Task() noexcept { }
       void operator()() { ptr->run(); }
     };
     m_columns_check_ts = ts;

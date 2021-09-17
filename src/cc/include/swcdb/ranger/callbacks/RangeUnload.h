@@ -27,7 +27,7 @@ class RangeUnload : public ManageBase {
               const cid_t cid, const rid_t rid,
               const bool completely) noexcept;
 
-  virtual ~RangeUnload() { }
+  virtual ~RangeUnload() noexcept { }
 
   void response_params();
 

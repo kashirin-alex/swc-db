@@ -40,7 +40,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
   InBlock& operator=(const InBlock&) = delete;
 
-  //~InBlock() { }
+  ~InBlock() noexcept { }
 
   SWC_CAN_INLINE
   size_t cell_avg_size() const {
@@ -146,7 +146,7 @@ CompactRange::CompactRange(Compaction* a_compactor,
   spec.flags.max_versions = range->cfg->cell_versions();
 }
 
-CompactRange::~CompactRange() {
+CompactRange::~CompactRange() noexcept {
   if(m_inblock)
     delete m_inblock;
 
@@ -328,6 +328,7 @@ void CompactRange::response(int& err) {
       Ptr ptr;
       SWC_CAN_INLINE
       Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+      ~Task() noexcept { }
       void operator()() { ptr->quit(); }
     };
     Env::Rgr::maintenance_post(Task(shared()));
@@ -376,6 +377,7 @@ void CompactRange::response(int& err) {
     Ptr ptr;
     SWC_CAN_INLINE
     NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    ~NextTask() noexcept { }
     void operator()() { ptr->process_interval(); }
   };
   if(m_q_intval.push_and_is_1st(in_block))
@@ -481,6 +483,7 @@ void CompactRange::progress_check_timer() {
     Ptr ptr;
     SWC_CAN_INLINE
     TimerTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
         ptr->progress_check_timer();
@@ -512,6 +515,7 @@ void CompactRange::request_more() {
     Ptr ptr;
     SWC_CAN_INLINE
     Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    ~Task() noexcept { }
     void operator()() { ptr->range->scan_internal(ptr); }
   };
   if(!m_get.running())
@@ -524,6 +528,7 @@ void CompactRange::process_interval() {
     Ptr ptr;
     SWC_CAN_INLINE
     NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    ~NextTask() noexcept { }
     void operator()() { ptr->process_encode(); }
   };
   Time::Measure_ns t_measure;
@@ -550,6 +555,7 @@ void CompactRange::process_encode() {
     Ptr ptr;
     SWC_CAN_INLINE
     NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    ~NextTask() noexcept { }
     void operator()() { ptr->process_write(); }
   };
   Time::Measure_ns t_measure;
@@ -797,6 +803,7 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
     ReqData(const CompactRange::Ptr& a_ptr, uint32_t a_split_at)
             noexcept : ptr(a_ptr), split_at(a_split_at) {
     }
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     cid_t get_cid() const noexcept {
       return ptr->range->cfg->cid;
@@ -845,6 +852,7 @@ struct CompactRange::TaskFinished {
   Ptr ptr;
   SWC_CAN_INLINE
   TaskFinished(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+  ~TaskFinished() noexcept { }
   void operator()() { ptr->finished(clear); }
 };
 
@@ -927,6 +935,7 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
         ReqData(const CompactRange::Ptr& a_ptr, rid_t a_new_rid)
                 noexcept : ptr(a_ptr), new_rid(a_new_rid) {
         }
+        ~ReqData() noexcept { }
         SWC_CAN_INLINE
         cid_t get_cid() const noexcept {
           return ptr->range->cfg->cid;

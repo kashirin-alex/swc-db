@@ -24,6 +24,8 @@ struct Report {
         : conn(a_conn), ev(a_ev) {
   }
 
+  ~Report() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

@@ -53,6 +53,7 @@ void Compact::Group::loaded(Fragment::Ptr&& frag) {
     SWC_CAN_INLINE
     Task(Group* a_g, Fragment::Ptr&& a_frag) noexcept
         : g(a_g), frag(std::move(a_frag)) { }
+    ~Task() noexcept { }
     void operator()() { g->_loaded(frag); }
   };
   Env::Rgr::post(Task(this, std::move(frag)));

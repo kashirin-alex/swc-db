@@ -23,6 +23,8 @@ struct RgrMngId {
           : conn(a_conn), ev(a_ev) {
   }
 
+  ~RgrMngId() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

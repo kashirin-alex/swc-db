@@ -43,7 +43,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                 ) {
   }
 
-  virtual ~ColumnUpdate() { }
+  virtual ~ColumnUpdate() noexcept { }
 
   bool insistent() noexcept override { return true; }
 

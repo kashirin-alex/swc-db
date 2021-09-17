@@ -78,6 +78,7 @@ class AppContext final : public Comm::AppContext {
                   : conn(a_conn), ev(a_ev) {
       Env::FsBroker::in_process(1);
     }
+    ~CommandHandler() noexcept { }
     void operator()() {
       if(!ev->expired() && conn->is_open())
         handlers[ev->header.command](conn, ev);
@@ -151,7 +152,7 @@ class AppContext final : public Comm::AppContext {
     m_srv = srv;
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() noexcept { }
 
   void handle_established(Comm::ConnHandlerPtr conn) override {
     m_srv->connection_add(conn);

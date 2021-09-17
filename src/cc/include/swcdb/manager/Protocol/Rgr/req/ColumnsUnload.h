@@ -18,7 +18,7 @@ class ColumnsUnload : public client::ConnQueue::ReqBase  {
   ColumnsUnload(const Manager::Ranger::Ptr& rgr,
                 cid_t cid_begin, cid_t cid_end);
 
-  virtual ~ColumnsUnload() { }
+  virtual ~ColumnsUnload() noexcept { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 

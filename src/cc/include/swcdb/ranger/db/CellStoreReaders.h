@@ -43,7 +43,7 @@ class Readers final : private Core::Vector<Read::Ptr> {
     range = for_range;
   }
 
-  //~Readers() { }
+  ~Readers() noexcept { }
 
   void add(Read::Ptr cs) {
     push_back(cs);

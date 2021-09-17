@@ -22,7 +22,7 @@ class MngrState : public client::ConnQueue::ReqBase {
             const EndPoint& mngr_host,
             uint32_t timeout);
 
-  virtual ~MngrState() { }
+  virtual ~MngrState() noexcept { }
 
   bool insistent() noexcept override { return true; }
 

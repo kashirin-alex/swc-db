@@ -25,7 +25,7 @@ struct ColumnCompact {
                 : conn(a_conn), ev(a_ev) {
   }
 
-  ~ColumnCompact() { }
+  ~ColumnCompact() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

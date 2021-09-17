@@ -16,7 +16,7 @@ Column::Column(const cid_t cid, const DB::SchemaPrimitives& schema)
   Env::Rgr::in_process(1);
 }
 
-Column::~Column() {
+Column::~Column() noexcept {
   Env::Rgr::in_process(-1);
 }
 
@@ -220,6 +220,7 @@ struct Column::TaskRunMngReq {
   TaskRunMngReq(ColumnPtr&& a_ptr, Callback::ManageBase::Ptr&& a_req)
                 noexcept : ptr(std::move(a_ptr)), req(std::move(a_req)) {
   }
+  ~TaskRunMngReq() noexcept { }
   void operator()() {
     switch(req->action) {
     case Callback::ManageBase::RANGE_LOAD: {

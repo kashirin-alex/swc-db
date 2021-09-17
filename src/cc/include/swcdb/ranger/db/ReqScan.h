@@ -66,7 +66,7 @@ class ReqScan  : public DB::Cells::ReqScan {
     Env::Rgr::scan_reserved_bytes_add(blk_size * SWC_SCAN_RSVD_BUFFS);
   }
 
-  virtual ~ReqScan() {
+  virtual ~ReqScan() noexcept {
     Env::Rgr::scan_reserved_bytes_sub(blk_size * SWC_SCAN_RSVD_BUFFS);
   }
 
@@ -97,7 +97,7 @@ class ReqScanBlockLoader : public ReqScan {
       : ReqScan(ReqScan::Type::BLK_PRELOAD, false, 1, a_blk_size) {
   }
 
-  virtual ~ReqScanBlockLoader() { }
+  virtual ~ReqScanBlockLoader() noexcept { }
 
   bool reached_limits() override {
     return true;
@@ -129,7 +129,7 @@ class ReqScanTest : public ReqScan {
     return !reached_limits();
   }
 
-  virtual ~ReqScanTest() { }
+  virtual ~ReqScanTest() noexcept { }
 
   void response(int &err) override {
     cb(err);

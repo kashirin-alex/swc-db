@@ -25,6 +25,8 @@ struct RangeQuerySelect {
                   : conn(a_conn), ev(a_ev) {
   }
 
+  ~RangeQuerySelect() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

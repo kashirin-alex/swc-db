@@ -42,7 +42,7 @@ class AppHandler final : virtual public BrokerIf {
             : socket(a_socket) {
   }
 
-  virtual ~AppHandler() { }
+  virtual ~AppHandler() noexcept { }
 
   /* SQL any */
   void exec_sql(Result& _return, const std::string& sql) override {

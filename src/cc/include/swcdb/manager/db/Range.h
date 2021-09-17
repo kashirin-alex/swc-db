@@ -38,7 +38,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void init(int&) { }
 
-  //~Range() { }
+  ~Range() noexcept { }
 
   SWC_CAN_INLINE
   State state() {

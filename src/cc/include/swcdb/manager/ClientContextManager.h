@@ -18,7 +18,7 @@ class ContextManager final : public client::ContextManager {
 
   ContextManager() : client::ContextManager(*Env::Config::settings()) { }
 
-  virtual ~ContextManager() { }
+  virtual ~ContextManager() noexcept { }
 
   void handle_disconnect(Comm::ConnHandlerPtr) noexcept override;
 

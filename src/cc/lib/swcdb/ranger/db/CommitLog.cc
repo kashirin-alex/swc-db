@@ -21,7 +21,7 @@ Fragments::Fragments(const DB::Types::KeySeq key_seq)
                       m_sem(5), m_last_id(0), m_releasable_bytes(0) {
 }
 
-Fragments::~Fragments() {
+Fragments::~Fragments() noexcept {
   Env::Rgr::res().less_mem_releasable(m_releasable_bytes);
 }
 
@@ -49,7 +49,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
   m_cells.add_raw(cell);
 }
 
-void Fragments::commit() {
+void Fragments::commit() noexcept {
   if(m_commit.running())
     return;
   bool run;

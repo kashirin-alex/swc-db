@@ -22,7 +22,7 @@ class RangeUnoadForMerge : public client::ConnQueue::ReqBase {
     const Manager::Range::Ptr& range,
     uint32_t timeout=60000);
 
-  virtual ~RangeUnoadForMerge() { }
+  virtual ~RangeUnoadForMerge() noexcept { }
 
   bool valid() override;
 

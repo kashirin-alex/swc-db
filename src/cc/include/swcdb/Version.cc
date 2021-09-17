@@ -13,11 +13,11 @@ extern inline const char SWCDB_VERSION[]   = SWCDB_SET_VERSION;
 extern inline const char SWCDB_COPYRIGHT[] = SWCDB_SET_COPYRIGHT;
 
 
-const char* swcdb_version() {
+const char* swcdb_version() noexcept {
   return SWCDB_VERSION;
 }
 
-const char* swcdb_copyrights() {
+const char* swcdb_copyrights() noexcept {
   return SWCDB_COPYRIGHT;
 }
 

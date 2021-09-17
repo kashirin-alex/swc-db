@@ -41,7 +41,7 @@ class MngrStatus final {
         conn(nullptr), failures(0) {
   }
 
-  //~MngrStatus() { }
+  ~MngrStatus() noexcept { }
 
   SWC_CAN_INLINE
   bool eq_grouping(const MngrStatus& other) const noexcept {

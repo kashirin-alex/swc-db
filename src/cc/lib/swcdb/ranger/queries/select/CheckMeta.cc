@@ -50,6 +50,7 @@ void CheckMeta::response(int err) {
     Ptr hdlr;
     SWC_CAN_INLINE
     Task(Ptr&& a_hdlr) noexcept : hdlr(std::move(a_hdlr)) { }
+    ~Task() noexcept { }
     void operator()() { hdlr->range->check_meta(hdlr); }
   };
   Env::Rgr::post(

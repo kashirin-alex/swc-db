@@ -25,6 +25,8 @@ struct RangeLocate {
               : conn(a_conn), ev(a_ev) {
   }
 
+  ~RangeLocate() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

@@ -45,7 +45,7 @@ class Interface {
   Interface(std::string&& prompt="CLI>",
             std::string&& history="/tmp/.swc-cli-history");
 
-  virtual ~Interface();
+  virtual ~Interface() noexcept;
 
   CLI run();
 
@@ -61,7 +61,7 @@ class Interface {
             call(std::move(a_call)), re(a_re) {
     }
 
-    ~Option() {
+    ~Option() noexcept {
       if(re)
         delete re;
     }

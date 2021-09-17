@@ -27,7 +27,7 @@ class Splitter final : private Fragment::LoadCallback {
 
   Splitter& operator=(const Splitter&) = delete;
 
-  //~Splitter() { }
+  ~Splitter() noexcept { }
 
   void run () {
     SWC_LOGF(LOG_DEBUG,

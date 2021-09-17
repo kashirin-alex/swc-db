@@ -34,7 +34,7 @@ class Compaction final {
 
   Compaction& operator=(const Compaction&) = delete;
 
-  //~Compaction() { }
+  ~Compaction() noexcept { }
 
   bool log_compact_possible() noexcept;
 

@@ -26,6 +26,8 @@ class Compact final {
 
     Group(const Group&&) = delete;
 
+    ~Group() noexcept { }
+
     Group& operator=(const Group&) = delete;
 
     void run(bool initial);
@@ -73,7 +75,7 @@ class Compact final {
 
   Compact& operator=(const Compact&) = delete;
 
-  //~Compact() { }
+  ~Compact() noexcept { }
 
   private:
 

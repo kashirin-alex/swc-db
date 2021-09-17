@@ -17,7 +17,7 @@ class ReportRes : public client::ConnQueue::ReqBase {
 
   ReportRes(const Manager::Ranger::Ptr& rgr);
 
-  virtual ~ReportRes() { }
+  virtual ~ReportRes() noexcept { }
 
   void handle_no_conn() override;
 

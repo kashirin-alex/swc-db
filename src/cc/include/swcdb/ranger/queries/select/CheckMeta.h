@@ -38,7 +38,7 @@ class CheckMeta final :
 
   CheckMeta(const RangePtr& range, const Callback::RangeLoad::Ptr& req);
 
-  virtual ~CheckMeta() { }
+  virtual ~CheckMeta() noexcept { }
 
   bool valid() noexcept override;
 

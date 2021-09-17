@@ -20,7 +20,7 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                const DB::Schema::Ptr& schema,
                uint64_t req_id);
 
-  virtual ~ColumnUpdate() { }
+  virtual ~ColumnUpdate() noexcept { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 

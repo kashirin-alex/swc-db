@@ -19,7 +19,7 @@ class RangeLoad : public client::ConnQueue::ReqBase {
             const Manager::Range::Ptr& range,
             const DB::Schema::Ptr& schema);
 
-  virtual ~RangeLoad() { }
+  virtual ~RangeLoad() noexcept { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;
 

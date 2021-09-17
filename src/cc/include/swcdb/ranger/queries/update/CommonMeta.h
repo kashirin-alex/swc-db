@@ -27,13 +27,14 @@ class CommonMeta : public BaseMeta {
             : BaseMeta(a_range), cb(std::move(a_cb)) {
   }
 
-  virtual ~CommonMeta() { }
+  virtual ~CommonMeta() noexcept { }
 
   virtual void response(int err=Error::OK) override {
     struct Task {
       Ptr hdlr;
       SWC_CAN_INLINE
       Task(Ptr&& a_hdlr) noexcept : hdlr(std::move(a_hdlr)) { }
+      ~Task() noexcept { }
       void operator()() { hdlr->cb(hdlr); }
     };
     if(is_last_rsp(err)) {

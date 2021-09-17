@@ -25,7 +25,7 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
             : cid(schema->cid), key_seq(schema->col_seq) {
   }
 
-  //~ColumnCfg() { }
+  //~ColumnCfg() noexcept { }
 
   void print(std::ostream& out) const {
     out << "cid=" << cid << " seq=" << DB::Types::to_string(key_seq);

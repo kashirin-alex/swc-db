@@ -63,7 +63,7 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   void init();
 
-  ~Range();
+  ~Range() noexcept;
 
   std::string get_path(const std::string suff) const;
 

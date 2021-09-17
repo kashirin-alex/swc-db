@@ -24,6 +24,8 @@ struct ColumnUpdate {
               : conn(a_conn), ev(a_ev) {
   }
 
+  ~ColumnUpdate() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

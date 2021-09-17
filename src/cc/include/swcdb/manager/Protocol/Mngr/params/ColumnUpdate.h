@@ -35,6 +35,8 @@ class ColumnUpdate final : public Serializable {
                 err(Error::OK) {
   }
 
+  ~ColumnUpdate() noexcept { }
+
   void print(std::ostream& out) {
     out << "ColumnUpdate(func=" << int(function)
         << " id=" << id;

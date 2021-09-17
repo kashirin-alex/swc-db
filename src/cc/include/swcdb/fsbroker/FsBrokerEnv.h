@@ -22,7 +22,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   Fds() : m_next_fd(0) {}
 
-  //~Fds() { }
+  ~Fds() noexcept { }
 
   int32_t add(const FS::SmartFd::Ptr& smartfd);
 
@@ -123,7 +123,7 @@ class FsBroker final {
       m_shuttingdown(false), m_in_process(0) {
   }
 
-  //~FsBroker() { }
+  ~FsBroker() noexcept { }
 
   SWC_CAN_INLINE
   bool _can_process() noexcept {

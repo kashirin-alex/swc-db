@@ -24,7 +24,7 @@ class RgrUpdate : public client::ConnQueue::ReqBase {
               ) {
   }
 
-  virtual ~RgrUpdate() { }
+  virtual ~RgrUpdate() noexcept { }
 
   bool insistent() noexcept override { return true; }
 

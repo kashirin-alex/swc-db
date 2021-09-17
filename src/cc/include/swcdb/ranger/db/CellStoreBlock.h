@@ -59,7 +59,7 @@ class Read final {
 
   Read& operator=(const Read&) = delete;
 
-  ~Read();
+  ~Read() noexcept;
 
   //size_t size_of() const noexcept;
 
@@ -111,6 +111,8 @@ class Write final {
   typedef std::shared_ptr<Write> Ptr;
 
   Write(Header&& header) noexcept;
+
+  ~Write() noexcept { }
 
   static void encode(int& err, DynamicBuffer& cells, DynamicBuffer& output,
                      Header& header);

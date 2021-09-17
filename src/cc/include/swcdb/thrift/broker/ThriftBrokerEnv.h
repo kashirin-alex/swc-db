@@ -64,6 +64,8 @@ class ThriftBroker final {
         ) {
   }
 
+  ~ThriftBroker() noexcept { }
+
   private:
 
   inline static std::shared_ptr<ThriftBroker> m_env = nullptr;

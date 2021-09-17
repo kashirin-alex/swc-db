@@ -24,6 +24,8 @@ struct RgrUpdate {
             : conn(a_conn), ev(a_ev) {
   }
 
+  ~RgrUpdate() noexcept { }
+
   void operator()() {
     if(ev->expired())
       return;

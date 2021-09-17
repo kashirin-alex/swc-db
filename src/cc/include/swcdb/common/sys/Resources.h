@@ -31,7 +31,7 @@ struct Notifier {
 
   virtual uint64_t get_cpu_ms_interval() const noexcept = 0;
 
-  virtual ~Notifier() { }
+  virtual ~Notifier() noexcept { }
 
 };
 
@@ -76,7 +76,7 @@ class Resources final {
   Resources operator=(const Resources& other) = delete;
   Resources operator=(Resources&& other)      = delete;
 
-  //~Resources() { }
+  ~Resources() noexcept { }
 
   SWC_CAN_INLINE
   bool is_low_mem_state() const noexcept {
