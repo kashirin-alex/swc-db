@@ -23,6 +23,8 @@ class RemoveReq final : public Serializable {
   SWC_CAN_INLINE
   RemoveReq(const std::string& a_fname) : fname(a_fname) { }
 
+  ~RemoveReq() noexcept { }
+
   std::string fname;
 
   private:

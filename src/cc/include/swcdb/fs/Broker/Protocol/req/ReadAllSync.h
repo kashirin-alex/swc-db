@@ -33,6 +33,8 @@ class ReadAllSync final : public BaseSync, public Base {
                 buffer(dst), name(a_name) {
   }
 
+  ~ReadAllSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_read_all(ev, name);
     if(!error)

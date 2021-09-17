@@ -74,7 +74,7 @@ FileSystem::FileSystem(const Configurables* config)
       statistics(config->stats_enabled) {
 }
 
-FileSystem::~FileSystem() { }
+FileSystem::~FileSystem() noexcept { }
 
 void FileSystem::stop() {
   m_run.store(false);

@@ -33,6 +33,8 @@ class Seek final : public Base {
         smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
+  ~Seek() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_seek(ev, smartfd);
     cb(error, smartfd);

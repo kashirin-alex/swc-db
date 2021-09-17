@@ -38,6 +38,8 @@ class ReadSync final : public BaseSync, public Base {
             smartfd(a_smartfd) {
   }
 
+  ~ReadSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_read(ev, smartfd, amount);
     if(amount) {

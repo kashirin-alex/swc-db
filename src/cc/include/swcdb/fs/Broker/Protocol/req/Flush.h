@@ -33,6 +33,8 @@ class Flush final : public Base {
           smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
+  ~Flush() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_flush(ev, smartfd);
     cb(error, smartfd);

@@ -32,6 +32,8 @@ class RmdirSync final : public BaseSync, public Base {
               name(a_name) {
   }
 
+  ~RmdirSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_rmdir(ev, name);
     BaseSync::acknowledge();

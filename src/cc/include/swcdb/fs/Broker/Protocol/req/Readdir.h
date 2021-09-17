@@ -33,6 +33,8 @@ class Readdir final : public Base {
             name(a_name), cb(std::move(a_cb)) {
   }
 
+  ~Readdir() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     FS::DirentList listing;
     Base::handle_readdir(ev, name, listing);

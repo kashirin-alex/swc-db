@@ -33,6 +33,8 @@ class Exists final : public Base {
           name(a_name), cb(std::move(a_cb)) {
   }
 
+  ~Exists() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     bool state = false;
     Base::handle_exists(ev, name, state);

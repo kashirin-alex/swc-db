@@ -33,6 +33,8 @@ class Mkdirs final : public Base {
           name(a_name), cb(std::move(a_cb)) {
   }
 
+  ~Mkdirs() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_mkdirs(ev, name);
     cb(error);

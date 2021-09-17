@@ -19,6 +19,8 @@ class StateSynchronization {
   SWC_CAN_INLINE
   StateSynchronization() noexcept : m_ack(false) { }
 
+  ~StateSynchronization() { }
+
   SWC_CAN_INLINE
   void wait() {
     Core::UniqueLock lock_wait(m_mutex);

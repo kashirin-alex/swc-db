@@ -74,7 +74,7 @@ FileSystemHadoop::SmartFdHadoop::SmartFdHadoop(
     : SmartFd(filepath, flags, fd, pos), m_file(nullptr) {
 }
 
-FileSystemHadoop::SmartFdHadoop::~SmartFdHadoop() { }
+FileSystemHadoop::SmartFdHadoop::~SmartFdHadoop() noexcept { }
 
 hdfs::FileHandle* FileSystemHadoop::SmartFdHadoop::file() const {
   return m_file;
@@ -103,7 +103,7 @@ FileSystemHadoop::FileSystemHadoop(Configurables* config)
       m_fs(setup_connection()) {
 }
 
-FileSystemHadoop::~FileSystemHadoop() { }
+FileSystemHadoop::~FileSystemHadoop() noexcept { }
 
 Type FileSystemHadoop::get_type() const noexcept {
   return Type::HADOOP;

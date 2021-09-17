@@ -35,6 +35,8 @@ class Append final : public Base {
           smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
+  ~Append() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     size_t amount = 0;
     Base::handle_append(ev, smartfd, amount);

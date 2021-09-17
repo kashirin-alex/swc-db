@@ -27,6 +27,8 @@ class WriteReq final : public Serializable {
             replication(a_replication), blksz(a_blksz) {
   }
 
+  ~WriteReq() noexcept { }
+
   std::string fname;
   uint32_t    flags;
   uint8_t     replication;

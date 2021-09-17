@@ -61,7 +61,7 @@ class SmartFd {
             m_flags(flags), m_fd(fd), m_pos(pos) {
   }
 
-  virtual ~SmartFd() { }
+  virtual ~SmartFd() noexcept;
 
   constexpr SWC_CAN_INLINE
   const std::string& filepath() const noexcept {

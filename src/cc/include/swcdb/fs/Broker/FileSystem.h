@@ -34,7 +34,7 @@ class FileSystemBroker final : public FileSystem {
 
   FileSystemBroker(Configurables* config);
 
-  virtual ~FileSystemBroker();
+  virtual ~FileSystemBroker() noexcept;
 
   void stop() override;
 

@@ -35,6 +35,8 @@ class ReaddirSync final : public BaseSync, public Base {
                 listing(a_listing), name(a_name) {
   }
 
+  ~ReaddirSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_readdir(ev, name, listing);
     BaseSync::acknowledge();

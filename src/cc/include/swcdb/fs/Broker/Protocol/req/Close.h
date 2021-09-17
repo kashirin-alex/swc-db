@@ -33,6 +33,8 @@ class Close final : public Base {
           fs(a_fs), smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
+  ~Close() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_close(fs, ev, smartfd);
     cb(error, smartfd);

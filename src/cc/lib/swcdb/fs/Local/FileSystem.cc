@@ -47,7 +47,7 @@ FileSystemLocal::FileSystemLocal(Configurables* config)
                     "swc.fs.local.DirectIO", false)) {
 }
 
-FileSystemLocal::~FileSystemLocal() { }
+FileSystemLocal::~FileSystemLocal() noexcept { }
 
 Type FileSystemLocal::get_type() const noexcept {
   return Type::LOCAL;

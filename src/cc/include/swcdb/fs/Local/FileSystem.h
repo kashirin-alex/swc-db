@@ -19,7 +19,7 @@ class FileSystemLocal final : public FileSystem {
 
   FileSystemLocal(Configurables* config);
 
-  virtual ~FileSystemLocal();
+  virtual ~FileSystemLocal() noexcept;
 
   Type get_type() const noexcept override;
 

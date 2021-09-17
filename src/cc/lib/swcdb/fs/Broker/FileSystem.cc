@@ -152,7 +152,7 @@ FileSystemBroker::FileSystemBroker(Configurables* config)
         "swc.fs.broker.timeout.bytes.ratio")) {
 }
 
-FileSystemBroker::~FileSystemBroker() { }
+FileSystemBroker::~FileSystemBroker() noexcept { }
 
 void FileSystemBroker::stop() {
   m_run.store(false);

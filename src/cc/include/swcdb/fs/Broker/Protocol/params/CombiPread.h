@@ -25,6 +25,8 @@ class CombiPreadReq final : public Serializable {
                 uint64_t a_offset, uint32_t a_amount) noexcept
                 : smartfd(a_smartfd), offset(a_offset), amount(a_amount) { }
 
+  ~CombiPreadReq() noexcept { }
+
   FS::SmartFd::Ptr  smartfd;
   uint64_t          offset;
   uint32_t          amount;

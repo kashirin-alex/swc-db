@@ -33,8 +33,7 @@ class RenameSync final : public BaseSync, public Base {
               from(a_from), to(a_to) {
   }
 
-  SWC_CAN_INLINE
-  ~RenameSync() { }
+  ~RenameSync() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_rename(ev, from, to);

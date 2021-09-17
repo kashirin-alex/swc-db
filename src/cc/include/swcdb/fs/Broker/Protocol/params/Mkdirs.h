@@ -23,6 +23,8 @@ class MkdirsReq final : public Serializable {
   SWC_CAN_INLINE
   MkdirsReq(const std::string& a_dirname) : dirname(a_dirname) { }
 
+  ~MkdirsReq() noexcept { }
+
   std::string dirname;
 
   private:

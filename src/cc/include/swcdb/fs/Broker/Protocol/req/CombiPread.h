@@ -34,6 +34,8 @@ class CombiPread final : public Base {
               smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
+  ~CombiPread() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_combi_pread(ev, smartfd);
     StaticBuffer::Ptr buf(error ? nullptr : new StaticBuffer(ev->data_ext));

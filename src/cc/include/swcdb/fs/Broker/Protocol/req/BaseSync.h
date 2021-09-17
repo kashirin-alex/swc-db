@@ -20,6 +20,8 @@ class BaseSync : private Core::StateSynchronization {
 
   protected:
   using Core::StateSynchronization::acknowledge;
+
+  ~BaseSync() noexcept { }
 };
 
 

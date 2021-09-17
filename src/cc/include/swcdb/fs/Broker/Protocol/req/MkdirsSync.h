@@ -32,6 +32,8 @@ class MkdirsSync final : public BaseSync, public Base {
               name(a_name) {
   }
 
+  ~MkdirsSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_mkdirs(ev, name);
     BaseSync::acknowledge();

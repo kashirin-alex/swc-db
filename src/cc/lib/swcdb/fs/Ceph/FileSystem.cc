@@ -199,7 +199,7 @@ bool FileSystemCeph::initialize() {
   return bool(m_filesystem);
 }
 
-FileSystemCeph::~FileSystemCeph() { }
+FileSystemCeph::~FileSystemCeph() noexcept { }
 
 void FileSystemCeph::stop() {
   m_run.store(false);

@@ -32,6 +32,8 @@ class RemoveSync final : public BaseSync, public Base {
               name(a_name) {
   }
 
+  ~RemoveSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_remove(ev, name);
     BaseSync::acknowledge();

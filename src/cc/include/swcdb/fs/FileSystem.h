@@ -54,6 +54,7 @@ struct Configurables {
                 : settings(a_settings),
                   cfg_fds_max(nullptr), stats_enabled(false) {
   }
+  ~Configurables() noexcept { }
 };
 
 
@@ -80,7 +81,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   FileSystem(const Configurables* config);
 
-  virtual ~FileSystem();
+  virtual ~FileSystem() noexcept;
 
   virtual void stop();
 

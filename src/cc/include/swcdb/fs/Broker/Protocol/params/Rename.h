@@ -24,8 +24,7 @@ class RenameReq final : public Serializable {
   RenameReq(const std::string& a_from, const std::string& a_to)
             : from(a_from), to(a_to) { }
 
-  SWC_CAN_INLINE
-  ~RenameReq() { }
+  ~RenameReq() noexcept { }
 
   std::string from;
   std::string to;

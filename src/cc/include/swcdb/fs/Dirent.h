@@ -39,6 +39,8 @@ struct Dirent final  {
           is_dir(other.is_dir), length(other.length) {
   }
 
+  ~Dirent() noexcept { }
+
   SWC_CAN_INLINE
   Dirent& operator=(Dirent&& other) noexcept {
     name = std::move(other.name);

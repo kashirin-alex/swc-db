@@ -32,6 +32,8 @@ class FlushSync final : public BaseSync, public Base {
               smartfd(a_smartfd) {
   }
 
+  ~FlushSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_flush(ev, smartfd);
     BaseSync::acknowledge();

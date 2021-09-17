@@ -23,7 +23,7 @@ class Base : public DispatchHandler {
   int                             error;
   Buffers::Ptr                    cbp;
 
-  virtual ~Base() { }
+  virtual ~Base() noexcept { }
 
   bool is_rsp(const Event::Ptr& ev, int cmd,
               const uint8_t **ptr, size_t *remain);

@@ -36,6 +36,8 @@ class AppendSync final : public BaseSync, public Base {
           amount(0), smartfd(a_smartfd) {
   }
 
+  ~AppendSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_append(ev, smartfd, amount);
     BaseSync::acknowledge();

@@ -34,6 +34,8 @@ class LengthSync final : public BaseSync, public Base {
               length(0), name(a_name) {
   }
 
+  ~LengthSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_length(ev, name, length);
     BaseSync::acknowledge();

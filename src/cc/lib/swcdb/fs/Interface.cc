@@ -113,7 +113,7 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
 }
 
 
-Interface::~Interface() {
+Interface::~Interface() noexcept {
   m_fs = nullptr;
   if(loaded_dl.lib) {
     dlclose(loaded_dl.lib);

@@ -33,6 +33,8 @@ class Length final : public Base {
           name(a_name), cb(std::move(a_cb)) {
   }
 
+  ~Length() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     size_t length = 0;
     Base::handle_length(ev, name, length);

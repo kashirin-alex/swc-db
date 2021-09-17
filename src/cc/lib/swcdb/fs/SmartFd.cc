@@ -10,6 +10,8 @@
 namespace SWC { namespace FS {
 
 
+SmartFd::~SmartFd() noexcept { }
+
 std::string SmartFd::to_string() const {
   return format("Fd('%s' flags=%u fd=%d pos=%lu)",
     m_filepath.c_str(), m_flags.load(), m_fd.load(), m_pos.load());

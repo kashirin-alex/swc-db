@@ -38,6 +38,8 @@ class PreadSync final : public BaseSync, public Base {
               smartfd(a_smartfd) {
   }
 
+  ~PreadSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_pread(ev, smartfd, amount);
     if(amount) {

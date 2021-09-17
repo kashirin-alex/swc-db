@@ -23,6 +23,8 @@ class ExistsReq final : public Serializable {
   SWC_CAN_INLINE
   ExistsReq(const std::string& a_fname) : fname(a_fname) { }
 
+  ~ExistsReq() noexcept { }
+
   std::string fname;
 
   private:

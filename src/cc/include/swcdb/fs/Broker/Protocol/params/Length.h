@@ -23,6 +23,8 @@ class LengthReq final : public Serializable {
   SWC_CAN_INLINE
   LengthReq(const std::string& a_fname) : fname(a_fname) { }
 
+  ~LengthReq() noexcept { }
+
   std::string fname;
 
   private:

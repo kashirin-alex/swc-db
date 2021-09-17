@@ -34,6 +34,8 @@ class OpenSync final : public BaseSync, public Base {
             fs(a_fs), smartfd(a_smartfd) {
   }
 
+  ~OpenSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_open(fs, ev, smartfd);
     BaseSync::acknowledge();

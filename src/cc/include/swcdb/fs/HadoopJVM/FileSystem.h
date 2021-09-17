@@ -26,14 +26,14 @@ class FileSystemHadoopJVM final : public FileSystem {
 
     Service(hdfsFS a_srv) noexcept : srv(a_srv) { }
 
-    ~Service() { if(srv) hdfsDisconnect(srv); }
+    ~Service() noexcept { if(srv) hdfsDisconnect(srv); }
 
     hdfsFS  srv;
   };
 
   FileSystemHadoopJVM(Configurables* config);
 
-  virtual ~FileSystemHadoopJVM();
+  virtual ~FileSystemHadoopJVM() noexcept;
 
   Type get_type() const noexcept override;
 
@@ -128,7 +128,7 @@ class FileSystemHadoopJVM final : public FileSystem {
     SmartFdHadoopJVM(const std::string& filepath, uint32_t flags,
                      int32_t fd=-1, uint64_t pos=0);
 
-    virtual ~SmartFdHadoopJVM() { }
+    virtual ~SmartFdHadoopJVM() noexcept;
 
     hdfsFile file() noexcept;
 

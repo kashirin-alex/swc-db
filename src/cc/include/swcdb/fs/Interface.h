@@ -56,7 +56,7 @@ class Interface final : public std::enable_shared_from_this<Interface> {
     return shared_from_this();
   }
 
-  ~Interface();
+  ~Interface() noexcept;
 
   Type get_type_underlying() const noexcept;
 
@@ -164,7 +164,7 @@ class FsInterface final {
 
   FsInterface(const SWC::Config::Settings::Ptr& settings, FS::Type typ);
 
-  ~FsInterface() { }
+  ~FsInterface() noexcept { }
 
   private:
   FS::Interface::Ptr  m_interface = nullptr;

@@ -34,6 +34,8 @@ class CombiPreadSync final : public BaseSync, public Base {
                   buffer(dst), smartfd(a_smartfd) {
   }
 
+  ~CombiPreadSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_combi_pread(ev, smartfd);
     if(!error)

@@ -35,8 +35,9 @@ class CreateSync final : public BaseSync, public Base {
                 )
               ),
               fs(a_fs), smartfd(a_smartfd) {
-}
+  }
 
+  ~CreateSync() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_create(fs, ev, smartfd);

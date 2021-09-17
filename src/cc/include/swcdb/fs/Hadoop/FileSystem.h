@@ -26,7 +26,7 @@ class FileSystemHadoop final : public FileSystem {
 
     Service(hdfs::FileSystem* srv) noexcept : srv(srv) { }
 
-    ~Service() {
+    ~Service() noexcept {
       //if(srv) hdfsDisconnect(srv);
     }
 
@@ -35,7 +35,7 @@ class FileSystemHadoop final : public FileSystem {
 
   FileSystemHadoop(Configurables* config);
 
-  virtual ~FileSystemHadoop();
+  virtual ~FileSystemHadoop() noexcept;
 
   Type get_type() const noexcept override;
 
@@ -130,7 +130,7 @@ class FileSystemHadoop final : public FileSystem {
     SmartFdHadoop(const std::string& filepath, uint32_t flags,
                   int32_t fd=-1, uint64_t pos=0);
 
-    virtual ~SmartFdHadoop();
+    virtual ~SmartFdHadoop() noexcept;
 
     hdfs::FileHandle* file() const;
 

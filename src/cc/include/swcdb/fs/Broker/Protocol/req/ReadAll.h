@@ -33,6 +33,8 @@ class ReadAll final : public Base {
             name(a_name), cb(std::move(a_cb)) {
   }
 
+  ~ReadAll() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_read_all(ev, name);
     StaticBuffer::Ptr buf(error ? nullptr : new StaticBuffer(ev->data_ext));

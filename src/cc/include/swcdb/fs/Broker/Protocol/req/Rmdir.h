@@ -31,7 +31,9 @@ class Rmdir final : public Base {
             )
           ),
           name(a_name), cb(std::move(a_cb)) {
-}
+  }
+
+  ~Rmdir() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_rmdir(ev, name);

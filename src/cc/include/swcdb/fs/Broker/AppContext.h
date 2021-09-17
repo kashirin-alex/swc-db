@@ -31,7 +31,7 @@ class AppContext final : public Comm::AppContext {
             "swc.fs.broker.comm.encoder")) {
   }
 
-  virtual ~AppContext() { }
+  virtual ~AppContext() noexcept { }
 
   void handle_established(Comm::ConnHandlerPtr) override { }
 

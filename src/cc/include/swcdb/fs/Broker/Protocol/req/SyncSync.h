@@ -32,6 +32,8 @@ class SyncSync final : public BaseSync, public Base {
             smartfd(a_smartfd) {
   }
 
+  ~SyncSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_sync(ev, smartfd);
     BaseSync::acknowledge();

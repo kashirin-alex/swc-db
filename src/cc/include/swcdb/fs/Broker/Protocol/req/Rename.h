@@ -33,8 +33,7 @@ class Rename final : public Base {
           from(a_from), to(a_to), cb(std::move(a_cb)) {
   }
 
-  SWC_CAN_INLINE
-  ~Rename() { }
+  ~Rename() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_rename(ev, from, to);

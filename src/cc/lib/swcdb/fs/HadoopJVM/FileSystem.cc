@@ -68,6 +68,8 @@ FileSystemHadoopJVM::SmartFdHadoopJVM::SmartFdHadoopJVM(
     : SmartFd(filepath, flags, fd, pos), m_hfile(nullptr), m_use_count(0) {
 }
 
+FileSystemHadoopJVM::SmartFdHadoopJVM::~SmartFdHadoopJVM() noexcept { }
+
 hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() noexcept {
   auto c = m_use_count.fetch_add(1);
   auto hfile = m_hfile.load();
@@ -127,7 +129,7 @@ FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
           "swc.fs.hadoop_jvm.reconnect.delay.ms")) {
 }
 
-FileSystemHadoopJVM::~FileSystemHadoopJVM() { }
+FileSystemHadoopJVM::~FileSystemHadoopJVM() noexcept { }
 
 Type FileSystemHadoopJVM::get_type() const noexcept {
   return Type::HADOOP_JVM;

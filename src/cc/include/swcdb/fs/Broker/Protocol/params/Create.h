@@ -26,6 +26,8 @@ class CreateReq final : public Serializable {
             : fname(a_fname), flags(a_flags), bufsz(a_bufsz),
               replication(a_replication), blksz(a_blksz) { }
 
+  ~CreateReq() noexcept { }
+
   std::string fname;
   uint32_t    flags;
   int32_t     bufsz;

@@ -33,6 +33,8 @@ class Sync final : public Base {
         smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
+  ~Sync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_sync(ev, smartfd);
     cb(error, smartfd);

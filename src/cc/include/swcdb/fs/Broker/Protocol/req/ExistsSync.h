@@ -34,6 +34,8 @@ class ExistsSync final : public BaseSync, public Base {
               state(false), name(a_name) {
   }
 
+  ~ExistsSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_exists(ev, name, state);
     BaseSync::acknowledge();

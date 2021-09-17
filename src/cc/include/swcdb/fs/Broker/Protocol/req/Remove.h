@@ -33,6 +33,8 @@ class Remove final : public Base {
           name(a_name), cb(std::move(a_cb)) {
   }
 
+  ~Remove() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_remove(ev, name);
     cb(error);

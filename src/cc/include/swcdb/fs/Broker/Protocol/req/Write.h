@@ -38,6 +38,8 @@ class Write final : public Base {
           smartfd(a_smartfd), cb(std::move(a_cb)) {
   }
 
+  ~Write() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_write(ev, smartfd);
     cb(error, smartfd);

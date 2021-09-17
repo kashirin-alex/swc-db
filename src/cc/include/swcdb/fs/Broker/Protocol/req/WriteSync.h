@@ -37,6 +37,8 @@ class WriteSync final : public BaseSync, public Base {
               smartfd(a_smartfd) {
   }
 
+  ~WriteSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_write(ev, smartfd);
     BaseSync::acknowledge();

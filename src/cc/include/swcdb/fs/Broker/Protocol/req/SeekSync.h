@@ -32,6 +32,8 @@ class SeekSync final : public BaseSync, public Base {
             smartfd(a_smartfd) {
   }
 
+  ~SeekSync() noexcept { }
+
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_seek(ev, smartfd);
     BaseSync::acknowledge();

@@ -26,7 +26,7 @@ class FileSystemCeph final : public FileSystem {
 
   bool initialize();
 
-  virtual ~FileSystemCeph();
+  virtual ~FileSystemCeph() noexcept;
 
   void stop() override;
 

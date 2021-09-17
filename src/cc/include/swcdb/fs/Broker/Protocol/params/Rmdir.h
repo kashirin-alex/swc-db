@@ -22,6 +22,8 @@ class RmdirReq final : public Serializable {
   SWC_CAN_INLINE
   RmdirReq(const std::string& a_dname) : dname(a_dname) { }
 
+  ~RmdirReq() noexcept { }
+
   std::string dname;
 
   private:
