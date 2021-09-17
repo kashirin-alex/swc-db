@@ -37,7 +37,7 @@ Settings::Settings() {
   cmdline_desc.definition(usage_str());
 }
 
-Settings::~Settings() { }
+Settings::~Settings() noexcept { }
 
 void Settings::init(int argc, char *argv[]) {
 

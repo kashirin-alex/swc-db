@@ -50,7 +50,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
   IoContext(std::string&& _name, int32_t size);
 
-  //~IoContext() { }
+  ~IoContext() noexcept { }
 
   SWC_CAN_INLINE
   int32_t get_size() const noexcept {
@@ -128,7 +128,7 @@ class IoCtx final {
   SWC_CAN_INLINE
   IoCtx(int32_t size) : m_io(new Comm::IoContext("Env", size)) { }
 
-  //~IoCtx() { }
+  ~IoCtx() noexcept { }
 
   private:
   Comm::IoContextPtr                    m_io;

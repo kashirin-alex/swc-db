@@ -60,7 +60,7 @@ class ConnQueues final :
               cfg_again_delay_ms(again_delay_ms) {
   }
 
-  //~ConnQueues() { }
+  ~ConnQueues() noexcept;
 
   void print(std::ostream& out);
 

@@ -12,7 +12,7 @@ namespace SWC { namespace Comm { namespace client {
 
 
 
-ServerConnections::~ServerConnections() { }
+ServerConnections::~ServerConnections() noexcept { }
 
 void ServerConnections::reusable(ConnHandlerPtr& conn, bool preserve) {
   while(pop(&(conn = nullptr)) && !conn->is_open());
@@ -326,7 +326,7 @@ void Serialized::stop() {
   SWC_LOGF(LOG_INFO, "Stop: %s", m_srv_name.c_str());
 }
 
-Serialized::~Serialized() {
+Serialized::~Serialized() noexcept {
   if(m_ssl_cfg)
     delete m_ssl_cfg;
 }

@@ -47,6 +47,9 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
 
     SWC_CAN_INLINE
+    ~Outgoing() noexcept { }
+
+    SWC_CAN_INLINE
     Outgoing& operator=(Outgoing&& other) noexcept {
       cbuf = std::move(other.cbuf);
       hdlr = std::move(other.hdlr);
@@ -77,6 +80,12 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     }
 
     SWC_CAN_INLINE
+    ~Pending() noexcept {
+      if(timer)
+        delete timer;
+    }
+
+    SWC_CAN_INLINE
     Pending& operator=(Pending&& other) noexcept {
       hdlr = std::move(other.hdlr);
       timer = other.timer;
@@ -88,11 +97,6 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     Pending& operator=(const Pending&)  = delete;
 
-    SWC_CAN_INLINE
-    ~Pending() {
-      if(timer)
-        delete timer;
-    }
   };
 
 
@@ -166,7 +170,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
     return shared_from_this();
   }
 
-  virtual ~ConnHandler() { }
+  virtual ~ConnHandler() noexcept { }
 
   virtual SocketLayer* socket_layer() noexcept = 0;
 
@@ -252,7 +256,7 @@ class ConnHandlerPlain final : public ConnHandler {
 
   static Ptr make(AppContext::Ptr& app_ctx, SocketPlain& socket);
 
-  virtual ~ConnHandlerPlain();
+  virtual ~ConnHandlerPlain() noexcept;
 
   void do_close() noexcept override;
 
@@ -296,7 +300,7 @@ class ConnHandlerSSL final : public ConnHandler {
   static Ptr make(AppContext::Ptr& app_ctx, asio::ssl::context& ssl_ctx,
                   SocketPlain& socket);
 
-  virtual ~ConnHandlerSSL();
+  virtual ~ConnHandlerSSL() noexcept;
 
   bool is_secure() const noexcept override { return true; }
 

@@ -29,6 +29,8 @@ bool Host::connect() {
 
 
 
+ConnQueues::~ConnQueues() noexcept { }
+
 void ConnQueues::print(std::ostream& out) {
   out << "ConnQueues: ";
   Core::MutexSptd::scope lock(m_mutex);

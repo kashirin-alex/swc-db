@@ -114,6 +114,7 @@ void ConnQueue::delay(ConnQueue::ReqBase::Ptr&& req) {
               asio::high_resolution_timer* a_tm) noexcept
               : queue(a_queue), req(std::move(a_req)), tm(a_tm) {
     }
+    ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(ec == asio::error::operation_aborted) {
         req->handle_no_conn();
@@ -155,6 +156,7 @@ void ConnQueue::exec_queue() {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
     Task(ConnQueuePtr&& a_queue) noexcept : queue(std::move(a_queue)) { }
+    ~Task() noexcept { }
     void operator()() { queue->run_queue(); }
   };
   m_ioctx->post(Task(shared_from_this()));
@@ -223,6 +225,7 @@ void ConnQueue::schedule_close(bool closing) {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
     TimerTask(ConnQueuePtr&& a_queue) noexcept : queue(std::move(a_queue)) { }
+    ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {
         queue->schedule_close(true);

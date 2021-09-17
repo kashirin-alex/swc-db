@@ -25,6 +25,8 @@ class VectorsVector : public VectorsT {
   constexpr SWC_CAN_INLINE
   VectorsVector() noexcept { }
 
+  ~VectorsVector() noexcept { }
+
   constexpr SWC_CAN_INLINE
   static size_t need_reserve(VectorT& vec) {
     if(GROW > 1 && vec.capacity() == vec.size() && vec.capacity() >= GROW) {

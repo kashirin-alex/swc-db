@@ -43,7 +43,7 @@ class ServerConnections final :
                       m_ssl_cfg(ssl_cfg) {
   }
 
-  ~ServerConnections();
+  ~ServerConnections() noexcept;
 
   void reusable(ConnHandlerPtr& conn, bool preserve);
 
@@ -107,7 +107,7 @@ class Serialized final :
 
   void stop();
 
-  virtual ~Serialized();
+  virtual ~Serialized() noexcept;
 
   private:
 

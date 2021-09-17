@@ -62,7 +62,7 @@ class Array : private std::array<ValueT, SIZE> {
     other._size -= _size;
   }
 
-  //~Array() { }
+  ~Array() noexcept { }
 
   SWC_CAN_INLINE
   size_type size() const noexcept {

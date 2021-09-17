@@ -156,11 +156,11 @@ ParserConfig::ParserConfig(const ParserConfig& other) {
   add(other);
 }
 
-ParserConfig::~ParserConfig() {
+ParserConfig::~ParserConfig() noexcept {
   free();
 }
 
-void ParserConfig::free() {
+void ParserConfig::free() noexcept {
   if(own) {
     for(auto& opt : options)
       delete opt.second.value;
@@ -357,11 +357,11 @@ Strings Parser::args_to_strings(int argc, char *argv[]) {
 
 Parser::Options::Options(bool a_own) noexcept : own(a_own) { }
 
-Parser::Options::~Options() {
+Parser::Options::~Options() noexcept {
   free();
 }
 
-void Parser::Options::free() {
+void Parser::Options::free() noexcept {
     if(own) {
       for(const auto& kv : map)
         delete kv.second;
@@ -374,7 +374,9 @@ Parser::Parser(bool unregistered) noexcept
               : config(0, false), m_unregistered(unregistered) {
 }
 
-void Parser::free() {
+Parser::~Parser() noexcept { }
+
+void Parser::free() noexcept {
   m_opts.free();
   config.free();
 }

@@ -35,7 +35,7 @@ class Settings final : public Properties {
 
   Settings();
 
-  ~Settings();
+  ~Settings() noexcept;
 
   void init(int argc, char *argv[]);
 
@@ -74,6 +74,8 @@ class Settings final : public Properties {
     DynFile(std::string&& a_filename) noexcept
             : filename(std::move(a_filename)), modified(0) {
     }
+    SWC_CAN_INLINE
+    ~DynFile() noexcept { }
     SWC_CAN_INLINE
     bool operator==(const DynFile& other) const noexcept {
       return other == filename;
@@ -124,7 +126,7 @@ class Config final {
 
   Config() : m_settings(new SWC::Config::Settings()) { }
 
-  ~Config() { }
+  ~Config() noexcept { }
 
   private:
   SWC::Config::Settings::Ptr m_settings;

@@ -66,6 +66,8 @@ Value::Value(uint8_t a_flags) noexcept : flags(a_flags) { }
 
 Value::Value(Value::Ptr ptr) noexcept : flags(ptr->flags.load()) { }
 
+Value::~Value() noexcept { }
+
 std::ostream& Value::operator<<(std::ostream& ostream) {
   return ostream << to_string();
 }
@@ -218,6 +220,8 @@ V_BOOL::V_BOOL(const bool& v, uint8_t a_flags) noexcept
 
 V_BOOL::V_BOOL(V_BOOL* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
+V_BOOL::~V_BOOL() noexcept { }
+
 Value::Ptr V_BOOL::make_new(const Strings& values) {
   auto ptr = new V_BOOL(this);
   if(!values.empty())
@@ -254,6 +258,8 @@ V_UINT8::V_UINT8(const uint8_t& v, uint8_t a_flags) noexcept
 
 V_UINT8::V_UINT8(V_UINT8* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
+V_UINT8::~V_UINT8() noexcept { }
+
 Value::Ptr V_UINT8::make_new(const Strings& values) {
   auto ptr = new V_UINT8(this);
   if(!values.empty())
@@ -285,6 +291,8 @@ V_UINT16::V_UINT16(const uint16_t& v, uint8_t a_flags) noexcept
                   : Value(a_flags), value(v) { }
 
 V_UINT16::V_UINT16(V_UINT16* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+
+V_UINT16::~V_UINT16() noexcept { }
 
 Value::Ptr V_UINT16::make_new(const Strings& values) {
   auto ptr = new V_UINT16(this);
@@ -318,6 +326,8 @@ V_INT32::V_INT32(const int32_t& v, uint8_t a_flags) noexcept
 
 V_INT32::V_INT32(V_INT32* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
+V_INT32::~V_INT32() noexcept { }
+
 Value::Ptr V_INT32::make_new(const Strings& values) {
   auto ptr = new V_INT32(this);
   if(!values.empty())
@@ -349,6 +359,8 @@ V_INT64::V_INT64(const int64_t& v, uint8_t a_flags) noexcept
                  : Value(a_flags), value(v) { }
 
 V_INT64::V_INT64(V_INT64* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+
+V_INT64::~V_INT64() noexcept { }
 
 Value::Ptr V_INT64::make_new(const Strings& values) {
   auto ptr = new V_INT64(this);
@@ -382,6 +394,8 @@ V_DOUBLE::V_DOUBLE(const double& v, uint8_t a_flags) noexcept
 
 V_DOUBLE::V_DOUBLE(V_DOUBLE* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
+V_DOUBLE::~V_DOUBLE() noexcept { }
+
 Value::Ptr V_DOUBLE::make_new(const Strings& values) {
   auto ptr = new V_DOUBLE(this);
   if(!values.empty())
@@ -414,6 +428,8 @@ V_STRING::V_STRING(std::string&& v, uint8_t a_flags) noexcept
 }
 
 V_STRING::V_STRING(V_STRING* ptr) : Value(ptr), value(ptr->get()) { }
+
+V_STRING::~V_STRING() noexcept { }
 
 Value::Ptr V_STRING::make_new(const Strings& values) {
   auto ptr = new V_STRING(this);
@@ -456,6 +472,8 @@ V_ENUM::V_ENUM(V_ENUM* ptr)
                 call_from_string(ptr->call_from_string),
                 call_repr(ptr->call_repr) {
 }
+
+V_ENUM::~V_ENUM() noexcept { }
 
 Value::Ptr V_ENUM::make_new(const Strings& values) {
   auto ptr = new V_ENUM(this);
@@ -505,6 +523,8 @@ V_STRINGS::V_STRINGS(Strings&& v, uint8_t a_flags) noexcept
 
 V_STRINGS::V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
 
+V_STRINGS::~V_STRINGS() noexcept { }
+
 Value::Ptr V_STRINGS::make_new(const Strings& values) {
   auto ptr = new V_STRINGS(this);
   if(!values.empty())
@@ -537,6 +557,8 @@ V_INT64S::V_INT64S(Int64s&& v, uint8_t a_flags) noexcept
 }
 
 V_INT64S::V_INT64S(V_INT64S* ptr) : Value(ptr), value(ptr->get()) { }
+
+V_INT64S::~V_INT64S() noexcept { }
 
 Value::Ptr V_INT64S::make_new(const Strings& values) {
   auto ptr = new V_INT64S(this);
@@ -575,6 +597,8 @@ V_DOUBLES::V_DOUBLES(Doubles&& v, uint8_t a_flags) noexcept
 }
 
 V_DOUBLES::V_DOUBLES(V_DOUBLES* ptr) : Value(ptr), value(ptr->get()) { }
+
+V_DOUBLES::~V_DOUBLES() noexcept { }
 
 Value::Ptr V_DOUBLES::make_new(const Strings& values) {
   auto ptr = new V_DOUBLES(this);
@@ -618,6 +642,8 @@ V_GBOOL::V_GBOOL(V_GBOOL* ptr)
                 : Value(ptr),
                   value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
+
+V_GBOOL::~V_GBOOL() noexcept { }
 
 Value::Ptr V_GBOOL::make_new(const Strings& values) {
   auto ptr = new V_GBOOL(this);
@@ -679,6 +705,8 @@ V_GUINT8::V_GUINT8(V_GUINT8* ptr)
                     value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
+V_GUINT8::~V_GUINT8() noexcept { }
+
 Value::Ptr V_GUINT8::make_new(const Strings& values) {
   auto ptr = new V_GUINT8(this);
   if(!values.empty())
@@ -733,6 +761,8 @@ V_GUINT16::V_GUINT16(V_GUINT16* ptr)
                       value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
+V_GUINT16::~V_GUINT16() noexcept { }
+
 Value::Ptr V_GUINT16::make_new(const Strings& values) {
   auto ptr = new V_GUINT16(this);
   if(!values.empty())
@@ -785,6 +815,8 @@ V_GINT32::V_GINT32(V_GINT32* ptr)
                   : Value(ptr),
                     value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
+
+V_GINT32::~V_GINT32() noexcept { }
 
 Value::Ptr V_GINT32::make_new(const Strings& values) {
   auto ptr = new V_GINT32(this);
@@ -839,6 +871,8 @@ V_GUINT64::V_GUINT64(V_GUINT64* ptr)
                     : Value(ptr),
                       value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
+
+V_GUINT64::~V_GUINT64() noexcept { }
 
 Value::Ptr V_GUINT64::make_new(const Strings& values) {
   auto ptr = new V_GUINT64(this);
@@ -900,6 +934,8 @@ V_GENUM::V_GENUM(V_GENUM* ptr)
                   call_from_string(ptr->call_from_string),
                   call_repr(ptr->call_repr) {
 }
+
+V_GENUM::~V_GENUM() noexcept { }
 
 Value::Ptr V_GENUM::make_new(const Strings& values) {
   auto ptr = new V_GENUM(this);
@@ -972,6 +1008,8 @@ V_GSTRINGS::V_GSTRINGS(V_GSTRINGS* ptr)
                       : Value(ptr),
                         value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
+
+V_GSTRINGS::~V_GSTRINGS() noexcept { }
 
 Value::Ptr V_GSTRINGS::make_new(const Strings& values) {
   auto ptr = new V_GSTRINGS(this);

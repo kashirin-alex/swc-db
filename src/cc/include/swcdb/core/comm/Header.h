@@ -43,7 +43,7 @@ struct Header final {
                     command(init_from_req_header.command) {
   }
 
-  //~Header() { }
+  ~Header() noexcept { }
 
   void reset() noexcept;
 

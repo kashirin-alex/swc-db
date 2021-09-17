@@ -14,18 +14,7 @@ Semaphore::Semaphore(size_t sz, size_t pre_acquire) noexcept
                     : m_sz(sz), m_count(pre_acquire) {
 }
 
-Semaphore::~Semaphore() {
-  {
-    Core::ScopedLock lock(m_mutex);
-    if(!m_count)
-      return;
-    m_count = 0;
-    m_cv.notify_all();
-  }
-
-  Core::ScopedLock lock(m_mutex);
-  // let cv finish
-}
+Semaphore::~Semaphore() noexcept { }
 
 size_t Semaphore::available() {
   Core::ScopedLock lock(m_mutex);

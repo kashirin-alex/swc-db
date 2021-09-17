@@ -28,11 +28,12 @@ class Properties {
   SWC_CAN_INLINE
   Properties() noexcept { }
 
-  ~Properties() {
+  SWC_CAN_INLINE
+  ~Properties() noexcept {
     reset();
   }
 
-  void reset();
+  void reset() noexcept;
 
   void load_from(const Config::Parser::Options& opts,
                  bool only_guarded=false);

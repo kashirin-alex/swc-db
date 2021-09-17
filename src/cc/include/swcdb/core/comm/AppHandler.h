@@ -27,7 +27,7 @@ class AppHandler {
 
   protected:
 
-  virtual ~AppHandler() { }
+  virtual ~AppHandler() noexcept { }
 
   ConnHandlerPtr  m_conn;
   Event::Ptr      m_ev;

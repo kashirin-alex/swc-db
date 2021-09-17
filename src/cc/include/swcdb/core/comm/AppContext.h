@@ -47,7 +47,7 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
 
   protected:
 
-  virtual ~AppContext() { };
+  virtual ~AppContext() noexcept { };
 
 };
 

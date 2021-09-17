@@ -150,7 +150,7 @@ Exception::Exception(const Exception& other)
   other._prev = nullptr;
 }
 
-Exception::~Exception() {
+Exception::~Exception() noexcept {
   if(_prev)
     delete _prev;
 }

@@ -48,7 +48,7 @@ class ConnQueueReqBase : public DispatchHandler {
 
   protected:
 
-  virtual ~ConnQueueReqBase() { }
+  virtual ~ConnQueueReqBase() noexcept { }
 
 };
 
@@ -74,7 +74,7 @@ class ConnQueue :
                         : nullptr) {
   }
 
-  virtual ~ConnQueue() {
+  virtual ~ConnQueue() noexcept {
     if(m_timer)
       delete m_timer;
   }

@@ -24,7 +24,7 @@ class Semaphore final {
 
   Semaphore& operator=(const Semaphore&) = delete;
 
-  ~Semaphore();
+  ~Semaphore() noexcept;
 
   size_t available();
 

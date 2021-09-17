@@ -29,7 +29,7 @@ class DispatchHandler : public std::enable_shared_from_this<DispatchHandler> {
 
   protected:
 
-  virtual ~DispatchHandler() { };
+  virtual ~DispatchHandler() noexcept { }
 
 };
 

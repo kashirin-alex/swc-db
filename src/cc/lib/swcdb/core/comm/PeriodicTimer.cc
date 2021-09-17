@@ -15,7 +15,7 @@ PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
   schedule();
 }
 
-PeriodicTimer::~PeriodicTimer() {
+PeriodicTimer::~PeriodicTimer() noexcept {
   m_timer.cancel();
 }
 
@@ -43,7 +43,7 @@ void PeriodicTimer::cancel() {
 
 
 
-PeriodicTimers::~PeriodicTimers() { }
+PeriodicTimers::~PeriodicTimers() noexcept { }
 
 void PeriodicTimers::stop() {
   Core::MutexSptd::scope lock(m_mutex);

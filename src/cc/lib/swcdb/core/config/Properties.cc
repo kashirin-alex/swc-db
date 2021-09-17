@@ -10,7 +10,7 @@
 
 namespace SWC { namespace Config {
 
-void Properties::reset() {
+void Properties::reset() noexcept {
   for (const auto& kv : m_map)
     delete kv.second;
   m_map.clear();

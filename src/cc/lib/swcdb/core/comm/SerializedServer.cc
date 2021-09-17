@@ -265,7 +265,7 @@ void SerializedServer::connection_del(const ConnHandlerPtr& conn) {
   //SWC_LOGF(LOG_DEBUG, "%s, conn-del open=%d", m_appname.c_str(), m_conns.size());
 }
 
-SerializedServer::~SerializedServer() {
+SerializedServer::~SerializedServer() noexcept {
   if(m_ssl_cfg)
     delete m_ssl_cfg;
 }

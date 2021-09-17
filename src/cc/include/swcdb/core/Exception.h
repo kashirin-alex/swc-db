@@ -47,7 +47,7 @@ class Exception final : public std::exception {
 
   const Exception& operator=(const Exception& ) = delete;
 
-  ~Exception();
+  ~Exception() noexcept;
 
   constexpr SWC_CAN_INLINE
   int code() const noexcept {

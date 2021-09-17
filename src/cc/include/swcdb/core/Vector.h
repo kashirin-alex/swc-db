@@ -35,6 +35,9 @@ class Vector {
   constexpr static bool _NoExceptMoveAssign
     = std::is_nothrow_move_assignable_v<T>;
 
+  constexpr static bool _NoExceptDestructor
+    = std::is_nothrow_destructible_v<T>;
+
 
   public:
 
@@ -103,7 +106,7 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  ~Vector() noexcept {
+  ~Vector() noexcept(_NoExceptDestructor) {
     if(_data) {
       if(_Requires_Destructor) {
         for(auto& it : *this)
@@ -114,7 +117,7 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  void clear() noexcept {
+  void clear() noexcept(_NoExceptDestructor) {
     if(_Requires_Destructor) {
       for(pointer ptr = _data; _size; --_size, ++ptr)
         ptr->~value_type();
@@ -398,7 +401,7 @@ class Vector {
   SWC_CAN_INLINE
   iterator insert_unsafe(const_iterator it,
                          ArgsT&&... args)
-          noexcept(_NoExceptMove &&
+          noexcept(_NoExceptMove && _NoExceptDestructor &&
                    std::is_nothrow_constructible_v<value_type, ArgsT...>) {
     size_type offset = it - _data;
     return offset >= _size
@@ -461,7 +464,8 @@ class Vector {
 
 
   SWC_CAN_INLINE
-  iterator erase(size_type offset) noexcept(_NoExceptMoveAssign) {
+  iterator erase(size_type offset)
+          noexcept(_NoExceptMoveAssign && _NoExceptDestructor) {
     if(offset >= _size)
       return end();
 
@@ -476,13 +480,15 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  iterator erase(const_iterator it) noexcept(_NoExceptMoveAssign) {
+  iterator erase(const_iterator it)
+          noexcept(_NoExceptMoveAssign && _NoExceptDestructor) {
     return erase(it - _data);
   }
 
   SWC_CAN_INLINE
   iterator erase(const_iterator first,
-                 const_iterator last) noexcept(_NoExceptMoveAssign) {
+                 const_iterator last)
+          noexcept(_NoExceptMoveAssign && _NoExceptDestructor) {
     size_type offset = first - _data;
     if(offset >= _size)
       return end();
@@ -500,7 +506,7 @@ class Vector {
   }
 
   SWC_CAN_INLINE
-  void pop_back() {
+  void pop_back() noexcept(_NoExceptDestructor) {
     if(_size) {
       --_size;
       if(_Requires_Destructor)
@@ -643,7 +649,8 @@ class Vector {
   SWC_CAN_INLINE
   static pointer _move(pointer data,
                        pointer data_prev,
-                       size_type size_prev) noexcept(_NoExceptMove) {
+                       size_type size_prev)
+            noexcept(_NoExceptMove && _NoExceptDestructor) {
     for(pointer ptr=data; size_prev; --size_prev, ++ptr, ++data_prev) {
       _construct(ptr, std::move(*data_prev));
       if(_Requires_Destructor)
@@ -655,7 +662,8 @@ class Vector {
 
   SWC_CAN_INLINE
   static pointer _alter(pointer data, size_type remain,
-                        size_type amount) noexcept(_NoExceptMove) {
+                        size_type amount)
+            noexcept(_NoExceptMove && _NoExceptDestructor) {
     pointer prev = data + remain - 1;
     for(pointer ptr = prev + amount; remain; --remain, --ptr, --prev) {
       _construct(ptr, std::move(*prev));

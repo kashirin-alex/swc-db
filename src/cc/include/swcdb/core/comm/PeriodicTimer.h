@@ -20,7 +20,7 @@ class PeriodicTimer final {
   PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
                 Call_t&& call, const IoContextPtr& ioctx);
 
-  ~PeriodicTimer();
+  ~PeriodicTimer() noexcept;
 
   void cancel();
 
@@ -40,7 +40,7 @@ class PeriodicTimers final
     : private Core::Vector<std::unique_ptr<PeriodicTimer>> {
   public:
 
-  ~PeriodicTimers();
+  ~PeriodicTimers() noexcept;
 
   void stop();
 

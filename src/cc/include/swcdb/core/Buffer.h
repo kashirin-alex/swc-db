@@ -68,7 +68,7 @@ struct Buffer {
 
 
   SWC_CAN_INLINE
-  ~Buffer() {
+  ~Buffer() SWC_NOEXCEPT {
     _free();
   }
 
@@ -157,7 +157,7 @@ struct BufferDyn : BufferT {
     other.ptr = other.mark = nullptr;
   }
 
-  //~BufferDyn() { }
+  ~BufferDyn() SWC_NOEXCEPT { }
 
   SWC_CAN_INLINE
   void free() {

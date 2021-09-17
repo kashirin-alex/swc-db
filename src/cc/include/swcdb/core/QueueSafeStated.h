@@ -21,7 +21,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
   SWC_CAN_INLINE
   explicit QueueSafeStated() noexcept { }
 
-  //~QueueSafeStated() { }
+  ~QueueSafeStated() noexcept { }
 
   QueueSafeStated(const QueueSafeStated&) = delete;
 

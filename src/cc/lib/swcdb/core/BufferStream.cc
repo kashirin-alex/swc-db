@@ -49,7 +49,7 @@ BufferStreamOut_ZSTD_OnAdd::BufferStreamOut_ZSTD_OnAdd(
     error = Error::ENCODER_ENCODE;
 }
 
-BufferStreamOut_ZSTD_OnAdd::~BufferStreamOut_ZSTD_OnAdd() {
+BufferStreamOut_ZSTD_OnAdd::~BufferStreamOut_ZSTD_OnAdd() noexcept {
   ZSTD_freeCStream(cstream);
 }
 
@@ -134,7 +134,7 @@ BufferStreamOut_ZSTD::BufferStreamOut_ZSTD(
     error = Error::ENCODER_ENCODE;
 }
 
-BufferStreamOut_ZSTD::~BufferStreamOut_ZSTD() {
+BufferStreamOut_ZSTD::~BufferStreamOut_ZSTD() noexcept {
   ZSTD_freeCStream(cstream);
 }
 
@@ -219,7 +219,7 @@ BufferStreamIn_ZSTD::BufferStreamIn_ZSTD()
     error = Error::ENCODER_ENCODE;
 }
 
-BufferStreamIn_ZSTD::~BufferStreamIn_ZSTD() {
+BufferStreamIn_ZSTD::~BufferStreamIn_ZSTD() noexcept {
   ZSTD_freeDStream(dstream);
 }
 

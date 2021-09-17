@@ -80,7 +80,7 @@ class Value {
 
   Value(Ptr ptr) noexcept;
 
-  virtual ~Value() { }
+  virtual ~Value() noexcept;
 
   virtual Ptr make_new(const Strings& values = Strings()) = 0;
 
@@ -135,6 +135,8 @@ class V_BOOL final : public Value {
 
   V_BOOL(V_BOOL* ptr) noexcept;
 
+  virtual ~V_BOOL() noexcept;
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
@@ -161,6 +163,8 @@ class V_UINT8 final : public Value {
   V_UINT8(const uint8_t& v, uint8_t flags=0) noexcept;
 
   V_UINT8(V_UINT8* ptr) noexcept;
+
+  virtual ~V_UINT8() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -189,6 +193,8 @@ class V_UINT16 final : public Value {
 
   V_UINT16(V_UINT16* ptr) noexcept;
 
+  virtual ~V_UINT16() noexcept;
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
@@ -215,6 +221,8 @@ class V_INT32 final : public Value {
   V_INT32(const int32_t& v, uint8_t flags=0) noexcept;
 
   V_INT32(V_INT32* ptr) noexcept;
+
+  virtual ~V_INT32() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -243,6 +251,8 @@ class V_INT64 final : public Value {
 
   V_INT64(V_INT64* ptr) noexcept;
 
+  virtual ~V_INT64() noexcept;
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
@@ -270,6 +280,8 @@ class V_DOUBLE final : public Value {
 
   V_DOUBLE(V_DOUBLE* ptr) noexcept;
 
+  virtual ~V_DOUBLE() noexcept;
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
@@ -296,6 +308,8 @@ class V_STRING final : public Value {
   V_STRING(std::string&& v, uint8_t flags=0) noexcept;
 
   V_STRING(V_STRING* ptr);
+
+  virtual ~V_STRING() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -330,6 +344,8 @@ class V_ENUM final : public Value {
 
   V_ENUM(V_ENUM* ptr);
 
+  virtual ~V_ENUM() noexcept;
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
@@ -359,6 +375,8 @@ class V_STRINGS final : public Value {
 
   V_STRINGS(V_STRINGS* ptr);
 
+  virtual ~V_STRINGS() noexcept;
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
@@ -386,6 +404,8 @@ class V_INT64S final : public Value {
 
   V_INT64S(V_INT64S* ptr);
 
+  virtual ~V_INT64S() noexcept;
+
   Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Ptr ptr) override;
@@ -412,6 +432,8 @@ class V_DOUBLES final : public Value {
   V_DOUBLES(Doubles&& v, uint8_t flags=0) noexcept;
 
   V_DOUBLES(V_DOUBLES* ptr);
+
+  virtual ~V_DOUBLES() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -444,6 +466,8 @@ class V_GBOOL final : public Value {
   V_GBOOL(const bool& v, OnChg_t&& cb, uint8_t flags=0);
 
   V_GBOOL(V_GBOOL* ptr);
+
+  virtual ~V_GBOOL() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -482,6 +506,8 @@ class V_GUINT8 final : public Value {
 
   V_GUINT8(V_GUINT8* ptr);
 
+  virtual ~V_GUINT8() noexcept;
+
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Value::Ptr ptr) override;
@@ -517,6 +543,7 @@ class V_GUINT16 final : public Value {
 
   V_GUINT16(V_GUINT16* ptr);
 
+  virtual ~V_GUINT16() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -554,6 +581,7 @@ class V_GINT32 final : public Value {
 
   V_GINT32(V_GINT32* ptr);
 
+  virtual ~V_GINT32() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -591,6 +619,7 @@ class V_GUINT64 final : public Value {
 
   V_GUINT64(V_GUINT64* ptr);
 
+  virtual ~V_GUINT64() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -634,6 +663,8 @@ class V_GENUM final : public Value {
 
   V_GENUM(V_GENUM* ptr);
 
+  virtual ~V_GENUM() noexcept;
+
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
   void set_from(Value::Ptr ptr) override;
@@ -674,6 +705,8 @@ class V_GSTRINGS final : public Value {
   V_GSTRINGS(Strings&& v, OnChg_t&& cb, uint8_t flags=0) noexcept;
 
   V_GSTRINGS(V_GSTRINGS* ptr);
+
+  virtual ~V_GSTRINGS() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 

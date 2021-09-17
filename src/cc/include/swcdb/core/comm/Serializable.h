@@ -28,7 +28,7 @@ class Serializable {
 
   protected:
 
-  virtual ~Serializable() { };
+  virtual ~Serializable() noexcept { };
 
   virtual size_t internal_encoded_length() const = 0;
 

@@ -61,7 +61,7 @@ class LogWriter final {
 
   LogWriter(const std::string& name="", const std::string& logs_path="");
 
-  ~LogWriter();
+  ~LogWriter() noexcept;
 
   void initialize(const std::string& name);
 

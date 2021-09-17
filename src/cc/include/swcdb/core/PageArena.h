@@ -52,7 +52,7 @@ struct Item final {
     data_ = static_cast<uint8_t*>(memcpy(new uint8_t[size_], data_, size_));
   }
 
-  ~Item() {
+  ~Item() noexcept {
     if(data_)
       delete[] data_;
   }
@@ -123,7 +123,7 @@ class Page final : public PageBase {
   public:
   Page() : PageBase(8) { }
 
-  //~Page() { }
+  ~Page() noexcept { }
 
   Item::Ptr use(const uint8_t* buf, uint32_t size) {
     Core::ScopedLock lock(m_mutex);
@@ -338,7 +338,7 @@ struct ItemPtr final { // Item as SmartPtr
     return *this;
   }
 
-  ~ItemPtr() {
+  ~ItemPtr() noexcept {
     if(ptr)
       ptr->release();
   }

@@ -12,7 +12,7 @@ namespace SWC { namespace Comm {
 
 
 
-Event::~Event() { }
+Event::~Event() noexcept { }
 
 int32_t Event::response_code() const noexcept {
   if(error)

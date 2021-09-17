@@ -66,6 +66,7 @@ class ParserConfig final {
     Property::Value::Ptr  value;
     Strings               aliases;
     std::string           desc;
+    ~ParserOpt() noexcept { }
   };
 
   typedef std::map<std::string, ParserOpt>          Map;
@@ -86,9 +87,9 @@ class ParserConfig final {
 
   explicit ParserConfig(const ParserConfig& other);
 
-  ~ParserConfig();
+  ~ParserConfig() noexcept;
 
-  void free();
+  void free() noexcept;
 
   ParserConfig& definition(const char* u);
 
@@ -151,16 +152,16 @@ class Parser final {
 
     Options(bool own=true) noexcept;
 
-    ~Options();
+    ~Options() noexcept;
 
-    void free();
+    void free() noexcept;
   };
 
   explicit Parser(bool unregistered=false) noexcept;
 
-  //~Parser() { }
+  ~Parser() noexcept;
 
-  void free();
+  void free() noexcept;
 
   void parse_filedata(std::ifstream& in);
 

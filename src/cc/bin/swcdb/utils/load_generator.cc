@@ -316,6 +316,9 @@ struct FractionStateDistSeq : public FractionState {
     : FractionState(a_reverse ? (a_ncells + 1) : 0),
       ncells(a_ncells), reverse(a_reverse) {
   }
+
+  virtual ~FractionStateDistSeq() noexcept { }
+
   virtual void set_value() override {
     if(reverse) {
       if(!--value) {
@@ -335,6 +338,8 @@ struct FractionStateDistStepping : public FractionState {
     : FractionState(a_reverse ? (a_ncells + 1) : 0),
       ncells(a_ncells), step(a_step), reverse(a_reverse), offset(0) {
   }
+
+  virtual ~FractionStateDistStepping() noexcept { }
 
   virtual void reset() override {
     FractionState::reset();
@@ -370,9 +375,13 @@ struct FractionStateDistUniform : public FractionState {
   FractionStateDistUniform(size_t a_ncells, size_t seed)
     : FractionState(0), gen(seed), distrib(1, a_ncells) {
   }
+
+  virtual ~FractionStateDistUniform() noexcept { }
+
   virtual void set_value() override {
     value = distrib(gen);
   }
+
   std::mt19937                          gen;
   std::uniform_int_distribution<size_t> distrib;
 };
@@ -446,6 +455,8 @@ class KeyGenerator {
       }
     }
   }
+
+  ~KeyGenerator() noexcept { }
 
   bool next_n_fraction() {
     switch(course) {
@@ -534,6 +545,8 @@ class KeyGeneratorUpdate : public KeyGenerator {
     _fractions.reserve(nfractions);
   }
 
+  ~KeyGeneratorUpdate() noexcept { }
+
   bool next(DB::Cell::Key& key) {
     if(!next_n_fraction())
       return false;
@@ -567,6 +580,8 @@ class KeyGeneratorSelect : public KeyGenerator {
               a_fraction_size, a_nfractions,
               a_distribution, a_course, seed) {
   }
+
+  ~KeyGeneratorSelect() noexcept { }
 
   bool next(DB::Specs::Key& key) {
     if(!next_n_fraction())

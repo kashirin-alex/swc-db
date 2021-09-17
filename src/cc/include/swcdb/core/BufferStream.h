@@ -30,7 +30,7 @@ class BufferStreamOut {
                     pre_alloc(a_pre_alloc), commit_size(a_commit_size) {
   }
 
-  virtual ~BufferStreamOut() { }
+  virtual ~BufferStreamOut() noexcept { }
 
   virtual bool empty() const;
 
@@ -56,7 +56,7 @@ class BufferStreamOut_ZSTD_OnAdd : public BufferStreamOut {
                              size_t pre_alloc = 12582912,
                              size_t commit_size = 8388608);
 
-  virtual ~BufferStreamOut_ZSTD_OnAdd();
+  virtual ~BufferStreamOut_ZSTD_OnAdd() noexcept;
 
   virtual bool empty() const override;
 
@@ -85,7 +85,7 @@ class BufferStreamOut_ZSTD : public BufferStreamOut {
                        size_t pre_alloc = 12582912,
                        size_t commit_size = 8388608);
 
-  virtual ~BufferStreamOut_ZSTD();
+  virtual ~BufferStreamOut_ZSTD() noexcept;
 
   virtual void get(StaticBuffer& output) override;
 
@@ -103,7 +103,7 @@ class BufferStreamOut_ENCODER : public BufferStreamOut {
                           size_t pre_alloc = 12582912,
                           size_t commit_size = 8388608);
 
-  virtual ~BufferStreamOut_ENCODER() { }
+  virtual ~BufferStreamOut_ENCODER() noexcept { }
 
   virtual void get(StaticBuffer& output) override;
 
@@ -121,7 +121,7 @@ class BufferStreamIn {
   SWC_CAN_INLINE
   BufferStreamIn() noexcept : error(Error::OK) { }
 
-  virtual ~BufferStreamIn() { }
+  virtual ~BufferStreamIn() noexcept { }
 
   virtual bool empty() const;
 
@@ -142,7 +142,7 @@ class BufferStreamIn_ZSTD : public BufferStreamIn {
   public:
   BufferStreamIn_ZSTD();
 
-  virtual ~BufferStreamIn_ZSTD();
+  virtual ~BufferStreamIn_ZSTD() noexcept;
 
   virtual bool empty() const override;
 

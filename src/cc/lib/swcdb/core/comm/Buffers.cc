@@ -13,7 +13,7 @@ namespace {
 static const uint16_t BUFFER_CHUNK_SZ = 4096;
 }
 
-Buffers::~Buffers() {
+Buffers::~Buffers() noexcept {
   buf_data.free();
   buf_ext.free();
 }

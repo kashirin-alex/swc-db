@@ -21,7 +21,7 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
                   : m_conn(conn), m_ev(ev) {
   }
 
-  virtual ~ResponseCallback() { };
+  virtual ~ResponseCallback() noexcept { };
 
   virtual void run() { }
 

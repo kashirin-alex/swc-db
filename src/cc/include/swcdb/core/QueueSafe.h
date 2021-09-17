@@ -25,7 +25,7 @@ class QueueSafe : private std::queue<ItemT> {
   SWC_CAN_INLINE
   explicit QueueSafe() noexcept { }
 
-  //~QueueSafe() { }
+  ~QueueSafe() noexcept { }
 
   QueueSafe(const QueueSafe&) = delete;
 

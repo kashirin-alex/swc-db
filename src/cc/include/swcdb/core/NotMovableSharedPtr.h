@@ -26,6 +26,8 @@ class NotMovableSharedPtr : public std::shared_ptr<T> {
 
   NotMovableSharedPtr(const std::shared_ptr<T>&&) = delete;
 
+  ~NotMovableSharedPtr() noexcept { }
+
   NotMovableSharedPtr<T>& operator=(const std::shared_ptr<T>&) = delete;
 
 };
