@@ -54,7 +54,7 @@ void Brokers::on_cfg_update() noexcept {
       if((at = host_str.find_first_of('|')) == std::string::npos) {
         port = cfg_port;
       } else {
-        Config::Property::from_string(host_str.substr(at + 1), &port);
+        Config::Property::from_string(host_str.c_str() + at + 1, &port);
         host_str = host_str.substr(0, at);
       }
       Config::Strings ips;

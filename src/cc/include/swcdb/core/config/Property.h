@@ -115,15 +115,48 @@ class Value {
  * Convertors & Validators from std::string
 */
 
-void from_string(const std::string& s, double* value);
+void from_string(const char* s, double* value);
 
-void from_string(const std::string& s, int64_t* value);
+void from_string(const char* s, int64_t* value);
 
-void from_string(const std::string& s, uint8_t* value);
+void from_string(const char* s, uint64_t* value);
 
-void from_string(const std::string& s, uint16_t* value);
+void from_string(const char* s, uint8_t* value);
 
-void from_string(const std::string& s, int32_t* value);
+void from_string(const char* s, uint16_t* value);
+
+void from_string(const char* s, int32_t* value);
+
+
+SWC_CAN_INLINE
+void from_string(const std::string& s, double* value) {
+  from_string(s.c_str(), value);
+}
+
+SWC_CAN_INLINE
+void from_string(const std::string& s, int64_t* value) {
+  from_string(s.c_str(), value);
+}
+
+SWC_CAN_INLINE
+void from_string(const std::string& s, uint64_t* value) {
+  from_string(s.c_str(), value);
+}
+
+SWC_CAN_INLINE
+void from_string(const std::string& s, uint8_t* value) {
+  from_string(s.c_str(), value);
+}
+
+SWC_CAN_INLINE
+void from_string(const std::string& s, uint16_t* value) {
+  from_string(s.c_str(), value);
+}
+
+SWC_CAN_INLINE
+void from_string(const std::string& s, int32_t* value) {
+  from_string(s.c_str(), value);
+}
 
 
 

@@ -197,7 +197,7 @@ void Groups::on_cfg_update() {
       port = cfg_port;
     } else {
       host_or_ips = cfg_chk.substr(0, at_chk);
-      Config::Property::from_string(cfg_chk.substr(++at_chk), &port);
+      Config::Property::from_string(cfg_chk.c_str() + at_chk + 1, &port);
     }
 
     _add_host(role, col_begin, col_end, port, host_or_ips);

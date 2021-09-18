@@ -106,12 +106,12 @@ bool Value::is_zero_token() const noexcept {
  * Convertors & Validators from std::string
 */
 
-void from_string(const std::string& s, double* value) {
+void from_string(const char* s, double* value) {
   char *last;
-  double res = strtod(s.c_str(), &last);
+  double res = strtod(s, &last);
 
-  if (s.c_str() == last)
-    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
+  if (s == last)
+    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s);
 
   switch (*last) {
     case 'k':
@@ -123,22 +123,22 @@ void from_string(const std::string& s, double* value) {
     case '\0':                       break;
     default:
       SWC_THROWF(Error::CONFIG_GET_ERROR,
-                "Bad Value %s unknown suffix %s", s.c_str(), last);
+                "Bad Value %s unknown suffix %s", s, last);
   }
   *value = res;
 }
 
-void from_string(const std::string& s, int64_t* value) {
+void from_string(const char* s, int64_t* value) {
   char *last;
   errno = 0;
-  *value = strtoll(s.c_str(), &last, 0);
+  *value = strtoll(s, &last, 0);
 
-  if (s.c_str() == last)
-    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
+  if (s == last)
+    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s);
 
   if(errno)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
-              "Bad Value %s, number out of range of 64-bit integer", s.c_str());
+              "Bad Value %s, number out of range of 64-bit integer", s);
 
   switch (*last) {
     case 'k':
@@ -150,21 +150,21 @@ void from_string(const std::string& s, int64_t* value) {
     case '\0':                          break;
     default:
       SWC_THROWF(Error::CONFIG_GET_ERROR,
-                "Bad Value %s unknown suffix %s", s.c_str(), last);
+                "Bad Value %s unknown suffix %s", s, last);
   }
 }
 
-void from_string(const std::string& s, uint64_t* value) {
+void from_string(const char* s, uint64_t* value) {
   char *last;
   errno = 0;
-  *value = strtoull(s.c_str(), &last, 0);
+  *value = strtoull(s, &last, 0);
 
-  if (s.c_str() == last)
-    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s.c_str());
+  if (s == last)
+    SWC_THROWF(Error::CONFIG_GET_ERROR, "Bad Value %s", s);
 
   if(errno)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
-      "Bad Value %s, number out of range of unsigned 64-bit integer", s.c_str());
+      "Bad Value %s, number out of range of unsigned 64-bit integer", s);
 
   switch (*last) {
     case 'k':
@@ -176,37 +176,38 @@ void from_string(const std::string& s, uint64_t* value) {
     case '\0':                          break;
     default:
       SWC_THROWF(Error::CONFIG_GET_ERROR,
-                "Bad Value %s unknown suffix %s", s.c_str(), last);
+                "Bad Value %s unknown suffix %s", s, last);
   }
 }
 
-void from_string(const std::string& s, uint8_t* value) {
+void from_string(const char* s, uint8_t* value) {
   int64_t res;
   from_string(s, &res);
 
   if (res > UINT8_MAX || res < 0)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
-      "Bad Value %s, number out of range of 8-bit unsigned integer", s.c_str());
+      "Bad Value %s, number out of range of 8-bit unsigned integer", s);
   *value = res;
 }
 
-void from_string(const std::string& s, uint16_t* value) {
+
+void from_string(const char* s, uint16_t* value) {
   int64_t res;
   from_string(s, &res);
 
   if (res > UINT16_MAX || res < 0)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
-      "Bad Value %s, number out of range of 16-bit unsigned integer", s.c_str());
+      "Bad Value %s, number out of range of 16-bit unsigned integer", s);
   *value = res;
 }
 
-void from_string(const std::string& s, int32_t* value) {
+void from_string(const char* s, int32_t* value) {
   int64_t res;
   from_string(s, &res);
 
   if (res > INT32_MAX || res < INT32_MIN)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
-        "Bad Value %s, number out of range of 32-bit integer", s.c_str());
+        "Bad Value %s, number out of range of 32-bit integer", s);
   *value = res;
 }
 
