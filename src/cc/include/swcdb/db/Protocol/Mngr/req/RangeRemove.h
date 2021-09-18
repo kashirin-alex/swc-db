@@ -42,7 +42,7 @@ class RangeRemove final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
-  virtual ~RangeRemove() { }
+  virtual ~RangeRemove() noexcept { }
 
   bool valid() override {
     return data.valid();

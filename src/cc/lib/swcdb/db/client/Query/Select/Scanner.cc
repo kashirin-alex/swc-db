@@ -78,7 +78,7 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               need_data_cid_check(false) {
 }
 
-Scanner::~Scanner() { }
+Scanner::~Scanner() noexcept { }
 
 void Scanner::debug_res_cache(const char* msg, cid_t cid, rid_t rid,
                               const Comm::EndPoints& endpoints) {
@@ -135,6 +135,8 @@ struct ReqDataBase {
   SWC_CAN_INLINE
   ReqDataBase(const Scanner::Ptr& a_scanner)
               noexcept : scanner(a_scanner) { }
+  SWC_CAN_INLINE
+  ~ReqDataBase() noexcept { }
   SWC_CAN_INLINE
   client::Clients::Ptr& get_clients() noexcept {
     return scanner->selector->clients;
@@ -221,6 +223,8 @@ void Scanner::mngr_locate_master() {
     ReqData(const Ptr& a_scanner,
             Profiling::Component::Start& a_profile) noexcept
             : ReqDataBase(a_scanner), profile(a_profile) { }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -377,6 +381,8 @@ void Scanner::rgr_locate_master() {
               profile(scanner->selector->profile.rgr_locate(
                 DB::Types::Range::MASTER)) { }
     SWC_CAN_INLINE
+    ~ReqData() noexcept { }
+    SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
@@ -485,6 +491,8 @@ void Scanner::mngr_resolve_rgr_meta() {
             Profiling::Component::Start& a_profile) noexcept
             : ReqDataBase(a_scanner), profile(a_profile) { }
     SWC_CAN_INLINE
+    ~ReqData() noexcept { }
+    SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
@@ -573,6 +581,8 @@ void Scanner::rgr_locate_meta() {
             : ReqDataBase(a_scanner),
               profile(scanner->selector->profile.rgr_locate(
                 DB::Types::Range::META)) { }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
@@ -689,6 +699,8 @@ void Scanner::mngr_resolve_rgr_select() {
             Profiling::Component::Start& a_profile) noexcept
             : ReqDataBase(a_scanner), profile(a_profile) { }
     SWC_CAN_INLINE
+    ~ReqData() noexcept { }
+    SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
       profile.add(rsp.err || !rsp.rid || rsp.endpoints.empty());
@@ -761,6 +773,8 @@ void Scanner::rgr_select() {
     ReqData(const Ptr& a_scanner) noexcept
             : ReqDataBase(a_scanner),
               profile(scanner->selector->profile.rgr_data()) { }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Rgr::Params::RangeQuerySelectRsp& rsp) {

@@ -19,6 +19,7 @@ namespace SWC { namespace client { namespace Query { namespace Update {
   );
 
 
+BrokerCommitter::~BrokerCommitter() noexcept { }
 
 void BrokerCommitter::print(std::ostream& out) {
   out << "BrokerCommitter(cid=" << colp->get_cid()
@@ -41,6 +42,8 @@ void BrokerCommitter::commit() {
               profile(committer->hdlr->profile.bkr()),
               cells_buff(std::move(a_cells_buff)) {
     }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     client::Clients::Ptr& get_clients() noexcept {
       return committer->hdlr->clients;

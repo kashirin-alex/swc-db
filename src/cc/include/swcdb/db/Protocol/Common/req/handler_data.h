@@ -36,6 +36,8 @@ struct function {
           : clients(a_clients), cb(std::move(a_cb)) {
   }
 
+  ~function() noexcept { }
+
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {
     return clients;

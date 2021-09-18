@@ -81,7 +81,7 @@ class ColumnMng_Sync {
                 : clients(a_clients), err(a_err) {
   }
 
-  ~ColumnMng_Sync() { }
+  ~ColumnMng_Sync() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

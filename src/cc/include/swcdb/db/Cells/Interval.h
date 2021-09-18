@@ -56,11 +56,11 @@ class Interval final {
 
   Interval& operator=(const Interval&) = delete;
 
-  ~Interval();
+  ~Interval() noexcept;
 
   void copy(const Interval& other);
 
-  void free();
+  void free() noexcept;
 
   SWC_CAN_INLINE
   size_t size_of_internal() const noexcept {

@@ -58,6 +58,8 @@ Committer::Committer(const DB::Types::Range a_type,
     hdlr(a_hdlr), parent(a_parent), rid(a_rid), key_finish(a_key_finish) {
 }
 
+Committer::~Committer() noexcept { }
+
 void Committer::print(std::ostream& out) {
   out << "Committer(type=" << DB::Types::to_string(type)
       << " cid=" << cid << " rid=" << rid
@@ -74,6 +76,8 @@ struct ReqDataBase {
   SWC_CAN_INLINE
   ReqDataBase(const Committer::Ptr& a_committer) noexcept
               : committer(a_committer) { }
+  SWC_CAN_INLINE
+  ~ReqDataBase() noexcept { }
   SWC_CAN_INLINE
   client::Clients::Ptr& get_clients() noexcept {
     return committer->hdlr->clients;
@@ -107,6 +111,8 @@ void Committer::locate_on_manager() {
     ReqData(const Ptr& a_committer,
             Profiling::Component::Start& a_profile) noexcept
             : ReqDataBase(a_committer), profile(a_profile) { }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -262,6 +268,8 @@ void Committer::locate_on_ranger(Comm::EndPoints&& endpoints,
               profile(committer->hdlr->profile.rgr_locate(type)),
               endpoints(std::move(a_endpoints)) { }
     SWC_CAN_INLINE
+    ~ReqData() noexcept { }
+    SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
@@ -344,6 +352,8 @@ void Committer::resolve_on_manager() {
     ReqData(const Ptr& a_committer) noexcept
             : ReqDataBase(a_committer),
               profile(committer->hdlr->profile.mngr_res()) { }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     void callback(const ReqBase::Ptr& req,
                   Comm::Protocol::Mngr::Params::RgrGetRsp& rsp) {
@@ -473,6 +483,8 @@ void Committer::commit_data(
               profile(committer->hdlr->profile.rgr_data()),
               cells_buff(std::move(a_cells_buff)), base(a_base) {
     }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     void callback(
             const ReqBase::Ptr& req,

@@ -35,7 +35,7 @@ void Fraction::print(std::ostream& out, bool pretty) const {
 
 Key::Key(const Key& other) : Vec(other) { }
 
-Key::~Key() { }
+Key::~Key() noexcept { }
 
 void Key::copy(const Key &other) {
   clear();

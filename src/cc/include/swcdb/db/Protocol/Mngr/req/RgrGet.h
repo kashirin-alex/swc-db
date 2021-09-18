@@ -49,7 +49,7 @@ class RgrGet final : public RgrGet_Base {
     request(Params::RgrGetReq(cid, rid, next_range), timeout, args...);
   }
 
-  virtual ~RgrGet() { }
+  virtual ~RgrGet() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Params::RgrGetRsp rsp(ev->error, ev->data.base, ev->data.size);

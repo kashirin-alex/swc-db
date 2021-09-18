@@ -182,7 +182,7 @@ class ReqScan : public Comm::ResponseCallback {
 
   protected:
 
-  virtual ~ReqScan() { }
+  virtual ~ReqScan() noexcept { }
 
 };
 
@@ -209,7 +209,7 @@ class ReqScanTest : public ReqScan {
     return !reached_limits();
   }
 
-  virtual ~ReqScanTest() { }
+  virtual ~ReqScanTest() noexcept { }
 
   void response(int &err) override {
     cb(err);

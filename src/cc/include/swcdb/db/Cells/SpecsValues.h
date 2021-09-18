@@ -35,6 +35,8 @@ class Values : public Core::Vector<Value> {
         : Vec(std::move(other)), col_type(other.col_type) {
   }
 
+  ~Values() noexcept { }
+
   SWC_CAN_INLINE
   Values& operator=(const Values& other) {
     copy(other);

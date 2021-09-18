@@ -52,7 +52,7 @@ Interval::Interval(Interval&& other) noexcept
                     options(other.options) {
 }
 
-Interval::~Interval() { }
+Interval::~Interval() noexcept { }
 
 void Interval::copy(const Interval& other) {
   range_begin.copy(other.range_begin);
@@ -92,7 +92,7 @@ void Interval::move(Interval& other) noexcept {
   options = other.options;
 }
 
-void Interval::free() {
+void Interval::free() noexcept {
   range_begin.free();
   range_end.free();
   key_intervals.clear();

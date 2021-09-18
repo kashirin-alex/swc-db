@@ -86,7 +86,7 @@ struct Profiling {
       cache.fetch_add(1);
     }
 
-    void reset() {
+    void reset() noexcept {
       time.store(0);
       count.store(0);
       cache.store(0);
@@ -162,7 +162,7 @@ struct Profiling {
     return *this;
   }
 
-  void reset() {
+  void reset() noexcept {
     _mngr_locate.reset();
     _mngr_res.reset();
     _rgr_locate_master.reset();

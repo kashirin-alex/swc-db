@@ -31,7 +31,7 @@ class RgrData final {
   SWC_CAN_INLINE
   RgrData() noexcept : rgrid(0) { }
 
-  //~RgrData() { }
+  ~RgrData() noexcept { }
 
   uint32_t encoded_length() const noexcept {
     return  Serialization::encoded_length_vi64(rgrid.load()) +
@@ -229,7 +229,7 @@ class RgrData final {
 
     protected:
 
-    virtual ~BaseUpdater() { }
+    virtual ~BaseUpdater() noexcept { }
 
   };
 
@@ -242,7 +242,7 @@ class RgrData final {
       await.acknowledge();
     };
 
-    virtual ~SyncUpdater() { }
+    virtual ~SyncUpdater() noexcept { }
   };
 
 
@@ -307,7 +307,7 @@ class RgrData final {
 
     protected:
 
-    virtual ~BaseSelector() { }
+    virtual ~BaseSelector() noexcept { }
 
   };
 
@@ -320,7 +320,7 @@ class RgrData final {
       await.acknowledge();
     };
 
-    virtual ~SyncSelector() { }
+    virtual ~SyncSelector() noexcept { }
   };
 
 

@@ -12,14 +12,14 @@
 namespace SWC { namespace DB { namespace Specs {
 
 
-KeyInterval::~KeyInterval() { }
+KeyInterval::~KeyInterval() noexcept { }
 
 
 KeyIntervals::KeyIntervals(const KeyIntervals& other)
                            : Vec(other) {
 }
 
-KeyIntervals::~KeyIntervals() { }
+KeyIntervals::~KeyIntervals() noexcept { }
 
 void KeyIntervals::copy(const KeyIntervals& other) {
   Vec::operator=(other);

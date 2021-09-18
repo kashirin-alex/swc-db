@@ -41,7 +41,7 @@ class RangeUnloaded final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
-  virtual ~RangeUnloaded() { }
+  virtual ~RangeUnloaded() noexcept { }
 
   bool valid() override {
     return data.valid();

@@ -54,7 +54,7 @@ class MngrActive : public client::ConnQueue::ReqBase {
               timeout_ms(a_timeout_ms) {
   }
 
-  virtual ~MngrActive() { }
+  virtual ~MngrActive() noexcept { }
 
   void run_within(uint32_t t_ms = 1000);
 

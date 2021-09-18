@@ -69,7 +69,7 @@ class ColumnGet_Sync {
                  : clients(a_clients), err(a_err), _schema(a_schema) {
   }
 
-  ~ColumnGet_Sync() { }
+  ~ColumnGet_Sync() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

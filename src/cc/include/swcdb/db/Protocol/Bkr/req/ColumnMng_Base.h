@@ -26,7 +26,7 @@ class ColumnMng_Base: public client::ConnQueue::ReqBase {
                     Buffers::make(params, 0, COLUMN_MNG, timeout)) {
   }
 
-  virtual ~ColumnMng_Base() { }
+  virtual ~ColumnMng_Base() noexcept { }
 
   void handle_no_conn() override;
 

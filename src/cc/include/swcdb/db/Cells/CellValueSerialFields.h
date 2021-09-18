@@ -82,7 +82,7 @@ struct Field {
         : fid(Serialization::decode_vi24(bufp, remainp)) {
   }
 
-  virtual ~Field() { }
+  virtual ~Field() noexcept { }
 
   virtual Type type() const noexcept = 0;
 
@@ -124,7 +124,7 @@ struct Field_INT64 : Field {
 
   Field_INT64(const uint8_t** bufp, size_t* remainp);
 
-  virtual ~Field_INT64() { }
+  virtual ~Field_INT64() noexcept { }
 
   Type type() const noexcept override { return Type::INT64; };
 
@@ -153,7 +153,7 @@ struct Field_DOUBLE : Field {
 
   Field_DOUBLE(const uint8_t** bufp, size_t* remainp);
 
-  virtual ~Field_DOUBLE() { }
+  virtual ~Field_DOUBLE() noexcept { }
 
   Type type() const noexcept override { return Type::DOUBLE; };
 
@@ -180,7 +180,7 @@ struct Field_BYTES : Field, StaticBuffer {
   Field_BYTES(const uint8_t** bufp, size_t* remainp,
               bool take_ownership=false);
 
-  virtual ~Field_BYTES() { }
+  virtual ~Field_BYTES() noexcept { }
 
   Type type() const noexcept override { return Type::BYTES; };
 
@@ -215,7 +215,7 @@ struct Field_KEY : Field {
 
   Field_KEY(const uint8_t** bufp, size_t* remainp, bool take_ownership=false);
 
-  virtual ~Field_KEY() { }
+  virtual ~Field_KEY() noexcept { }
 
   Type type() const noexcept override { return Type::KEY; };
 
@@ -255,7 +255,7 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
   Field_LIST_INT64(const uint8_t** bufp, size_t* remainp,
                    bool take_ownership=false);
 
-  virtual ~Field_LIST_INT64() { }
+  virtual ~Field_LIST_INT64() noexcept { }
 
   Type type() const noexcept override { return Type::LIST_INT64; };
 
@@ -299,7 +299,7 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
   Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
                    bool take_ownership=false);
 
-  virtual ~Field_LIST_BYTES() { }
+  virtual ~Field_LIST_BYTES() noexcept { }
 
   Type type() const noexcept override { return Type::LIST_BYTES; };
 
@@ -341,7 +341,7 @@ struct FieldsWriter final : DynamicBuffer {
   constexpr SWC_CAN_INLINE
   FieldsWriter() noexcept : index_count(0) { }
 
-  ~FieldsWriter() { }
+  ~FieldsWriter() noexcept { }
 
   SWC_CAN_INLINE
   void add(Field* field) {

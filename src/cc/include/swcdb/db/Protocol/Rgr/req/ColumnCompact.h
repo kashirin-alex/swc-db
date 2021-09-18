@@ -23,7 +23,7 @@ class ColumnCompact : public client::ConnQueue::ReqBase {
                       Params::ColumnCompactReq(cid), 0, COLUMN_COMPACT, 60000)
                   ) { }
 
-  virtual ~ColumnCompact() { }
+  virtual ~ColumnCompact() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     if(Params::ColumnCompactRsp(ev->error, ev->data.base, ev->data.size).err)

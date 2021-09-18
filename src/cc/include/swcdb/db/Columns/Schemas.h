@@ -48,8 +48,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
             : std::string(other), comp(other.comp) {
     }
 
-    SWC_CAN_INLINE
-    ~Pattern() { }
+    ~Pattern() noexcept { }
 
     SWC_CAN_INLINE
     Pattern& operator=(Pattern&& other) noexcept {
@@ -90,16 +89,14 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     SWC_CAN_INLINE
     TagsPattern() noexcept : comp(Condition::NONE) { }
 
-    SWC_CAN_INLINE
-    ~TagsPattern() { }
+    ~TagsPattern() noexcept { }
   };
 
   struct SelectorPatterns {
     NamePatterns  names;
     TagsPattern   tags;
 
-    SWC_CAN_INLINE
-    ~SelectorPatterns() { }
+    ~SelectorPatterns() noexcept { }
   };
 
 
@@ -108,7 +105,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   Schemas() noexcept { }
 
   SWC_CAN_INLINE
-  ~Schemas() { }
+  ~Schemas() noexcept { }
 
   uint64_t size();
 

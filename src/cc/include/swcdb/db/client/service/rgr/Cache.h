@@ -33,7 +33,7 @@ struct RangeEndPoints final {
     return *this;
   }
   SWC_CAN_INLINE
-  ~RangeEndPoints() { }
+  ~RangeEndPoints() noexcept { }
 };
 
 
@@ -52,7 +52,7 @@ class CachedRangers final
   }
 
   SWC_CAN_INLINE
-  ~CachedRangers() { }
+  ~CachedRangers() noexcept { }
 
   void clear();
 

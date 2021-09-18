@@ -46,7 +46,7 @@ class Level;
 struct Base {
   typedef std::unique_ptr<Base> Ptr;
 
-  virtual ~Base() { }
+  virtual ~Base() noexcept { }
 
   /* For using with 'bin/swcdb --statistics'
     serialization of definitions: index based cross map
@@ -86,7 +86,7 @@ class Level : public Base {
 
   Level(const char* a_name) : name(a_name) { }
 
-  virtual ~Level() { }
+  virtual ~Level() noexcept { }
 
   virtual void definitions(Handlers::Base::Column* colp,
                            const DB::Cell::KeyVec& parent_key) override;
@@ -114,7 +114,7 @@ class Item_MinMaxAvgCount :
 
   Item_MinMaxAvgCount(const char* a_name) : name(a_name) { }
 
-  virtual ~Item_MinMaxAvgCount() { }
+  virtual ~Item_MinMaxAvgCount() noexcept { }
 
   virtual void report(uint64_t for_ns, Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override;
@@ -135,10 +135,10 @@ class Item_Count : public Base {
 
   Item_Count(const char* a_name) : name(a_name), m_count(0) { }
 
-  virtual ~Item_Count() { }
+  virtual ~Item_Count() noexcept { }
 
   SWC_CAN_INLINE
-  void increment() {
+  void increment() noexcept {
     m_count.fetch_add(1);
   }
 
@@ -164,15 +164,15 @@ class Item_Volume : public Base {
 
   Item_Volume(const char* a_name) : name(a_name), m_volume(0) { }
 
-  virtual ~Item_Volume() { }
+  virtual ~Item_Volume() noexcept { }
 
   SWC_CAN_INLINE
-  void increment() {
+  void increment() noexcept {
     m_volume.fetch_add(1);
   }
 
   SWC_CAN_INLINE
-  void decrement() {
+  void decrement() noexcept {
     m_volume.fetch_sub(1);
   }
 
@@ -197,18 +197,18 @@ class Item_CountVolume : public Base {
   const std::string name;
 
   Item_CountVolume(const char* a_name)
-                    : name(a_name), m_count(0), m_volume(0) { }
+                  : name(a_name), m_count(0), m_volume(0) { }
 
-  virtual ~Item_CountVolume() { }
+  virtual ~Item_CountVolume() noexcept { }
 
   SWC_CAN_INLINE
-  void increment() {
+  void increment() noexcept {
     m_count.fetch_add(1);
     m_volume.fetch_add(1);
   }
 
   SWC_CAN_INLINE
-  void decrement() {
+  void decrement() noexcept {
     m_volume.fetch_sub(1);
   }
 
@@ -245,7 +245,7 @@ class Reporting : public BaseSingleColumn {
             Config::Property::V_GINT32::Ptr cfg_intval,
             Clients::Flag executor=client::Clients::DEFAULT);
 
-  virtual ~Reporting() { }
+  virtual ~Reporting() noexcept { }
 
   virtual void start() {
     bool at = false;

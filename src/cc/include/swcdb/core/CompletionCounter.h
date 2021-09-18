@@ -26,7 +26,7 @@ struct CompletionCounter final: private Core::Atomic<CountT> {
 
   CompletionCounter& operator=(const CompletionCounter&) = delete;
 
-  //~CompletionCounter() noexcept { }
+  ~CompletionCounter() noexcept { }
 
   constexpr SWC_CAN_INLINE
   void increment(CountT v=1) noexcept {

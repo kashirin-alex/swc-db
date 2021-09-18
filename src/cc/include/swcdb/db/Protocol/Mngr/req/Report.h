@@ -29,7 +29,7 @@ class Report: public client::ConnQueue::ReqBase {
          const Serializable& params, Params::Report::Function func,
          const uint32_t timeout);
 
-  virtual ~Report() { }
+  virtual ~Report() noexcept { }
 
   void handle_no_conn() override;
 
@@ -69,7 +69,7 @@ class ClusterStatus: public Report {
                 const EndPoints& endpoints,
                 Cb_t&& cb, const uint32_t timeout);
 
-  virtual ~ClusterStatus() { }
+  virtual ~ClusterStatus() noexcept { }
 
   bool run() override;
 
@@ -120,7 +120,7 @@ class ColumnStatus: public Report {
                const Params::Report::ReqColumnStatus& params,
                Cb_t&& cb, const uint32_t timeout);
 
-  virtual ~ColumnStatus() { }
+  virtual ~ColumnStatus() noexcept { }
 
   bool run() override;
 
@@ -162,7 +162,7 @@ class RangersStatus: public Report {
                 cid_t cid, Cb_t&& cb,
                 const uint32_t timeout);
 
-  virtual ~RangersStatus() { }
+  virtual ~RangersStatus() noexcept { }
 
   bool run() override;
 
@@ -205,7 +205,7 @@ class ManagersStatus: public Report {
                  const EndPoints& endpoints, Cb_t&& cb,
                  const uint32_t timeout);
 
-  virtual ~ManagersStatus() { }
+  virtual ~ManagersStatus() noexcept { }
 
   bool run() override;
 

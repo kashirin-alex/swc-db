@@ -52,7 +52,7 @@ class Schemas::ColumnGetData final {
   }
 
   SWC_CAN_INLINE
-  ~ColumnGetData() { }
+  ~ColumnGetData() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

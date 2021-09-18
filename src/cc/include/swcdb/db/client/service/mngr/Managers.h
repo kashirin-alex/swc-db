@@ -53,7 +53,7 @@ class Managers  {
               revision(other.revision) {
       }
       SWC_CAN_INLINE
-      ~Range() { }
+      ~Range() noexcept { }
       SWC_CAN_INLINE
       void operator=(Range&& other) noexcept {
         ts = other.ts;
@@ -89,7 +89,7 @@ class Managers  {
       public:
 
       SWC_CAN_INLINE
-      ~Column() { }
+      ~Column() noexcept { }
 
       void init(DB::Types::KeySeq _key_seq,
                 Config::Property::V_GINT32::Ptr _expiry_ms) noexcept {
@@ -142,7 +142,7 @@ class Managers  {
     }
 
     SWC_CAN_INLINE
-    ~MasterRangesCache() { }
+    ~MasterRangesCache() noexcept { }
 
     void clear_expired() noexcept {
       for(auto& c : columns)
@@ -204,7 +204,7 @@ class Managers  {
            const ContextManager::Ptr& mngr_ctx);
 
   SWC_CAN_INLINE
-  ~Managers() { }
+  ~Managers() noexcept { }
 
   bool put(const ClientsPtr& clients,
            const cid_t& cid, Comm::EndPoints& endpoints,

@@ -27,7 +27,7 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
           cid(params.cid) {
   }
 
-  virtual ~ColumnCompact_Base() { }
+  virtual ~ColumnCompact_Base() noexcept { }
 
   void handle_no_conn() override;
 

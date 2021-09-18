@@ -53,8 +53,7 @@ class Scan final {
     decode(bufp, remainp);
   }
 
-  SWC_CAN_INLINE
-  ~Scan() { }
+  ~Scan() noexcept { }
 
   SWC_CAN_INLINE
   Scan& operator=(Scan&& other) noexcept {
@@ -71,7 +70,7 @@ class Scan final {
   }
 
   SWC_CAN_INLINE
-  void free() {
+  void free() noexcept {
     columns.clear();
   }
 

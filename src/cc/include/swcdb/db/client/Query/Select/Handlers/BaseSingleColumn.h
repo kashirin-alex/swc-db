@@ -32,7 +32,7 @@ class BaseSingleColumn : public Base {
                   : Base(a_clients, a_executor), cid(a_cid) {
   }
 
-  virtual ~BaseSingleColumn() { }
+  virtual ~BaseSingleColumn() noexcept { }
 
 
   virtual void error(const cid_t _cid, int err) override;

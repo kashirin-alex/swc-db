@@ -48,7 +48,7 @@ class RangeQuerySelect final : public client::ConnQueue::ReqBase {
     request(make(params, timeout, args...), endpoints);
   }
 
-  virtual ~RangeQuerySelect() { }
+  virtual ~RangeQuerySelect() noexcept { }
 
   bool valid() override {
     return data.valid();

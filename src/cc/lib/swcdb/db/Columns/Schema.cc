@@ -35,7 +35,7 @@ Schema::Schema(const uint8_t** bufp, size_t* remainp)
     tags(read_tags(bufp, remainp)) {
 }
 
-Schema::~Schema() { }
+Schema::~Schema() noexcept { }
 
 uint32_t Schema::encoded_length() const noexcept {
   uint32_t sz = SchemaPrimitives::encoded_length();

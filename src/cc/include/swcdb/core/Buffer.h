@@ -29,7 +29,7 @@ struct Buffer {
   }
 
   constexpr SWC_CAN_INLINE
-  explicit Buffer() SWC_NOEXCEPT
+  explicit Buffer() noexcept
                   : own(false), size(0), base(nullptr) {
   }
 
@@ -39,12 +39,12 @@ struct Buffer {
   }
 
   constexpr SWC_CAN_INLINE
-  Buffer(value_type* data, size_t sz, bool take_ownership) SWC_NOEXCEPT
+  Buffer(value_type* data, size_t sz, bool take_ownership) noexcept
         : own(take_ownership), size(sz), base(data) {
   }
 
   constexpr SWC_CAN_INLINE
-  Buffer(BufferT& other) SWC_NOEXCEPT
+  Buffer(BufferT& other) noexcept
         : own(other.own), size(other.size), base(other.base) {
     if(own) {
       other.own = false;
@@ -53,7 +53,7 @@ struct Buffer {
   }
 
   constexpr SWC_CAN_INLINE
-  Buffer(BufferT&& other) SWC_NOEXCEPT
+  Buffer(BufferT&& other) noexcept
         : own(other.own), size(other.size), base(other.base) {
     if(own) {
       other.own = false;
@@ -64,22 +64,22 @@ struct Buffer {
 
   template<typename OtherT>
   constexpr
-  Buffer(OtherT& other) SWC_NOEXCEPT;
+  Buffer(OtherT& other) noexcept;
 
 
   SWC_CAN_INLINE
-  ~Buffer() SWC_NOEXCEPT {
+  ~Buffer() noexcept {
     _free();
   }
 
   SWC_CAN_INLINE
-  void _free() SWC_NOEXCEPT {
+  void _free() noexcept {
     if(own && base)
       delete [] base;
   }
 
   SWC_CAN_INLINE
-  void free() SWC_NOEXCEPT {
+  void free() noexcept {
     if(base) {
       if(own)
         delete [] base;
@@ -106,14 +106,14 @@ struct Buffer {
       memcpy(base, data, len);
   }
 
-  void set(value_type* data, size_t len, bool take_ownership) SWC_NOEXCEPT {
+  void set(value_type* data, size_t len, bool take_ownership) noexcept {
     _free();
     own = take_ownership;
     size = len;
     base = data;
   }
 
-  void set(BufferT& other) SWC_NOEXCEPT {
+  void set(BufferT& other) noexcept {
     _free();
     base = other.base;
     size = other.size;
@@ -124,7 +124,7 @@ struct Buffer {
   }
 
   template<typename OtherT>
-  void set(OtherT& other) SWC_NOEXCEPT;
+  void set(OtherT& other) noexcept;
 
   bool          own;
   size_t        size : 56;
@@ -142,7 +142,7 @@ struct BufferDyn : BufferT {
 
 
   constexpr SWC_CAN_INLINE
-  explicit BufferDyn() SWC_NOEXCEPT
+  explicit BufferDyn() noexcept
                     : ptr(nullptr), mark(nullptr)  {
   }
 
@@ -152,12 +152,12 @@ struct BufferDyn : BufferT {
   }
 
   constexpr SWC_CAN_INLINE
-  BufferDyn(BufferDyn&& other) SWC_NOEXCEPT
+  BufferDyn(BufferDyn&& other) noexcept
             : BufferT(std::move(other)), ptr(other.ptr), mark(other.mark) {
     other.ptr = other.mark = nullptr;
   }
 
-  ~BufferDyn() SWC_NOEXCEPT { }
+  ~BufferDyn() noexcept { }
 
   SWC_CAN_INLINE
   void free() {
@@ -166,7 +166,7 @@ struct BufferDyn : BufferT {
   }
 
   constexpr
-  value_type* release(size_t* lenp) SWC_NOEXCEPT {
+  value_type* release(size_t* lenp) noexcept {
     value_type* rbuf = BufferT::base;
     if(lenp)
       *lenp = fill();
@@ -176,27 +176,27 @@ struct BufferDyn : BufferT {
   }
 
   constexpr SWC_CAN_INLINE
-  size_t remaining() const SWC_NOEXCEPT {
+  size_t remaining() const noexcept {
     return ptr ? BufferT::size - fill() : 0;
   }
 
   constexpr SWC_CAN_INLINE
-  size_t fill() const SWC_NOEXCEPT {
+  size_t fill() const noexcept {
     return ptr - BufferT::base;
   }
 
   constexpr SWC_CAN_INLINE
-  bool empty() const SWC_NOEXCEPT {
+  bool empty() const noexcept {
     return ptr == BufferT::base;
   }
 
   constexpr SWC_CAN_INLINE
-  void set_mark() SWC_NOEXCEPT {
+  void set_mark() noexcept {
     mark = ptr;
   }
 
   constexpr SWC_CAN_INLINE
-  void clear() SWC_NOEXCEPT {
+  void clear() noexcept {
     ptr = BufferT::base;
   }
 
@@ -229,7 +229,7 @@ struct BufferDyn : BufferT {
   }
 
   SWC_CAN_INLINE
-  value_type* add_unchecked(const value_type* data, size_t len) SWC_NOEXCEPT {
+  value_type* add_unchecked(const value_type* data, size_t len) noexcept {
     value_type* rptr = ptr;
     if(len) {
       memcpy(ptr, data, len);
@@ -261,7 +261,7 @@ struct BufferDyn : BufferT {
     add_unchecked(data, len);
   }
 
-  void take_ownership(BufferDyn<BufferT>& other) SWC_NOEXCEPT {
+  void take_ownership(BufferDyn<BufferT>& other) noexcept {
     BufferT::_free();
     BufferT::own = other.own;
     BufferT::size = other.size;
@@ -272,7 +272,7 @@ struct BufferDyn : BufferT {
     other.base = other.ptr = other.mark = nullptr;
   }
 
-  void take_ownership(BufferT& other) SWC_NOEXCEPT {
+  void take_ownership(BufferT& other) noexcept {
     BufferT::_free();
     BufferT::own = other.own;
     BufferT::size = other.size;
@@ -296,7 +296,7 @@ typedef BufferDyn <StaticBuffer>  DynamicBuffer;
 template<>
 template<>
 constexpr SWC_CAN_INLINE
-StaticBuffer::Buffer(DynamicBuffer& other) SWC_NOEXCEPT
+StaticBuffer::Buffer(DynamicBuffer& other) noexcept
                     : own(other.own), size(other.fill()), base(other.base) {
   if(own) {
     other.own = false;
@@ -308,7 +308,7 @@ StaticBuffer::Buffer(DynamicBuffer& other) SWC_NOEXCEPT
 template<>
 template<>
 SWC_CAN_INLINE
-void StaticBuffer::set(DynamicBuffer& other) SWC_NOEXCEPT {
+void StaticBuffer::set(DynamicBuffer& other) noexcept {
   _free();
   base = other.base;
   size = other.fill();

@@ -42,7 +42,7 @@ class Echo : public DispatchHandler {
     cbp->header.set(DO_ECHO, 60000);
   }
 
-  virtual ~Echo() { }
+  virtual ~Echo() noexcept { }
 
   bool run() override {
     return conn->send_request(cbp, shared_from_this());

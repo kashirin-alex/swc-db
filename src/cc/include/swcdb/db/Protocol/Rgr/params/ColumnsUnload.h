@@ -57,7 +57,7 @@ class ColumnsUnloadRsp final : public Serializable {
   ColumnsUnloadRsp(int a_err = Error::OK) noexcept : err(a_err) { }
 
   SWC_CAN_INLINE
-  ~ColumnsUnloadRsp() { }
+  ~ColumnsUnloadRsp() noexcept { }
 
   int                               err;
   std::unordered_map<cid_t, rids_t> columns;

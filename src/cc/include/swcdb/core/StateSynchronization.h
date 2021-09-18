@@ -19,7 +19,7 @@ class StateSynchronization {
   SWC_CAN_INLINE
   StateSynchronization() noexcept : m_ack(false) { }
 
-  ~StateSynchronization() { }
+  ~StateSynchronization() noexcept { }
 
   SWC_CAN_INLINE
   void wait() {

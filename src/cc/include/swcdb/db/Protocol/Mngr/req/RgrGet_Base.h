@@ -26,7 +26,7 @@ class RgrGet_Base : public client::ConnQueue::ReqBase {
                 cid(params.cid) {
   }
 
-  virtual ~RgrGet_Base() { }
+  virtual ~RgrGet_Base() noexcept { }
 
   void handle_no_conn() override;
 

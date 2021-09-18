@@ -76,7 +76,7 @@ class ColumnMng final : public ColumnMng_Base {
       Mngr::Params::ColumnMng::Function::DELETE, schema, timeout, args...);
   }
 
-  virtual ~ColumnMng() { }
+  virtual ~ColumnMng() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     data.callback(req(), ev->response_code());

@@ -11,7 +11,7 @@
 namespace SWC {  namespace DB { namespace Cells {
 
 
-Interval::~Interval() { }
+Interval::~Interval() noexcept { }
 
 void Interval::copy(const Interval& other) {
   set_key_begin(other.key_begin);
@@ -25,7 +25,7 @@ void Interval::copy(const Interval& other) {
   was_set = true;
 }
 
-void Interval::free() {
+void Interval::free() noexcept {
   key_begin.free();
   key_end.free();
   ts_earliest.free();

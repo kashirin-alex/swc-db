@@ -96,7 +96,7 @@ class Base : public std::enable_shared_from_this<Base> {
 
     protected:
 
-    virtual ~Column() { }
+    virtual ~Column() noexcept { }
 
   };
   typedef Core::Vector<Column*> Colms;
@@ -191,7 +191,7 @@ class Base : public std::enable_shared_from_this<Base> {
     default_executor(colp);
   }
 
-  virtual ~Base() { }
+  virtual ~Base() noexcept { }
 
   private:
 

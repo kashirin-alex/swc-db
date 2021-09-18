@@ -150,6 +150,8 @@ Clients::Clients(const Config::Settings& settings,
       brokers(settings, io_ctx, bkr_ctx) {
 }
 
+Clients::~Clients() noexcept { }
+
 void Clients::stop_services() {
   running.store(false);
 

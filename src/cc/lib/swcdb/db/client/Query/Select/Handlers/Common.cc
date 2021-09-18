@@ -115,6 +115,7 @@ void Common::send_result() {
     Ptr hdlr;
     SWC_CAN_INLINE
     Task(Ptr&& a_hdlr) noexcept : hdlr(std::move(a_hdlr)) { }
+    ~Task() noexcept { }
     void operator()() {
       hdlr->m_cb(hdlr);
 

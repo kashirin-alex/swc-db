@@ -65,7 +65,7 @@ class RspColumnStatus final : public Serializable {
   }
 
   SWC_CAN_INLINE
-  ~RspColumnStatus() { }
+  ~RspColumnStatus() noexcept { }
 
   struct RangeStatus {
 
@@ -115,7 +115,7 @@ class RspRangersStatus final : public Serializable {
   RspRangersStatus() noexcept { }
 
   SWC_CAN_INLINE
-  ~RspRangersStatus() { }
+  ~RspRangersStatus() noexcept { }
 
   struct Ranger final {
 
@@ -136,7 +136,7 @@ class RspRangersStatus final : public Serializable {
     }
 
     SWC_CAN_INLINE
-    ~Ranger() { }
+    ~Ranger() noexcept { }
 
     size_t encoded_length() const;
 
@@ -171,7 +171,7 @@ class RspManagersStatus final : public Serializable {
   RspManagersStatus() noexcept { }
 
   SWC_CAN_INLINE
-  ~RspManagersStatus() { }
+  ~RspManagersStatus() noexcept { }
 
   struct Manager final {
 
@@ -192,7 +192,7 @@ class RspManagersStatus final : public Serializable {
     }
 
     SWC_CAN_INLINE
-    ~Manager() { }
+    ~Manager() noexcept { }
 
     size_t encoded_length() const;
 

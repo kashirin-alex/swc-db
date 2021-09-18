@@ -25,7 +25,7 @@ class MutexAtomic {
   MutexAtomic& operator=(const MutexAtomic&)  = delete;
   MutexAtomic& operator=(MutexAtomic&&)       = delete;
 
-  //~MutexAtomic() noexcept { }
+  ~MutexAtomic() noexcept { }
 
   SWC_CAN_INLINE
   bool try_lock() const noexcept {

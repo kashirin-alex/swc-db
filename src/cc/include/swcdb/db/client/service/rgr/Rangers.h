@@ -27,7 +27,7 @@ class Rangers {
           const ContextRanger::Ptr& rgr_ctx);
 
   SWC_CAN_INLINE
-  ~Rangers() { }
+  ~Rangers() noexcept { }
 
   const Comm::client::ConnQueuesPtr queues;
   CachedRangers                     cache;

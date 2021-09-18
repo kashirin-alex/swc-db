@@ -46,7 +46,7 @@ class ColumnList_Sync {
                  : clients(a_clients), err(a_err), schemas(a_schemas) {
   }
 
-  ~ColumnList_Sync() { }
+  ~ColumnList_Sync() noexcept { }
 
   SWC_CAN_INLINE
   SWC::client::Clients::Ptr& get_clients() noexcept {

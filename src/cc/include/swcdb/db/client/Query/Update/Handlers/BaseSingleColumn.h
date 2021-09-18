@@ -49,7 +49,7 @@ class BaseSingleColumn : public Base {
 
   BaseSingleColumn& operator=(const BaseSingleColumn&) = delete;
 
-  virtual ~BaseSingleColumn() { }
+  virtual ~BaseSingleColumn() noexcept { }
 
 
   virtual bool requires_commit() noexcept override {

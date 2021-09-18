@@ -48,13 +48,17 @@ class Result final : private std::vector<Cell*> {
 
   Result& operator=(const Result& other) = delete;
 
-  SWC_CAN_INLINE
-  ~Result() {
-    if(!empty())
-      free();
+  ~Result() noexcept {
+    for(auto cell : *this)
+      delete cell;
   }
 
-  void free();
+  void free() noexcept {
+    for(auto cell : *this)
+      delete cell;
+    clear();
+    bytes = 0;
+  }
 
   constexpr SWC_CAN_INLINE
   size_t size_bytes() const noexcept {
@@ -86,15 +90,6 @@ class Result final : private std::vector<Cell*> {
 };
 
 
-
-SWC_CAN_INLINE
-void Result::free() {
-  for(auto cell : *this)
-    if(cell)
-      delete cell;
-  clear();
-  bytes = 0;
-}
 
 SWC_CAN_INLINE
 void Result::take(Result& other) {

@@ -49,7 +49,7 @@ struct KeyInterval {
     decode(bufp, remainp);
   }
 
-  ~KeyInterval();
+  ~KeyInterval() noexcept;
 
   SWC_CAN_INLINE
   KeyInterval& operator=(const KeyInterval& other) {
@@ -101,7 +101,7 @@ class KeyIntervals : public Core::Vector<KeyInterval> {
               : Vec(std::move(other)) {
   }
 
-  ~KeyIntervals();
+  ~KeyIntervals() noexcept;
 
   SWC_CAN_INLINE
   KeyIntervals& operator=(const KeyIntervals& other) {

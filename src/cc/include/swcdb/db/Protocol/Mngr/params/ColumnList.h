@@ -27,7 +27,7 @@ class ColumnListReq final : public Serializable {
   }
 
   SWC_CAN_INLINE
-  ~ColumnListReq() { }
+  ~ColumnListReq() noexcept { }
 
   DB::Schemas::SelectorPatterns patterns;
 
@@ -50,7 +50,7 @@ class ColumnListRsp final : public Serializable {
   ColumnListRsp() noexcept : expected(0) { }
 
   SWC_CAN_INLINE
-  ~ColumnListRsp() { }
+  ~ColumnListRsp() noexcept { }
 
   uint64_t       expected;
   DB::SchemasVec schemas;

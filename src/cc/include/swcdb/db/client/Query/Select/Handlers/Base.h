@@ -124,7 +124,7 @@ class Base : public std::enable_shared_from_this<Base>{
     default_executor(err, std::move(specs));
   }
 
-  virtual ~Base() { }
+  virtual ~Base() noexcept { }
 
   private:
 

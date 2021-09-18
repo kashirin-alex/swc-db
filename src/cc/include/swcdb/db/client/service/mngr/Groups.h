@@ -32,7 +32,7 @@ class Group final : private Hosts {
   Group(uint8_t role, cid_t cid_begin, cid_t cid_end,
         const Hosts& hosts);
 
-  ~Group() { }
+  ~Group() noexcept { }
 
   Ptr copy();
 
@@ -67,7 +67,7 @@ class Groups final : private Core::Vector<Group::Ptr>,
     cid_t           cid_begin;
     cid_t           cid_end;
     Comm::EndPoints endpoints;
-    ~GroupHost() { }
+    ~GroupHost() noexcept { }
   };
   typedef std::shared_ptr<Groups> Ptr;
   typedef Core::Vector<Group::Ptr> Vec;
@@ -76,7 +76,7 @@ class Groups final : private Core::Vector<Group::Ptr>,
 
   Groups(const Groups& other, Groups::Vec&&);
 
-  ~Groups() { }
+  ~Groups() noexcept { }
 
   Ptr init();
 

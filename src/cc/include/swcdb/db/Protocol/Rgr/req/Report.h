@@ -29,7 +29,7 @@ class Report: public client::ConnQueue::ReqBase {
          const Serializable& params,
          const uint32_t timeout);
 
-  virtual ~Report() { }
+  virtual ~Report() noexcept { }
 
   bool run() override;
 
@@ -62,7 +62,7 @@ class ReportRes: public Report {
             Cb_t&& cb,
             const uint32_t timeout);
 
-  virtual ~ReportRes() { }
+  virtual ~ReportRes() noexcept { }
 
   void handle_no_conn() override;
 
@@ -98,7 +98,7 @@ class ReportCids: public Report {
              Cb_t&& cb,
              const uint32_t timeout);
 
-  virtual ~ReportCids() { }
+  virtual ~ReportCids() noexcept { }
 
   void handle_no_conn() override;
 
@@ -135,7 +135,7 @@ class ReportColumnRids: public Report {
                    Cb_t&& cb,
                    const uint32_t timeout);
 
-  virtual ~ReportColumnRids() { }
+  virtual ~ReportColumnRids() noexcept { }
 
   void handle_no_conn() override;
 
@@ -188,7 +188,7 @@ class ReportColumnsRanges: public Report {
                       Cb_t&& cb,
                       const uint32_t timeout);
 
-  virtual ~ReportColumnsRanges() { }
+  virtual ~ReportColumnsRanges() noexcept { }
 
   void handle_no_conn() override;
 

@@ -21,7 +21,7 @@ class QueryUpdate final : public Reader {
               const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
               std::string& message);
 
-  ~QueryUpdate() { }
+  ~QueryUpdate() noexcept { }
 
   int parse_update();
 

@@ -46,9 +46,9 @@ class MutableVec final : private Core::Vector<Mutable*> {
 
   MutableVec& operator=(const MutableVec&) = delete;
 
-  ~MutableVec();
+  ~MutableVec() noexcept;
 
-  void free();
+  void free() noexcept;
 
   void configure(uint32_t split,
                  const uint32_t revs=1, const uint64_t ttl_ns=0,
@@ -104,13 +104,13 @@ class MutableVec final : private Core::Vector<Mutable*> {
 
 
 SWC_CAN_INLINE
-MutableVec::~MutableVec() {
+MutableVec::~MutableVec() noexcept {
   for(auto cells : *this)
     delete cells;
 }
 
 SWC_CAN_INLINE
-void MutableVec::free() {
+void MutableVec::free() noexcept {
   for(auto cells : *this)
     delete cells;
   clear();

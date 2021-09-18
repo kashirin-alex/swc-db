@@ -154,7 +154,7 @@ class Key final : public Core::Vector<Fraction> {
 
   explicit Key(const Key& other);
 
-  ~Key();
+  ~Key() noexcept;
 
   size_t size_of_internal() const noexcept;
 

@@ -21,7 +21,7 @@ struct RangerResources {
                     load_scale(0), rebalance(0) {
   }
 
-  //~RangerResources() noexcept { }
+  ~RangerResources() noexcept { }
 
   rgrid_t     rgrid;
   uint32_t    mem;

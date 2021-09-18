@@ -85,7 +85,7 @@ class ColumnGet final : public ColumnGet_Base {
       Mngr::Params::ColumnGetReq::Flag::ID_BY_NAME, name, timeout, args...);
   }
 
-  virtual ~ColumnGet() { }
+  virtual ~ColumnGet() noexcept { }
 
   protected:
 

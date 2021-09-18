@@ -49,7 +49,7 @@ class RangeLocate final : public client::ConnQueue::ReqBase {
     request(make(params, timeout, args...), endpoints);
   }
 
-  virtual ~RangeLocate() { }
+  virtual ~RangeLocate() noexcept { }
 
   bool valid() override {
     return data.valid();

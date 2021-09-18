@@ -44,7 +44,7 @@ class ColumnMng : public Serializable {
             : function(a_function), schema(a_schema) {
   }
 
-  //~ColumnMng() { }
+  ~ColumnMng() noexcept { }
 
   Function        function;
   DB::Schema::Ptr schema;

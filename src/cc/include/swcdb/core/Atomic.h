@@ -30,7 +30,7 @@ struct AtomicBase : protected std::atomic<T> {
 
   template<typename ValueT> AtomicBase<T>& operator=(ValueT v) = delete;
 
-  //~AtomicBase() noexcept { }
+  ~AtomicBase() noexcept { }
 
 
   constexpr SWC_CAN_INLINE
@@ -81,7 +81,7 @@ struct Atomic : public AtomicBase<T> {
 
   template<typename ValueT> Atomic<T>& operator=(ValueT v) = delete;
 
-  //~Atomic() noexcept {}
+  ~Atomic() noexcept {}
 
 
   constexpr SWC_CAN_INLINE

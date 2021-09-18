@@ -67,7 +67,7 @@ class CellsUpdate final : public client::ConnQueue::ReqBase {
     make(params, buffer, timeout, args...)->run();
   }
 
-  virtual ~CellsUpdate() { }
+  virtual ~CellsUpdate() noexcept { }
 
   bool run() override {
     return data.get_clients()->brokers.put(req(), _bkr_idx);

@@ -38,7 +38,7 @@ class ColumnGetReq final : public Serializable {
   }
 
   SWC_CAN_INLINE
-  ~ColumnGetReq() { }
+  ~ColumnGetReq() noexcept { }
 
   Flag        flag;
   std::string name;
@@ -68,7 +68,7 @@ class ColumnGetRsp final : public Serializable {
   }
 
   SWC_CAN_INLINE
-  ~ColumnGetRsp() { }
+  ~ColumnGetRsp() noexcept { }
 
   ColumnGetReq::Flag  flag;
   DB::Schema::Ptr     schema;

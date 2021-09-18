@@ -87,7 +87,8 @@ class RspCids final : public Serializable {
   SWC_CAN_INLINE
   RspCids() noexcept { }
 
-  //~RspCids() { }
+  SWC_CAN_INLINE
+  ~RspCids() noexcept { }
 
   mutable cids_t cids;
 
@@ -111,7 +112,8 @@ class RspColumnRids final : public Serializable {
   SWC_CAN_INLINE
   RspColumnRids() noexcept { }
 
-  //~RspColumnRids() { }
+  SWC_CAN_INLINE
+  ~RspColumnRids() noexcept { }
 
   mutable rids_t rids;
 
@@ -142,7 +144,7 @@ class RspColumnsRanges final : public Serializable {
     rid_t               rid;
     DB::Cells::Interval interval;
 
-    //~Range() { }
+    ~Range() noexcept { }
 
     size_t encoded_length () const;
 
@@ -163,7 +165,7 @@ class RspColumnsRanges final : public Serializable {
     uint64_t             mem_bytes;
     Core::Vector<Range*> ranges;
 
-    ~Column();
+    ~Column() noexcept;
 
     size_t encoded_length() const;
 
@@ -183,7 +185,7 @@ class RspColumnsRanges final : public Serializable {
 
   RspColumnsRanges& operator=(const RspColumnsRanges& other) = delete;
 
-  ~RspColumnsRanges();
+  ~RspColumnsRanges() noexcept;
 
   rgrid_t               rgrid;
   EndPoints             endpoints;

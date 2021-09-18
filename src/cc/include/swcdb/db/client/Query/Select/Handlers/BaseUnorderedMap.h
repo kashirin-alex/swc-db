@@ -29,7 +29,7 @@ class BaseUnorderedMap : public Base {
                   : Base(a_clients, a_executor) {
   }
 
-  virtual ~BaseUnorderedMap() { }
+  virtual ~BaseUnorderedMap() noexcept { }
 
   using Base::error;
 
@@ -61,7 +61,7 @@ class BaseUnorderedMap : public Base {
     SWC_CAN_INLINE
     Rsp() noexcept : m_err(Error::OK) { }
 
-    //~Rsp() { }
+    ~Rsp() noexcept { }
 
     bool add_cells(StaticBuffer& buffer, bool reached_limit,
                    DB::Specs::Interval& interval);

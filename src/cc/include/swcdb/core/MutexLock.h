@@ -28,7 +28,7 @@ struct SharedLock final : public std::shared_lock<std::shared_mutex> {
     }
   }
 
-  //~SharedLock() noexcept { }
+  ~SharedLock() noexcept { }
   SharedLock(const SharedLock&)             = delete;
   SharedLock(SharedLock&&)                  = delete;
   SharedLock& operator=(const SharedLock&)  = delete;
@@ -77,7 +77,7 @@ struct UniqueLock final : public std::unique_lock<MutexT> {
     }
   }
 
-  //~UniqueLock() noexcept { }
+  ~UniqueLock() noexcept { }
   UniqueLock(const UniqueLock&)             = delete;
   UniqueLock(UniqueLock&&)                  = delete;
   UniqueLock& operator=(const UniqueLock&)  = delete;

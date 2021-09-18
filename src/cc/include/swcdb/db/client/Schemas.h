@@ -23,7 +23,7 @@ class Schemas final {
           : _clients(a_clients), m_expiry_ms(expiry_ms) {
   }
 
-  ~Schemas() { }
+  ~Schemas() noexcept { }
 
   void remove(cid_t cid);
 
@@ -63,7 +63,7 @@ class Schemas final {
     Pending(const Comm::DispatchHandler::Ptr& a_req, ColumnGetData* a_datap)
             noexcept : req(a_req), datap(a_datap) { }
     SWC_CAN_INLINE
-    ~Pending() { }
+    ~Pending() noexcept { }
   };
 
   Pending _request(cid_t cid, uint32_t timeout);
@@ -77,7 +77,7 @@ class Schemas final {
     int64_t         ts;
     DB::Schema::Ptr schema;
     SWC_CAN_INLINE
-    ~SchemaData() { }
+    ~SchemaData() noexcept { }
     SWC_CAN_INLINE
     void assign(int64_t _ts, const DB::Schema::Ptr& _schema) {
       ts = _ts;

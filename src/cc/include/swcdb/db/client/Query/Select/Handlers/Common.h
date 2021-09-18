@@ -38,7 +38,7 @@ class Common : public BaseUnorderedMap {
          const Comm::IoContextPtr& io=nullptr,
          Clients::Flag executor=Clients::DEFAULT) noexcept;
 
-  virtual ~Common() { }
+  virtual ~Common() noexcept { }
 
   virtual bool valid() noexcept override;
 

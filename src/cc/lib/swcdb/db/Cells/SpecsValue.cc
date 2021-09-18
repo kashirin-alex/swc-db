@@ -18,6 +18,8 @@ struct MatcherPlainRE : Value::TypeMatcher {
   MatcherPlainRE(const uint8_t* data, uint32_t size)
     : re(re2::StringPiece(reinterpret_cast<const char*>(data), size)) {
   }
+  SWC_CAN_INLINE
+  ~MatcherPlainRE() noexcept { }
   re2::RE2 re;
 };
 
@@ -48,6 +50,8 @@ struct MatcherSerial : Value::TypeMatcher {
   MatcherSerial(const uint8_t* data, uint32_t size)
                 : fields(data, size) {
   }
+  SWC_CAN_INLINE
+  ~MatcherSerial() noexcept { }
   Serial::Value::Fields fields;
 };
 

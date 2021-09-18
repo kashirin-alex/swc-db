@@ -1051,12 +1051,7 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
                 : Query::Update::BaseMeta(a_range), req(a_req) {
   }
 
-  virtual ~MetaRegOnAddReq() noexcept {
-    bool added = req->rsp.cells_added;
-    delete req;
-    if(added)
-      range->blocks.commitlog.commit();
-  }
+  virtual ~MetaRegOnAddReq() noexcept { }
 
   virtual void response(int err=Error::OK) override {
     if(is_last_rsp(err))
@@ -1064,11 +1059,16 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
   }
 
   virtual void callback() override {
-    range->blocks.processing_decrement();
     Env::Rgr::post(TaskRunQueueAdd(range));
     if(!req->rsp.err && error() != Error::SERVER_SHUTTING_DOWN)
       req->rsp.err = error();
+
     req->response();
+    bool added = req->rsp.cells_added;
+    delete req;
+    if(added)
+      range->blocks.commitlog.commit();
+    range->blocks.processing_decrement();
   }
 
 };
@@ -1196,12 +1196,12 @@ void Range::_run_add_queue() {
     }
 
     _response:
-      blocks.processing_decrement();
       req->response();
       bool added = req->rsp.cells_added;
       delete req;
       if(added)
         blocks.commitlog.commit();
+      blocks.processing_decrement();
   }
 
   if(m_adding.fetch_sub(1) == 1 && !m_q_add.empty())

@@ -75,7 +75,7 @@ class RangeQueryUpdate final : public client::ConnQueue::ReqBase {
     request(make(params, buffer, timeout, args...), endpoints);
   }
 
-  virtual ~RangeQueryUpdate() { }
+  virtual ~RangeQueryUpdate() noexcept { }
 
   bool valid() override {
     return data.valid();

@@ -51,7 +51,7 @@ class MngrActiveRsp final : public Serializable {
                 : endpoints(a_endpoints) {
   }
 
-  //~MngrActiveRsp() { }
+  ~MngrActiveRsp() noexcept { }
 
   EndPoints endpoints;
 

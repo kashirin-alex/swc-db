@@ -26,7 +26,7 @@ class CellsSelectReq final : public Serializable {
                 : cid(a_cid), interval(a_interval) {
   }
 
-  ~CellsSelectReq() { }
+  ~CellsSelectReq() noexcept { }
 
   void print(std::ostream& out) const;
 
@@ -86,7 +86,7 @@ class CellsSelectRsp final : public Serializable {
   CellsSelectRsp(int err, const uint8_t* ptr, size_t remain,
                  StaticBuffer& data) noexcept;
 
-  ~CellsSelectRsp() { }
+  ~CellsSelectRsp() noexcept { }
 
   void print(std::ostream& out) const;
 

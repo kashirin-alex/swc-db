@@ -130,7 +130,7 @@ class Cell final {
   void copy(const Cell& other, bool no_value=false);
 
   SWC_CAN_INLINE
-  ~Cell() {
+  ~Cell() noexcept {
     _free();
   }
 

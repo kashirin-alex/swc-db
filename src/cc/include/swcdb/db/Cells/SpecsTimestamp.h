@@ -28,7 +28,7 @@ class Timestamp {
                     : value(timestamp), comp(a_comp), was_set(true) {
   }
 
-  //~Timestamp() { }
+  ~Timestamp() noexcept { }
 
   constexpr SWC_CAN_INLINE
   void copy(const Timestamp &other) noexcept {

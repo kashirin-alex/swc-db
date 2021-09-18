@@ -26,7 +26,7 @@ struct StateRunning final : private AtomicBool {
 
   StateRunning& operator=(const StateRunning&) = delete;
 
-  //~StateRunning() noexcept { }
+  ~StateRunning() noexcept { }
 
   constexpr SWC_CAN_INLINE
   void stop() noexcept {

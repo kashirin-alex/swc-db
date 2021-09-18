@@ -149,13 +149,13 @@ class Mutable final {
   }
 
   SWC_CAN_INLINE
-  ~Mutable() {
+  ~Mutable() noexcept {
     for(auto it = get<ConstIterator>(); it; ++it)
       delete it.item();
   }
 
   SWC_CAN_INLINE
-  void free() {
+  void free() noexcept {
     for(auto it = get<ConstIterator>(); it; ++it)
       delete it.item();
     _container.clear();

@@ -19,7 +19,7 @@ class ContextRanger : public Comm::AppContext {
 
   ContextRanger(const Config::Settings& settings);
 
-  virtual ~ContextRanger() { }
+  virtual ~ContextRanger() noexcept { }
 
   void handle_established(Comm::ConnHandlerPtr) override { }
 

@@ -41,7 +41,7 @@ class Flags {
     was_set         = other.was_set;
   }
 
-  //~Flags() { }
+  ~Flags() noexcept { }
 
   constexpr SWC_CAN_INLINE
   bool is_only_keys() const noexcept {

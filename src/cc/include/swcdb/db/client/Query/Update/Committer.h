@@ -64,7 +64,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
             const rid_t rid,
             const DB::Cell::Key& key_finish);
 
-  //~Committer() { }
+  ~Committer() noexcept;
 
   SWC_CAN_INLINE
   bool valid() noexcept {

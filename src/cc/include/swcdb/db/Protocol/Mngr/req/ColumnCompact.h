@@ -48,7 +48,7 @@ class ColumnCompact final : public ColumnCompact_Base {
     request(Params::ColumnCompactReq(cid), timeout, args...);
   }
 
-  virtual ~ColumnCompact() { }
+  virtual ~ColumnCompact() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     data.callback(

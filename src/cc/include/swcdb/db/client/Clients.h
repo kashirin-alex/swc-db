@@ -78,7 +78,7 @@ class Clients : public std::enable_shared_from_this<Clients> {
                   const Comm::IoContextPtr& io_ctx,
                   const ContextBroker::Ptr& bkr_ctx);
 
-  //~Clients() { }
+  ~Clients() noexcept;
 
   Ptr shared() {
     return shared_from_this();
@@ -309,7 +309,7 @@ class Clients final {
           : m_clients(clients) {
   }
 
-  //~Clients() { }
+  ~Clients() noexcept { }
 
   private:
   client::Clients::Ptr                    m_clients = nullptr;

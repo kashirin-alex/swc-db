@@ -22,7 +22,7 @@ class ColumnSchema final : public Reader {
   ColumnSchema(const std::string& sql, DB::Schema::Ptr& schema,
               std::string& message);
 
-  //~ColumnSchema() { }
+  ~ColumnSchema() noexcept { }
 
   int parse(Func* func);
 

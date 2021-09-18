@@ -29,7 +29,7 @@ class QuerySelect final : public Reader {
 
   void parse_display_flags(uint8_t& display_flags);
 
-  //~QuerySelect() { }
+  ~QuerySelect() noexcept { }
 
   private:
 

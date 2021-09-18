@@ -22,7 +22,7 @@ namespace SWC { namespace client { namespace Query { namespace Select {
   );
 
 
-BrokerScanner::~BrokerScanner() { }
+BrokerScanner::~BrokerScanner() noexcept { }
 
 void BrokerScanner::print(std::ostream& out) {
   out << "BrokerScanner(cid=" << cid << ' ';
@@ -42,6 +42,8 @@ void BrokerScanner::select() {
             : scanner(a_scanner),
               profile(scanner->selector->profile.bkr()) {
     }
+    SWC_CAN_INLINE
+    ~ReqData() noexcept { }
     SWC_CAN_INLINE
     client::Clients::Ptr& get_clients() noexcept {
       return scanner->selector->clients;

@@ -52,12 +52,12 @@ void Fragments::add(const DB::Cells::Cell& cell) {
 void Fragments::commit() noexcept {
   if(m_commit.running())
     return;
-  bool run;
-  {
-    Core::SharedLock lock(m_mutex_cells);
+  bool run = m_mutex_cells.try_lock_shared();
+  if(run) {
     ssize_t sz = m_cells.size_of_internal();
     Env::Rgr::res().adj_mem_releasable(sz - m_releasable_bytes.exchange(sz));
     run = _need_roll();
+    m_mutex_cells.unlock_shared();
   }
   if(!run)
     return m_commit.stop();

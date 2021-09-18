@@ -28,7 +28,7 @@ class ColumnList final : public Reader {
   ColumnList(const Clients::Ptr& clients, const std::string& sql,
              DB::SchemasVec& schemas, std::string& message);
 
-  //~ColumnList() { }
+  ~ColumnList() noexcept { }
 
   int parse_list_columns(const char* expect_cmd, uint8_t& output_flags);
 

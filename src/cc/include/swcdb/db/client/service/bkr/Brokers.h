@@ -34,7 +34,7 @@ class Brokers {
           Comm::IoContextPtr ioctx,
           const ContextBroker::Ptr& bkr_ctx);
 
-  //~Brokers() { }
+  ~Brokers() noexcept { }
 
   void on_cfg_update() noexcept;
 

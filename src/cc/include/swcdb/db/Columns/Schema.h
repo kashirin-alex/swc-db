@@ -207,7 +207,7 @@ class Schema final : public SchemaPrimitives {
 
   Schema(const uint8_t** bufp, size_t* remainp);
 
-  ~Schema();
+  ~Schema() noexcept;
 
   bool equal(const Ptr& other, bool with_rev=true) const noexcept;
 

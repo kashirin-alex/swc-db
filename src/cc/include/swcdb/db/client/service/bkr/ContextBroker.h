@@ -19,7 +19,7 @@ class ContextBroker : public Comm::AppContext {
 
   ContextBroker(const Config::Settings& settings);
 
-  virtual ~ContextBroker() { }
+  virtual ~ContextBroker() noexcept { }
 
   void handle_established(Comm::ConnHandlerPtr) override { }
 

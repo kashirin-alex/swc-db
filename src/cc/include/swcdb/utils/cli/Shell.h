@@ -45,7 +45,7 @@ class Interface {
   Interface(std::string&& prompt="CLI>",
             std::string&& history="/tmp/.swc-cli-history");
 
-  virtual ~Interface() noexcept;
+  virtual ~Interface();
 
   CLI run();
 

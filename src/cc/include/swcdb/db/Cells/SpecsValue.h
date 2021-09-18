@@ -108,13 +108,12 @@ class Value {
   void set(const uint8_t* data_n, const uint32_t size_n,
            Condition::Comp comp_n, bool owner=false);
 
-  SWC_CAN_INLINE
-  ~Value() {
+  ~Value() noexcept {
     _free();
   }
 
   SWC_CAN_INLINE
-  void _free() {
+  void _free() noexcept {
     if(own && data)
       delete [] data;
     if(matcher)
@@ -122,7 +121,7 @@ class Value {
   }
 
   SWC_CAN_INLINE
-  void free() {
+  void free() noexcept {
     _free();
     data = nullptr;
     size = 0;
@@ -219,7 +218,7 @@ class Value {
   uint8_t*        data;
 
   struct TypeMatcher {
-    virtual ~TypeMatcher() { }
+    virtual ~TypeMatcher() noexcept { }
   };
   private:
   mutable TypeMatcher*  matcher;

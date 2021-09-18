@@ -59,18 +59,18 @@ class Key final {
   void copy(uint24_t after_idx, const Key& other);
 
   SWC_CAN_INLINE
-  ~Key() {
+  ~Key() noexcept {
     _free();
   }
 
   SWC_CAN_INLINE
-  void _free() {
+  void _free() noexcept {
     if(own && data)
       delete [] data;
   }
 
   SWC_CAN_INLINE
-  void free() {
+  void free() noexcept {
     _free();
     data = nullptr;
     size = 0;

@@ -49,7 +49,7 @@ class ColumnMutable : public Base::Column {
 
   ColumnMutable& operator=(const Column&) = delete;
 
-  virtual ~ColumnMutable() { }
+  virtual ~ColumnMutable() noexcept { }
 
   virtual void print(std::ostream& out) override;
 

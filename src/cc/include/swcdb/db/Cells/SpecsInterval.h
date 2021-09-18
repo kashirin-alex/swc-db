@@ -76,9 +76,9 @@ class Interval {
 
   void move(Interval& other) noexcept;
 
-  ~Interval();
+  ~Interval() noexcept;
 
-  void free();
+  void free() noexcept;
 
   size_t size_of_internal() const noexcept;
 

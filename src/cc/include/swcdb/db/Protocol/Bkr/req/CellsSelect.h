@@ -41,7 +41,7 @@ class CellsSelect final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
-  virtual ~CellsSelect() { }
+  virtual ~CellsSelect() noexcept { }
 
   bool run() override {
     return data.get_clients()->brokers.put(req(), _bkr_idx);

@@ -59,8 +59,6 @@ static_assert(
 #define SWC_ATTR_NOTHROW __nothrow__
 #define SWC_ATTR_INLINE __always_inline__ //, __artificial__
 
-#define SWC_NOEXCEPT noexcept(true)
-
 
 #ifdef SWC_IMPL_SOURCE
 # define SWC_SHOULD_INLINE  \

@@ -39,7 +39,7 @@ class BrokerCommitter final
                   : hdlr(a_hdlr), colp(a_colp) {
   }
 
-  //~BrokerCommitter() { }
+  ~BrokerCommitter() noexcept;
 
   void print(std::ostream& out);
 

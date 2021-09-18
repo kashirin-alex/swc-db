@@ -41,7 +41,7 @@ class RangeCreate final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
-  virtual ~RangeCreate() { }
+  virtual ~RangeCreate() noexcept { }
 
   bool valid() override {
     return data.valid();

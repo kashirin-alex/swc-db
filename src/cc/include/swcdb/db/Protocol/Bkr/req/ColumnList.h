@@ -40,7 +40,7 @@ class ColumnList final : public ColumnList_Base {
     make(params, timeout, args...)->run();
   }
 
-  virtual ~ColumnList() { }
+  virtual ~ColumnList() noexcept { }
 
   protected:
 

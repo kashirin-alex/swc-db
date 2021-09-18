@@ -60,7 +60,7 @@ class RangeLoaded final : public Serializable {
   }
 
   SWC_CAN_INLINE
-  ~RangeLoaded() { }
+  ~RangeLoaded() noexcept { }
 
   bool                intval;
   DB::Cells::Interval interval;

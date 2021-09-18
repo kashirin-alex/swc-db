@@ -28,7 +28,7 @@ class RangeQuerySelectReq final : public Serializable {
   }
 
   SWC_CAN_INLINE
-  ~RangeQuerySelectReq() { }
+  ~RangeQuerySelectReq() noexcept { }
 
   void print(std::ostream& out) const;
 
@@ -98,7 +98,7 @@ class RangeQuerySelectRsp final : public Serializable {
                       StaticBuffer& data) noexcept;
 
   SWC_CAN_INLINE
-  ~RangeQuerySelectRsp() { }
+  ~RangeQuerySelectRsp() noexcept { }
 
   void print(std::ostream& out) const;
 

@@ -19,7 +19,7 @@ class ContextManager : public Comm::AppContext {
 
   ContextManager(const Config::Settings& settings);
 
-  virtual ~ContextManager() { }
+  virtual ~ContextManager() noexcept { }
 
   void handle_established(Comm::ConnHandlerPtr) override { }
 

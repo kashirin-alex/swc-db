@@ -89,7 +89,7 @@ class Scanner final : public std::enable_shared_from_this<Scanner> {
           DB::Specs::Interval&& interval,
           const cid_t cid) noexcept;
 
-  ~Scanner();
+  ~Scanner() noexcept;
 
   SWC_CAN_INLINE
   bool valid() noexcept {

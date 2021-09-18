@@ -53,8 +53,7 @@ class Column final : public Core::Vector<Interval::Ptr> {
           : Intervals(std::move(other)), cid(other.cid) {
   }
 
-  SWC_CAN_INLINE
-  ~Column() { }
+  ~Column() noexcept { }
 
   SWC_CAN_INLINE
   Column& operator=(Column&& other) noexcept {

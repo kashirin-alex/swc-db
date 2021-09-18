@@ -34,7 +34,7 @@ class BaseUnorderedMap
 
   BaseUnorderedMap& operator=(const BaseUnorderedMap&) = delete;
 
-  virtual ~BaseUnorderedMap() { }
+  virtual ~BaseUnorderedMap() noexcept { }
 
 
   virtual bool requires_commit() noexcept override;

@@ -38,7 +38,8 @@ class RgrMngId final : public Serializable {
             rgrid(a_rgrid), flag(a_flag) {
   }
 
-  //~RgrMngId() {}
+  SWC_CAN_INLINE
+  ~RgrMngId() noexcept {}
 
   void print(std::ostream& out) const {
     out << "RgrMngId(id=" << rgrid;

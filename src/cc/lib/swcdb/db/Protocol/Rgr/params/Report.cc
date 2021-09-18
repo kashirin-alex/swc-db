@@ -160,7 +160,7 @@ bool RspColumnsRanges::Column::before(RspColumnsRanges::Column* c1,
   return c1->cid < c2->cid;
 }
 
-RspColumnsRanges::Column::~Column() {
+RspColumnsRanges::Column::~Column() noexcept {
   for(auto r : ranges)
     delete r;
   ranges.clear();
@@ -218,7 +218,7 @@ RspColumnsRanges::RspColumnsRanges(rgrid_t a_rgrid,
                                   : rgrid(a_rgrid), endpoints(a_endpoints) {
 }
 
-RspColumnsRanges::~RspColumnsRanges() {
+RspColumnsRanges::~RspColumnsRanges() noexcept {
   for(auto c : columns)
     delete c;
   columns.clear();

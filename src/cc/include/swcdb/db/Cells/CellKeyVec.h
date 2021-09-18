@@ -35,7 +35,7 @@ class KeyVec final : public VecFraction {
 
   explicit KeyVec(const KeyVec& other);
 
-  //~KeyVec() { }
+  ~KeyVec() noexcept { }
 
   SWC_CAN_INLINE
   size_t size_of_internal() const noexcept {

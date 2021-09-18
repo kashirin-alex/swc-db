@@ -49,7 +49,7 @@ struct Field {
         : fid(Serialization::decode_vi24(bufp, remainp)) {
   }
 
-  virtual ~Field() { }
+  virtual ~Field() noexcept { }
 
   virtual Type type() const noexcept = 0;
 
@@ -86,7 +86,7 @@ struct Field_INT64 : Field {
 
   Field_INT64(const uint8_t** bufp, size_t* remainp);
 
-  virtual ~Field_INT64() { }
+  virtual ~Field_INT64() noexcept { }
 
   Type type() const noexcept override { return Type::INT64; };
 
@@ -118,7 +118,7 @@ struct Field_DOUBLE : Field {
 
   Field_DOUBLE(const uint8_t** bufp, size_t* remainp);
 
-  virtual ~Field_DOUBLE() { }
+  virtual ~Field_DOUBLE() noexcept { }
 
   Type type() const noexcept override { return Type::DOUBLE; };
 
@@ -160,7 +160,7 @@ struct Field_BYTES : Field {
   Field_BYTES(const uint8_t** bufp, size_t* remainp,
               bool take_ownership=false);
 
-  virtual ~Field_BYTES() { }
+  virtual ~Field_BYTES() noexcept { }
 
   Type type() const noexcept override { return Type::BYTES; };
 
@@ -200,7 +200,7 @@ struct Field_KEY : Field {
 
   Field_KEY(const uint8_t** bufp, size_t* remainp);
 
-  virtual ~Field_KEY() { }
+  virtual ~Field_KEY() noexcept { }
 
   Type type() const noexcept override { return Type::KEY; };
 
@@ -252,7 +252,7 @@ struct Field_LIST_INT64 : Field {
 
   Field_LIST_INT64(const uint8_t** bufp, size_t* remainp);
 
-  virtual ~Field_LIST_INT64() { }
+  virtual ~Field_LIST_INT64() noexcept { }
 
   Type type() const noexcept override { return Type::LIST_INT64; };
 
@@ -282,7 +282,7 @@ struct Field_LIST_BYTES : Field {
     SWC_CAN_INLINE
     Item() noexcept { }
     SWC_CAN_INLINE
-    ~Item() { }
+    ~Item() noexcept { }
     SWC_CAN_INLINE
     Item(Condition::Comp a_comp, const std::string& a_value)
         : comp(a_comp), value(a_value) { }
@@ -307,7 +307,7 @@ struct Field_LIST_BYTES : Field {
 
   Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp);
 
-  virtual ~Field_LIST_BYTES() { }
+  virtual ~Field_LIST_BYTES() noexcept { }
 
   Type type() const noexcept override { return Type::LIST_BYTES; };
 
@@ -335,6 +335,8 @@ struct Fields {
   Fields() noexcept { }
 
   Fields(const uint8_t* ptr, size_t len);
+
+  ~Fields() noexcept { }
 
   bool has_field_id(uint24_t fid) const noexcept;
 

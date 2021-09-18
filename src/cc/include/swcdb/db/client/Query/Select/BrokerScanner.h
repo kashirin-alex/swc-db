@@ -52,7 +52,7 @@ class BrokerScanner : public std::enable_shared_from_this<BrokerScanner>  {
                   interval(a_interval), cid(a_cid) {
   }
 
-  ~BrokerScanner();
+  ~BrokerScanner() noexcept;
 
   void print(std::ostream& out);
 
