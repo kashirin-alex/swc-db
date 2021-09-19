@@ -127,34 +127,9 @@ void from_string(const char* s, uint16_t* value);
 
 void from_string(const char* s, int32_t* value);
 
-
+template<typename T>
 SWC_CAN_INLINE
-void from_string(const std::string& s, double* value) {
-  from_string(s.c_str(), value);
-}
-
-SWC_CAN_INLINE
-void from_string(const std::string& s, int64_t* value) {
-  from_string(s.c_str(), value);
-}
-
-SWC_CAN_INLINE
-void from_string(const std::string& s, uint64_t* value) {
-  from_string(s.c_str(), value);
-}
-
-SWC_CAN_INLINE
-void from_string(const std::string& s, uint8_t* value) {
-  from_string(s.c_str(), value);
-}
-
-SWC_CAN_INLINE
-void from_string(const std::string& s, uint16_t* value) {
-  from_string(s.c_str(), value);
-}
-
-SWC_CAN_INLINE
-void from_string(const std::string& s, int32_t* value) {
+void from_string(const std::string& s, T value) {
   from_string(s.c_str(), value);
 }
 

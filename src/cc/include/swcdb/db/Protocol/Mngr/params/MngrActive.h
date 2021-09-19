@@ -9,6 +9,7 @@
 
 #include "swcdb/core/comm/Serializable.h"
 #include "swcdb/db/client/service/mngr/Groups.h"
+#include "swcdb/db/Columns/Schema.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -19,8 +20,9 @@ class MngrActiveReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  MngrActiveReq(uint8_t a_role=DB::Types::MngrRole::COLUMNS, cid_t a_cid=0)
-                noexcept : role(a_role), cid(a_cid) {
+  MngrActiveReq(uint8_t a_role=DB::Types::MngrRole::COLUMNS,
+                cid_t a_cid=DB::Schema::NO_CID) noexcept
+                : role(a_role), cid(a_cid) {
   }
 
   //~MngrActiveReq() { }

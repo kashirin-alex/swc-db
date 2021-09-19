@@ -9,7 +9,7 @@ add_test(
 )
 
 ADD_TEST_TARGET(
-  NAME      test_bkr_mng_column
+  NAME      bkr_mng_column
   SRCS      test_bkr_mng_column.cc
   TARGETS   swcdb_core swcdb_core_config swcdb_core_comm swcdb
   ARGS      "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"

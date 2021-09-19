@@ -33,7 +33,9 @@ void Key::add(const uint8_t* fraction, uint24_t len) {
   uint32_t old_size = size;
 
   size += Serialization::encoded_length_vi24(len);
-  size += uint32_t(len);
+  size += len;
+  //SWC_EXPECT(size > old_size, ERANGE);
+
   uint8_t* ptr = data = new uint8_t[size];
   if(old) {
     memcpy(ptr, old, old_size);
@@ -55,7 +57,8 @@ void Key::insert(uint32_t idx, const uint8_t* fraction, uint24_t len) {
 
   uint32_t prev_size = size;
   size += Serialization::encoded_length_vi24(len);
-  size += uint32_t(len);
+  size += len;
+  //SWC_EXPECT(size > prev_size, ERANGE);
 
   uint8_t* data_tmp = new uint8_t[size];
   const uint8_t* ptr_tmp = data;

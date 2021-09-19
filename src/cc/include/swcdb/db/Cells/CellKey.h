@@ -115,6 +115,7 @@ class Key final {
 
     for(auto it=cbegin; it != cend; ++it)
       size += Serialization::encoded_length_vi24(it->size()) + it->size();
+    //SWC_EXPECT(size > old_size, ERANGE);
 
     uint8_t* ptr = data = new uint8_t[size];
     if(old) {
@@ -259,9 +260,8 @@ class Key final {
 
   SWC_CAN_INLINE
   uint8_t* _data(const uint8_t* ptr) {
-    uint8_t* a_data = size ? new uint8_t[size] : nullptr;
-    return a_data
-      ? static_cast<uint8_t*>(memcpy(a_data, ptr, size))
+    return size
+      ? static_cast<uint8_t*>(memcpy(new uint8_t[size], ptr, size))
       : nullptr;
   }
 

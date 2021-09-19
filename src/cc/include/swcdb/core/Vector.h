@@ -369,13 +369,10 @@ class Vector {
       return &emplace_back(std::forward<ArgsT>(args)...);
 
     if(_cap == _size) {
-      size_type remain = max_size() - _cap;
-      if(!remain)
+      if(max_size() == _cap)
         throw std::out_of_range("Reached size_type limit!");
-      _cap += GROW_SZ ? (GROW_SZ < remain ? GROW_SZ : remain)
-                      : (_size < remain ? _size : remain);
       _data = _allocate_insert(
-        _data, _size, offset, _cap, std::forward<ArgsT>(args)...);
+        _data, _size, offset, ++_cap, std::forward<ArgsT>(args)...);
     } else {
       _construct(
         _alter(_data + offset, _size - offset, 1),

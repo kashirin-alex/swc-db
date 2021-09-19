@@ -266,10 +266,11 @@ bool ParserConfig::has(const std::string& name) const noexcept {
   for(const auto& info : options) {
     if(Condition::str_eq(name, info.first))
       return true;
-    for(const std::string& alias : info.second.aliases)
+    for(const std::string& alias : info.second.aliases) {
       if(Condition::str_eq(name, alias))
         return true;
     }
+  }
   return false;
 }
 
@@ -278,11 +279,12 @@ bool ParserConfig::has(const std::string& name,
   for(const auto& info : options) {
     if(Condition::str_eq(name, info.first))
       return true;
-    for(const std::string& alias : info.second.aliases)
+    for(const std::string& alias : info.second.aliases) {
       if(Condition::str_eq(name, alias)) {
         alias_to = info.first;
         return true;
       }
+    }
   }
   return false;
 }
@@ -291,9 +293,10 @@ Property::Value::Ptr ParserConfig::get_default(const std::string& name) {
   for(const auto& info : options) {
     if(Condition::str_eq(name, info.first))
       return info.second.value;
-    for(const std::string& alias : info.second.aliases)
+    for(const std::string& alias : info.second.aliases) {
       if(Condition::str_eq(name, alias))
         return info.second.value;
+    }
   }
   SWC_THROWF(Error::CONFIG_GET_ERROR, "ParserConfig, getting value of '%s'",
             name.c_str());
@@ -351,7 +354,7 @@ Strings Parser::args_to_strings(int argc, char *argv[]) {
   Strings raw_strings;
   raw_strings.resize(--argc);
   for(int n=0; n<argc; ++n)
-    raw_strings[n] = argv[n + 1];
+    raw_strings[n].append(argv[n + 1]);
   return raw_strings;
 }
 
@@ -426,7 +429,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
 
   bool cfg_name;
   bool fill = false;
-  std::string name, alias, opt;
+  std::string name, opt;
   int len_o = raw_strings.size();
 
   int n = 0;
@@ -522,7 +525,7 @@ void Parser::parse_line(const std::string& line) {
 }
 
 void Parser::set_pos_parse(const std::string& name, const std::string& value) {
-  raw_opts[name].push_back(value);
+  raw_opts[name].emplace_back(value);
 }
 
 bool Parser::parse_opt(const std::string& s){
@@ -537,11 +540,8 @@ bool Parser::parse_opt(const std::string& s){
     return false;
 
   auto& r = raw_opts[alias_to.length() ? alias_to : name];
-  std::string value = s.substr(at+1);
-  // SWC_LOGF(LOG_INFO, "value: %s", value.c_str());
-  if(value.empty())
-    return true;
-  r.push_back(value);
+  if(s.size() > ++at)
+    r.emplace_back(s.c_str() + at, s.size() - at);
   return true;
 }
 
@@ -582,13 +582,13 @@ const Parser::Options& Parser::get_options() const noexcept {
 }
 
 void Parser::print(std::ostream& os) const {
-  os << std::string("*** Raw Parsed Options:") << "\n";
+  os << "*** Raw Parsed Options:\n";
   for (const auto& kv : raw_opts)
     os << kv.first << "=" << format_list(kv.second) << "\n";
 }
 
 void Parser::print_options(std::ostream& os) const {
-  os << std::string("*** Parsed Options:") << "\n";
+  os << "*** Parsed Options:\n";
   for(const auto& kv : m_opts.map)
     os << kv.first << "=" << kv.second->to_string() << "\n";
 }

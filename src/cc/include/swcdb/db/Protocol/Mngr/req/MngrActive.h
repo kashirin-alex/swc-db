@@ -23,18 +23,18 @@ class MngrActive : public client::ConnQueue::ReqBase {
 
   SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
-                  const cid_t& cid, const DispatchHandler::Ptr& hdlr,
+                  const cid_t& a_cid, const DispatchHandler::Ptr& hdlr,
                   uint32_t timeout_ms=60000) {
     return Ptr(new MngrActive(
-      clients, DB::Types::MngrRole::COLUMNS, cid, hdlr, timeout_ms));
+      clients, DB::Types::MngrRole::COLUMNS, a_cid, hdlr, timeout_ms));
   }
 
   SWC_CAN_INLINE
   static Ptr make(const SWC::client::Clients::Ptr& clients,
-                  const uint8_t& role, const DispatchHandler::Ptr& hdlr,
+                  const uint8_t& a_role, const DispatchHandler::Ptr& hdlr,
                   uint32_t timeout_ms=60000) {
     return Ptr(new MngrActive(
-      clients, role, DB::Schema::NO_CID, hdlr, timeout_ms));
+      clients, a_role, DB::Schema::NO_CID, hdlr, timeout_ms));
   }
 
   SWC_CAN_INLINE

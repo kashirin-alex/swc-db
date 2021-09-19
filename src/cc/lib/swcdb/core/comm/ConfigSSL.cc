@@ -168,9 +168,11 @@ void ConfigSSL::load_file(const std::string& pathbase,
 
     std::ifstream istrm(filepath, std::ios::binary | std::ios::ate);
     if(istrm.is_open()) {
-      to.resize(istrm.tellg());
-      istrm.seekg(0);
-      istrm.read(to.data(), to.length());
+      if(size_t len = istrm.tellg()) {
+        to.resize(len);
+        istrm.seekg(0);
+        istrm.read(to.data(), to.length());
+      }
       istrm.close();
     } else {
       err = Error::CONFIG_BAD_CFG_FILE;

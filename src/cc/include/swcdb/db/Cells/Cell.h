@@ -279,9 +279,8 @@ class Cell final {
 
   SWC_CAN_INLINE
   uint8_t* _value(const uint8_t* v) {
-    uint8_t* data = vlen ? new uint8_t[vlen] : nullptr;
-    return data
-      ? static_cast<uint8_t*>(memcpy(data, v, vlen))
+    return vlen
+      ? static_cast<uint8_t*>(memcpy(new uint8_t[vlen], v, vlen))
       : nullptr;
   }
 

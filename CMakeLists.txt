@@ -77,7 +77,7 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wnon-virtual-dtor")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wzero-as-null-pointer-constant -Wno-error=zero-as-null-pointer-constant")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-cast")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dereference") # -Walloc-zero
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dereference")
 
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-signedness")
@@ -92,8 +92,14 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=compatible-local -Wshadow=local -Wshadow=global -Wshadow")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=262144")
 
-  # if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)
-  # endif()
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtrampolines")
+
+  # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Walloc-zero -Wno-error=alloc-zero")
+  # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-final-types -Wno-error=suggest-final-types")
+
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtsan")
+  endif()
 
 else()
   SET (SWC_MALLOC_NOT_INSISTENT ON)
@@ -114,12 +120,6 @@ endif()
 
 
 
-## additional considerations
-# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Woverloaded-virtual")
-# use 'default_*' base methods and pure for override calling 'default_*'
-# -Wsuggest-final-types -Wsuggest-final-methods
-
-# gcc 10+, -Wredundant-tags -Wmismatched-tags
 ##
 
 if(SWC_MALLOC_NOT_INSISTENT)
