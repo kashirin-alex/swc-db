@@ -16,7 +16,7 @@
 
 
 
-### [SWC-DB v0.5.5](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.5) (upcoming-release)
+### [SWC-DB v0.5.5](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.5) (2021-09-21)
 
     added Config::Property::V_GUINT64 (G_UINT64)
     added class Manager::Schemas derived from DB::Schemas
@@ -73,6 +73,24 @@
     added Manager AssignGroup Columns::m_need_assign[4] [Master,Meta,Sys,Data]
     fixed Ranger Range::Block::add_logged(Cell&) a case at block got split
     added Ranger CompactRange use count barrier at finalize
+    added Ranger::Blocks::release processing-state and skip at Compact Applying
+    changed usage of DB::Specs::Column without Ptr shared_ptr<Column>
+    added typedef Core::Vector<{c/rids_t,c/rids_t}
+    added typedef Query::Update::Handlers::Base::Colms & DB::SchemasVec
+    changed to STL Serial::Value Field_LIST_{INT64,BYTES} convert_to and ctor
+    changed DB::Cell::Key::{equal,add,read,convert_to} to STL
+    added Config::Property::from_string(const char*, T* value)
+    added specialized extended const-expressions in Core::Vector<>
+    added Core::Vector(initializer_list&&) and emplace(it, Args)
+    added Core::Vector operator==(other) and pop_back()
+    changed not-required cases of std::vector<> to Core::Vector<> source-wide
+    removed Core::BufferT::length_base/grow
+    added timer-synchronization MutexAtomic PeriodicTimer::m_mutex
+    added std::ostream& operator<<(ostream&, EndPoint&)
+    changed source-wide destructors to alway noexcept unless not specified
+    added CXX-Flags -Wtrampolines -Wtsan (with GCC)
+    added compatibility for -Wshadow (local,compatible-local,global) with GCC
+    updated for Thrift v0.15.0
     added Python swcdb.thrift.pool.PoolStopping exception, raise with stop
     added SWC-DB Ruby 'swcdb' package and availability with gem list -r swcdb
 

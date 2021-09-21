@@ -25,7 +25,7 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
 
   typedef std::shared_ptr<Reporting> Ptr;
 
-  Reporting(const Comm::IoContextPtr& io);
+  Reporting(const Comm::IoContextPtr& a_io);
 
   void configure_rgr(const char*, const Comm::EndPoints& endpoints);
 

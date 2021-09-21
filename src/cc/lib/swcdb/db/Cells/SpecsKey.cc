@@ -38,8 +38,7 @@ Key::Key(const Key& other) : Vec(other) { }
 Key::~Key() noexcept { }
 
 void Key::copy(const Key &other) {
-  clear();
-  assign(other.cbegin(), other.cend());
+  Vec::operator=(other);
 }
 
 bool Key::equal(const Key &other) const noexcept {

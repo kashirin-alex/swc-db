@@ -240,10 +240,10 @@ class Reporting : public BaseSingleColumn {
   Core::Vector<Metric::Base::Ptr>    metrics;
   Core::AtomicBool                   running;
 
-  Reporting(const Clients::Ptr& clients,
-            const Comm::IoContextPtr& io,
-            Config::Property::V_GINT32::Ptr cfg_intval,
-            Clients::Flag executor=client::Clients::DEFAULT);
+  Reporting(const Clients::Ptr& a_clients,
+            const Comm::IoContextPtr& a_io,
+            Config::Property::V_GINT32::Ptr a_cfg_intval,
+            Clients::Flag a_executor=client::Clients::DEFAULT);
 
   virtual ~Reporting() noexcept { }
 
