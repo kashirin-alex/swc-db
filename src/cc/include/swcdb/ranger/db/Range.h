@@ -128,6 +128,8 @@ class Range final : public std::enable_shared_from_this<Range> {
 
   bool compacting();
 
+  bool compact_apply();
+
   void compacting(uint8_t state);
 
   bool compacting_ifnot_applying(uint8_t state);

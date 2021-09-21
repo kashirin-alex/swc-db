@@ -490,6 +490,12 @@ bool Range::compacting() {
   return m_compacting != COMPACT_NONE;
 }
 
+SWC_CAN_INLINE
+bool Range::compact_apply() {
+  Core::SharedLock lock(m_mutex);
+  return m_compacting == COMPACT_APPLYING;
+}
+
 void Range::compacting(uint8_t state) {
   bool do_q_run_add;
   bool do_q_run_scan;

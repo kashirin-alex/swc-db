@@ -245,7 +245,8 @@ void Settings::init_app_options() {
       ),
      "Schema col-type PLAIN|COUNTER_I{64,32,16,8}|SERIAL")
 
-    ("gen-cell-versions", i32(1), "cell key versions")
+    ("gen-versions", i32(1), "number of cell versions to generate")
+    ("gen-cell-versions", i32(1), "cell key schema-versions")
     ("gen-cell-encoding",
       g_enum(
         int(DB::Types::Encoder::PLAIN),
@@ -609,7 +610,7 @@ void update_data(const DB::SchemasVec& schemas, uint8_t flag, size_t seed) {
   auto settings = Env::Config::settings();
 
   uint32_t versions = flag == DB::Cells::INSERT
-    ? settings->get_i32("gen-cell-versions")
+    ? settings->get_i32("gen-versions")
     : 1;
 
   uint32_t nfractions = settings->get_i32("gen-fractions");

@@ -312,8 +312,9 @@ size_t Blocks::release(size_t bytes) {
 
 size_t Blocks::release(size_t bytes, uint8_t level) {
   processing_increment();
-  size_t released;
-  switch(level) {
+  size_t released = 0;
+
+  if(!range->compact_apply()) switch(level) {
     case 0: {
       released = cellstores.release(bytes);
       break;
@@ -323,7 +324,6 @@ size_t Blocks::release(size_t bytes, uint8_t level) {
       break;
     }
     case 2: {
-      released = 0;
       bool support;
       if(m_mutex.try_full_lock(support)) {
         for(Block::Ptr blk=m_block; blk; blk=blk->next) {
@@ -340,7 +340,6 @@ size_t Blocks::release(size_t bytes, uint8_t level) {
       break;
     }
     case 4: {
-      released = 0;
       bool support;
       if(m_mutex.try_full_lock(support)) {
         if(m_block) {
@@ -357,7 +356,6 @@ size_t Blocks::release(size_t bytes, uint8_t level) {
       break;
     }
     default:
-      released = 0;
       break;
   }
   processing_decrement();
