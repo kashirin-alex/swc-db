@@ -17,7 +17,7 @@ enum class Range : uint8_t {
   DATA    = 3
 };
 
-const char* to_string(Range typ) noexcept;
+const char* SWC_CONST_FUNC to_string(Range typ) noexcept;
 
 }}}
 

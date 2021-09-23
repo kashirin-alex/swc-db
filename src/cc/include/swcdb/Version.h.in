@@ -3,9 +3,10 @@
  * License details at <https://github.com/kashirin-alex/swc-db/#license>
  */
 
-#ifndef swcdb_core_Version_h
-#define swcdb_core_Version_h
+#ifndef swcdb_Version_h
+#define swcdb_Version_h
 
+#include "swcdb/core/Compat.h"
 
 
 #define SWCDB_SET_VERSION   "SWC-DB v@SWCDB_VERSION@"
@@ -14,11 +15,10 @@
 
 
 
-const char* swcdb_version() noexcept;
+const char* SWC_CONST_FUNC swcdb_version() noexcept;
 
-const char* swcdb_copyrights() noexcept;
-
-
-#endif // swcdb_core_Version_h
+const char* SWC_CONST_FUNC swcdb_copyrights() noexcept;
 
 
+
+#endif // swcdb_Version_h

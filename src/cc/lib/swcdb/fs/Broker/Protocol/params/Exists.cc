@@ -25,10 +25,6 @@ void ExistsReq::internal_decode(const uint8_t** bufp, size_t* remainp) {
 
 
 
-size_t ExistsRsp::internal_encoded_length() const {
-  return 1;
-}
-
 void ExistsRsp::internal_encode(uint8_t** bufp) const {
   Serialization::encode_bool(bufp, exists);
 }

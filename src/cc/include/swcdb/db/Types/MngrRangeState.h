@@ -25,7 +25,7 @@ namespace MngrRange {
 }
 
 
-const char* to_string(MngrRange::State state) noexcept;
+const char* SWC_CONST_FUNC to_string(MngrRange::State state) noexcept;
 
 
 }}}

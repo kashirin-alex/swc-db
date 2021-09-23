@@ -105,7 +105,7 @@ class ParserConfig final {
   ParserConfig& operator()(const char* name, Property::Value::Ptr vptr,
                            const char*description);
 
-  ParserConfig& add_options();
+  ParserConfig& SWC_CONST_FUNC add_options();
 
   ParserConfig& add_options(const char* name, Property::Value::Ptr vptr,
                             const char* description);
@@ -183,7 +183,7 @@ class Parser final {
 
   void own_options(Options& opts);
 
-  const Options& get_options() const noexcept;
+  const Options& SWC_CONST_FUNC get_options() const noexcept;
 
   void print(std::ostream& os) const;
 

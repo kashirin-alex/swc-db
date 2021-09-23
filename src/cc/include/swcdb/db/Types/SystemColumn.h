@@ -57,16 +57,16 @@ Range get_range_type(cid_t cid) noexcept {
 }
 
 
-KeySeq get_seq_type(cid_t cid) noexcept;
+KeySeq SWC_CONST_FUNC get_seq_type(cid_t cid) noexcept;
 
 
-cid_t get_master_cid(KeySeq col_seq) noexcept;
+cid_t SWC_CONST_FUNC get_master_cid(KeySeq col_seq) noexcept;
 
-cid_t get_meta_cid(KeySeq col_seq) noexcept;
+cid_t SWC_CONST_FUNC get_meta_cid(KeySeq col_seq) noexcept;
 
-const char* get_meta_cid_str(KeySeq col_seq) noexcept;
+const char* SWC_CONST_FUNC get_meta_cid_str(KeySeq col_seq) noexcept;
 
-uint8_t get_sys_cid(KeySeq col_seq, Range col_type) noexcept;
+uint8_t SWC_CONST_FUNC get_sys_cid(KeySeq col_seq, Range col_type) noexcept;
 
 
 }}}}

@@ -62,7 +62,7 @@ std::string normalize_pathname(std::string s);
 
 Type fs_type(const std::string& fs_name);
 
-const char* to_string(Type typ) noexcept;
+const char* SWC_CONST_FUNC to_string(Type typ) noexcept;
 
 
 class FileSystem : public std::enable_shared_from_this<FileSystem> {
@@ -85,7 +85,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual void stop();
 
-  virtual Type get_type() const noexcept;
+  virtual Type SWC_CONST_FUNC get_type() const noexcept;
 
   virtual Type get_type_underlying() const noexcept;
 

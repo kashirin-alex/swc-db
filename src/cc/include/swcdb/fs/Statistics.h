@@ -61,7 +61,7 @@ struct Statistics {
     MAX
   };
 
-  static const char* to_string(Command cmd) noexcept;
+  static const char* SWC_CONST_FUNC to_string(Command cmd) noexcept;
 
 
   struct Metric : Core::MutexAtomic {

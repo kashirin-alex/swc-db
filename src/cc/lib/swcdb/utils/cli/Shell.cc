@@ -199,10 +199,6 @@ void Interface::init() {
   );
 }
 
-bool Interface::quit(std::string&) const {
-  return false;
-}
-
 bool Interface::switch_to(std::string& cmd)  {
   std::string message;
   client::SQL::Reader parser(cmd, message);

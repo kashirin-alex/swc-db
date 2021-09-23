@@ -78,7 +78,9 @@ class Interface {
 
   bool error(const std::string& message);
 
-  virtual bool quit(std::string& cmd) const;
+  virtual bool quit(std::string&) const {
+    return false;
+  }
 
   virtual bool switch_to(std::string& cmd);
 

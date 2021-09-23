@@ -18,9 +18,9 @@ enum class KeySeq : uint8_t {
   FC_VOLUME   = 4
 };
 
-bool is_fc(KeySeq typ) noexcept;
+bool SWC_CONST_FUNC is_fc(KeySeq typ) noexcept;
 
-const char* to_string(KeySeq typ) noexcept;
+const char* SWC_CONST_FUNC to_string(KeySeq typ) noexcept;
 
 KeySeq range_seq_from(const std::string& typ) noexcept;
 

@@ -26,9 +26,9 @@ enum class Column : uint8_t {
   CELL_DEFINED  = 0xf
 };
 
-bool is_counter(const Column typ) noexcept;
+bool SWC_CONST_FUNC is_counter(const Column typ) noexcept;
 
-const char* to_string(Column typ) noexcept;
+const char* SWC_CONST_FUNC to_string(Column typ) noexcept;
 
 Column column_type_from(const std::string& typ) noexcept;
 

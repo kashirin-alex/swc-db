@@ -64,7 +64,7 @@ enum Flag : uint8_t {
   DELETE_VERSION            = 0x3
 };
 
-const char* to_string(Flag flag) noexcept;
+const char* SWC_CONST_FUNC to_string(Flag flag) noexcept;
 
 Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept;
 

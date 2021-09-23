@@ -53,7 +53,9 @@ class ExistsRsp final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t internal_encoded_length() const override {
+    return 1;
+  }
 
   void internal_encode(uint8_t** bufp) const override;
 

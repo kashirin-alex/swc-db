@@ -60,7 +60,7 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
 
 
 
-const char* to_string(Range::State state) noexcept {
+const char* SWC_CONST_FUNC to_string(Range::State state) noexcept {
   switch(state) {
     case Range::State::NOTLOADED:
       return "NOTLOADED";

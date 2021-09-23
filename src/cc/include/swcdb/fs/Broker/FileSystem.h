@@ -38,7 +38,7 @@ class FileSystemBroker final : public FileSystem {
 
   void stop() override;
 
-  Type get_type() const noexcept override;
+  Type SWC_CONST_FUNC get_type() const noexcept override;
 
   Type get_type_underlying() const noexcept override;
 

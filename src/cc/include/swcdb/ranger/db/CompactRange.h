@@ -27,7 +27,7 @@ class CompactRange final : public ReqScan {
 
   void initialize();
 
-  bool with_block() const noexcept override;
+  bool SWC_CONST_FUNC with_block() const noexcept override;
 
   bool selector(const DB::Types::KeySeq key_seq,
                 const DB::Cells::Cell& cell, bool& stop) override;

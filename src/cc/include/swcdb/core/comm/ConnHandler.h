@@ -264,7 +264,7 @@ class ConnHandlerPlain final : public ConnHandler {
 
   protected:
 
-  SocketLayer* socket_layer() noexcept override;
+  SocketLayer* SWC_CONST_FUNC socket_layer() noexcept override;
 
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 
@@ -321,7 +321,7 @@ class ConnHandlerSSL final : public ConnHandler {
 
   protected:
 
-  SocketLayer* socket_layer() noexcept override;
+  SocketLayer* SWC_CONST_FUNC socket_layer() noexcept override;
 
   void read(uint8_t** bufp, size_t* remainp, asio::error_code& ec) override;
 

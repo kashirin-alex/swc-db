@@ -79,6 +79,9 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wzero-as-null-pointer-constant -Wno-er
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-cast")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dereference")
 
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=const -Wno-error=suggest-attribute=const")
+
+
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-signedness")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnoexcept -Wno-error=noexcept")

@@ -105,6 +105,8 @@ static_assert(
   inline
 
 
+#define SWC_CONST_FUNC SWC_ATTRIBS((const))
+
 /*! @} End of Core Group*/
 
 

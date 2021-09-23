@@ -43,7 +43,7 @@ namespace Rgr {
   struct Commands {
     static constexpr const uint8_t MAX = MAX_CMD;
 
-    static const char* to_string(uint8_t cmd) noexcept;
+    static const char* SWC_CONST_FUNC to_string(uint8_t cmd) noexcept;
   };
 }
 
@@ -80,7 +80,7 @@ namespace Mngr {
   struct Commands {
     static constexpr const uint8_t MAX = MAX_CMD;
 
-    static const char* to_string(uint8_t cmd) noexcept;
+    static const char* SWC_CONST_FUNC to_string(uint8_t cmd) noexcept;
   };
 }
 
@@ -101,7 +101,7 @@ namespace Bkr {
     COLUMN_LIST          = 0x02,
     COLUMN_COMPACT       = 0x03,
     COLUMN_MNG           = 0x04,
-    
+
     CELLS_UPDATE         = 0x05,
     CELLS_SELECT         = 0x06,
 
@@ -111,7 +111,7 @@ namespace Bkr {
   struct Commands {
     static constexpr const uint8_t MAX = MAX_CMD;
 
-    static const char* to_string(uint8_t cmd) noexcept;
+    static const char* SWC_CONST_FUNC to_string(uint8_t cmd) noexcept;
   };
 }
 

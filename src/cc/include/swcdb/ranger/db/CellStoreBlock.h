@@ -35,7 +35,7 @@ class Read final {
     LOADED
   };
 
-  static const char* to_string(const State state) noexcept;
+  static const char* SWC_CONST_FUNC to_string(const State state) noexcept;
 
   /*
   static Ptr make(int& err, CellStore::Read* cellstore,

@@ -21,7 +21,7 @@ enum class MngrState : uint8_t {
 };
 
 
-const char* to_string(MngrState state) noexcept;
+const char* SWC_CONST_FUNC to_string(MngrState state) noexcept;
 
 
 }}}

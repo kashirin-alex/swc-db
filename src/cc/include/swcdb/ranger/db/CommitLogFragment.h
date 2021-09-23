@@ -45,7 +45,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
     WRITING,
   };
 
-  static const char* to_string(State state) noexcept;
+  static const char* SWC_CONST_FUNC to_string(State state) noexcept;
 
 
   static Ptr make_read(int& err, std::string&& filepath,

@@ -53,7 +53,7 @@ namespace FsBroker {
   struct Commands {
     static constexpr const uint8_t MAX = MAX_CMD;
 
-    static const char* to_string(uint8_t cmd) noexcept;
+    static const char* SWC_CONST_FUNC to_string(uint8_t cmd) noexcept;
   };
 
 }

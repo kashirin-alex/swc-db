@@ -58,7 +58,7 @@ class Value {
     G_ENUM,
     G_STRINGS
   };
-  static const char* to_string(Type type) noexcept;
+  static const char* SWC_CONST_FUNC to_string(Type type) noexcept;
 
   static const uint8_t SKIPPABLE   = 0x01;
   static const uint8_t GUARDED     = 0x02;
@@ -151,7 +151,7 @@ class V_BOOL final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -180,7 +180,7 @@ class V_UINT8 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -209,7 +209,7 @@ class V_UINT16 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -238,7 +238,7 @@ class V_INT32 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -267,7 +267,7 @@ class V_INT64 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -296,7 +296,7 @@ class V_DOUBLE final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -325,7 +325,7 @@ class V_STRING final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -360,7 +360,7 @@ class V_ENUM final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -391,7 +391,7 @@ class V_STRINGS final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -420,7 +420,7 @@ class V_INT64S final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -449,7 +449,7 @@ class V_DOUBLES final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -483,7 +483,7 @@ class V_GBOOL final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -522,7 +522,7 @@ class V_GUINT8 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -559,7 +559,7 @@ class V_GUINT16 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -597,7 +597,7 @@ class V_GINT32 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -635,7 +635,7 @@ class V_GUINT64 final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -679,7 +679,7 @@ class V_GENUM final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 
@@ -722,7 +722,7 @@ class V_GSTRINGS final : public Value {
 
   void set_from(const Strings& values) override;
 
-  Type type() const noexcept override;
+  Type SWC_CONST_FUNC type() const noexcept override;
 
   std::string to_string() const override;
 

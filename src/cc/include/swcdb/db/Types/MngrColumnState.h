@@ -23,7 +23,7 @@ namespace MngrColumn {
 }
 
 
-const char* to_string(MngrColumn::State state) noexcept;
+const char* SWC_CONST_FUNC to_string(MngrColumn::State state) noexcept;
 
 
 }}}

@@ -45,7 +45,7 @@ enum Type : uint8_t {
 
 };
 
-const char* to_string(Type typ) noexcept;
+const char* SWC_CONST_FUNC to_string(Type typ) noexcept;
 
 SWC_CAN_INLINE
 Type read_type(const uint8_t** bufp, size_t* remainp) {

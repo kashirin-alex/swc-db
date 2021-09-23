@@ -30,7 +30,7 @@ enum Aggregation : uint8_t {
   AVG      = 0x03,
   AVG_PROP = 0x04,
 };
-const char* aggregation_to_string(uint8_t agg) noexcept;
+const char* SWC_CONST_FUNC aggregation_to_string(uint8_t agg) noexcept;
 
 
 static const uint24_t FIELD_ID_MIN    = uint24_t(0);

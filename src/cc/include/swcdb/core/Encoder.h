@@ -34,7 +34,7 @@ enum class Type : uint8_t {
   UNKNOWN = 0xff
 };
 
-const char* to_string(Type typ) noexcept;
+const char* SWC_CONST_FUNC to_string(Type typ) noexcept;
 
 Type encoding_from(const std::string& typ) noexcept;
 

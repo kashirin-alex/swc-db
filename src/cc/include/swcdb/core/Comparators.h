@@ -99,7 +99,7 @@ const char COMP_FOSPS[] = "<-";
 
 Comp from(const char** buf, uint32_t* remainp, bool extended=false)  noexcept;
 
-const char* to_string(Comp comp, bool extended=false) noexcept;
+const char* SWC_CONST_FUNC to_string(Comp comp, bool extended=false) noexcept;
 
 extern SWC_CAN_INLINE
 const char* to_string(uint8_t comp) {
