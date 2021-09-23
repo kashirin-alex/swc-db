@@ -209,9 +209,10 @@ class Schema final : public SchemaPrimitives {
 
   ~Schema() noexcept;
 
-  bool equal(const Ptr& other, bool with_rev=true) const noexcept;
+  bool SWC_PURE_FUNC
+  equal(const Ptr& other, bool with_rev=true) const noexcept;
 
-  uint32_t encoded_length() const noexcept;
+  uint32_t SWC_PURE_FUNC encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

@@ -66,7 +66,7 @@ enum Flag : uint8_t {
 
 const char* SWC_CONST_FUNC to_string(Flag flag) noexcept;
 
-Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept;
+Flag SWC_PURE_FUNC flag_from(const uint8_t* rptr, uint32_t len) noexcept;
 
 
 constexpr const int64_t TIMESTAMP_MIN  = INT64_MIN;
@@ -217,7 +217,7 @@ class Cell final {
 
   void write(DynamicBuffer &dst_buf, bool no_value=false) const;
 
-  bool equal(const Cell& other) const noexcept;
+  bool SWC_PURE_FUNC equal(const Cell& other) const noexcept;
 
   constexpr SWC_CAN_INLINE
   bool removal() const noexcept {

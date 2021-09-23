@@ -51,7 +51,7 @@ class Properties {
 
   void set(const char* name, Property::Value::Ptr p);
 
-  bool has(const char* name) const noexcept;
+  bool SWC_PURE_FUNC has(const char* name) const noexcept;
 
   bool defaulted(const char* name) const;
 

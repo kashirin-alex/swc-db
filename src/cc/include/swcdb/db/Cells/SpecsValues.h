@@ -65,7 +65,7 @@ class Values : public Core::Vector<Value> {
 
   size_t size_of_internal() const noexcept;
 
-  bool equal(const Values& other) const noexcept;
+  bool SWC_PURE_FUNC equal(const Values& other) const noexcept;
 
   bool is_matching(const Cells::Cell& cell) const;
 

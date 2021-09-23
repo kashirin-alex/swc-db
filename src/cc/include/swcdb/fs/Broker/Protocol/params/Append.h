@@ -30,7 +30,7 @@ class AppendReq final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -56,7 +56,7 @@ class AppendRsp final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 

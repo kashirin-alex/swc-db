@@ -74,9 +74,9 @@ class Scan final {
     columns.clear();
   }
 
-  bool equal(const Scan &other) const noexcept;
+  bool SWC_PURE_FUNC equal(const Scan &other) const noexcept;
 
-  size_t encoded_length() const noexcept;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

@@ -149,7 +149,7 @@ class Interval final {
     return DB::KeySeq::align(key_seq, key, aligned_min, aligned_max);
   }
 
-  bool equal(const Interval& other) const noexcept;
+  bool SWC_PURE_FUNC equal(const Interval& other) const noexcept;
 
   SWC_CAN_INLINE
   bool is_in_begin(const DB::Cell::Key &key) const {
@@ -184,7 +184,7 @@ class Interval final {
   bool includes(const Specs::Interval& interval) const;
   */
 
-  size_t encoded_length() const noexcept;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept;
 
   void encode(uint8_t **ptr) const;
 

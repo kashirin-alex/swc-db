@@ -90,11 +90,11 @@ struct Field_INT64 : Field {
 
   Type type() const noexcept override { return Type::INT64; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
-  bool is_matching(Cell::Serial::Value::Field* vfieldp) override;
+  bool SWC_PURE_FUNC is_matching(Cell::Serial::Value::Field* vfieldp) override;
 
   void print(std::ostream& out) const override;
 
@@ -122,7 +122,7 @@ struct Field_DOUBLE : Field {
 
   Type type() const noexcept override { return Type::DOUBLE; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -164,7 +164,7 @@ struct Field_BYTES : Field {
 
   Type type() const noexcept override { return Type::BYTES; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -204,7 +204,7 @@ struct Field_KEY : Field {
 
   Type type() const noexcept override { return Type::KEY; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -256,7 +256,7 @@ struct Field_LIST_INT64 : Field {
 
   Type type() const noexcept override { return Type::LIST_INT64; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -311,7 +311,7 @@ struct Field_LIST_BYTES : Field {
 
   Type type() const noexcept override { return Type::LIST_BYTES; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -338,7 +338,7 @@ struct Fields {
 
   ~Fields() noexcept { }
 
-  bool has_field_id(uint24_t fid) const noexcept;
+  bool SWC_PURE_FUNC has_field_id(uint24_t fid) const noexcept;
 
   void add(Field::Ptr&& field);
 

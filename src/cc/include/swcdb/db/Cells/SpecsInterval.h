@@ -82,7 +82,7 @@ class Interval {
 
   size_t size_of_internal() const noexcept;
 
-  bool equal(const Interval& other) const noexcept;
+  bool SWC_PURE_FUNC equal(const Interval& other) const noexcept;
 
   SWC_CAN_INLINE
   bool is_matching(const Types::KeySeq key_seq,
@@ -135,7 +135,7 @@ class Interval {
   bool is_in_previous(const Types::KeySeq key_seq,
                       const DB::Cell::Key& prev) const;
 
-  size_t encoded_length() const noexcept;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

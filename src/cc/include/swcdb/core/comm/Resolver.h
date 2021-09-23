@@ -69,7 +69,8 @@ void encode(uint8_t** bufp, const Comm::EndPoint& endpoint);
 Comm::EndPoint decode(const uint8_t** bufp, size_t* remainp);
 
 
-uint32_t encoded_length(const Comm::EndPoints& endpoints) noexcept;
+uint32_t SWC_PURE_FUNC
+encoded_length(const Comm::EndPoints& endpoints) noexcept;
 
 void encode(uint8_t** bufp, const Comm::EndPoints& endpoints);
 
@@ -92,18 +93,18 @@ namespace Comm {
 
 void print(std::ostream& out, const EndPoints& endpoints);
 
-bool has_endpoint(const EndPoint& e1,
-                  const EndPoints& endpoints_in) noexcept;
+bool SWC_PURE_FUNC has_endpoint(const EndPoint& e1,
+                                const EndPoints& endpoints_in) noexcept;
 
-bool has_endpoint(const EndPoints& endpoints,
-                  const EndPoints& endpoints_in) noexcept;
+bool SWC_PURE_FUNC has_endpoint(const EndPoints& endpoints,
+                                const EndPoints& endpoints_in) noexcept;
 
-bool equal_endpoints(const EndPoints& endpoints1,
-                     const EndPoints& endpoints2) noexcept;
+bool SWC_PURE_FUNC equal_endpoints(const EndPoints& endpoints1,
+                                   const EndPoints& endpoints2) noexcept;
 
 size_t endpoints_hash(const EndPoints& endpoints);
 
-size_t endpoint_hash(const EndPoint& endpoint) noexcept;
+size_t SWC_PURE_FUNC endpoint_hash(const EndPoint& endpoint) noexcept;
 
 
 

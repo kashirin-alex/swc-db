@@ -59,7 +59,7 @@ class Readers final : private Core::Vector<Read::Ptr> {
 
   uint32_t get_cell_revs() const;
 
-  int64_t get_ts_earliest() const;
+  int64_t SWC_PURE_FUNC get_ts_earliest() const;
 
   size_t blocks_count() const;
 
@@ -81,9 +81,9 @@ class Readers final : private Core::Vector<Read::Ptr> {
 
   void get_key_end(DB::Cell::Key& key) const;
 
-  bool need_compaction(size_t cs_sz, size_t blk_size) const;
+  bool SWC_PURE_FUNC need_compaction(size_t cs_sz, size_t blk_size) const;
 
-  uint32_t encoded_length() const;
+  uint32_t SWC_PURE_FUNC encoded_length() const;
 
   void encode(uint8_t** ptr) const;
 

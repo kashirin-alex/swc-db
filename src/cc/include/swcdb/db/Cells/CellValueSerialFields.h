@@ -128,7 +128,7 @@ struct Field_INT64 : Field {
 
   Type type() const noexcept override { return Type::INT64; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -157,7 +157,7 @@ struct Field_DOUBLE : Field {
 
   Type type() const noexcept override { return Type::DOUBLE; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -184,7 +184,7 @@ struct Field_BYTES : Field, StaticBuffer {
 
   Type type() const noexcept override { return Type::BYTES; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -219,7 +219,7 @@ struct Field_KEY : Field {
 
   Type type() const noexcept override { return Type::KEY; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -259,7 +259,7 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
 
   Type type() const noexcept override { return Type::LIST_INT64; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 
@@ -303,7 +303,7 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
 
   Type type() const noexcept override { return Type::LIST_BYTES; };
 
-  size_t encoded_length() const noexcept override;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept override;
 
   void encode(uint8_t** bufp) const override;
 

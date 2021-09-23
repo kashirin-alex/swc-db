@@ -105,7 +105,12 @@ static_assert(
   inline
 
 
-#define SWC_CONST_FUNC SWC_ATTRIBS((const))
+#define SWC_CONST_FUNC  SWC_ATTRIBS((const))
+#define SWC_PURE_FUNC   SWC_ATTRIBS((pure))
+#define SWC_MALLOC_FUNC SWC_ATTRIBS((malloc))
+#define SWC_COLD_FUNC   SWC_ATTRIBS((cold))
+
+
 
 /*! @} End of Core Group*/
 

@@ -136,7 +136,7 @@ class KeyIntervals : public Core::Vector<KeyInterval> {
 
   size_t size_of_internal() const noexcept;
 
-  bool equal(const KeyIntervals& other) const noexcept;
+  bool SWC_PURE_FUNC equal(const KeyIntervals& other) const noexcept;
 
   bool is_matching(const Types::KeySeq key_seq,
                    const DB::Cell::Key& cellkey) const;

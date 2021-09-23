@@ -32,11 +32,11 @@ class BufferStreamOut {
 
   virtual ~BufferStreamOut() noexcept { }
 
-  virtual bool empty() const;
+  virtual bool SWC_PURE_FUNC empty() const;
 
-  virtual bool full() const;
+  virtual bool SWC_PURE_FUNC full() const;
 
-  virtual size_t available();
+  virtual size_t SWC_PURE_FUNC available();
 
   virtual void add(const uint8_t* ptr, size_t len);
 
@@ -58,11 +58,11 @@ class BufferStreamOut_ZSTD_OnAdd : public BufferStreamOut {
 
   virtual ~BufferStreamOut_ZSTD_OnAdd() noexcept;
 
-  virtual bool empty() const override;
+  virtual bool SWC_PURE_FUNC empty() const override;
 
-  virtual bool full() const override;
+  virtual bool SWC_PURE_FUNC full() const override;
 
-  virtual size_t available() override;
+  virtual size_t SWC_PURE_FUNC available() override;
 
   virtual void add(const uint8_t* ptr, size_t len) override;
 
@@ -123,7 +123,7 @@ class BufferStreamIn {
 
   virtual ~BufferStreamIn() noexcept { }
 
-  virtual bool empty() const;
+  virtual bool SWC_PURE_FUNC empty() const;
 
   virtual void add(StaticBuffer& inbuffer);
 
@@ -144,7 +144,7 @@ class BufferStreamIn_ZSTD : public BufferStreamIn {
 
   virtual ~BufferStreamIn_ZSTD() noexcept;
 
-  virtual bool empty() const override;
+  virtual bool SWC_PURE_FUNC empty() const override;
 
   virtual void add(StaticBuffer& inbuffer) override;
 

@@ -40,7 +40,7 @@ class ReqColumn final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -71,7 +71,7 @@ class RspRes final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -96,7 +96,7 @@ class RspCids final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -121,7 +121,7 @@ class RspColumnRids final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -146,7 +146,7 @@ class RspColumnsRanges final : public Serializable {
 
     ~Range() noexcept { }
 
-    size_t encoded_length () const;
+    size_t SWC_PURE_FUNC encoded_length () const;
 
     void encode(uint8_t** bufp) const;
 
@@ -158,7 +158,7 @@ class RspColumnsRanges final : public Serializable {
 
   struct Column {
 
-    static bool before(Column* c1, Column* c2);
+    static bool SWC_PURE_FUNC before(Column* c1, Column* c2);
 
     cid_t                cid;
     DB::Types::KeySeq    col_seq;
@@ -167,7 +167,7 @@ class RspColumnsRanges final : public Serializable {
 
     ~Column() noexcept;
 
-    size_t encoded_length() const;
+    size_t SWC_PURE_FUNC encoded_length() const;
 
     void encode(uint8_t** bufp) const;
 
@@ -196,7 +196,7 @@ class RspColumnsRanges final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 

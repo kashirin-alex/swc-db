@@ -36,7 +36,7 @@ enum class Type : uint8_t {
 
 const char* SWC_CONST_FUNC to_string(Type typ) noexcept;
 
-Type encoding_from(const std::string& typ) noexcept;
+Type SWC_PURE_FUNC encoding_from(const std::string& typ) noexcept;
 
 SWC_CAN_INLINE
 std::string repr_encoding(int typ) {

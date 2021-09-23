@@ -22,7 +22,7 @@ bool SWC_CONST_FUNC is_fc(KeySeq typ) noexcept;
 
 const char* SWC_CONST_FUNC to_string(KeySeq typ) noexcept;
 
-KeySeq range_seq_from(const std::string& typ) noexcept;
+KeySeq SWC_PURE_FUNC range_seq_from(const std::string& typ) noexcept;
 
 
 SWC_CAN_INLINE

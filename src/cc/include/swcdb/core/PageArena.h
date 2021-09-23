@@ -377,7 +377,7 @@ struct ItemPtr final { // Item as SmartPtr
   mutable Item::Ptr ptr = nullptr;
 };
 
-bool operator==(ItemPtr l, ItemPtr r) {
+bool SWC_PURE_FUNC operator==(ItemPtr l, ItemPtr r) {
   return l.ptr == r.ptr;
 }
 

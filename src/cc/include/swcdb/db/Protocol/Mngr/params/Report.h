@@ -47,7 +47,7 @@ class ReqColumnStatus final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -81,7 +81,7 @@ class RspColumnStatus final : public Serializable {
       decode(bufp, remainp);
     }
 
-    size_t encoded_length() const;
+    size_t SWC_PURE_FUNC encoded_length() const;
 
     void encode(uint8_t** bufp) const;
 
@@ -98,7 +98,7 @@ class RspColumnStatus final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -138,7 +138,7 @@ class RspRangersStatus final : public Serializable {
     SWC_CAN_INLINE
     ~Ranger() noexcept { }
 
-    size_t encoded_length() const;
+    size_t SWC_PURE_FUNC encoded_length() const;
 
     void encode(uint8_t** bufp) const;
 
@@ -154,7 +154,7 @@ class RspRangersStatus final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 
@@ -194,7 +194,7 @@ class RspManagersStatus final : public Serializable {
     SWC_CAN_INLINE
     ~Manager() noexcept { }
 
-    size_t encoded_length() const;
+    size_t SWC_PURE_FUNC encoded_length() const;
 
     void encode(uint8_t** bufp) const;
 
@@ -212,7 +212,7 @@ class RspManagersStatus final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override;
+  size_t SWC_PURE_FUNC internal_encoded_length() const override;
 
   void internal_encode(uint8_t** bufp) const override;
 

@@ -72,9 +72,9 @@ class Column final : public Core::Vector<Interval::Ptr> {
 
   Interval::Ptr& add(Types::Column col_type);
 
-  bool equal(const Column &other) const noexcept;
+  bool SWC_PURE_FUNC equal(const Column &other) const noexcept;
 
-  size_t encoded_length() const noexcept;
+  size_t SWC_PURE_FUNC encoded_length() const noexcept;
 
   void encode(uint8_t** bufp) const;
 

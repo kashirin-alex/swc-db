@@ -30,7 +30,7 @@ bool SWC_CONST_FUNC is_counter(const Column typ) noexcept;
 
 const char* SWC_CONST_FUNC to_string(Column typ) noexcept;
 
-Column column_type_from(const std::string& typ) noexcept;
+Column SWC_PURE_FUNC column_type_from(const std::string& typ) noexcept;
 
 
 SWC_CAN_INLINE

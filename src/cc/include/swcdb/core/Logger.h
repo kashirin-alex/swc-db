@@ -51,9 +51,11 @@ class LogWriter final {
 
   static std::string repr(uint8_t priority);
 
-  static const char* get_name(uint8_t priority) noexcept;
+  static const char* SWC_PURE_FUNC
+  get_name(uint8_t priority) noexcept;
 
-  static uint8_t from_string(const std::string& loglevel) noexcept;
+  static uint8_t SWC_PURE_FUNC
+  from_string(const std::string& loglevel) noexcept;
 
 
   MutexSptd    mutex;

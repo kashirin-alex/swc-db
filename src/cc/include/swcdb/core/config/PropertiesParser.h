@@ -121,7 +121,7 @@ class ParserConfig final {
 
   std::string position_name(int n);
 
-  bool has(const std::string& name) const noexcept;
+  bool SWC_PURE_FUNC has(const std::string& name) const noexcept;
 
   bool has(const std::string& name, std::string& alias_to) const noexcept;
 

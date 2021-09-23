@@ -96,7 +96,10 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtrampolines")
 
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=const -Wno-error=suggest-attribute=const")
-
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=pure -Wno-error=suggest-attribute=pure")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=noreturn -Wno-error=suggest-attribute=noreturn")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=malloc -Wno-error=suggest-attribute=malloc")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=cold -Wno-error=suggest-attribute=cold")
 
   # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Walloc-zero -Wno-error=alloc-zero")
   # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-final-types -Wno-error=suggest-final-types")

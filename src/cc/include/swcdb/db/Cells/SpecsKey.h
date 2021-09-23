@@ -171,7 +171,7 @@ class Key final : public Core::Vector<Fraction> {
     Vec::operator=(std::move(other));
   }
 
-  bool equal(const Key &other) const noexcept;
+  bool SWC_PURE_FUNC equal(const Key &other) const noexcept;
 
 
   void set(const DB::Cell::Key &cell_key, Condition::Comp comp);

@@ -32,7 +32,7 @@ class Reader {
 
   ~Reader() noexcept { }
 
-  bool is_char(const char* stop) const;
+  bool SWC_PURE_FUNC is_char(const char* stop) const;
 
   bool found_char(const char c);
 
