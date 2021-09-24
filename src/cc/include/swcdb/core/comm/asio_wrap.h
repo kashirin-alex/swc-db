@@ -17,12 +17,16 @@
 #pragma GCC diagnostic ignored  "-Wzero-as-null-pointer-constant"
 
 
-#if defined(__GNUC__) && !defined(__clang__) 
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored  "-Wnoexcept"
 #pragma GCC diagnostic ignored  "-Wsuggest-override"
 #pragma GCC diagnostic ignored  "-Wuseless-cast"
 #pragma GCC diagnostic ignored  "-Wstrict-null-sentinel"
 #pragma GCC diagnostic ignored  "-Wduplicated-branches"
+#pragma GCC diagnostic ignored  "-Wsuggest-attribute=const"
+#pragma GCC diagnostic ignored  "-Wsuggest-attribute=pure"
+#pragma GCC diagnostic ignored  "-Wsuggest-attribute=malloc"
+#pragma GCC diagnostic ignored  "-Wsuggest-attribute=cold"
 #endif
 
 

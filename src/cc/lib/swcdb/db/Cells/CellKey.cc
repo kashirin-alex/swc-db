@@ -136,10 +136,12 @@ void Key::get(uint32_t idx, const char** fraction, uint32_t* length) const {
       if(!idx) {
         *fraction = reinterpret_cast<const char*>(ptr);
         *length = len;
-        break;
+        return;
       }
     }
   }
+  *fraction = nullptr;
+  *length = 0;
 }
 
 void Key::display_details(std::ostream& out, bool pretty) const {

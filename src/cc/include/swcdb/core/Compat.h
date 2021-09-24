@@ -105,10 +105,13 @@ static_assert(
   inline
 
 
-#define SWC_CONST_FUNC  SWC_ATTRIBS((const))
-#define SWC_PURE_FUNC   SWC_ATTRIBS((pure))
-#define SWC_MALLOC_FUNC SWC_ATTRIBS((malloc))
-#define SWC_COLD_FUNC   SWC_ATTRIBS((cold))
+#define SWC_CONST_FUNC        SWC_ATTRIBS((const))
+#define SWC_PURE_FUNC         SWC_ATTRIBS((pure))
+#define SWC_MALLOC_FUNC       SWC_ATTRIBS((malloc))
+#define SWC_COLD_FUNC         SWC_ATTRIBS((cold))
+#define SWC_NONULL_RET_FUNC   SWC_ATTRIBS((returns_nonnull))
+
+#define SWC_HIDE              SWC_ATTRIBS((visibility ("hidden")))
 
 
 

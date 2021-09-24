@@ -24,44 +24,33 @@ Mngr::Mngr()
       )->init()
     ) {
 
-  options.push_back(
-    new Option(
-      "cluster",
-      {"report cluster-status state by error",
-      "cluster;"},
-      [ptr=this](std::string& cmd){return ptr->cluster_status(cmd);},
-      new re2::RE2("(?i)^(cluster)(\\s|$)")
-    )
+  add_option(
+    "cluster",
+    {"report cluster-status state by error",
+    "cluster;"},
+    [ptr=this](std::string& cmd){return ptr->cluster_status(cmd);},
+    "(?i)^(cluster)(\\s|$)"
   );
-
-  options.push_back(
-    new Option(
-      "status",
-      {"report managers status by mngr-endpoint, of Schema-Role or by All",
-      "status [Schemas(default) | ALL | endpoint=HOST/IP(|PORT)];"},
-      [ptr=this](std::string& cmd){return ptr->managers_status(cmd);},
-      new re2::RE2("(?i)^(report|status)(\\s|$)")
-    )
+  add_option(
+    "status",
+    {"report managers status by mngr-endpoint, of Schema-Role or by All",
+    "status [Schemas(default) | ALL | endpoint=HOST/IP(|PORT)];"},
+    [ptr=this](std::string& cmd){return ptr->managers_status(cmd);},
+    "(?i)^(report|status)(\\s|$)"
   );
-
-  options.push_back(
-    new Option(
-      "column-status",
-      {"report column status with ranges status",
-      "column-status [cid=CID | name=NAME];"},
-      [ptr=this](std::string& cmd){return ptr->column_status(cmd);},
-      new re2::RE2("(?i)^(report-column|column-status)")
-    )
+  add_option(
+    "column-status",
+    {"report column status with ranges status",
+    "column-status [cid=CID | name=NAME];"},
+    [ptr=this](std::string& cmd){return ptr->column_status(cmd);},
+    "(?i)^(report-column|column-status)"
   );
-
-  options.push_back(
-    new Option(
-      "rangers-status",
-      {"report rangers status by Manager of column or Rangers-Role",
-      "rangers-status [without | cid=CID | name=NAME];"},
-      [ptr=this](std::string& cmd){return ptr->rangers_status(cmd);},
-      new re2::RE2("(?i)^(report-rangers|rangers-status)")
-    )
+  add_option(
+    "rangers-status",
+    {"report rangers status by Manager of column or Rangers-Role",
+    "rangers-status [without | cid=CID | name=NAME];"},
+    [ptr=this](std::string& cmd){return ptr->rangers_status(cmd);},
+    "(?i)^(report-rangers|rangers-status)"
   );
 }
 

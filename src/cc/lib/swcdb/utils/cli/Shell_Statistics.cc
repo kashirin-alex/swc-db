@@ -44,80 +44,70 @@ Statistics::Statistics()
     ),
     m_stat_names(default_stat_names) {
 
-  options.push_back(
-    new Option(
-      "show",
-      {"show last='DURATION' since='DATETIME' agg='DURATION'",
-       "     host='STRING' group='STRING' role='STRING' id='STRING'",
-       "     component='STRING' part='STRING' type='STRING' metric='STRING'",
-       "     AND .. ;",
-       "  -> show last=30day group=swcdb role=rgr component=fs part=broker;",
-       "     # show Fs-Broker stats on Ranger for the last 30 days",
-       "  -> show since='2021/05/01 00:00:00' component='cpu';",
-       "     # show CPU on all roles having CPU metrics since May of 2021",
-       "* STRING:   string-type definition is optional",
-       "* DURATION: in Decimal[week|day|hour|minute] (4week)",
-       "* DATETIME: in format YYYY/MM/DD HH:mm:ss or seconds-timestamp",
-       "* 'last=':  The Duration set or NONE default to 7day",
-       "* 'since=': The Datetime set or NONE for since (now-'last'|ever)",
-       "* 'agg=':   The Duration for aggregations or NONE into-single entry",
-       "* AND:      Another metrics group"
-      },
-      [this](std::string& cmd) { return read(cmd, true); },
-      new re2::RE2("(?i)^show(.*|$)")
-    )
+  add_option(
+    "show",
+    {"show last='DURATION' since='DATETIME' agg='DURATION'",
+     "     host='STRING' group='STRING' role='STRING' id='STRING'",
+     "     component='STRING' part='STRING' type='STRING' metric='STRING'",
+     "     AND .. ;",
+     "  -> show last=30day group=swcdb role=rgr component=fs part=broker;",
+     "     # show Fs-Broker stats on Ranger for the last 30 days",
+     "  -> show since='2021/05/01 00:00:00' component='cpu';",
+     "     # show CPU on all roles having CPU metrics since May of 2021",
+     "* STRING:   string-type definition is optional",
+     "* DURATION: in Decimal[week|day|hour|minute] (4week)",
+     "* DATETIME: in format YYYY/MM/DD HH:mm:ss or seconds-timestamp",
+     "* 'last=':  The Duration set or NONE default to 7day",
+     "* 'since=': The Datetime set or NONE for since (now-'last'|ever)",
+     "* 'agg=':   The Duration for aggregations or NONE into-single entry",
+     "* AND:      Another metrics group"
+    },
+    [this](std::string& cmd) { return read(cmd, true); },
+    "(?i)^show(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "list metrics",
-      {"list metrics host='STRING' group='STRING' role='STRING' id='STRING'",
-       "             component='STRING' part='STRING' type='STRING' AND .. ;",
-       "  -> list metrics;",
-       "     # List all metrics definitions"
-      },
-      [this](std::string& cmd) { return read(cmd, false); },
-      new re2::RE2("(?i)^list metrics(.*|$)")
-    )
+  add_option(
+    "list metrics",
+    {"list metrics host='STRING' group='STRING' role='STRING' id='STRING'",
+     "             component='STRING' part='STRING' type='STRING' AND .. ;",
+     "  -> list metrics;",
+     "     # List all metrics definitions"
+    },
+    [this](std::string& cmd) { return read(cmd, false); },
+    "(?i)^list metrics(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "truncate",
-      {"truncate last='DURATION' since='DATETIME' agg='DURATION'",
-       "         host='STRING' group='STRING' role='STRING' id='STRING'",
-       "         component='STRING' part='STRING'",
-       "         type='STRING' AND ..;",
-       "  -> truncate;",
-       "     # Truncate all metrics"
-      },
-      [this](std::string& cmd) { return read(cmd, true); },
-      new re2::RE2("(?i)^truncate(.*|$)")
-    )
+  add_option(
+    "truncate",
+    {"truncate last='DURATION' since='DATETIME' agg='DURATION'",
+     "         host='STRING' group='STRING' role='STRING' id='STRING'",
+     "         component='STRING' part='STRING'",
+     "         type='STRING' AND ..;",
+     "  -> truncate;",
+     "     # Truncate all metrics"
+    },
+    [this](std::string& cmd) { return read(cmd, true); },
+    "(?i)^truncate(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "set stat-names",
-      {"set stat-names F1,F2, .. or 'swcdb-default';",
-       "* swcdb-default: host,group,role,id,component,part,type"},
-      [this](std::string& cmd) { return read(cmd, false); },
-      new re2::RE2("(?i)^set stat-names(.*|$)")
-    )
+  add_option(
+    "set stat-names",
+    {"set stat-names F1,F2, .. or 'swcdb-default';",
+     "* swcdb-default: host,group,role,id,component,part,type"},
+    [this](std::string& cmd) { return read(cmd, false); },
+    "(?i)^set stat-names(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "list stat-names",
-      {"list stat-names;"},
-      [this](std::string&) {
-        SWC_PRINT << "stat-names: ";
-        for(auto it=m_stat_names.cbegin(); it != m_stat_names.cend();) {
-          SWC_LOG_OSTREAM << '"' << *it << '"';
-          if(++it != m_stat_names.cend())
-            SWC_LOG_OSTREAM<< ", ";
-        }
-        SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
-        return true;
-      },
-      new re2::RE2("(?i)^list stat-names(.*|$)")
-    )
+  add_option(
+    "list stat-names",
+    {"list stat-names;"},
+    [this](std::string&) {
+      SWC_PRINT << "stat-names: ";
+      for(auto it=m_stat_names.cbegin(); it != m_stat_names.cend();) {
+        SWC_LOG_OSTREAM << '"' << *it << '"';
+        if(++it != m_stat_names.cend())
+          SWC_LOG_OSTREAM<< ", ";
+      }
+      SWC_LOG_OSTREAM << SWC_PRINT_CLOSE;
+      return true;
+    },
+    "(?i)^list stat-names(.*|$)"
   );
 
   SWC_ASSERT(!with_broker || clients->brokers.has_endpoints());

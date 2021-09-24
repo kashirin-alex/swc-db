@@ -24,24 +24,19 @@ Rgr::Rgr()
       )->init()
     ) {
 
-  options.push_back(
-    new Option(
-      "report-resources",
-      {"report Ranger resources",
-      "report-resources endpoint/hostname[|port];"},
-      [ptr=this](std::string& cmd){return ptr->report_resources(cmd);},
-      new re2::RE2("(?i)^(report-resources)")
-    )
+  add_option(
+    "report-resources",
+    {"report Ranger resources",
+    "report-resources endpoint/hostname[|port];"},
+    [ptr=this](std::string& cmd){return ptr->report_resources(cmd);},
+    "(?i)^(report-resources)"
   );
-
-  options.push_back(
-    new Option(
-      "report",
-      {"report loaded column or all and opt. ranges on a Ranger",
-      "report [cid=NUM/column='name'] [ranges] endpoint/hostname[|port];"},
-      [ptr=this](std::string& cmd){return ptr->report(cmd);},
-      new re2::RE2("(?i)^(report)")
-    )
+  add_option(
+    "report",
+    {"report loaded column or all and opt. ranges on a Ranger",
+    "report [cid=NUM/column='name'] [ranges] endpoint/hostname[|port];"},
+    [ptr=this](std::string& cmd){return ptr->report(cmd);},
+    "(?i)^(report)"
   );
 }
 

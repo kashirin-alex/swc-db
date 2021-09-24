@@ -167,8 +167,8 @@ class Key final {
 
   SWC_CAN_INLINE
   std::string get_string(uint32_t idx) const {
-    const char* fraction = nullptr;
-    uint32_t length = 0;
+    const char* fraction;
+    uint32_t length;
     get(idx, &fraction, &length);
     return std::string(fraction, length);
   }

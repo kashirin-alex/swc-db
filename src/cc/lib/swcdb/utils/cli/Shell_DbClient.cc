@@ -49,132 +49,105 @@ DbClient::DbClient()
       )->init()
     ) {
 
-  options.push_back(
-    new Option(
-      "add column",
-      {"add column|schema (schema definitions [name=value ]);"},
-      [ptr=this](std::string& cmd){
-        return ptr->mng_column(
-          Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE, cmd);
-      },
-      new re2::RE2(
-        "(?i)^(add|create)\\s+(column|schema)(.*|$)")
-    )
+  add_option(
+    "add column",
+    {"add column|schema (schema definitions [name=value ]);"},
+    [ptr=this](std::string& cmd){
+      return ptr->mng_column(
+        Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE, cmd);
+    },
+    "(?i)^(add|create)\\s+(column|schema)(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "modify column",
-      {"modify column|schema (schema definitions [name=value ]);"},
-      [ptr=this](std::string& cmd){
-        return ptr->mng_column(
-          Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY, cmd);
-      },
-      new re2::RE2(
-        "(?i)^(modify|change|update)\\s+(column|schema)(.*|$)")
-    )
+  add_option(
+    "modify column",
+    {"modify column|schema (schema definitions [name=value ]);"},
+    [ptr=this](std::string& cmd){
+      return ptr->mng_column(
+        Comm::Protocol::Mngr::Params::ColumnMng::Function::MODIFY, cmd);
+    },
+    "(?i)^(modify|change|update)\\s+(column|schema)(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "delete column",
-      {"delete column|schema (schema definitions [name=value ]);"},
-      [ptr=this](std::string& cmd){
-        return ptr->mng_column(
-          Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE, cmd);
-      },
-      new re2::RE2(
-        "(?i)^(delete|remove)\\s+(column|schema)(.*|$)")
-    )
+  add_option(
+    "delete column",
+    {"delete column|schema (schema definitions [name=value ]);"},
+    [ptr=this](std::string& cmd){
+      return ptr->mng_column(
+        Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE, cmd);
+    },
+    "(?i)^(delete|remove)\\s+(column|schema)(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "list columns",
-      {"list|get column|s [OUTPUT_FLAGS]",
-       "     [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];",
-       "* OUTPUT_FLAGS: OUTPUT_ONLY_CID"},
-      [ptr=this](std::string& cmd){return ptr->list_columns(cmd);},
-      new re2::RE2(
-        "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)")
-    )
+  add_option(
+    "list columns",
+    {"list|get column|s [OUTPUT_FLAGS]",
+    "     [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];",
+    "* OUTPUT_FLAGS: OUTPUT_ONLY_CID"},
+    [ptr=this](std::string& cmd){return ptr->list_columns(cmd);},
+    "(?i)^(get|list)\\s+((column(|s))|(schema|s))(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "compact column",
-      {"compact column|s",
-       "     [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];"},
-      [ptr=this](std::string& cmd) {
-        return ptr->compact_column(cmd);
-      },
-      new re2::RE2(
-        "(?i)^(compact)\\s+(column(|s))(.*|$)")
-    )
+  add_option(
+    "compact column",
+    {"compact column|s",
+     "     [(NAME|ID),.., Comp'expr',.., tags Comp[Comp'expr',..]];"},
+    [ptr=this](std::string& cmd) {
+      return ptr->compact_column(cmd);
+    },
+    "(?i)^(compact)\\s+(column(|s))(.*|$)"
   );
-  options.push_back(
-    new Option(
-      "select",
-      {"select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;",
-      "-> select where COL(NAME|ID,.,Comp'expr',.,tags Comp[Comp'expr',..])",
-      "                 = (cells=(Interval Flags)) AND",
-      "     COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(",
-      "       [F-begin] <= range <= [F-end]                   AND",
-      "       [[COMP 'F-start'] <=  key  <= [COMP 'F-finish'] AND]",
-      "       'TS-begin' <= timestamp <= 'TS-finish'          AND",
-      "       offset_key = [F] offset_rev='TS'                AND",
-      "       value COMP 'DATA'                                  ",
-      "       LIMIT=NUM OFFSET=NUM MAX_VERSIONS=NUM ONLY_KEYS ONLY_DELETES)",
-      "     ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;",
-      "* DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..]) "},
-      [ptr=this](std::string& cmd){return ptr->select(cmd);},
-      new re2::RE2(
-        "(?i)^(select)(\\s+|$)")
-    )
+  add_option(
+    "select",
+    {"select where [Columns[Cells[Interval Flags]]] Flags DisplayFlags;",
+    "-> select where COL(NAME|ID,.,Comp'expr',.,tags Comp[Comp'expr',..])",
+    "                 = (cells=(Interval Flags)) AND",
+    "     COL(NAME-2|ID-2,) = ( cells=(Interval Flags) AND cells=(",
+    "       [F-begin] <= range <= [F-end]                   AND",
+    "       [[COMP 'F-start'] <=  key  <= [COMP 'F-finish'] AND]",
+    "       'TS-begin' <= timestamp <= 'TS-finish'          AND",
+    "       offset_key = [F] offset_rev='TS'                AND",
+    "       value COMP 'DATA'                                  ",
+    "       LIMIT=NUM OFFSET=NUM MAX_VERSIONS=NUM ONLY_KEYS ONLY_DELETES)",
+    "     ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;",
+    "* DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..]) "},
+    [ptr=this](std::string& cmd){return ptr->select(cmd);},
+    "(?i)^(select)(\\s+|$)"
   );
-  options.push_back(
-    new Option(
-      "update",
-      {"update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;",
-      "-> UPDATE ",
-      "     cell(DELETE,                  CID, ['K','E','Y']             );",
-      "     cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         );",
-      "     cell(DELETE_FRACTION,         CID, ['K','E','Y']             );",
-      "     cell(DELETE_FRACTION_VERSION, CID, ['K','E'],     TS         );",
-      "     cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, ''),",
-      "     cell(INSERT,                  CID, ['K','E','Y'], DESC       ),",
-      "     cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' ),",
-      "     cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );",
-      "* FLAG: INSERT|1 DELETE|2 DELETE_VERSION|3 ",
-      "       INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6",
-      "* Encoder(ENC): at INSERT with DATA, options: ZLIB|2 SNAPPY|3 ZSTD|4",
-      "* DATA: PLAIN( val ) COUNTER( -/+/=val ) SERIAL( [ID:TYPE:val, ..] )",
-      },
-      [ptr=this](std::string& cmd){return ptr->update(cmd);},
-      new re2::RE2(
-        "(?i)^(update)(\\s+|$)")
-    )
+  add_option(
+    "update",
+    {"update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;",
+    "-> UPDATE ",
+    "     cell(DELETE,                  CID, ['K','E','Y']             );",
+    "     cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         );",
+    "     cell(DELETE_FRACTION,         CID, ['K','E','Y']             );",
+    "     cell(DELETE_FRACTION_VERSION, CID, ['K','E'],     TS         );",
+    "     cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, ''),",
+    "     cell(INSERT,                  CID, ['K','E','Y'], DESC       ),",
+    "     cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' ),",
+    "     cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );",
+    "* FLAG: INSERT|1 DELETE|2 DELETE_VERSION|3 ",
+    "       INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6",
+    "* Encoder(ENC): at INSERT with DATA, options: ZLIB|2 SNAPPY|3 ZSTD|4",
+    "* DATA: PLAIN( val ) COUNTER( -/+/=val ) SERIAL( [ID:TYPE:val, ..] )",
+    },
+    [ptr=this](std::string& cmd){return ptr->update(cmd);},
+    "(?i)^(update)(\\s+|$)"
   );
-  options.push_back(
-    new Option(
-      "dump",
-      {"dump col='ID|NAME' into [FS] path='folder/path/' [FORMAT]",
-      "   where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;",
-      "-> dump col='ColName' into fs=hadoop_jvm path='FolderName' ",
-      "     split=1GB ext=zst level=6 OUTPUT_NO_* TS/VALUE|ENCODE;",
-      "* FS optional: [fs=Type] Write to the specified Type",
-      "* FORMAT optional: split=1GB ext=zst level=INT(ext-dependent)",
-      },
-      [ptr=this](std::string& cmd){return ptr->dump(cmd);},
-      new re2::RE2(
-        "(?i)^(dump)(\\s+|$)")
-    )
+  add_option(
+    "dump",
+    {"dump col='ID|NAME' into [FS] path='folder/path/' [FORMAT]",
+    "   where [cells=(Interval Flags) AND .. ] OutputFlags DisplayFlags;",
+    "-> dump col='ColName' into fs=hadoop_jvm path='FolderName' ",
+    "     split=1GB ext=zst level=6 OUTPUT_NO_* TS/VALUE|ENCODE;",
+    "* FS optional: [fs=Type] Write to the specified Type",
+    "* FORMAT optional: split=1GB ext=zst level=INT(ext-dependent)",
+    },
+    [ptr=this](std::string& cmd){return ptr->dump(cmd);},
+    "(?i)^(dump)(\\s+|$)"
   );
-  options.push_back(
-    new Option(
-      "load",
-      {"load from [FS] path='folder/path/' into col='ID|NAME' DisplayFlags;",
-      "* FS optional: [fs=Type] Read from the specified Type"},
-      [ptr=this](std::string& cmd){return ptr->load(cmd);},
-      new re2::RE2(
-        "(?i)^(load)(\\s+|$)")
-    )
+  add_option(
+    "load",
+    {"load from [FS] path='folder/path/' into col='ID|NAME' DisplayFlags;",
+    "* FS optional: [fs=Type] Read from the specified Type"},
+    [ptr=this](std::string& cmd){return ptr->load(cmd);},
+    "(?i)^(load)(\\s+|$)"
   );
 
   SWC_ASSERT(!with_broker || clients->brokers.has_endpoints());

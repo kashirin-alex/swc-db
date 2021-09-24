@@ -8,7 +8,6 @@
 
 #include "swcdb/core/config/Settings.h"
 
-#include <re2/re2.h>
 
 extern "C" {
 int   swcdb_utils_run();
@@ -51,30 +50,14 @@ class Interface {
 
   protected:
 
-  struct Option final {
-    typedef std::function<bool(std::string&)> Call_t;
-
-    Option(std::string&& a_name, Core::Vector<std::string>&& a_desc,
-           Call_t&& a_call, const re2::RE2* a_re) noexcept
-          : name(std::move(a_name)),
-            desc(std::move(a_desc)),
-            call(std::move(a_call)), re(a_re) {
-    }
-
-    ~Option() noexcept {
-      if(re)
-        delete re;
-    }
-
-    const std::string               name;
-    const Core::Vector<std::string> desc;
-    const Call_t      call;
-    const re2::RE2*   re;
-  };
-
   mutable int           err;
   CLI                   _state;
-  Core::Vector<Option*> options;
+
+  typedef std::function<bool(std::string&)> OptCall_t;
+  void add_option(const char* a_name,
+                  Core::Vector<std::string>&& a_desc,
+                  OptCall_t&& a_call,
+                  const char* a_re);
 
   bool error(const std::string& message);
 
@@ -94,6 +77,9 @@ class Interface {
 
   const std::string   prompt;
   const std::string   history;
+
+  struct Option;
+  Core::Vector<Option*> options;
 };
 
 

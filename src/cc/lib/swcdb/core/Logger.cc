@@ -14,7 +14,7 @@ namespace SWC { namespace Core {
 /** INITIATE SINGLETONE LOGGER INSTANCE. **/
 LogWriter logger;
 
-const char* priority_name[] = {
+static const char* priority_name[] = {
   "FATAL",
   "ALERT",
   "CRIT",

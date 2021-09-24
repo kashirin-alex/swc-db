@@ -51,7 +51,7 @@ class LogWriter final {
 
   static std::string repr(uint8_t priority);
 
-  static const char* SWC_PURE_FUNC
+  static const char* SWC_CONST_FUNC
   get_name(uint8_t priority) noexcept;
 
   static uint8_t SWC_PURE_FUNC

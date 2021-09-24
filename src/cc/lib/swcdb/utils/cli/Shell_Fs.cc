@@ -24,14 +24,12 @@ Fs::Fs()
     FS::fs_type(Env::Config::settings()->get_str("swc.fs"))
   );
 
-  options.push_back(
-    new Option(
-      "list",
-      {"list directory contents",
-       "list 'path';"},
-      [ptr=this](const std::string& cmd){ return ptr->ls(cmd); },
-      new re2::RE2("(?i)^(ls|list)")
-    )
+  add_option(
+    "list",
+    {"list directory contents",
+     "list 'path';"},
+    [ptr=this](const std::string& cmd){ return ptr->ls(cmd); },
+    "(?i)^(ls|list)"
   );
 }
 

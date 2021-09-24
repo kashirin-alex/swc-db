@@ -72,6 +72,27 @@ int run() {
   return 0;
 }
 
+
+
+struct Interface::Option final {
+  Option(std::string&& a_name, Core::Vector<std::string>&& a_desc,
+         OptCall_t&& a_call, const char* a_re) noexcept
+        : name(std::move(a_name)),
+          desc(std::move(a_desc)),
+          call(std::move(a_call)), re(new re2::RE2(a_re)) {
+  }
+  ~Option() noexcept {
+    if(re)
+      delete re;
+  }
+  const std::string               name;
+  const Core::Vector<std::string> desc;
+  const OptCall_t                 call;
+  const re2::RE2*                 re;
+};
+
+
+
 Interface::Interface(std::string&& a_prompt, std::string&& a_history)
                     : err(Error::OK), _state(CLI::QUIT_CLI),
                       prompt(std::move(a_prompt)),
@@ -172,30 +193,32 @@ CLI Interface::run() {
   return _state;
 }
 
+void Interface::add_option(const char* a_name,
+                           Core::Vector<std::string>&& a_desc,
+                           OptCall_t&& a_call,
+                           const char* a_re) {
+  options.emplace_back(new Option(
+    std::move(a_name), std::move(a_desc), std::move(a_call), a_re));
+}
+
 void Interface::init() {
-  options.push_back(
-    new Option(
-      "quit",
-      {"Quit or Exit the Console"},
-      [ptr=this](std::string& cmd){return ptr->quit(cmd);},
-      new re2::RE2("(?i)^(quit|exit)(\\s+|$)")
-    )
+  add_option(
+    "quit",
+    {"Quit or Exit the Console"},
+    [ptr=this](std::string& cmd){return ptr->quit(cmd);},
+    "(?i)^(quit|exit)(\\s+|$)"
   );
-  options.push_back(
-    new Option(
-      "help",
-      {"Commands help information"},
-      [ptr=this](std::string& cmd){return ptr->help(cmd);},
-      new re2::RE2("(?i)^(help)(\\s+|$)")
-    )
+  add_option(
+    "help",
+    {"Commands help information"},
+    [ptr=this](std::string& cmd){return ptr->help(cmd);},
+    "(?i)^(help)(\\s+|$)"
   );
-  options.push_back(
-    new Option(
-      "switch to",
-      {"Switch to other CLI, options: rgr|mngr|fs|stats|client"},
-      [ptr=this](std::string& cmd){return ptr->switch_to(cmd);},
-      new re2::RE2("(?i)^(switch\\s+to)(\\s+|$)")
-    )
+  add_option(
+    "switch to",
+    {"Switch to other CLI, options: rgr|mngr|fs|stats|client"},
+    [ptr=this](std::string& cmd){return ptr->switch_to(cmd);},
+    "(?i)^(switch\\s+to)(\\s+|$)"
   );
 }
 
