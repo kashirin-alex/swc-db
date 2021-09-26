@@ -44,6 +44,7 @@ SET(CORE_LIBS ${CORE_LIBS} dl pthread) # stdc++fs
 if(SWC_ENABLE_SANITIZER STREQUAL "address")
   SET(CORE_LIBS ${CORE_LIBS} rt)
   SET(CORE_LIBS ${CORE_LIBS} asan lsan ubsan)
+  # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
 elseif(SWC_ENABLE_SANITIZER STREQUAL "thread")
   SET(CORE_LIBS ${CORE_LIBS} rt)
   SET(CORE_LIBS ${CORE_LIBS} tsan)

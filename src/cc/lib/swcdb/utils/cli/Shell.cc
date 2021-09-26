@@ -79,16 +79,14 @@ struct Interface::Option final {
          OptCall_t&& a_call, const char* a_re) noexcept
         : name(std::move(a_name)),
           desc(std::move(a_desc)),
-          call(std::move(a_call)), re(new re2::RE2(a_re)) {
+          call(std::move(a_call)),
+          re(a_re) {
   }
-  ~Option() noexcept {
-    if(re)
-      delete re;
-  }
+  ~Option() noexcept { }
   const std::string               name;
   const Core::Vector<std::string> desc;
   const OptCall_t                 call;
-  const re2::RE2*                 re;
+  const re2::RE2                  re;
 };
 
 
@@ -300,7 +298,7 @@ bool Interface::cmd_option(std::string& cmd) const {
   err = Error::OK;
   auto opt = std::find_if(options.cbegin(), options.cend(),
               [cmd](const Option* _opt){
-                return RE2::PartialMatch(cmd.c_str(), *_opt->re);
+                return Condition::re(_opt->re, cmd.c_str(), cmd.size());
               });
   if(opt != options.cend())
     return (*opt)->call(cmd);

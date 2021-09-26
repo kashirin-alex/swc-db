@@ -8,9 +8,9 @@
 
 
 
-extern inline const char SWCDB_VERSION[]   = SWCDB_SET_VERSION;
+static const char SWCDB_VERSION[]   = SWCDB_SET_VERSION;
 
-extern inline const char SWCDB_COPYRIGHT[] = SWCDB_SET_COPYRIGHT;
+static const char SWCDB_COPYRIGHT[] = SWCDB_SET_COPYRIGHT;
 
 
 const char* swcdb_version() noexcept {

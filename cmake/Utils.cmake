@@ -187,7 +187,7 @@ endif ()
 
 message("")
 message(STATUS "Build Type and Flags:")
-message("       C FLAGS: ${CMAKE_CFLAGS}")
+message("       C FLAGS: ${CMAKE_C_FLAGS}")
 message("       CXX FLAGS: ${CMAKE_CXX_FLAGS}")
 message("       BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)

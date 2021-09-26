@@ -239,8 +239,7 @@ bool re(const uint8_t* p1, uint32_t p1_len,
   if(!p1 || !p1_len)
     return !p2 || !p2_len;
   return re(
-    re2::RE2(
-      re2::StringPiece(reinterpret_cast<const char*>(p1), p1_len)),
+    re2::RE2(re2::StringPiece(reinterpret_cast<const char*>(p1), p1_len)),
     reinterpret_cast<const char*>(p2), p2_len
   );
 }

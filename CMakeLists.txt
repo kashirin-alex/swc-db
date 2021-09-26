@@ -194,12 +194,14 @@ else()
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 
-    # if (O_LEVEL STREQUAL "3")
-    #  if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    #    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fipa-pta")
-    #    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fipa-pta")
-    #  endif()
-    # endif()
+    if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdevirtualize-at-ltrans")
+
+      # if (O_LEVEL STREQUAL "3")
+      #    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fipa-pta")
+      #    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fipa-pta")
+      #  endif()
+    endif()
 
     if(O_LEVEL MATCHES "[4-7]")
 
