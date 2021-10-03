@@ -197,6 +197,12 @@ else()
     if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdevirtualize-at-ltrans")
 
+      # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftree-loop-ivcanon -fivopts")
+      # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmodulo-sched -fmodulo-sched-allow-regmoves")
+      # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fgcse-sm -fgcse-las")
+      # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flive-range-shrinkage")
+
+      # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -funroll-loops")
       # if (O_LEVEL STREQUAL "3")
       #    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fipa-pta")
       #    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fipa-pta")

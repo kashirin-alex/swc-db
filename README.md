@@ -42,6 +42,7 @@ _All the documentations are based on the ./docs/_.
 
 ### COMMERCIAL SUPPORT
 * ###### Post a Job & Invite on [Upwork Profile](https://www.upwork.com/o/profiles/users/~016a24b743cc810aea/?s=1031626811434844160)
+* ###### [Schedule a Meeting](https://calendly.com/kashirin-alex/swc-db-proposal-discussion)
 * ###### Contact for a Proposal Directly via kashirin.alex@gmail.com
 
 

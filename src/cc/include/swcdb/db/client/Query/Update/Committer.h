@@ -94,7 +94,7 @@ class Committer final : public std::enable_shared_from_this<Committer> {
   void locate_on_ranger(Comm::EndPoints&& endpoints, int64_t revision=0);
 
   void located_on_ranger(
-      Comm::EndPoints&& endpoints,
+      const Comm::EndPoints& endpoints,
       const ReqBase::Ptr& base,
       const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp);
 

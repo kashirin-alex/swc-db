@@ -260,7 +260,7 @@ void Committer::locate_on_ranger(Comm::EndPoints&& endpoints,
   SWC_LOCATOR_REQ_DEBUG("locate_on_ranger");
   struct ReqData : ReqDataBase {
     Profiling::Component::Start profile;
-    Comm::EndPoints             endpoints;
+    const Comm::EndPoints       endpoints;
     SWC_CAN_INLINE
     ReqData(const Ptr& a_committer, Comm::EndPoints& a_endpoints,
             DB::Types::Range type) noexcept
@@ -273,7 +273,7 @@ void Committer::locate_on_ranger(Comm::EndPoints&& endpoints,
     void callback(const ReqBase::Ptr& req,
                   const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
       profile.add(!rsp.rid || rsp.err);
-      committer->located_on_ranger(std::move(endpoints), req, rsp);
+      committer->located_on_ranger(endpoints, req, rsp);
     }
   };
 
@@ -283,7 +283,7 @@ void Committer::locate_on_ranger(Comm::EndPoints&& endpoints,
 }
 
 void Committer::located_on_ranger(
-      Comm::EndPoints&& endpoints,
+      const Comm::EndPoints& endpoints,
       const ReqBase::Ptr& base,
       const Comm::Protocol::Rgr::Params::RangeLocateRsp& rsp) {
   if(!hdlr->valid())
@@ -335,7 +335,7 @@ void Committer::located_on_ranger(
         cid, colp, next_key_start,
         hdlr, base,
         rid
-      ))->locate_on_ranger(std::move(endpoints));
+      ))->locate_on_ranger(Comm::EndPoints(endpoints));
     }
   }
   hdlr->response();
