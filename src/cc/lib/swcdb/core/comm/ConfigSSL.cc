@@ -60,7 +60,6 @@ ConfigSSL::ConfigSSL(const Config::Settings& settings, bool is_client)
       | SSL_OP_NO_TICKET
       | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
       | SSL_OP_CIPHER_SERVER_PREFERENCE
-      | SSL_OP_PRIORITIZE_CHACHA
     );
 
     std::string  crt;

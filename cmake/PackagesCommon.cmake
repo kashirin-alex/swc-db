@@ -29,16 +29,33 @@ if(NOT SWC_BUILD_PKG OR
 
   SET_DEPS(NAME "ZLIB"  REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC libz.a SHARED z INCLUDE zlib.h INSTALL TRUE)
 
-  SET_DEPS(
-    NAME      "SSL"
-    REQUIRED  TRUE
-    LIB_PATHS /usr/local/ssl/lib
-    INC_PATHS /usr/local/ssl/include
-    STATIC    libssl.a libcrypto.a
-    SHARED    ssl crypto
-    INCLUDE   openssl/ssl.h openssl/crypto.h
-    INSTALL   TRUE
-  )
+
+  if(NOT USE_LIBSSL OR USE_LIBSSL STREQUAL "open")
+    SET_DEPS(
+      NAME      "SSL"
+      REQUIRED  TRUE
+      LIB_PATHS /usr/local/ssl/lib
+      INC_PATHS /usr/local/ssl/include
+      STATIC    libssl.a libcrypto.a
+      SHARED    ssl crypto
+      INCLUDE   openssl/ssl.h openssl/crypto.h
+      INSTALL   TRUE
+    )
+  else()
+    if(USE_LIBSSL STREQUAL "wolf")
+      SET_DEPS(
+        NAME      "SSL"
+        REQUIRED  TRUE
+        LIB_PATHS ""
+        INC_PATHS /usr/local/include
+        STATIC    libwolfssl.a
+        SHARED    wolfssl
+        INCLUDE   wolfssl/options.h  wolfssl/openssl/ssl.h
+        INSTALL   TRUE
+      )
+    endif()
+  endif()
+
 endif()
 
 
