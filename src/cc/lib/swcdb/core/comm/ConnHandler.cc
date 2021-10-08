@@ -629,20 +629,6 @@ bool ConnHandlerSSL::is_open() const noexcept {
 
 void ConnHandlerSSL::handshake(
                   SocketSSL::handshake_type typ,
-                  std::function<void(const asio::error_code&)>&& cb)
-                  noexcept {
-  /* any options ?
-  asio::error_code ec;
-  m_sock.lowest_layer().non_blocking(true, ec);
-  if(ec)
-    cb(ec);
-  else
-  */
-  m_sock.async_handshake(typ, std::move(cb));
-}
-
-void ConnHandlerSSL::handshake(
-                  SocketSSL::handshake_type typ,
                   asio::error_code& ec)
                   noexcept {
   /*

@@ -17,8 +17,6 @@ namespace SWC { namespace Comm {
 
 class ConfigSSL final {
   public:
-  typedef std::function<
-    void(const ConnHandlerPtr&, const asio::error_code&)> HandshakeCb_t;
 
   ConfigSSL(const Config::Settings& settings, bool is_client=true);
 
@@ -37,9 +35,10 @@ class ConfigSSL final {
     return local.address() != remote.address() && need_ssl(remote);
   }
 
-  void make_server(AppContext::Ptr& app_ctx,
-                   SocketPlain& socket) const;
-
+  ConnHandlerSSL::Ptr
+  make_connection(AppContext::Ptr& app_ctx, SocketPlain& socket) const {
+    return ConnHandlerSSL::make(app_ctx, ctx, socket);
+  }
 
   ConnHandlerSSL::Ptr
   make_client(AppContext::Ptr& app_ctx, SocketPlain& socket) const;
@@ -47,10 +46,6 @@ class ConfigSSL final {
   ConnHandlerPtr
   make_client(AppContext::Ptr& app_ctx, SocketPlain& socket,
               asio::error_code& ec) const;
-
-  void
-  make_client(AppContext::Ptr& app_ctx, SocketPlain& socket,
-              HandshakeCb_t&& cb) const;
 
   private:
 

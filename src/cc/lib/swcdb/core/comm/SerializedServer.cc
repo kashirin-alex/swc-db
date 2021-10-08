@@ -13,6 +13,22 @@ namespace SWC { namespace Comm { namespace server {
 
 
 struct Acceptor::Mixed {
+  
+  struct Handshaker {
+    ConnHandlerSSL::Ptr conn;
+    SWC_CAN_INLINE
+    Handshaker(const ConnHandlerSSL::Ptr& a_conn) : conn(a_conn) { }
+    ~Handshaker() noexcept { }
+    void operator()(const asio::error_code& ec) {
+      if(!ec) {
+        conn->new_connection();
+      } else {
+        SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)",
+                  ec.value(), ec.message().c_str());
+      }
+    }
+  };
+
   Acceptor* acceptor;
   SWC_CAN_INLINE
   Mixed(Acceptor* a_acceptor) noexcept : acceptor(a_acceptor) { }
@@ -30,9 +46,12 @@ struct Acceptor::Mixed {
           new_sock.local_endpoint(ec), new_sock.remote_endpoint(ec));
         if(!ec) {
           if(need_ssl) {
-            acceptor->m_ssl_cfg->make_server(acceptor->m_app_ctx, new_sock);
+            auto conn = acceptor->m_ssl_cfg->make_connection(
+              acceptor->m_app_ctx, new_sock);
+            conn->handshake(SocketSSL::server, Handshaker(conn));
           } else {
-            auto conn = ConnHandlerPlain::make(acceptor->m_app_ctx, new_sock);
+            auto conn = ConnHandlerPlain::make(
+              acceptor->m_app_ctx, new_sock);
             conn->new_connection();
           }
         } else if(new_sock.is_open()) {

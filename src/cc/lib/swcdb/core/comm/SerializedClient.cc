@@ -72,49 +72,96 @@ void ServerConnections::connection(const std::chrono::milliseconds&,
     SWC_LOG_OSTREAM << "Connecting Async: " << m_srv_name << ' '
       << m_endpoint << ' ' << (m_ssl_cfg ? "SECURE" : "PLAIN"); );
 
-  auto sock = std::shared_ptr<asio::ip::tcp::socket>(
-    new asio::ip::tcp::socket(m_ioctx->executor()));
-  sock->async_connect(
-    m_endpoint,
-    [sock, preserve, cb=std::move(cb), ptr=shared_from_this()]
-    (const std::error_code& _ec) {
-      if(_ec || !sock->is_open()) {
-        cb(nullptr);
-        return;
+  struct Handshaker {
+    ConnHandlerSSL::Ptr     conn;
+    NewCb_t                 callback;
+    SWC_CAN_INLINE
+    Handshaker(const ConnHandlerSSL::Ptr& a_conn, NewCb_t&& a_cb)
+      : conn(a_conn), callback(std::move(a_cb)) {
+    }
+    ~Handshaker() noexcept { }
+    void operator()(const asio::error_code& ec) {
+      if(ec || !conn->is_open()) {
+        conn->do_close();
+        conn = nullptr;
+      } else {
+        conn->new_connection();
       }
+      callback(conn);
+    }
+  };
+  struct Handshaker_preserve {
+    ServerConnections::Ptr  ptr;
+    ConnHandlerSSL::Ptr     conn;
+    NewCb_t                 callback;
+    SWC_CAN_INLINE
+    Handshaker_preserve(ServerConnections::Ptr&& a_ptr,
+                        const ConnHandlerSSL::Ptr& a_conn, NewCb_t&& a_cb)
+      : ptr(std::move(a_ptr)), conn(a_conn), callback(std::move(a_cb)) {
+    }
+    ~Handshaker_preserve() noexcept { }
+    void operator()(const asio::error_code& ec) {
+      if(ec || !conn->is_open()) {
+        conn->do_close();
+        conn = nullptr;
+      } else {
+        conn->new_connection();
+        if(ptr)
+          ptr->push(conn);
+      }
+      callback(conn);
+    }
+  };
+  struct Connector {
+    ServerConnections::Ptr ptr;
+    std::shared_ptr<asio::ip::tcp::socket> socket;
+    const bool             preserve;
+    NewCb_t                callback;
+    SWC_CAN_INLINE
+    Connector(ServerConnections::Ptr&& a_ptr, bool a_preserve, NewCb_t&& a_cb)
+      : ptr(std::move(a_ptr)),
+        socket(new asio::ip::tcp::socket(ptr->m_ioctx->executor())),
+        preserve(a_preserve), callback(std::move(a_cb)) {
+    }
+    ~Connector() noexcept { }
+    void operator()(const std::error_code& _ec) {
       try {
-        if(ptr->m_ssl_cfg && sock->remote_endpoint().address()
-                              != sock->local_endpoint().address()) {
-          ptr->m_ssl_cfg->make_client(
-            ptr->m_ctx, *sock.get(),
-            [preserve, ptr, cb=std::move(cb)]
-            (const ConnHandlerPtr& conn, const std::error_code& ec) {
-              if(ec || !conn->is_open()) {
-                cb(nullptr);
-              } else {
-                conn->new_connection();
-                if(preserve)
-                  ptr->push(conn);
-                cb(conn);
-              }
-            }
-          );
+        if(!_ec && socket->is_open()) {
+          if(ptr->m_ssl_cfg && socket->remote_endpoint().address()
+                                != socket->local_endpoint().address()) {
+            auto conn = ptr->m_ssl_cfg->make_client(
+              ptr->m_ctx,  *socket.get());
+            preserve
+              ? conn->handshake(
+                  SocketSSL::client,
+                  Handshaker_preserve(
+                    std::move(ptr), conn, std::move(callback)))
+              : conn->handshake(
+                  SocketSSL::client,
+                  Handshaker(
+                    conn, std::move(callback)));
 
-        } else {
-          auto conn = ConnHandlerPlain::make(ptr->m_ctx, *sock.get());
-          conn->new_connection();
-          if(preserve)
-            ptr->push(conn);
-          cb(conn);
+          } else {
+            auto conn = ConnHandlerPlain::make(ptr->m_ctx, *socket.get());
+            conn->new_connection();
+            if(preserve)
+              ptr->push(conn);
+            callback(conn);
+          }
+          return;
         }
       } catch(...) {
         SWC_LOG_CURRENT_EXCEPTION("");
-        std::error_code ec;
-        sock->close(ec);
-        cb(nullptr);
       }
+      std::error_code ec;
+      socket->close(ec);
+      callback(nullptr);
     }
-  );
+  };
+
+  Connector hdlr(shared_from_this(), preserve, std::move(cb));
+  auto sock = hdlr.socket;
+  sock->async_connect(m_endpoint, std::move(hdlr));
 }
 
 void ServerConnections::close_all() {

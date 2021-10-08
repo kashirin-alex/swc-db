@@ -111,27 +111,10 @@ void ConfigSSL::set_networks(const Config::Strings& networks,
 }
 
 
-void ConfigSSL::make_server(AppContext::Ptr& app_ctx,
-                            SocketPlain& socket) const {
-  auto conn = ConnHandlerSSL::make(app_ctx, ctx, socket);
-  conn->handshake(
-    SocketSSL::server,
-    [conn] (const asio::error_code& ec) {
-      if(!ec) {
-        conn->new_connection();
-      } else {
-        SWC_LOGF(LOG_DEBUG, "handshake error=%d(%s)",
-                  ec.value(), ec.message().c_str());
-      }
-    }
-  );
-}
-
-
 ConnHandlerSSL::Ptr
 ConfigSSL::make_client(AppContext::Ptr& app_ctx,
                        SocketPlain& socket) const {
-  auto conn = ConnHandlerSSL::make(app_ctx, ctx, socket);
+  auto conn = make_connection(app_ctx, socket);
   if(!subject_name.empty())
     conn->set_verify(asio::ssl::host_name_verification(subject_name));
   return conn;
@@ -144,17 +127,6 @@ ConfigSSL::make_client(AppContext::Ptr& app_ctx,
   auto conn = make_client(app_ctx, socket);
   conn->handshake(SocketSSL::client, ec);
   return conn;
-}
-
-void
-ConfigSSL::make_client(AppContext::Ptr& app_ctx,
-                       SocketPlain& socket,
-                       HandshakeCb_t&& cb) const {
-  auto conn = make_client(app_ctx, socket);
-  conn->handshake(
-    SocketSSL::client,
-    [conn, cb=std::move(cb)](const asio::error_code& ec) { cb(conn, ec); }
-  );
 }
 
 void ConfigSSL::load_file(const std::string& pathbase,

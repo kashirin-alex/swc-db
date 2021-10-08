@@ -308,9 +308,17 @@ class ConnHandlerSSL final : public ConnHandler {
 
   bool is_open() const noexcept override;
 
-  void handshake(SocketSSL::handshake_type typ,
-                 std::function<void(const asio::error_code&)>&& cb)
-                 noexcept;
+  template<typename T>
+  void handshake(SocketSSL::handshake_type typ, T&& hdlr) noexcept {
+    /* any options ?
+    asio::error_code ec;
+    m_sock.lowest_layer().non_blocking(true, ec);
+    if(ec)
+      hdlr(ec);
+    else
+    */
+    m_sock.async_handshake(typ, std::move(hdlr));
+  }
 
   void handshake(SocketSSL::handshake_type typ,
                  asio::error_code& ec) noexcept;
