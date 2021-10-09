@@ -43,14 +43,14 @@ class ConnQueues final :
 
   const Serialized::Ptr                    service;
   const Config::Property::V_GINT32::Ptr    cfg_conn_timeout;
-  const Config::Property::V_GINT32::Ptr    cfg_conn_probes;
+  const Config::Property::V_GUINT16::Ptr   cfg_conn_probes;
   const Config::Property::V_GINT32::Ptr    cfg_keepalive_ms;
   const Config::Property::V_GINT32::Ptr    cfg_again_delay_ms;
 
   SWC_CAN_INLINE
   ConnQueues(const Serialized::Ptr a_service,
              const Config::Property::V_GINT32::Ptr timeout,
-             const Config::Property::V_GINT32::Ptr probes,
+             const Config::Property::V_GUINT16::Ptr probes,
              const Config::Property::V_GINT32::Ptr keepalive_ms,
              const Config::Property::V_GINT32::Ptr again_delay_ms) noexcept
             : service(a_service),

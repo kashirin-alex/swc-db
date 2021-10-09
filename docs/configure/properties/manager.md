@@ -67,7 +67,7 @@ The Timeout in milliseconds of MngrState request. \
 _default_ **```swc.mngr.role.request.timeout=60000```**
 
 * ### swc.mngr.role.connection.probes
-```G_INT32```
+```G_UINT16```
 The number of probes to try to establish connection with other Manager. \
 _default_ **```swc.mngr.role.connection.probes=3```**
 

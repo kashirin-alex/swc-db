@@ -67,10 +67,10 @@ class MngrRole final {
 
   void fill_states();
 
-  void managers_checker(size_t next, size_t total, bool flw);
+  void managers_checker(uint32_t next, uint32_t total, bool flw);
 
   void manager_checker(MngrStatus::Ptr host,
-                       size_t next, size_t total, bool flw,
+                       uint32_t next, uint32_t total, bool flw,
                        const Comm::ConnHandlerPtr& conn);
 
   void update_state(const Comm::EndPoint& endpoint,
@@ -108,14 +108,14 @@ class MngrRole final {
   Comm::client::ConnQueuePtr      m_mngr_inchain;
 
 
-  const Config::Property::V_GINT32::Ptr cfg_conn_probes;
-  const Config::Property::V_GINT32::Ptr cfg_conn_timeout;
-  const Config::Property::V_GINT32::Ptr cfg_conn_fb_failures;
+  const Config::Property::V_GUINT16::Ptr  cfg_conn_probes;
+  const Config::Property::V_GINT32::Ptr   cfg_conn_timeout;
+  const Config::Property::V_GINT32::Ptr   cfg_conn_fb_failures;
 
-  const Config::Property::V_GINT32::Ptr cfg_req_timeout;
-  const Config::Property::V_GINT32::Ptr cfg_delay_updated;
-  const Config::Property::V_GINT32::Ptr cfg_check_interval;
-  const Config::Property::V_GINT32::Ptr cfg_delay_fallback;
+  const Config::Property::V_GINT32::Ptr   cfg_req_timeout;
+  const Config::Property::V_GINT32::Ptr   cfg_delay_updated;
+  const Config::Property::V_GINT32::Ptr   cfg_check_interval;
+  const Config::Property::V_GINT32::Ptr   cfg_delay_fallback;
 };
 
 

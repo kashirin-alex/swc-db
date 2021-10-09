@@ -23,7 +23,7 @@ Brokers::Brokers(const Config::Settings& settings,
         )),
          settings.get<Config::Property::V_GINT32>(
           "swc.client.Bkr.connection.timeout"),
-         settings.get<Config::Property::V_GINT32>(
+         settings.get<Config::Property::V_GUINT16>(
           "swc.client.Bkr.connection.probes"),
          settings.get<Config::Property::V_GINT32>(
           "swc.client.Bkr.connection.keepalive"),

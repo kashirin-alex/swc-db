@@ -18,7 +18,7 @@ MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
       m_run(true),
       m_mngr_inchain(new Comm::client::ConnQueue(app_io)),
       cfg_conn_probes(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::V_GUINT16>(
           "swc.mngr.role.connection.probes")),
       cfg_conn_timeout(
         Env::Config::settings()->get<Config::Property::V_GINT32>(
@@ -401,7 +401,7 @@ void MngrRole::managers_checkin() {
     return;
 
   //SWC_LOG(LOG_DEBUG, "managers_checkin");
-  size_t sz = 0;
+  uint32_t sz = 0;
   bool has_role;
   {
     Core::ScopedLock lock(m_mutex);
@@ -443,7 +443,7 @@ void MngrRole::fill_states() {
   fill_states(states, 0, nullptr);
 }
 
-void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
+void MngrRole::managers_checker(uint32_t next, uint32_t total, bool flw) {
     // set manager followed(in-chain) local manager, incl. last's is first
   if(!m_run)
     return;
@@ -488,7 +488,7 @@ void MngrRole::managers_checker(size_t next, size_t total, bool flw) {
 }
 
 void MngrRole::manager_checker(MngrStatus::Ptr host,
-                               size_t next, size_t total, bool flw,
+                               uint32_t next, uint32_t total, bool flw,
                                const Comm::ConnHandlerPtr& conn) {
   if(!conn || !conn->is_open()) {
     if(host->state == DB::Types::MngrState::ACTIVE

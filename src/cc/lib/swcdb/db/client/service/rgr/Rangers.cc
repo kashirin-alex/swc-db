@@ -23,7 +23,7 @@ Rangers::Rangers(const Config::Settings& settings,
         )),
         settings.get<Config::Property::V_GINT32>(
           "swc.client.Rgr.connection.timeout"),
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::V_GUINT16>(
           "swc.client.Rgr.connection.probes"),
         settings.get<Config::Property::V_GINT32>(
           "swc.client.Rgr.connection.keepalive"),

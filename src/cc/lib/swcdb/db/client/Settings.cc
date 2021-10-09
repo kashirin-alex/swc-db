@@ -25,7 +25,7 @@ void Settings::init_client_options() {
 
     ("swc.client.Bkr.connection.timeout", g_i32(10000),
      "Broker client connect timeout")
-    ("swc.client.Bkr.connection.probes", g_i32(1),
+    ("swc.client.Bkr.connection.probes", g_i16(1),
      "Broker client connect probes")
     ("swc.client.Bkr.connection.keepalive", g_i32(30000),
      "Broker client connection keepalive for ms since last action")
@@ -40,7 +40,7 @@ void Settings::init_client_options() {
 
     ("swc.client.Rgr.connection.timeout", g_i32(10000),
      "Ranger client connect timeout")
-    ("swc.client.Rgr.connection.probes", g_i32(1),
+    ("swc.client.Rgr.connection.probes", g_i16(1),
      "Ranger client connect probes")
     ("swc.client.Rgr.connection.keepalive", g_i32(30000),
      "Ranger client connection keepalive for ms since last action")
@@ -58,7 +58,7 @@ void Settings::init_client_options() {
 
     ("swc.client.Mngr.connection.timeout", g_i32(10000),
      "Manager client connect timeout")
-    ("swc.client.Mngr.connection.probes", g_i32(1),
+    ("swc.client.Mngr.connection.probes", g_i16(1),
      "Manager client connect probes")
     ("swc.client.Mngr.connection.keepalive", g_i32(30000),
      "Manager client connection keepalive for ms since last action")

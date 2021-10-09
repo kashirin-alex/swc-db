@@ -90,7 +90,7 @@ The Broker client connect timeout in milliseconds. \
 _default_ **```swc.client.Bkr.connection.timeout=10000```**
 
 * ### swc.client.Bkr.connection.probes
-```G_INT32```
+```G_UINT16```
 The Broker client connect probes. \
 _default_ **```swc.client.Bkr.connection.probes=1```**
 
@@ -113,7 +113,7 @@ The Ranger client connect timeout in milliseconds. \
 _default_ **```swc.client.Rgr.connection.timeout=10000```**
 
 * ### swc.client.Rgr.connection.probes
-```G_INT32```
+```G_UINT16```
 The Ranger client connect probes. \
 _default_ **```swc.client.Rgr.connection.probes=1```**
 
@@ -141,7 +141,7 @@ The Manager client connect timeout in milliseconds. \
 _default_ **```swc.client.Mngr.connection.timeout=10000```**
 
 * ### swc.client.Mngr.connection.probes
-```G_INT32```
+```G_UINT16```
 The Manager client connect probes. \
 _default_ **```swc.client.Mngr.connection.probes=1```**
 
