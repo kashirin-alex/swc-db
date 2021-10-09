@@ -638,13 +638,6 @@ void ConnHandlerSSL::handshake(
   m_sock.handshake(typ, ec);
 }
 
-void ConnHandlerSSL::set_verify(
-        std::function<bool(bool, asio::ssl::verify_context&)>&& cb)
-        noexcept {
-  m_sock.set_verify_callback(std::move(cb));
-}
-
-
 SocketLayer* ConnHandlerSSL::socket_layer() noexcept {
   return &m_sock.lowest_layer();
 }
