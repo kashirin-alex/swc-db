@@ -17,12 +17,20 @@ void Host::close_issued() {
 }
 
 bool Host::connect() {
-  queues->service->get_connection(
+  struct Callback {
+   ConnQueuePtr ptr;
+    SWC_CAN_INLINE
+    Callback(ConnQueuePtr&& a_ptr) noexcept : ptr(a_ptr) { }
+    ~Callback() noexcept { }
+    void operator()(const ConnHandlerPtr& conn) noexcept {
+      ptr->set(conn);
+    }
+  };
+  queues->service->get_connection<Callback>(
     endpoints,
-    [ptr=shared_from_this()] (const ConnHandlerPtr& conn){ptr->set(conn);},
     std::chrono::milliseconds(queues->cfg_conn_timeout->get()),
     queues->cfg_conn_probes->get(),
-    bool(cfg_keepalive_ms)
+    shared_from_this()
   );
   return true;
 }

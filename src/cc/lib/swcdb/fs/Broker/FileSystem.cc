@@ -157,6 +157,7 @@ FileSystemBroker::~FileSystemBroker() noexcept { }
 void FileSystemBroker::stop() {
   m_run.store(false);
   m_service->stop();
+  for(Comm::ConnHandlerPtr conn; m_connections.pop(&conn); ) conn->do_close();
   m_io->stop();
   FileSystem::stop();
 }
@@ -179,18 +180,19 @@ std::string FileSystemBroker::to_string() const {
 
 bool FileSystemBroker::send_request(
       Comm::Protocol::FsBroker::Req::Base::Ptr hdlr) {
-  Comm::ConnHandlerPtr conn = nullptr;
-  do {
-    if(!m_run) {
-      hdlr->handle(conn, Comm::Event::make(Error::SERVER_SHUTTING_DOWN));
-      return true;
-    }
-  } while(!(conn = m_service->get_connection(
-    m_endpoints, std::chrono::milliseconds(20000), 3)));
-
-  m_service->preserve(conn);
-
-  return conn->send_request(hdlr->cbp, hdlr);
+  Comm::ConnHandlerPtr conn;
+  while(m_run && (!m_connections.pop(&conn) || !conn->is_open()) &&
+        !(conn = m_service->get_connection(
+                    m_endpoints, std::chrono::milliseconds(20000), 3)));
+  if(m_run) {
+    m_connections.push(conn);
+    return conn->send_request(hdlr->cbp, hdlr);
+  } else {
+    if(conn)
+      conn->do_close();
+    hdlr->handle(conn, Comm::Event::make(Error::SERVER_SHUTTING_DOWN));
+  }
+  return true;
 }
 
 /// File/Dir name actions

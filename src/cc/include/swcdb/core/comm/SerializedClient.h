@@ -22,121 +22,189 @@ namespace client {
 
 
 
-class ServerConnections final :
-      private Core::QueueSafe<ConnHandlerPtr>,
-      public std::enable_shared_from_this<ServerConnections> {
-
+class Serialized final : public std::enable_shared_from_this<Serialized> {
   public:
 
-  typedef std::shared_ptr<ServerConnections>          Ptr;
-  typedef std::function<void(const ConnHandlerPtr&)>  NewCb_t;
-
-  using Core::QueueSafe<ConnHandlerPtr>::empty;
-  using Core::QueueSafe<ConnHandlerPtr>::push;
-
-  SWC_CAN_INLINE
-  ServerConnections(const std::string& srv_name, const EndPoint& endpoint,
-                    const IoContextPtr& ioctx, const AppContext::Ptr& ctx,
-                    ConfigSSL* ssl_cfg)
-                    : m_srv_name(srv_name), m_endpoint(endpoint),
-                      m_ioctx(ioctx), m_ctx(ctx),
-                      m_ssl_cfg(ssl_cfg) {
-  }
-
-  ~ServerConnections() noexcept;
-
-  void reusable(ConnHandlerPtr& conn, bool preserve);
-
-  void connection(ConnHandlerPtr& conn,
-                  const std::chrono::milliseconds& timeout,
-                  bool preserve);
-
-  void connection(const std::chrono::milliseconds& timeout,
-                  NewCb_t&& cb, bool preserve);
-
-  void close_all();
-
-  private:
-
-  const std::string             m_srv_name;
-  const EndPoint                m_endpoint;
-  IoContextPtr                  m_ioctx;
-  AppContext::Ptr               m_ctx;
-  ConfigSSL*                    m_ssl_cfg;
-};
-
-
-class Serialized final :
-      private std::unordered_map<size_t, ServerConnections::Ptr>,
-      public std::enable_shared_from_this<Serialized> {
-
-  public:
-
-  typedef std::shared_ptr<Serialized>                        Ptr;
+  typedef std::shared_ptr<Serialized> Ptr;
 
   Serialized(const Config::Settings& settings,
              std::string&& srv_name,
              const IoContextPtr& ioctx,
              const AppContext::Ptr& ctx);
 
-  ConnHandlerPtr get_connection(
-        const EndPoints& endpoints,
-        const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
-        uint32_t probes=0,
-        bool preserve=false
-  ) noexcept;
-
-  void get_connection(
-        const EndPoints& endpoints,
-        ServerConnections::NewCb_t&& cb,
-        const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
-        uint32_t probes=0,
-        bool preserve=false
-  ) noexcept;
-
-  void preserve(ConnHandlerPtr& conn);
-
-  //void close(ConnHandlerPtr& conn);
+  virtual ~Serialized() noexcept;
 
   SWC_CAN_INLINE
   IoContextPtr io() noexcept {
     return m_ioctx;
   }
 
+  ConnHandlerPtr get_connection(
+        const EndPoints& endpoints,
+        const std::chrono::milliseconds& timeout,
+        uint16_t probes
+  ) noexcept;
+
+
+  template<typename HdlrT>
+  SWC_CAN_INLINE
+  void get_connection(
+        const EndPoints& endpoints,
+        HdlrT&& cb,
+        const std::chrono::milliseconds& timeout,
+        uint16_t probes) noexcept {
+    get_connection<HdlrT>(endpoints, timeout, probes, std::move(cb));
+  }
+
+  template<typename HdlrT, typename... DataArgsT>
+  SWC_CAN_INLINE
+  void get_connection(
+        const EndPoints& endpoints,
+        const std::chrono::milliseconds& timeout,
+        uint16_t probes,
+        DataArgsT&&... args) noexcept {
+    m_calls.fetch_add(1);
+    if(m_run) try {
+      if(endpoints.empty()) {
+        SWC_LOGF(LOG_WARN, "get_connection: %s, Empty-Endpoints",
+                            m_srv_name.c_str());
+      } else {
+        (void)timeout;
+        return Connector<HdlrT>(
+          shared_from_this(),
+          endpoints,
+          probes,
+          std::forward<DataArgsT>(args)...
+        ).connect();
+      }
+    } catch (...) {
+      SWC_LOG_CURRENT_EXCEPTION("");
+    }
+    HdlrT(std::forward<DataArgsT>(args)...)(nullptr);
+    m_calls.fetch_sub(1);
+  }
+
   void print(std::ostream& out, ConnHandlerPtr& conn);
 
   void stop();
 
-  virtual ~Serialized() noexcept;
-
   private:
 
-  ServerConnections::Ptr get_srv(const EndPoint& endpoint);
+  template<typename HdlrT>
+  struct Connector {
+    using SocketPtr = std::shared_ptr<asio::ip::tcp::socket>;
 
-  ConnHandlerPtr _get_connection(
-        const EndPoints& endpoints,
-        const std::chrono::milliseconds& timeout=std::chrono::milliseconds(0),
-        uint32_t probes=0,
-        bool preserve=false
-  );
+    Serialized::Ptr           ptr;
+    EndPoints                 endpoints;
+    //std::chrono::milliseconds timeout;
+    uint16_t                  probes;
+    uint16_t                  tries;
+    uint32_t                  next;
+    SocketPtr                 socket;
+    HdlrT                     callback;
 
-  void _get_connection(
-        const EndPoints& endpoints,
-        ServerConnections::NewCb_t&& cb,
-        const std::chrono::milliseconds& timeout,
-        uint32_t probes, uint32_t tries,
-        size_t next,
-        bool preserve=false
-  );
+    template<typename... DataArgsT>
+    SWC_CAN_INLINE
+    Connector(Serialized::Ptr&& a_ptr,
+              const EndPoints& a_endpoints, uint16_t a_probes,
+              DataArgsT&&... args)
+        : ptr(std::move(a_ptr)),
+          endpoints(a_endpoints), probes(a_probes), tries(a_probes), next(0),
+          callback(std::forward<DataArgsT>(args)...) {
+    }
+
+    void connect() {
+      if(next >= endpoints.size())
+        next = 0;
+      auto endpoint = endpoints[next];
+      SWC_LOG_OUT(LOG_DEBUG, SWC_LOG_OSTREAM << "Connecting Async: "
+        << ptr->m_srv_name << ' ' << endpoint << ' '
+        << (ptr->m_ssl_cfg && ptr->m_ssl_cfg->need_ssl(endpoint)
+              ? "SECURE" : "PLAIN"); );
+
+      socket.reset(new asio::ip::tcp::socket(ptr->m_ioctx->executor()));
+      auto sock = socket;
+      sock->async_connect(endpoint, std::move(*this));
+    }
+
+    ~Connector() noexcept { }
+
+    void operator()(const std::error_code& _ec) noexcept {
+      if(_ec) {
+        asio::error_code ec;
+        socket->close(ec);
+      } else if(socket->is_open()) try {
+
+        if(ptr->m_ssl_cfg &&
+           ptr->m_ssl_cfg->need_ssl(endpoints[next]) &&
+           socket->remote_endpoint().address()
+            != socket->local_endpoint().address()) {
+          struct Handshaker {
+            ConnHandlerSSL::Ptr conn;
+            Connector<HdlrT>    connector;
+            SWC_CAN_INLINE
+            Handshaker(const ConnHandlerSSL::Ptr& a_conn,
+                       Connector<HdlrT>&& hdlr)
+              : conn(a_conn), connector(std::move(hdlr)) {
+            }
+            ~Handshaker() noexcept { }
+            void operator()(const asio::error_code& ec) {
+              if(conn->is_open()) {
+                if(!ec) {
+                  conn->new_connection();
+                  connector.callback(conn);
+                  connector.ptr->m_calls.fetch_sub(1);
+                  return;
+                }
+                conn->do_close();
+              }
+              connector.reconnect();
+            }
+          };
+          auto conn = ptr->m_ssl_cfg->make_client(ptr->m_ctx,  *socket.get());
+          conn->handshake(
+            SocketSSL::client, Handshaker(conn, std::move(*this)));
+          return;
+        }
+
+        auto conn = ConnHandlerPlain::make(ptr->m_ctx, *socket.get());
+        if(conn->is_open()) {
+          conn->new_connection();
+          callback(conn);
+          ptr->m_calls.fetch_sub(1);
+          return;
+        }
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+      }
+
+      reconnect();
+    }
+
+    void reconnect() noexcept {
+      if(ptr->m_run && ptr->m_ioctx->running && !endpoints.empty() &&
+         (!probes || tries)) try {
+        SWC_LOGF(LOG_DEBUG, "get_connection: %s, tries=%u",
+                 ptr->m_srv_name.c_str(), tries);
+        std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // ? cfg-setting
+
+        if(++next == endpoints.size())
+          --tries;
+        return connect();
+
+      } catch(...) {
+        SWC_LOG_CURRENT_EXCEPTION("");
+      }
+      callback(nullptr);
+      ptr->m_calls.fetch_sub(1);
+    }
+
+  };
 
   const std::string     m_srv_name;
   IoContextPtr          m_ioctx;
   AppContext::Ptr       m_ctx;
-
-  const bool            m_use_ssl;
   ConfigSSL*            m_ssl_cfg;
-
-  Core::MutexSptd       m_mutex;
   Core::AtomicBool      m_run;
   Core::Atomic<size_t>  m_calls;
 

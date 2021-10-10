@@ -477,13 +477,27 @@ void MngrRole::managers_checker(uint32_t next, uint32_t total, bool flw) {
   if(host_chk->conn && host_chk->conn->is_open())
     return set_mngr_inchain(host_chk->conn);
 
-  Env::Clients::get()->managers.queues->service->get_connection(
+  struct Callback {
+    MngrRole*       ptr;
+    MngrStatus::Ptr host_chk;
+    uint32_t        next;
+    uint32_t        total;
+    bool            flw;
+    SWC_CAN_INLINE
+    Callback(MngrRole* a_ptr, const MngrStatus::Ptr& a_host_chk,
+             uint32_t a_next, uint32_t a_total, bool a_flw) noexcept
+            : ptr(a_ptr), host_chk(a_host_chk),
+              next(a_next), total(a_total), flw(a_flw) { }
+    ~Callback() noexcept { }
+    void operator()(const Comm::ConnHandlerPtr& conn) noexcept {
+      ptr->manager_checker(host_chk, next, total, flw, conn);
+    }
+  };
+  Env::Clients::get()->managers.queues->service->get_connection<Callback>(
     host_chk->endpoints,
-    [this, host_chk, next, total, flw] (const Comm::ConnHandlerPtr& conn) {
-      manager_checker(host_chk, next, total, flw, conn);
-    },
     std::chrono::milliseconds(cfg_conn_timeout->get()),
-    cfg_conn_probes->get()
+    cfg_conn_probes->get(),
+    this, host_chk, next, total, flw
   );
 }
 
