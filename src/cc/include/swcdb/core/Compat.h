@@ -183,6 +183,18 @@ static_assert(
 
 
 
+namespace SWC { namespace Core {
+
+template<typename T>
+SWC_CAN_INLINE
+const char* type_name(const T& obj) noexcept {
+  return typeid(obj).name();
+}
+
+}}
+
+
+
 #include "swcdb/core/Atomic.h"
 #include "swcdb/core/BitFieldInt.h" // for u/int24/40/48/56_t
 #include "swcdb/core/Comparators_basic.h"

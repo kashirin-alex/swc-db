@@ -18,7 +18,7 @@ void ConnQueueReqBase::request_again() {
 
 void ConnQueueReqBase::print(std::ostream& out) {
   cbp->header.print(out << "ReqBase(insistent=" << insistent() << ' ');
-  out << " derived=" << typeid(*this).name() << ')';
+  out << " derived=" << Core::type_name(*this) << ')';
 }
 
 
