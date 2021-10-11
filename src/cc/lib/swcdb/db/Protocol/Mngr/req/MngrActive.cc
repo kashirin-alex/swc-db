@@ -36,7 +36,8 @@ void MngrActive::run_within(uint32_t t_ms) {
 }
 
 void MngrActive::handle_no_conn() {
-  SWC_LOGF(LOG_DEBUG, "MngrActive(role=%d cid=%lu) no-conn", role, cid);
+  SWC_LOGF(LOG_DEBUG, "MngrActive(role=%d cid=%lu req=%s) no-conn",
+                       role, cid, typeid(*hdlr.get()).name());
   if(!hdlr->valid() ||
      clients->stopping() ||
      !clients->get_mngr_io()->running) {
@@ -54,8 +55,8 @@ bool MngrActive::run() {
   if(hosts.empty()) {
     clients->managers.groups->hosts(role, cid, hosts, group_host);
     if(hosts.empty()) {
-      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%lu",
-               role, cid);
+      SWC_LOGF(LOG_WARN, "Empty cfg of mngr.host for role=%d cid=%lu req=%s",
+               role, cid, typeid(*hdlr.get()).name());
       run_within(5000);
       return false;
     }

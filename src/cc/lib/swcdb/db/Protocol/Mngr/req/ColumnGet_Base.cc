@@ -5,7 +5,6 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnGet_Base.h"
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Commands.h"
 
 

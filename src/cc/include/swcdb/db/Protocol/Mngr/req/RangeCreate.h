@@ -7,7 +7,6 @@
 #define swcdb_db_protocol_req_RangeCreate_h
 
 
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Mngr/params/RangeCreate.h"
 #include "swcdb/db/Protocol/Commands.h"
 

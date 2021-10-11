@@ -4,7 +4,6 @@
  */
 
 
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 #include "swcdb/db/Protocol/Mngr/req/RgrGet_Base.h"
 
 

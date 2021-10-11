@@ -6,7 +6,6 @@
 
 
 #include "swcdb/db/Protocol/Mngr/req/ColumnMng_Base.h"
-#include "swcdb/db/Protocol/Mngr/req/MngrActive.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
