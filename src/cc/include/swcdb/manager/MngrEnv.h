@@ -75,6 +75,11 @@ class Mngr final {
     return &m_env->m_mngd_columns;
   }
 
+  SWC_CAN_INLINE
+  static bool is_shuttingdown() noexcept {
+    return m_env->m_shutting_down;
+  }
+
   static void reset() noexcept {
     m_env = nullptr;
   }
@@ -106,7 +111,8 @@ class Mngr final {
           nullptr
         ),
         m_role(app_io, endpoints),
-        m_rangers(app_io) {
+        m_rangers(app_io),
+        m_shutting_down(false) {
   }
 
   ~Mngr() noexcept { }
@@ -126,6 +132,7 @@ class Mngr final {
   Manager::MngrRole                   m_role;
   Manager::Rangers                    m_rangers;
   Manager::MngdColumns                m_mngd_columns;
+  Core::AtomicBool                    m_shutting_down;
 
 };
 
@@ -144,6 +151,7 @@ class Mngr final {
 namespace SWC { namespace Env {
 
 void Mngr::stop() {
+  m_env->m_shutting_down.store(true);
   if(m_env->_reporting)
     m_env->_reporting->stop();
 

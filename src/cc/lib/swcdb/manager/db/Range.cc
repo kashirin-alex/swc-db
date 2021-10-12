@@ -34,4 +34,31 @@ void Range::set_state_queued(rgrid_t rgrid) {
 
 
 
+const DB::RgrData& Range::get_last_rgr() {
+  class RgrDataHandler : public DB::RgrData::SyncSelector {
+    public:
+    RgrDataHandler() noexcept { }
+    virtual ~RgrDataHandler() noexcept { }
+    bool valid() noexcept override {
+      return DB::RgrData::SyncSelector::valid() &&
+             !Env::Mngr::is_shuttingdown();
+    }
+  };
+  Core::ScopedLock lock(m_mutex);
+  if(!m_last_rgr) {
+    m_last_rgr.reset(new DB::RgrData());
+    DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)
+      ? Common::Files::RgrData::get_rgr(
+          *m_last_rgr.get(),
+          DB::RangeBase::get_path_ranger(m_path)
+        )
+      : DB::RgrData::get_rgr(
+          DB::RgrData::SyncSelector::Ptr(new RgrDataHandler()),
+          *m_last_rgr.get(), cfg->cid, rid
+        );
+  }
+  return *m_last_rgr.get();
+}
+
+
 }}

@@ -588,6 +588,8 @@ void Rangers::next_rgr(const Range::Ptr& range, Ranger::Ptr& _rgr_set) {
   size_t avg_ranges = 0;
 
   const DB::RgrData& last_rgr = range->get_last_rgr();
+  if(Mngr::Env::is_shuttingdown())
+    return;
   uint8_t state;
   Core::MutexSptd::scope lock(m_mutex);
 

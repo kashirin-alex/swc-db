@@ -121,20 +121,7 @@ class Range final : public std::enable_shared_from_this<Range> {
     m_rgrid = rgrid;
   }
 
-  SWC_CAN_INLINE
-  const DB::RgrData& get_last_rgr() {
-    Core::ScopedLock lock(m_mutex);
-    if(!m_last_rgr) {
-      m_last_rgr.reset(new DB::RgrData());
-      DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)
-        ? Common::Files::RgrData::get_rgr(
-            *m_last_rgr.get(),
-            DB::RangeBase::get_path_ranger(m_path)
-          )
-        : DB::RgrData::get_rgr(*m_last_rgr.get(), cfg->cid, rid);
-    }
-    return *m_last_rgr.get();
-  }
+  const DB::RgrData& get_last_rgr();
 
   void set(const DB::Cells::Interval& intval, int64_t revision) {
     Core::ScopedLock lock(m_mutex);

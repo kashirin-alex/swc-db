@@ -55,27 +55,6 @@ class RgrData final {
   }
 
 
-
-
-  static void get_rgr(RgrData& data, cid_t cid, rid_t rid) noexcept {
-    int err = Error::OK;
-    try {
-      auto hdlr = SyncSelector::Ptr(new SyncSelector());
-      hdlr->scan(cid, rid);
-      hdlr->await.wait();
-      if((err = hdlr->error()))
-        return;
-      hdlr->get_rgr(err, data);
-    } catch(...) {
-      err = ENOKEY;
-    }
-    if(err) {
-      data.rgrid.store(0);
-      data.endpoints.clear();
-    }
-  }
-
-
   void set_insert_cell(cid_t cid, rid_t rid,
                        client::Query::Update::Handlers::Base::Column* colp)
                        const noexcept {
@@ -311,7 +290,7 @@ class RgrData final {
 
   };
 
-  class SyncSelector final : public BaseSelector {
+  class SyncSelector : public BaseSelector {
     public:
     typedef std::shared_ptr<SyncSelector> Ptr;
     Core::StateSynchronization            await;
@@ -323,6 +302,24 @@ class RgrData final {
     virtual ~SyncSelector() noexcept { }
   };
 
+
+  static void get_rgr(const SyncSelector::Ptr& hdlr,
+                      RgrData& data, cid_t cid, rid_t rid) noexcept {
+    int err = Error::OK;
+    try {
+      hdlr->scan(cid, rid);
+      hdlr->await.wait();
+      if((err = hdlr->error()))
+        return;
+      hdlr->get_rgr(err, data);
+    } catch(...) {
+      err = ENOKEY;
+    }
+    if(err) {
+      data.rgrid.store(0);
+      data.endpoints.clear();
+    }
+  }
 
 };
 
