@@ -84,7 +84,7 @@ void Settings::init(int argc, char *argv[]) {
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM
       << "unknown logging level: "<< loglevel->to_string();
     );
-    std::quick_exit(EXIT_SUCCESS);
+    SWC_QUICK_EXIT(EXIT_SUCCESS);
   }
 }
 
@@ -141,18 +141,18 @@ void Settings::parse_args(int argc, char *argv[]) {
   // some built-in behavior
   if (has("help")) {
     SWC_PRINT << cmdline_desc << SWC_PRINT_CLOSE;
-    std::quick_exit(EXIT_SUCCESS);
+    SWC_QUICK_EXIT(EXIT_SUCCESS);
   }
 
   if (has("help-config")) {
     SWC_PRINT << file_desc << SWC_PRINT_CLOSE;
-    std::quick_exit(EXIT_SUCCESS);
+    SWC_QUICK_EXIT(EXIT_SUCCESS);
   }
 
   if (has("version")) {
     SWC_PRINT << swcdb_version() << '\n'
               << swcdb_copyrights() << SWC_PRINT_CLOSE;
-    std::quick_exit(EXIT_SUCCESS);
+    SWC_QUICK_EXIT(EXIT_SUCCESS);
   }
 
   if(has("swc.cfg"))
@@ -212,7 +212,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
   bool daemon = has("daemon");
 
   if(daemon && fork())
-    quick_exit(EXIT_SUCCESS);
+    SWC_QUICK_EXIT(EXIT_SUCCESS);
 
   std::filesystem::path pid_file;
   if(with_pid_file) {
@@ -237,7 +237,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
         if(errno)
           Error::print(std::cerr << ' ', errno);
         std::cerr << std::endl;
-        quick_exit(EXIT_FAILURE);
+        SWC_QUICK_EXIT(EXIT_FAILURE);
       }
 
       char path[1024];
@@ -250,7 +250,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
           if(errno)
             Error::print(std::cerr << ' ', errno);
           std::cerr << std::endl;
-          quick_exit(EXIT_FAILURE);
+          SWC_QUICK_EXIT(EXIT_FAILURE);
         }
         std::string prog_path(install_path + "/bin/" + executable);
         if((size_t(r) == prog_path.size() ||
@@ -259,7 +259,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
           std::cerr << "Problem executing '" << executable
                     << "', process already running-pid=" << old_pid
                     << ", stop it first" << std::endl;
-          quick_exit(EXIT_FAILURE);
+          SWC_QUICK_EXIT(EXIT_FAILURE);
         }
       }
       ::unlink(pid_file.c_str());
@@ -280,7 +280,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
       if(errno)
         Error::print(std::cerr << ' ', errno);
       std::cerr << std::endl;
-      quick_exit(EXIT_FAILURE);
+      SWC_QUICK_EXIT(EXIT_FAILURE);
     }
 
     std::cout << "Executing '"<< executable

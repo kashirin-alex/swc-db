@@ -262,7 +262,7 @@ class AppContext final : public Comm::AppContext {
 
     if(!m_srv) {
       SWC_LOG(LOG_INFO, "Exit");
-      std::quick_exit(EXIT_SUCCESS);
+      SWC_QUICK_EXIT(EXIT_SUCCESS);
     }
 
     std::shared_ptr<std::thread> d(new std::thread);

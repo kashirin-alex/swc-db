@@ -298,7 +298,7 @@ void quit_error(int err) {
     return;
   SWC_PRINT << "Error " << err << "(" << Error::get_text(err) << ")"
             << SWC_PRINT_CLOSE;
-  std::quick_exit(EXIT_FAILURE);
+  SWC_QUICK_EXIT(EXIT_FAILURE);
 }
 
 

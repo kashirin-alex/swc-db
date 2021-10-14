@@ -98,9 +98,13 @@ static_assert(
 #ifdef _WIN32
   #define SWC_FMT_LU SWC_STRINGIFY(%llu)
   #define SWC_FMT_LD SWC_STRINGIFY(%lld)
+
+  #define SWC_QUICK_EXIT(_CODE_) exit(_CODE_)
 #else
   #define SWC_FMT_LU SWC_STRINGIFY(%lu)
   #define SWC_FMT_LD SWC_STRINGIFY(%ld)
+
+  #define SWC_QUICK_EXIT(_CODE_) std::quick_exit(_CODE_)
 #endif
 
 
@@ -185,7 +189,7 @@ static_assert(
 #if defined(SWC_ENABLE_SANITIZER)
   #define SWC_CAN_QUICK_EXIT(_CODE_)
 #else
-  #define SWC_CAN_QUICK_EXIT(_CODE_) std::quick_exit(_CODE_)
+  #define SWC_CAN_QUICK_EXIT(_CODE_) SWC_QUICK_EXIT(_CODE_)
 #endif
 
 
