@@ -211,7 +211,8 @@ Compact::Compact(Fragments* a_log, uint32_t a_repetition,
   }
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-START %lu/%lu w=%ld frags=%lu(%lu)/%lu repetition=%u",
+    "COMPACT-LOG-START " SWC_FMT_LU "/" SWC_FMT_LU " w=" SWC_FMT_LD
+    " frags=" SWC_FMT_LU "(" SWC_FMT_LU ")/" SWC_FMT_LU " repetition=%u",
     log->range->cfg->cid, log->range->rid,
     int64_t(m_groups.size()), nfrags, ngroups, log->size(), repetition
   );
@@ -231,8 +232,9 @@ void Compact::finished(Group* group, size_t cells_count) {
 
   auto took = group->ts.elapsed();
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-PROGRESS %lu/%lu running=%lu "
-    "worker=%u %luus cells=%lu(%luns)",
+    "COMPACT-LOG-PROGRESS " SWC_FMT_LU "/" SWC_FMT_LU
+    " running=" SWC_FMT_LU
+    " worker=%u " SWC_FMT_LU "us cells=" SWC_FMT_LU "(" SWC_FMT_LU "ns)",
     log->range->cfg->cid, log->range->rid, running,
     group->worker, took/1000,
     cells_count, cells_count ? took/cells_count: 0
@@ -240,7 +242,8 @@ void Compact::finished(Group* group, size_t cells_count) {
   if(running)
     return;
 
-  SWC_LOGF(LOG_INFO, "COMPACT-LOG-FINISHING %lu/%lu w=%ld",
+  SWC_LOGF(LOG_INFO,
+    "COMPACT-LOG-FINISHING " SWC_FMT_LU "/" SWC_FMT_LU" w=" SWC_FMT_LD,
     log->range->cfg->cid, log->range->rid, int64_t(m_groups.size()));
 
   log->range->compacting(Range::COMPACT_APPLYING);
@@ -266,8 +269,9 @@ void Compact::finalized() {
     return;
 
   SWC_LOGF(LOG_INFO,
-    "COMPACT-LOG-FINISH %lu/%lu w=%ld frags=%lu(%lu)/%lu"
-    " repetition=%u %luns",
+    "COMPACT-LOG-FINISH " SWC_FMT_LU "/" SWC_FMT_LU " w=" SWC_FMT_LD
+    " frags=" SWC_FMT_LU "(" SWC_FMT_LU ")/" SWC_FMT_LU
+    " repetition=%u " SWC_FMT_LU "ns",
     log->range->cfg->cid, log->range->rid,
     int64_t(m_groups.size()), nfrags, ngroups, log->size(), repetition,
     ts.elapsed()

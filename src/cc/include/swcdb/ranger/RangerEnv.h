@@ -319,8 +319,9 @@ void Rgr::wait_if_in_process() {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     m_env->_columns->unload_all(true); //re-check
     if(!(++n % 10))
-      SWC_LOGF(LOG_WARN, "In-process=%ld ranges=%ld check=%lu",
-                          in_process(), in_process_ranges(), n);
+      SWC_LOGF(LOG_WARN,
+        "In-process=" SWC_FMT_LD " ranges=" SWC_FMT_LD " check=" SWC_FMT_LU,
+        in_process(), in_process_ranges(), n);
   }
 }
 

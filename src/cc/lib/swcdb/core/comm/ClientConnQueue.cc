@@ -29,11 +29,13 @@ void ConnQueue::stop() {
     m_timer->cancel();
   }
   for(;;) {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_delayed.empty())
-      break;
-    (*m_delayed.cbegin())->cancel();
-    m_delayed.erase(m_delayed.cbegin());
+    {
+      Core::MutexSptd::scope lock(m_mutex);
+      if(m_delayed.empty())
+        break;
+      (*m_delayed.cbegin())->cancel();
+      m_delayed.erase(m_delayed.cbegin());
+    }
     std::this_thread::yield();
   }
 

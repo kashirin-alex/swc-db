@@ -96,8 +96,9 @@ void Serialized::stop() {
   for(size_t c = 0; m_calls; ++c) {
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
     if(c % 5000 == 0)
-      SWC_LOGF(LOG_WARN, "Waiting: %s count(wait=%lu due=%lu)",
-               m_srv_name.c_str(), c, m_calls.load());
+      SWC_LOGF(LOG_WARN,
+        "Waiting: %s count(wait=" SWC_FMT_LU " due=" SWC_FMT_LU ")",
+        m_srv_name.c_str(), c, m_calls.load());
   }
   SWC_LOGF(LOG_INFO, "Stop: %s", m_srv_name.c_str());
 }

@@ -177,8 +177,9 @@ class Mem {
     /*
     size_t was = used_future.fetch_sub(sz);
     if(sz > was)
-      SWC_LOGF(LOG_WARN, "less_mem_future OVERFLOW was=%lu less=%lu",
-                          was, sz);
+      SWC_LOGF(LOG_WARN,
+        "less_mem_future OVERFLOW was=" SWC_FMT_LU " less=" SWC_FMT_LU,
+        was, sz);
     */
   }
 
@@ -193,8 +194,9 @@ class Mem {
     /*
     size_t was = used_releasable.fetch_sub(sz);
     if(sz > was)
-      SWC_LOGF(LOG_WARN, "less_mem_releasable OVERFLOW was=%lu less=%lu",
-                          was, sz);
+      SWC_LOGF(LOG_WARN,
+        "less_mem_releasable OVERFLOW was=" SWC_FMT_LU " less=" SWC_FMT_LU,
+        was, sz);
     */
   }
   SWC_CAN_INLINE
@@ -203,8 +205,9 @@ class Mem {
     /*
     size_t was = used_releasable.fetch_add(sz);
     if(sz < 0 && size_t(-sz) > was)
-      SWC_LOGF(LOG_WARN, "adj_mem_releasable OVERFLOW was=%lu adj=%ld",
-                          was, sz);
+      SWC_LOGF(LOG_WARN,
+        "adj_mem_releasable OVERFLOW was=" SWC_FMT_LU " adj=" SWC_FMT_LD,
+        was, sz);
     */
   }
 

@@ -127,7 +127,8 @@ class RgrData final {
       hdlr->await.wait();
       err = hdlr->error();
       if(err) {
-        SWC_LOGF(LOG_WARN, "Remove RgrData for cid=%lu err=%d", cid, err);
+        SWC_LOGF(LOG_WARN, "Remove RgrData for cid=" SWC_FMT_LU " err=%d",
+                            cid, err);
         return;
       }
       hdlr->get_cells(cells);
@@ -151,7 +152,8 @@ class RgrData final {
       err = hdlr->error();
       SWC_LOGF(
         (err ? LOG_WARN : LOG_DEBUG),
-        "Removed RgrData for cid=%lu ranges=%lu err=%d", cid, cells.size(), err
+        "Removed RgrData for cid=" SWC_FMT_LU " ranges=" SWC_FMT_LU " err=%d",
+        cid, cells.size(), err
       );
     } catch(...) {
       err = SWC_CURRENT_EXCEPTION("").code();

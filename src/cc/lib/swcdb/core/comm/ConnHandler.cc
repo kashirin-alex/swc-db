@@ -268,8 +268,9 @@ void ConnHandler::Receiver_HeaderPrefix::operator()(
   }
 
   if(!ev->header.header_len) {
-    SWC_LOGF(LOG_WARN, "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=%lu",
-             filled);
+    SWC_LOGF(LOG_WARN,
+      "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=" SWC_FMT_LU,
+      filled);
     return conn->do_close_recv();
   }
   filled = ev->header.header_len - Header::PREFIX_LENGTH;

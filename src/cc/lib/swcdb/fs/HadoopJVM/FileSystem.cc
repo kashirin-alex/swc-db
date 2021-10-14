@@ -77,7 +77,7 @@ hdfsFile FileSystemHadoopJVM::SmartFdHadoopJVM::file() noexcept {
      m_use_count.fetch_sub(1);
   } else if(c) {
     // Debugging Info -- that should not be happening!
-    SWC_LOGF(LOG_WARN, "hfile '%s' waiting for file-use-released=%lu",
+    SWC_LOGF(LOG_WARN, "hfile '%s' waiting for file-use-released=" SWC_FMT_LU,
              to_string().c_str(), c);
     do std::this_thread::sleep_for(std::chrono::microseconds(1));
     while(m_use_count > 1);
@@ -226,7 +226,7 @@ bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
                   h.c_str(), errno, Error::get_text(errno));
         continue;
       }
-      SWC_LOGF(LOG_INFO, "Non DFS Used bytes: %ld", sz_used);
+      SWC_LOGF(LOG_INFO, "Non DFS Used bytes: " SWC_FMT_LD, sz_used);
 
       errno = 0;
       sz_used = hdfsGetCapacity(connection);
@@ -238,7 +238,7 @@ bool FileSystemHadoopJVM::initialize(FileSystemHadoopJVM::Service::Ptr& fs) {
                   h.c_str(), errno, Error::get_text(errno));
         continue;
       }
-      SWC_LOGF(LOG_INFO, "Configured Capacity bytes: %ld", sz_used);
+      SWC_LOGF(LOG_INFO, "Configured Capacity bytes: " SWC_FMT_LD, sz_used);
       break;
     }
 

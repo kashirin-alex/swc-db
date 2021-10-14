@@ -60,7 +60,8 @@ void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
   size_t len = Serialization::decode_vi32(bufp, remainp);
   if(len > *remainp)
     SWC_THROWF(Error::PROTOCOL_ERROR,
-               "Buffer-Trunclated remain=%lu len=%lu", *remainp, len);
+      "Buffer-Trunclated remain=" SWC_FMT_LU " len=" SWC_FMT_LU,
+      *remainp, len);
   *remainp -= len;
 
   const uint8_t* end = *bufp + len;
@@ -68,10 +69,12 @@ void Serializable::decode(const uint8_t** bufp, size_t* remainp) {
 
   if(len)
     SWC_THROWF(Error::PROTOCOL_ERROR,
-                "Bad Decode missing=%lu in buffer", len);
+      "Bad Decode missing=" SWC_FMT_LU " in buffer",
+      len);
   if(*bufp > end)
     SWC_THROWF(Error::PROTOCOL_ERROR,
-               "Bad Decode buffer overrun by=%ld", *bufp - end);
+      "Bad Decode buffer overrun by=" SWC_FMT_LD,
+      *bufp - end);
 }
 
 

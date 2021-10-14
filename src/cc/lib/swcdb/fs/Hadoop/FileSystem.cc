@@ -567,7 +567,7 @@ size_t FileSystemHadoop::append(int& err, SmartFd::Ptr& smartfd,
     if ((offset = (uint64_t)hdfsTell(fs->srv, hadoop_fd->file()))
             == (uint64_t)-1) {
       err = errno;
-      SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=%lu",
+      SWC_LOGF(LOG_ERROR, "write, tell failed: %d(%s), %s offset=" SWC_FMT_LU,
                 err, Error::get_text(err), smartfd->to_string().c_str(), offset);
       return nwritten;
     }

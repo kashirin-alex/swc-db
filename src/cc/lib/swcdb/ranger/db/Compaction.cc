@@ -123,7 +123,7 @@ void Compaction::run(bool initial) {
     }
     ++m_idx_rid;
 
-    SWC_LOGF(LOG_DEBUG, "COMPACT-CHECKING %lu/%lu",
+    SWC_LOGF(LOG_DEBUG, "COMPACT-CHECKING " SWC_FMT_LU "/" SWC_FMT_LU,
                           range->cfg->cid, range->rid);
 
     if((!range->compact_required() && range->blocks.commitlog.try_compact()) ||
@@ -204,7 +204,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
   Env::Rgr::res().more_mem_future(blk_size);
   uint8_t running = m_running.add_rslt(1);
 
-  SWC_LOGF(LOG_INFO, "COMPACT-STARTED %lu/%lu %s",
+  SWC_LOGF(LOG_INFO, "COMPACT-STARTED " SWC_FMT_LU "/" SWC_FMT_LU " %s",
            range->cfg->cid, range->rid, need.c_str());
 
   struct Task {
@@ -246,8 +246,9 @@ void Compaction::compacted(const CompactRange::Ptr req,
     Env::Rgr::res().less_mem_future(req->blk_size);
     compacted();
   } else {
-    SWC_LOGF(LOG_WARN, "Ranger compaction track missed(%lu/%lu)",
-             range->cfg->cid, range->rid);
+    SWC_LOGF(LOG_WARN,
+      "Ranger compaction track missed(" SWC_FMT_LU "/" SWC_FMT_LU ")",
+      range->cfg->cid, range->rid);
   }
 }
 

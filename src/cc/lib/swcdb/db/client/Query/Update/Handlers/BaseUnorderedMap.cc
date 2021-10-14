@@ -91,7 +91,8 @@ void BaseUnorderedMap::add(const cid_t cid, const DB::Cells::Cell& cell) {
     Core::MutexSptd::scope lock(m_mutex);
     auto it = find(cid);
     if(it == cend())
-      SWC_THROWF(ENOKEY, "Map Missing column=%lu (1st do create)", cid);
+      SWC_THROWF(ENOKEY, "Map Missing column=" SWC_FMT_LU " (1st do create)",
+                          cid);
     col = it->second;
   }
   col->add(cell);

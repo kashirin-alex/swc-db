@@ -30,7 +30,7 @@ std::string format_unsafe(const char* fmt, ...);
 SWC_PRAGMA_DIAGNOSTIC_POP
 
 
-template <class SequenceT>
+template <typename SequenceT>
 std::string format_list(const SequenceT &seq, const char *sep = ", ") {
   if(seq.empty())
     return "[]";

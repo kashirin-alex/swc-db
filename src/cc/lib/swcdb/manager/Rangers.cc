@@ -50,7 +50,8 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
 }
 
 void Rangers::stop(bool shuttingdown) {
-   if(shuttingdown)
+  SWC_LOG(LOG_INFO, "Stopping Rangers");
+  if(shuttingdown)
     m_run.store(false);
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -67,8 +68,10 @@ void Rangers::stop(bool shuttingdown) {
     h->stop();
     h = nullptr;
   }
-  if(shuttingdown)
+  if(shuttingdown) {
+    SWC_LOG(LOG_INFO, "Stopping Rangers wait_health_check");
     wait_health_check();
+  }
 }
 
 SWC_CAN_INLINE

@@ -84,8 +84,9 @@ void Columns::load_range(const DB::SchemaPrimitives& schema,
       } else if(!res.first->second->ranges_count()) {
         if(res.first->second->cfg->use_count() > 1)
           SWC_LOGF(LOG_WARN,
-                  "Column cid=%lu remained with use-count=%ld, resetting",
-                  req->cid, res.first->second->cfg->use_count());
+            "Column cid=" SWC_FMT_LU " remained with use-count=" SWC_FMT_LU
+            ", resetting",
+            req->cid, size_t(res.first->second->cfg->use_count()));
         res.first->second.reset(new Column(req->cid, schema));
       } else {
         res.first->second->cfg->update(schema);
@@ -184,8 +185,9 @@ size_t Columns::release(size_t bytes) {
     4: blocks-structure (only data-columns)
   */
   do {
-    SWC_LOGF(LOG_DEBUG, "Columns::release bytes=%lu level=%u released=%lu",
-                        bytes, level, released);
+    SWC_LOGF(LOG_DEBUG,
+      "Columns::release bytes=" SWC_FMT_LU " level=%u released=" SWC_FMT_LU,
+      bytes, level, released);
     ColumnPtr col = nullptr;
     const_iterator it;
     for(size_t offset = 0; ; ++offset) {

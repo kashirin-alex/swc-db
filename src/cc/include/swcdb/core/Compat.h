@@ -33,11 +33,6 @@ static_assert(
 );
 
 static_assert(
-  0x01lu << 32 > 0xffffffff,
-  "SWC-DB supports only 64+ bits Architecture!"
-);
-
-static_assert(
   sizeof(long double) == 16,
   "SWC-DB supports only long double of 128 bits Architecture!"
 );
@@ -100,6 +95,16 @@ static_assert(
 
 
 
+#ifdef _WIN32
+  #define SWC_FMT_LU SWC_STRINGIFY(%llu)
+  #define SWC_FMT_LD SWC_STRINGIFY(%lld)
+#else
+  #define SWC_FMT_LU SWC_STRINGIFY(%lu)
+  #define SWC_FMT_LD SWC_STRINGIFY(%ld)
+#endif
+
+
+
 # define SWC_CAN_INLINE  \
   SWC_ATTRIBS((SWC_ATTR_INLINE)) \
   inline
@@ -144,6 +149,8 @@ static_assert(
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <csignal>
+#include <cstdlib>
 #include <cstddef> // for std::size_t and std::ptrdiff_t
 #include <memory>
 #include <cstring>
@@ -155,6 +162,10 @@ static_assert(
 #include <map>
 
 
+static_assert(
+  sizeof(size_t) == 8,
+  "SWC-DB supports only 64+ bits Architecture!"
+);
 
 
 /*!
@@ -167,7 +178,7 @@ static_assert(
 #ifdef SWC_USE_ABORT
   #define SWC_ABORT abort()
 #else
-  #define SWC_ABORT raise(SIGABRT)
+  #define SWC_ABORT std::raise(SIGABRT)
 #endif
 
 

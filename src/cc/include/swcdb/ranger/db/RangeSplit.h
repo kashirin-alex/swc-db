@@ -41,7 +41,7 @@ static void mngr_remove_range(const RangePtr& new_range) {
         const Comm::Protocol::Mngr::Params::RangeRemoveRsp& rsp) {
 
       SWC_LOGF(LOG_DEBUG,
-        "Mngr::Req::RangeRemove err=%d(%s) %lu/%lu",
+        "Mngr::Req::RangeRemove err=%d(%s) " SWC_FMT_LU "/" SWC_FMT_LU,
         rsp.err, Error::get_text(rsp.err),
         new_range->cfg->cid, new_range->rid);
 
@@ -72,8 +72,10 @@ class RangeSplit final {
 
   RangeSplit(const RangePtr& a_range, const size_t a_split_at)
             : range(a_range), split_at(a_split_at) {
-    SWC_LOGF(LOG_INFO, "COMPACT-SPLIT RANGE START %lu/%lu at=%lu",
-             range->cfg->cid, range->rid, split_at);
+    SWC_LOGF(LOG_INFO,
+      "COMPACT-SPLIT RANGE START " SWC_FMT_LU "/" SWC_FMT_LU
+      " at=" SWC_FMT_LU,
+      range->cfg->cid, range->rid, split_at);
   }
 
   RangeSplit(const RangeSplit&) = delete;
@@ -97,16 +99,19 @@ class RangeSplit final {
     if(!col || col->removing())
       return Error::CANCELLED;
 
-    SWC_LOGF(LOG_INFO, "COMPACT-SPLIT RANGE %lu/%lu new-rid=%lu",
-             range->cfg->cid, range->rid, new_rid);
+    SWC_LOGF(LOG_INFO,
+      "COMPACT-SPLIT RANGE " SWC_FMT_LU "/" SWC_FMT_LU " new-rid=" SWC_FMT_LU,
+      range->cfg->cid, range->rid, new_rid);
 
     auto new_range = col->internal_create(err, new_rid, true);
     if(!err)
       new_range->internal_create_folders(err);
 
     if(err) {
-      SWC_LOGF(LOG_INFO, "COMPACT-SPLIT RANGE cancelled err=%d %lu/%lu new-rid=%lu",
-                err, range->cfg->cid, range->rid, new_rid);
+      SWC_LOGF(LOG_INFO,
+        "COMPACT-SPLIT RANGE cancelled err=%d " SWC_FMT_LU "/" SWC_FMT_LU
+        " new-rid=" SWC_FMT_LU,
+        err, range->cfg->cid, range->rid, new_rid);
       int tmperr = Error::OK;
       new_range->compacting(Range::COMPACT_NONE);
       col->internal_remove(tmperr, new_rid);
@@ -157,7 +162,8 @@ class RangeSplit final {
       [this, col, await=&res]
       (const Query::Update::CommonMeta::Ptr& hdlr) {
         SWC_LOGF(LOG_INFO,
-          "COMPACT-SPLIT RANGE %lu/%lu unloading new-rid=%lu reg-err=%d(%s)",
+          "COMPACT-SPLIT RANGE " SWC_FMT_LU "/" SWC_FMT_LU
+          " unloading new-rid=" SWC_FMT_LU " reg-err=%d(%s)",
             col->cfg->cid, range->rid, hdlr->range->rid,
             hdlr->error(), Error::get_text(hdlr->error()));
         hdlr->range->compacting(Range::COMPACT_NONE);
@@ -187,7 +193,8 @@ class RangeSplit final {
               const Comm::client::ConnQueue::ReqBase::Ptr& req,
               const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
             SWC_LOGF(LOG_DEBUG,
-              "RangeSplit::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
+              "RangeSplit::Mngr::Req::RangeUnloaded err=%d(%s) "
+              SWC_FMT_LU "/" SWC_FMT_LU,
               rsp.err, Error::get_text(rsp.err), cid, new_rid);
             if(rsp.err && valid() &&
                rsp.err != Error::CLIENT_STOPPING &&
@@ -216,8 +223,10 @@ class RangeSplit final {
     res.wait();
 
     SWC_LOG_OUT(LOG_INFO,
-      SWC_LOG_PRINTF("COMPACT-SPLITTED RANGE %lu/%lu took=%luns new-end=",
-                      range->cfg->cid, range->rid, t_measure.elapsed());
+      SWC_LOG_PRINTF(
+        "COMPACT-SPLITTED RANGE " SWC_FMT_LU "/" SWC_FMT_LU
+        " took=" SWC_FMT_LU "ns new-end=",
+        range->cfg->cid, range->rid, t_measure.elapsed());
       range->blocks.cellstores.back()->interval.key_end.print(SWC_LOG_OSTREAM);
     );
     return Error::OK;
@@ -253,7 +262,8 @@ class RangeSplit final {
           const Comm::client::ConnQueue::ReqBase::Ptr& req,
           const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
         SWC_LOGF(LOG_DEBUG,
-          "RangeSplit::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu",
+          "RangeSplit::Mngr::Req::RangeCreate err=%d(%s) "
+          SWC_FMT_LU "/" SWC_FMT_LU,
           rsp.err, Error::get_text(rsp.err), cid, rsp.rid);
 
         if(rsp.err && valid() &&

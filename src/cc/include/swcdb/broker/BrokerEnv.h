@@ -168,7 +168,8 @@ void Bkr::wait_if_in_process() {
   while(m_in_process) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     if(!(++n % 10))
-      SWC_LOGF(LOG_WARN, "In-process=%ld check=%lu", m_in_process.load(), n);
+      SWC_LOGF(LOG_WARN, "In-process=" SWC_FMT_LD " check=" SWC_FMT_LU,
+                          m_in_process.load(), n);
   }
 }
 

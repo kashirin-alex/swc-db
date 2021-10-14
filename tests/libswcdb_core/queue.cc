@@ -90,7 +90,7 @@ struct Test {
   }
 
   void run_producer(size_t t) {
-    printf(" starting run_producer=%lu \n", t);
+    printf(" starting run_producer=" SWC_FMT_LU " \n", t);
 
     sem_producer.release();
     sem_producer.wait_all();
@@ -103,12 +103,12 @@ struct Test {
       queue.push(v);
       time_producer.fetch_add(Time::now_ns() - ts);
     }
-    printf(" stopping run_producer=%lu \n", t);
+    printf(" stopping run_producer=" SWC_FMT_LU " \n", t);
   }
 
 
   void run_consumer(size_t t) {
-    printf(" starting run_consumer=%lu \n", t);
+    printf(" starting run_consumer=" SWC_FMT_LU " \n", t);
 
     sem_consumer.release();
     sem_consumer.wait_all();
@@ -123,7 +123,7 @@ struct Test {
       v->done();
     }
 
-    printf(" stopping run_consumer=%lu \n", t);
+    printf(" stopping run_consumer=" SWC_FMT_LU " \n", t);
   }
 
   void run() {
@@ -175,7 +175,7 @@ void run() {
 }
 
 int main() {
-  printf(" START num_threads=%lu\n", num_threads);
+  printf(" START num_threads=" SWC_FMT_LU "\n", num_threads);
 
   SWC::run();
 

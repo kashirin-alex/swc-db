@@ -65,8 +65,9 @@ class RangeUnloadInternal final : public ManageBase {
     void callback(
         const Comm::client::ConnQueue::ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
-      SWC_LOGF(LOG_DEBUG, "RangeUnloadInternal err=%d(%s) %lu/%lu",
-               rsp.err, Error::get_text(rsp.err), cid, rid);
+      SWC_LOGF(LOG_DEBUG,
+        "RangeUnloadInternal err=%d(%s) " SWC_FMT_LU "/" SWC_FMT_LU,
+        rsp.err, Error::get_text(rsp.err), cid, rid);
       if(rsp.err && valid() &&
          rsp.err != Error::CLIENT_STOPPING &&
          rsp.err != Error::COLUMN_NOT_EXISTS &&

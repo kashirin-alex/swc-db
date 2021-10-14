@@ -43,6 +43,7 @@ MngdColumns::MngdColumns()
 }
 
 void MngdColumns::stop() {
+  SWC_LOG(LOG_INFO, "Stopping MngdColumns");
   m_run.store(false);
   {
     Core::MutexSptd::scope lock(m_mutex_active);
@@ -66,7 +67,8 @@ void MngdColumns::stop() {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     if(c % 1000 == 0)
       SWC_LOGF(LOG_DEBUG,
-        "Stop-Waiting colums load=%s actions=%lu expecting=%s pending=%lu",
+        "Stop-Waiting colums load=%s actions=" SWC_FMT_LU
+        " expecting=%s pending=" SWC_FMT_LU,
         m_columns_load ? "True" : "False", m_actions.size(),
         expecting ? "True" : "False", pending);
   }
@@ -281,11 +283,13 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
   if(need) {
     if(need == STATE_COLUMNS_NOT_INITIALIZED) {
       SWC_LOGF(LOG_DEBUG,
-        "Expected Columns to Load CANCELLED for cid(begin=%lu end=%lu)",
+        "Expected Columns to Load CANCELLED for cid(begin=" SWC_FMT_LU
+        " end=" SWC_FMT_LU ")",
         cid_begin, cid_end);
     } else {
       SWC_LOGF(LOG_DEBUG,
-        "Expected Columns to Load size=%lu for cid(begin=%lu end=%lu)",
+        "Expected Columns to Load size=" SWC_FMT_LU
+        " for cid(begin=" SWC_FMT_LU " end=" SWC_FMT_LU ")",
         need, cid_begin, cid_end);
     }
   }
@@ -329,7 +333,7 @@ void MngdColumns::update_status(ColumnMngFunc func,
         do_update = true;
 
       } else {
-        SWC_LOGF(LOG_DEBUG, "DELETING cid=%lu", schema->cid);
+        SWC_LOGF(LOG_DEBUG, "DELETING cid=" SWC_FMT_LU, schema->cid);
         Core::Vector<rgrid_t> rgrids;
         col->assigned(rgrids);
         do_update = rgrids.empty();
@@ -354,8 +358,9 @@ void MngdColumns::update_status(ColumnMngFunc func,
             init = m_run;
             if(m_expected_remain != STATE_COLUMNS_NOT_INITIALIZED) {
               --m_expected_remain;
-              SWC_LOGF(LOG_DEBUG, "Expected Column(%lu) Loaded remain=%lu",
-                                  schema->cid, m_expected_remain);
+              SWC_LOGF(LOG_DEBUG,
+                "Expected Column(" SWC_FMT_LU ") Loaded remain=" SWC_FMT_LU,
+                schema->cid, m_expected_remain);
             }
           }
         }
@@ -434,7 +439,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
       }
       if(err && cells_meta.empty()) {
         SWC_LOGF(LOG_WARN,
-        "Column(cid=%lu meta_cid=%lu) "
+        "Column(cid=" SWC_FMT_LU " meta_cid=" SWC_FMT_LU ") "
         "Range MetaData might remained, result-err=%d(%s)",
         schema->cid, meta_cid, err, Error::get_text(err));
       }
@@ -467,7 +472,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
           auto u_col = u_hdlr->get(u_meta_cid);
           if(u_col && (u_err || u_col->error())) {
             SWC_LOGF(LOG_WARN,
-              "Column(cid=%lu meta_cid=%lu) "
+              "Column(cid=" SWC_FMT_LU " meta_cid=" SWC_FMT_LU ") "
               "Range MetaData might remained, "
               "updater-err=%d(%s) colm-err=%d(%s)",
               schema->cid, u_meta_cid,
@@ -478,7 +483,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
           u_col = u_hdlr->get(DB::Types::SystemColumn::SYS_RGR_DATA);
           if(u_col && (u_err || u_col->error())) {
             SWC_LOGF(LOG_WARN,
-              "Column(cid=%lu rgrdata_cid=%lu) "
+              "Column(cid=" SWC_FMT_LU " rgrdata_cid=" SWC_FMT_LU ") "
               "Range RgrData might remained, "
               "updater-err=%d(%s) colm-err=%d(%s)",
               schema->cid, DB::Types::SystemColumn::SYS_RGR_DATA,
@@ -558,7 +563,7 @@ bool MngdColumns::initialize() {
   try {
     if(Env::Mngr::schemas()->store_load(err)) {
       m_schemas_set.store(true);
-      SWC_LOGF(LOG_INFO, "Load-Schemas FINISH schemas=%lu",
+      SWC_LOGF(LOG_INFO, "Load-Schemas FINISH schemas=" SWC_FMT_LU,
                           Env::Mngr::schemas()->size());
       return true;
     }
@@ -614,12 +619,12 @@ bool MngdColumns::initialize() {
       int err;
       for(cid_t cid; ptr->m_run && it_begin != it_end; ++it_begin) {
         cid = *it_begin;
-        SWC_LOGF(LOG_DEBUG, "Schema Loading cid=%lu", cid);
+        SWC_LOGF(LOG_DEBUG, "Schema Loading cid=" SWC_FMT_LU, cid);
         schema = Common::Files::Schema::load(err=Error::OK, cid, replicas);
         if(!err)
           Env::Mngr::schemas()->add(err, schema);
         else
-          SWC_LOGF(LOG_ERROR, "Schema cid=%lu err=%d(%s)",
+          SWC_LOGF(LOG_ERROR, "Schema cid=" SWC_FMT_LU " err=%d(%s)",
                    cid, err, Error::get_text(err));
       }
       pending->release();
@@ -638,7 +643,7 @@ bool MngdColumns::initialize() {
 
   if(m_run) {
     m_schemas_set.store(true);
-    SWC_LOGF(LOG_INFO, "Load-Schemas FINISH schemas=%lu",
+    SWC_LOGF(LOG_INFO, "Load-Schemas FINISH schemas=" SWC_FMT_LU,
                         Env::Mngr::schemas()->size());
     return true;
   } else {
@@ -723,7 +728,8 @@ bool MngdColumns::columns_load() {
 
       int64_t sz = columns.size();
       SWC_LOGF(LOG_DEBUG,
-        "Set Expected Columns Load cid(begin=%lu end=%lu) %lu(%ld/%lu)",
+        "Set Expected Columns Load cid(begin=" SWC_FMT_LU " end=" SWC_FMT_LU ") "
+        SWC_FMT_LU "(" SWC_FMT_LD "/" SWC_FMT_LU ")",
         g->cid_begin, g->cid_end, g_batches, sz, total);
       set_expect(g->cid_begin, g->cid_end, total, std::move(columns), true);
       columns.clear();

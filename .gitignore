@@ -3,3 +3,4 @@
 .vscode
 .local
 *.pyc
+.vs

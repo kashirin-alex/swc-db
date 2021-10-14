@@ -81,7 +81,8 @@ void ColumnHealthCheck::RangerCheck::handle(const Range::Ptr& range,
   }
 
   SWC_LOGF((err ? LOG_WARN : LOG_DEBUG),
-    "Column-Health FINISH range(%lu/%lu) rgr=%lu err=%d(%s)",
+    "Column-Health FINISH range(" SWC_FMT_LU "/" SWC_FMT_LU") rgr=" SWC_FMT_LU
+    " err=%d(%s)",
     range->cfg->cid, range->rid, rgr->rgrid.load(),
     err, Error::get_text(err));
 
@@ -99,8 +100,10 @@ void ColumnHealthCheck::RangerCheck::_add_range(const Range::Ptr& range) {
     rgr->put(Comm::Protocol::Rgr::Req::RangeIsLoaded::Ptr(
       new Comm::Protocol::Rgr::Req::RangeIsLoaded(shared_from_this(), range)
     ));
-    SWC_LOGF(LOG_DEBUG, "Column-Health START range(%lu/%lu) rgr=%lu",
-             range->cfg->cid, range->rid, rgr->rgrid.load());
+    SWC_LOGF(LOG_DEBUG,
+      "Column-Health START range(" SWC_FMT_LU "/" SWC_FMT_LU
+      ") rgr=" SWC_FMT_LU,
+      range->cfg->cid, range->rid, rgr->rgrid.load());
   }
 }
 
@@ -115,7 +118,8 @@ ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& a_col,
                                       check_ts(a_check_ts),
                                       check_intval(a_check_intval),
                                       completion(1) {
-  SWC_LOGF(LOG_DEBUG, "Column-Health START cid(%lu)", col->cfg->cid);
+  SWC_LOGF(LOG_DEBUG, "Column-Health START cid(" SWC_FMT_LU ")",
+                      col->cfg->cid);
 }
 
 void ColumnHealthCheck::run(bool initial) {
@@ -174,8 +178,9 @@ void ColumnHealthCheck::finishing(bool finished_range) {
   if(finished_range)
     run(false);
 
-  SWC_LOGF(LOG_DEBUG, "Column-Health finishing cid(%lu) in-process=%lu",
-                        col->cfg->cid, completion.count());
+  SWC_LOGF(LOG_DEBUG,
+    "Column-Health finishing cid(" SWC_FMT_LU ") in-process=" SWC_FMT_LU,
+    col->cfg->cid, completion.count());
   if(!completion.is_last())
     return;
 
@@ -189,7 +194,8 @@ void ColumnHealthCheck::finishing(bool finished_range) {
       Env::Mngr::rangers()->rgr_get(0, rangers);
     }
     */
-    SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu)", col->cfg->cid);
+    SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(" SWC_FMT_LU ")",
+                        col->cfg->cid);
     Env::Mngr::rangers()->health_check_finished(shared_from_this());
     return;
   }
@@ -277,12 +283,14 @@ void ColumnHealthCheck::ColumnMerger::run_master() {
       new RangesMerger(shared_from_this(), std::move(group)));
 
   if(m_mergers.empty()) {
-    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%ld",
-             col_checker->col->cfg->cid, int64_t(m_ranges.size()));
+    SWC_LOGF(LOG_WARN,
+      "Column-Health FINISH cid(" SWC_FMT_LU ") not-mergeable=" SWC_FMT_LD,
+      col_checker->col->cfg->cid, int64_t(m_ranges.size()));
     Env::Mngr::rangers()->health_check_finished(col_checker);
   } else {
-    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%ld",
-             col_checker->col->cfg->cid, int64_t(m_mergers.size()));
+    SWC_LOGF(LOG_DEBUG,
+      "Column-Health MERGE cid(" SWC_FMT_LU ") merger-groups=" SWC_FMT_LD,
+      col_checker->col->cfg->cid, int64_t(m_mergers.size()));
     completion();
   }
 }
@@ -330,20 +338,22 @@ void ColumnHealthCheck::ColumnMerger::run() {
       new RangesMerger(shared_from_this(), std::move(group)));
 
   if(m_mergers.empty()) {
-    SWC_LOGF(LOG_WARN, "Column-Health FINISH cid(%lu) not-mergeable=%ld",
-             col_checker->col->cfg->cid, int64_t(m_ranges.size()));
+    SWC_LOGF(LOG_WARN,
+      "Column-Health FINISH cid(" SWC_FMT_LU ") not-mergeable=" SWC_FMT_LD,
+      col_checker->col->cfg->cid, int64_t(m_ranges.size()));
     Env::Mngr::rangers()->health_check_finished(col_checker);
   } else {
-    SWC_LOGF(LOG_DEBUG, "Column-Health MERGE cid(%lu) merger-groups=%ld",
-             col_checker->col->cfg->cid, int64_t(m_mergers.size()));
+    SWC_LOGF(LOG_DEBUG,
+      "Column-Health MERGE cid(" SWC_FMT_LU ") merger-groups=" SWC_FMT_LD,
+      col_checker->col->cfg->cid, int64_t(m_mergers.size()));
     completion();
   }
 }
 
 void ColumnHealthCheck::ColumnMerger::completion() {
   if(m_mergers.empty()) {
-    SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(%lu) MERGE",
-             col_checker->col->cfg->cid);
+    SWC_LOGF(LOG_DEBUG, "Column-Health FINISH cid(" SWC_FMT_LU ") MERGE",
+                        col_checker->col->cfg->cid);
     Env::Mngr::rangers()->health_check_finished(col_checker);
     return;
   }
@@ -373,7 +383,8 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::run() {
              rgr, shared_from_this(), range)
         ));
         SWC_LOGF(LOG_DEBUG,
-          "Column-Health MERGE-UNLOAD range(%lu/%lu) rgr=%lu",
+          "Column-Health MERGE-UNLOAD range(" SWC_FMT_LU "/" SWC_FMT_LU
+          ") rgr=" SWC_FMT_LU,
           range->cfg->cid, range->rid, rgr->rgrid.load());
         continue;
       }
@@ -392,9 +403,10 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
         m_err = err;
       m_ready.push_back(nullptr);
     } else if(!empty && m_ranges.front() != _range) {
-      SWC_LOGF(LOG_WARN, "Column-Health MERGE-UNLOAD range(%lu/%lu)"
-                         " NOT-EMPTY cancelling-merge",
-                          _range->cfg->cid, _range->rid);
+      SWC_LOGF(LOG_WARN,
+        "Column-Health MERGE-UNLOAD range(" SWC_FMT_LU "/" SWC_FMT_LU ")"
+        " NOT-EMPTY cancelling-merge",
+        _range->cfg->cid, _range->rid);
       m_ready.push_back(_range);
       if(!m_err)
         m_err = Error::CANCELLED;
@@ -546,7 +558,8 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
   Env::Mngr::rangers()->assign_ranges();
 
   SWC_LOGF(LOG_INFO,
-    "Column-Health MERGE GROUP cid(%lu) ranges(%ld/%ld) to range(%lu)",
+    "Column-Health MERGE GROUP cid(" SWC_FMT_LU
+    ") ranges(" SWC_FMT_LD "/" SWC_FMT_LD ") to range(" SWC_FMT_LU ")",
     main_range->cfg->cid, int64_t(merged.size()), int64_t(m_ranges.size()),
     main_range->rid);
   return col_merger->completion();

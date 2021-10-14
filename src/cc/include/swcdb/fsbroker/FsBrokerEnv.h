@@ -145,8 +145,9 @@ class FsBroker final {
       std::this_thread::sleep_for(std::chrono::milliseconds(200));
       if(!(++n % 10))
         SWC_LOGF(LOG_WARN,
-          "In-process=%ld fs-use-count=%ld check=%lu",
-          m_in_process.load(), fs.use_count(), n);
+          "In-process=" SWC_FMT_LD " fs-use-count=" SWC_FMT_LU
+          " check=" SWC_FMT_LU,
+          m_in_process.load(), size_t(fs.use_count()), n);
     } while(m_in_process || fs.use_count() > 2 + bool(_reporting));
 
     int err;

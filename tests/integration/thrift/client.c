@@ -7,6 +7,12 @@
 #include <stdio.h>
 #include <glib/gprintf.h>
 
+#define SWC_STRINGIFY(s) #s
+#ifdef _WIN32
+  #define SWC_FMT_LU SWC_STRINGIFY(%llu)
+#else
+  #define SWC_FMT_LU SWC_STRINGIFY(%lu)
+#endif
 
 int main() {
   puts ("Started Testing\n");
@@ -40,7 +46,7 @@ int main() {
       if(!schema->__isset_cid || schema->cid == 0) // unexplained (cid=0)
         continue;
       puts    ("schema: ");
-      printf  ("  cid=%lu \n",  (guint64)schema->cid);
+      printf  ("  cid=" SWC_FMT_LU " \n",  (guint64)schema->cid);
       g_printf("  name=%s \n",  schema->col_name);
       g_clear_object(&schema);
     }

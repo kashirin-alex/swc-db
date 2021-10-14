@@ -330,7 +330,9 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
 
   int err = state_unloading() ? Error::SERVER_SHUTTING_DOWN : Error::OK;
   if(need && !err) {
-    SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-STARTED", cfg->cid, rid);
+    SWC_LOGF(LOG_DEBUG,
+            "LOADING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")-STARTED",
+            cfg->cid, rid);
 
     if(!Env::FsInterface::interface()->exists(
           err, get_path(DB::RangeBase::CELLSTORES_DIR)) && !err &&
@@ -346,8 +348,11 @@ void Range::load(const Callback::RangeLoad::Ptr& req) {
   return loaded(err, req);
 }
 
-void Range::internal_take_ownership(int &err, const Callback::RangeLoad::Ptr& req) {
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-TAKE OWNERSHIP", cfg->cid, rid);
+void Range::internal_take_ownership(int &err,
+                                    const Callback::RangeLoad::Ptr& req) {
+  SWC_LOGF(LOG_DEBUG,
+          "LOADING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")-TAKE OWNERSHIP",
+          cfg->cid, rid);
 
   if(state_unloading())
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
@@ -398,7 +403,9 @@ void Range::internal_unload(bool completely, bool& chk_empty) {
       return;
     m_state.store(State::UNLOADING);
   }
-  SWC_LOGF(LOG_DEBUG, "UNLOADING RANGE(%lu/%lu)", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG,
+          "UNLOADING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")",
+          cfg->cid, rid);
 
   blocks.commitlog.stopping.store(true);
 
@@ -417,8 +424,9 @@ void Range::internal_unload(bool completely, bool& chk_empty) {
     Core::ScopedLock lock(m_mutex);
     m_state.store(State::NOTLOADED);
   }
-  SWC_LOGF(LOG_INFO, "UNLOADED RANGE(%lu/%lu) error=%d(%s)",
-                      cfg->cid, rid, err, Error::get_text(err));
+  SWC_LOGF(LOG_INFO,
+          "UNLOADED RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ") error=%d(%s)",
+          cfg->cid, rid, err, Error::get_text(err));
 }
 
 void Range::issue_unload() {
@@ -434,7 +442,9 @@ void Range::remove(const Callback::ColumnDelete::Ptr& req) {
     if(m_state.exchange(State::DELETED) == State::DELETED)
       return req->removed(shared_from_this());
   }
-  SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG,
+          "REMOVING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")",
+          cfg->cid, rid);
 
   blocks.commitlog.stopping.store(true);
 
@@ -466,7 +476,9 @@ void Range::internal_remove(int& err) {
     if(m_state.exchange(State::DELETED) == State::DELETED)
       return;
   }
-  SWC_LOGF(LOG_DEBUG, "REMOVING RANGE(%lu/%lu)", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG,
+          "REMOVING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")",
+          cfg->cid, rid);
 
   blocks.commitlog.stopping.store(true);
 
@@ -756,7 +768,9 @@ void Range::print(std::ostream& out, bool minimal) {
 }
 
 void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK LAST RGR", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG,
+          "LOADING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")-CHECK LAST RGR",
+          cfg->cid, rid);
 
   if(DB::Types::SystemColumn::is_rgr_data_on_fs(cfg->cid)) {
     DB::RgrData rgr_last;
@@ -834,7 +848,9 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
 }
 
 void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-DATA", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG,
+          "LOADING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")-DATA",
+          cfg->cid, rid);
 
   if(state_unloading())
     return loaded(Error::SERVER_SHUTTING_DOWN, req);
@@ -885,14 +901,17 @@ void Range::load(int &err, const Callback::RangeLoad::Ptr& req) {
   if(cfg->range_type == DB::Types::Range::MASTER)
     return loaded(err, req);
 
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK META", cfg->cid, rid);
+  SWC_LOGF(LOG_DEBUG,
+          "LOADING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")-CHECK META",
+          cfg->cid, rid);
   Query::Select::CheckMeta::run(shared_from_this(), req);
 }
 
 void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
   int err = hdlr->state_error;
-  SWC_LOGF(LOG_DEBUG, "LOADING RANGE(%lu/%lu)-CHECK META err=%d(%s)",
-                      cfg->cid, rid, err, Error::get_text(err));
+  SWC_LOGF(LOG_DEBUG,
+          "LOADING RANGE(" SWC_FMT_LU "/" SWC_FMT_LU ")-CHECK META err=%d(%s)",
+          cfg->cid, rid, err, Error::get_text(err));
   if(err)
     return loaded(err, hdlr->req);
   if(state_unloading())

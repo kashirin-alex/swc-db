@@ -136,7 +136,7 @@ SWC_CAN_INLINE
 void Header::decode_prefix(const uint8_t** bufp, size_t* remainp) {
   if (*remainp < PREFIX_LENGTH)
     SWC_THROWF(Error::COMM_BAD_HEADER,
-              "Header size %lu is less than the fixed length %d",
+              "Header size " SWC_FMT_LU " is less than the fixed length %d",
               *remainp, PREFIX_LENGTH);
 
   version = Serialization::decode_i8(bufp, remainp);
@@ -162,7 +162,8 @@ void Header::decode(const uint8_t** bufp, size_t* remainp) {
   checksum = Serialization::decode_i32(bufp, remainp);
   if(!Core::checksum_i32_chk(checksum, base, header_len-4))
     SWC_THROWF(Error::COMM_HEADER_CHECKSUM_MISMATCH,
-              "header-checksum decoded-len=%ld", *bufp-base);
+              "header-checksum decoded-len=" SWC_FMT_LD,
+              *bufp-base);
 }
 
 SWC_CAN_INLINE

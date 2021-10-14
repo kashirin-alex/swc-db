@@ -32,7 +32,8 @@ class Splitter final : private Fragment::LoadCallback {
   void run () {
     SWC_LOGF(LOG_DEBUG,
       "COMPACT-SPLIT commitlog START "
-      "from(%lu/%lu) to(%lu/%lu) fragments=%ld",
+      "from(" SWC_FMT_LU "/" SWC_FMT_LU ") to(" SWC_FMT_LU "/" SWC_FMT_LU
+      ") fragments=" SWC_FMT_LD,
       log_left->range->cfg->cid, log_left->range->rid,
       log_right->range->cfg->cid, log_right->range->rid,
       int64_t(m_fragments.size())
@@ -68,7 +69,8 @@ class Splitter final : private Fragment::LoadCallback {
 
     SWC_LOGF(LOG_DEBUG,
       "COMPACT-SPLIT commitlog FINISH "
-      "from(%lu/%lu) to(%lu/%lu) skipped=%lu moved=%lu splitted=%lu",
+      "from(" SWC_FMT_LU "/" SWC_FMT_LU ") to(" SWC_FMT_LU "/" SWC_FMT_LU
+      ") skipped=" SWC_FMT_LU " moved=" SWC_FMT_LU " splitted=" SWC_FMT_LU,
       log_left->range->cfg->cid, log_left->range->rid,
       log_right->range->cfg->cid, log_right->range->rid,
       skipped, moved, splitted

@@ -18,7 +18,7 @@ void Column::init(int &err) {
   if(err)
     return;
   if(entries.empty()) {
-    SWC_LOGF(LOG_INFO, "Init. New Column(%lu) Range(1)", cfg->cid);
+    SWC_LOGF(LOG_INFO, "Init. New Column(" SWC_FMT_LU ") Range(1)", cfg->cid);
     entries.push_back(1);
   }
 

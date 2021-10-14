@@ -221,7 +221,7 @@ void Reporting::stop() {
 void Reporting::wait() {
   for(size_t n=0; completion.count(); ++n) {
     if(n % 30000 == 0)
-      SWC_LOGF(LOG_WARN, "Reporting::wait completion=%lu",
+      SWC_LOGF(LOG_WARN, "Reporting::wait completion=" SWC_FMT_LU,
                completion.count());
     std::this_thread::sleep_for(std::chrono::microseconds(100));
   }

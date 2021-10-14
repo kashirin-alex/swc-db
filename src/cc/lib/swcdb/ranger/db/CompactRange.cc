@@ -169,7 +169,8 @@ void CompactRange::initialize() {
   range->compacting(Range::COMPACT_APPLYING);
   if(!range->blocks.wait_processing(Time::now_ns() + 60000000000)) {
     SWC_LOGF(LOG_WARN,
-      "COMPACT-ERROR cancelled %lu/%lu waited 1-minute for processing",
+      "COMPACT-ERROR cancelled " SWC_FMT_LU "/" SWC_FMT_LU
+      " waited 1-minute for processing",
       range->cfg->cid, range->rid);
     return compactor->compacted(shared(), range);
   }
@@ -202,8 +203,9 @@ void CompactRange::initialize() {
         return finished(true);
 
       SWC_LOG_OUT(LOG_WARN,
-        SWC_LOG_PRINTF("COMPACT-PROGRESS SPLIT RANGE cancelled %lu/%lu ",
-                        range->cfg->cid, range->rid);
+        SWC_LOG_PRINTF(
+          "COMPACT-PROGRESS SPLIT RANGE cancelled " SWC_FMT_LU "/" SWC_FMT_LU,
+          range->cfg->cid, range->rid);
         Error::print(SWC_LOG_OSTREAM, err);
       );
     }
@@ -262,7 +264,8 @@ void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   }
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
-      "COMPACT-PROGRESS %lu/%lu early-split possible from scan offset ",
+      "COMPACT-PROGRESS " SWC_FMT_LU "/" SWC_FMT_LU
+      " early-split possible from scan offset ",
       range->cfg->cid, range->rid);
     m_required_key_last.print(SWC_LOG_OSTREAM);
   );
@@ -312,7 +315,8 @@ void CompactRange::response(int& err) {
   profile.finished();
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
-      "COMPACT-PROGRESS %lu/%lu blocks=%lu avg(i=%lu e=%lu w=%lu)us ",
+      "COMPACT-PROGRESS " SWC_FMT_LU "/" SWC_FMT_LU " blocks=" SWC_FMT_LU
+      " avg(i=" SWC_FMT_LU " e=" SWC_FMT_LU " w=" SWC_FMT_LU ")us ",
       range->cfg->cid, range->rid,
       total_blocks.load(),
       (time_intval / total_blocks)/1000,
@@ -362,7 +366,8 @@ void CompactRange::response(int& err) {
 
       SWC_LOG_OUT(LOG_INFO,
         SWC_LOG_PRINTF(
-          "COMPACT-PROGRESS %lu/%lu finishing early-split scan offset ",
+          "COMPACT-PROGRESS " SWC_FMT_LU "/" SWC_FMT_LU
+          " finishing early-split scan offset ",
           range->cfg->cid, range->rid
         );
         spec.offset_key.print(SWC_LOG_OSTREAM);
@@ -443,7 +448,8 @@ void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
         state_default.store(Range::COMPACT_PREPARING);
         range->compacting(Range::COMPACT_PREPARING);
         SWC_LOGF(LOG_INFO,
-          "COMPACT-MITIGATE(add req.) %lu/%lu reached max-log-size(%lu)",
+          "COMPACT-MITIGATE(add req.) " SWC_FMT_LU "/" SWC_FMT_LU
+          " reached max-log-size(" SWC_FMT_LU ")",
           range->cfg->cid, range->rid, bytes);
       } else {
         int64_t median;
@@ -640,7 +646,8 @@ csid_t CompactRange::create_cs(int& err) {
       state_default.store(Range::COMPACT_PREPARING);
       if(range->compacting_ifnot_applying(Range::COMPACT_PREPARING)) {
         SWC_LOGF(LOG_INFO,
-          "COMPACT-MITIGATE(add req.) %lu/%lu reached cs-max(%u)",
+          "COMPACT-MITIGATE(add req.) " SWC_FMT_LU "/" SWC_FMT_LU
+          " reached cs-max(%u)",
           range->cfg->cid, range->rid, csid);
       }
     }
@@ -722,8 +729,10 @@ void CompactRange::finalize() {
     for(uint32_t chk = 0; !m_stopped && ptr.use_count() > 3; ++chk) {
       // insure sane
       if(chk == 3000000) {
-        SWC_LOGF(LOG_INFO, "COMPACT-FINALIZING %lu/%lu use_count=%ld",
-                  range->cfg->cid, range->rid, ptr.use_count());
+        SWC_LOGF(LOG_INFO,
+          "COMPACT-FINALIZING " SWC_FMT_LU "/" SWC_FMT_LU
+          " use_count=" SWC_FMT_LU,
+          range->cfg->cid, range->rid, size_t(ptr.use_count()));
         chk = 0;
       }
       if(ptr.use_count() > 3)
@@ -780,12 +789,14 @@ void CompactRange::finalize() {
   ssize_t split_at = can_split_at();
   if(split_at == -1) {
     SWC_LOGF(LOG_WARN,
-      "COMPACT-SPLIT %lu/%lu fail(versions-over-cs) cs-count=%ld",
+      "COMPACT-SPLIT " SWC_FMT_LU "/" SWC_FMT_LU
+      " fail(versions-over-cs) cs-count=" SWC_FMT_LD,
       range->cfg->cid, range->rid, int64_t(cellstores.size()));
 
   } else if(split_at == -2) {
     SWC_LOGF(LOG_DEBUG,
-      "COMPACT-SPLIT %lu/%lu skipping(last-cs-small) cs-count=%ld",
+      "COMPACT-SPLIT " SWC_FMT_LU "/" SWC_FMT_LU
+      " skipping(last-cs-small) cs-count=" SWC_FMT_LD,
       range->cfg->cid, range->rid, int64_t(cellstores.size()));
   }
 
@@ -821,7 +832,8 @@ void CompactRange::mngr_create_range(uint32_t split_at) {
         const Comm::client::ConnQueue::ReqBase::Ptr& req,
         const Comm::Protocol::Mngr::Params::RangeCreateRsp& rsp) {
       SWC_LOGF(LOG_DEBUG,
-        "Compact::Mngr::Req::RangeCreate err=%d(%s) %lu/%lu",
+        "Compact::Mngr::Req::RangeCreate err=%d(%s) "
+        SWC_FMT_LU "/" SWC_FMT_LU,
         rsp.err, Error::get_text(rsp.err), get_cid(), rsp.rid);
 
       if(rsp.err && valid() &&
@@ -863,16 +875,19 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     return quit();
 
   Time::Measure_ns t_measure;
-  SWC_LOGF(LOG_INFO, "COMPACT-SPLIT %lu/%lu new-rid=%lu",
-           range->cfg->cid, range->rid, new_rid);
+  SWC_LOGF(LOG_INFO,
+    "COMPACT-SPLIT " SWC_FMT_LU "/" SWC_FMT_LU " new-rid=" SWC_FMT_LU,
+    range->cfg->cid, range->rid, new_rid);
 
   int err = Error::OK;
   auto new_range = col->internal_create(err, new_rid, true);
   if(!err)
     new_range->internal_create_folders(err);
   if(err) {
-    SWC_LOGF(LOG_INFO, "COMPACT-SPLIT cancelled err=%d %lu/%lu new-rid=%lu",
-            err, range->cfg->cid, range->rid, new_rid);
+    SWC_LOGF(LOG_INFO,
+      "COMPACT-SPLIT cancelled err=%d " SWC_FMT_LU "/" SWC_FMT_LU
+      " new-rid=" SWC_FMT_LU,
+      err, range->cfg->cid, range->rid, new_rid);
     err = Error::OK;
     new_range->compacting(Range::COMPACT_NONE);
     col->internal_remove(err, new_rid);
@@ -922,9 +937,10 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     new_range,
     [col, ptr=shared()] (const Query::Update::CommonMeta::Ptr& hdlr) {
       SWC_LOGF(LOG_INFO,
-        "COMPACT-SPLIT %lu/%lu unloading new-rid=%lu reg-err=%d(%s)",
-          col->cfg->cid, ptr->range->rid, hdlr->range->rid,
-          hdlr->error(), Error::get_text(hdlr->error()));
+        "COMPACT-SPLIT " SWC_FMT_LU "/" SWC_FMT_LU
+        " unloading new-rid=" SWC_FMT_LU " reg-err=%d(%s)",
+        col->cfg->cid, ptr->range->rid, hdlr->range->rid,
+        hdlr->error(), Error::get_text(hdlr->error()));
       hdlr->range->compacting(Range::COMPACT_NONE);
       col->internal_unload(hdlr->range->rid);
 
@@ -953,7 +969,8 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
             const Comm::client::ConnQueue::ReqBase::Ptr& req,
             const Comm::Protocol::Mngr::Params::RangeUnloadedRsp& rsp) {
           SWC_LOGF(LOG_DEBUG,
-            "Compact::Mngr::Req::RangeUnloaded err=%d(%s) %lu/%lu",
+            "Compact::Mngr::Req::RangeUnloaded err=%d(%s)"
+            SWC_FMT_LU "/" SWC_FMT_LU,
             rsp.err, Error::get_text(rsp.err), get_cid(), new_rid);
           if(rsp.err && valid() &&
              rsp.err != Error::CLIENT_STOPPING &&
@@ -977,7 +994,9 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
     [t_measure, ptr=shared()]
     (const Query::Update::CommonMeta::Ptr&) mutable {
       SWC_LOG_OUT(LOG_INFO,
-        SWC_LOG_PRINTF("COMPACT-SPLITTED %lu/%lu took=%luns new-end=",
+        SWC_LOG_PRINTF(
+          "COMPACT-SPLITTED " SWC_FMT_LU "/" SWC_FMT_LU
+          " took=" SWC_FMT_LU "ns new-end=",
           ptr->range->cfg->cid, ptr->range->rid, t_measure.elapsed());
           ptr->cellstores.back()->blocks.back()
             ->header.interval.key_end.print(SWC_LOG_OSTREAM);
@@ -1017,8 +1036,10 @@ bool CompactRange::completion() {
   auto ptr = shared();
   for(uint32_t chk = 0; ptr.use_count() > 3; ++chk) { // insure sane
     if(chk == 3000000) {
-      SWC_LOGF(LOG_INFO, "COMPACT-STOPPING %lu/%lu use_count=%ld",
-                range->cfg->cid, range->rid, ptr.use_count());
+      SWC_LOGF(LOG_INFO,
+        "COMPACT-STOPPING " SWC_FMT_LU "/" SWC_FMT_LU
+        " use_count=" SWC_FMT_LU,
+        range->cfg->cid, range->rid, size_t(ptr.use_count()));
       chk = 0;
     }
     if(ptr.use_count() > 3)
@@ -1033,8 +1054,10 @@ void CompactRange::finished(bool clear) {
 
   SWC_LOG_OUT(LOG_INFO,
     SWC_LOG_PRINTF(
-      "COMPACT-FINISHED %lu/%lu cells=%lu blocks=%lu "
-      "(total=%ld intval=%lu encode=%lu write=%lu)ms ",
+      "COMPACT-FINISHED " SWC_FMT_LU "/" SWC_FMT_LU
+      " cells=" SWC_FMT_LU " blocks=" SWC_FMT_LU
+      " (total=" SWC_FMT_LD " intval=" SWC_FMT_LU
+      " encode=" SWC_FMT_LU " write=" SWC_FMT_LU ")ms ",
       range->cfg->cid, range->rid, total_cells.load(), total_blocks.load(),
       (Time::now_ns() - profile.ts_start)/1000000,
       time_intval/1000000, time_encode/1000000, time_write/1000000
@@ -1061,7 +1084,7 @@ void CompactRange::quit() {
     Env::FsInterface::interface()->rmdir(
       err, range->get_path(Range::CELLSTORES_TMP_DIR));
   }
-  SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled %lu/%lu",
+  SWC_LOGF(LOG_INFO, "COMPACT-ERROR cancelled " SWC_FMT_LU "/" SWC_FMT_LU,
            range->cfg->cid, range->rid);
 
   compactor->compacted(shared(), range);

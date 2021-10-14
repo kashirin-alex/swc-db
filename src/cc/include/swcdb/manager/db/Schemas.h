@@ -61,7 +61,7 @@ class Schemas final : public DB::Schemas {
     if(!err && (fs_if->length(err, smartfd->filepath()) != size || err)) {
       if(!err)
         err = Error::FS_EOF;
-      SWC_LOGF(LOG_DEBUG, "Not-matching file-size=%lu", size);
+      SWC_LOGF(LOG_DEBUG, "Not-matching file-size=" SWC_FMT_LU, size);
     }
     if(err)
       store_remove(smartfd);

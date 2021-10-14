@@ -316,6 +316,7 @@ void MngrRole::disconnection(const Comm::EndPoint& endpoint_server,
 void MngrRole::stop() {
   Env::Mngr::rangers()->stop();
   Env::Mngr::mngd_columns()->stop();
+  SWC_LOG(LOG_INFO, "Stopping MngrRole");
 
   m_run.store(false);
   {

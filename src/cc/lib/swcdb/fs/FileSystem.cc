@@ -79,7 +79,7 @@ FileSystem::~FileSystem() noexcept { }
 void FileSystem::stop() {
   m_run.store(false);
   if(statistics.fds_count.load())
-    SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=%lu",
+    SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=" SWC_FMT_LU,
              to_string().c_str(), statistics.fds_count.load());
 }
 

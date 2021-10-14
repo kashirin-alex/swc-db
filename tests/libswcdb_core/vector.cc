@@ -301,7 +301,7 @@ void test_big_vector(const typename VecT::size_type _sz) {
   for(T n=sz; n; --n)
     vec.push_back(n);
   SWC_ASSERT(sz == vec.count());
-  SWC_ASSERTF(66 <= vec.size(), " result=%ld", int64_t(vec.size()));
+  SWC_ASSERTF(66 <= vec.size(), " result=" SWC_FMT_LD, int64_t(vec.size()));
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " cp push_back: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_checkbig_eq(vec, sz);
@@ -315,7 +315,7 @@ void test_big_vector(const typename VecT::size_type _sz) {
     vec.push_back(std::move(v));
   }
   SWC_ASSERT(sz == vec.count());
-  SWC_ASSERTF(66 <= vec.size(), " result=%ld", int64_t(vec.size()));
+  SWC_ASSERTF(66 <= vec.size(), " result=" SWC_FMT_LD, int64_t(vec.size()));
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " mv push_back: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_checkbig_eq(vec, sz);
@@ -331,7 +331,7 @@ void test_big_vector(const typename VecT::size_type _sz) {
   for(T n=1; n < sz; )
     it.insert(++n);
   SWC_ASSERT(sz == vec.count());
-  SWC_ASSERTF(130 <= vec.size(), " result=%ld", int64_t(vec.size()));
+  SWC_ASSERTF(130 <= vec.size(), " result=" SWC_FMT_LD, int64_t(vec.size()));
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " cp insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_checkbig_eq(vec, sz);
@@ -349,7 +349,7 @@ void test_big_vector(const typename VecT::size_type _sz) {
     //std::cout << n << " ?= " << vec.front() << std::endl;
   }
   SWC_ASSERT(sz == vec.count());
-  SWC_ASSERTF(130 <= vec.size(), " result=%ld", int64_t(vec.size()));
+  SWC_ASSERTF(130 <= vec.size(), " result=" SWC_FMT_LD, int64_t(vec.size()));
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " mv insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
   test_checkbig_eq(vec, sz);

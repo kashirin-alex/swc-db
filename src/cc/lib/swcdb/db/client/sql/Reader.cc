@@ -223,7 +223,7 @@ void Reader::read(std::string& buf, const char* stop, bool keep_escape) {
 void Reader::read_uint8_t(uint8_t& value, bool& was_set) {
   int64_t v;
   read_int64_t(v, was_set);
-  if (v > UINT8_MAX || v < INT8_MIN)
+  if (!was_set || v > UINT8_MAX || v < INT8_MIN)
     error_msg(Error::SQL_PARSE_ERROR, " unsigned 8-bit integer out of range");
   else
     value = v;
@@ -232,7 +232,7 @@ void Reader::read_uint8_t(uint8_t& value, bool& was_set) {
 void Reader::read_uint16_t(uint16_t& value, bool& was_set) {
   int64_t v;
   read_int64_t(v, was_set);
-  if (v > UINT16_MAX || v < INT16_MIN)
+  if (!was_set || v > UINT16_MAX || v < INT16_MIN)
     error_msg(Error::SQL_PARSE_ERROR, " unsigned 16-bit integer out of range");
   else
     value = v;
@@ -242,7 +242,7 @@ void Reader::read_uint16_t(uint16_t& value, bool& was_set) {
 void Reader::read_uint32_t(uint32_t& value, bool& was_set, const char* stop) {
   int64_t v;
   read_int64_t(v, was_set, stop);
-  if (v > UINT32_MAX || v < INT32_MIN)
+  if (!was_set || v > UINT32_MAX || v < INT32_MIN)
     error_msg(Error::SQL_PARSE_ERROR, " unsigned 32-bit integer out of range");
   else
     value = v;
@@ -258,6 +258,7 @@ void Reader::read_int64_t(int64_t& value, bool& was_set, const char* stop) {
     was_set = true;
   } catch(...) {
     error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
+    was_set = false;
   }
 }
 
@@ -272,6 +273,7 @@ void Reader::read_uint64_t(uint64_t& value, bool& was_set, const char* stop) {
   } catch(...) {
     error_msg(
       Error::SQL_PARSE_ERROR, " unsigned 64-bit integer out of range");
+    was_set = false;
   }
 }
 
@@ -286,6 +288,7 @@ void Reader::read_double_t(long double& value, bool& was_set,
     was_set = true;
   } catch(...) {
     error_msg(Error::SQL_PARSE_ERROR, "double out of range");
+    was_set = false;
   }
 }
 
@@ -311,6 +314,7 @@ void Reader::read_duration_secs(uint64_t& value, bool& was_set, const char* stop
       error_msg(Error::SQL_PARSE_ERROR, " unknown duration: "+std::string(p));
   } catch(...) {
     error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
+    was_set = false;
   }
 }
 
