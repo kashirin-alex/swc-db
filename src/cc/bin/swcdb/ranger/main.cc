@@ -58,7 +58,7 @@ int run() {
 
 
 int main(int argc, char** argv) {
-  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
   SWC::Env::Config::settings()->init_process(true, "swc.rgr.port");
   return SWC::Ranger::run();
 }

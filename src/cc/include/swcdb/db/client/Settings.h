@@ -11,14 +11,13 @@
 
 namespace SWC{ namespace Config {
 
-//void Settings::init_client_options();
-
+void init_client_options(Settings* settings);
 
 }} // namespace SWC::Config
 
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/client/Settings.cc"
-#endif 
+#endif
 
 #endif // swcdb_db_client_Settings_h

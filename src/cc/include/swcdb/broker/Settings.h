@@ -14,14 +14,14 @@
 #include "swcdb/db/Types/Encoder.h"
 
 
-namespace SWC{ namespace Config {
+namespace SWC { namespace Config {
 
 
-void Settings::init_app_options(){
-  init_comm_options();
-  init_client_options();
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_client_options(settings);
 
-  file_desc.add_options()
+  settings->file_desc.add_options()
     ("swc.bkr.cfg", str(), "Specific cfg-file for Broker")
     ("swc.bkr.cfg.dyn", strs(), "Specific dyn. cfg-file for Broker")
 
@@ -53,8 +53,6 @@ void Settings::init_app_options(){
   ;
 
 }
-
-void Settings::init_post_cmd_args() { }
 
 }}
 

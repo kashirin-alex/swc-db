@@ -14,10 +14,10 @@
 
 namespace SWC{ namespace Config {
 
-void Settings::init_app_options(){
-  init_comm_options();
-  init_client_options();
-  cmdline_desc.add_options()
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_client_options(settings);
+  settings->cmdline_desc.add_options()
     ("requests", i32(1), "number of requests")
     ("batch", i32(1), "batch size of each request")
     ("threads", i32(1), "number of threads x (requests x batch)")
@@ -25,7 +25,7 @@ void Settings::init_app_options(){
     ("buffer", i64(0), "buffer size to send and receive")
   ;
 }
-void Settings::init_post_cmd_args() { }
+
 }}
 
 using namespace SWC;
@@ -148,7 +148,7 @@ class Checker {
 
 
 int main(int argc, char** argv) {
-  Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
 
   Env::Clients::init(
     client::Clients::make(

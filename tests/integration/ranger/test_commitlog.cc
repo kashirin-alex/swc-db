@@ -244,7 +244,7 @@ int run() {
 
 
 int main(int argc, char** argv) {
-  Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
 
   Env::FsInterface::init(
     Env::Config::settings(),

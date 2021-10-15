@@ -10,13 +10,13 @@
 
 namespace SWC{ namespace Config {
 
-//void Settings::init_comm_options();
+void init_comm_options(Settings* settings);
 
 }}
 
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/core/comm/Settings.cc"
-#endif 
+#endif
 
 #endif // swcdb_core_comm_Settings_h

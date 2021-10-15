@@ -24,15 +24,21 @@ bool Base::is_rsp(const Event::Ptr& ev, int cmd,
   // SWC_LOGF(LOG_DEBUG, "handle: %s", ev->to_str().c_str());
   if(!ev) {
     error = Error::COMM_NOT_CONNECTED;
+    *remain = 0;
   } else if(!(error = ev->error)) {
     if(ev->header.command != cmd) {
       error = Error::NOT_IMPLEMENTED;
+      *remain = 0;
       SWC_LOGF(LOG_ERROR, "error=%d(%s) cmd=%d",
                 error, Error::get_text(error), ev->header.command);
     } else if((!(error = ev->response_code())) || error == Error::FS_EOF) {
       *ptr = ev->data.base + 4;
       *remain = ev->data.size - 4;
+    } else {
+      *remain = 0;
     }
+  } else {
+    *remain = 0;
   }
   return true;
 }

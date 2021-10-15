@@ -21,11 +21,11 @@ namespace SWC {
 
 namespace Config {
 
-void Settings::init_app_options(){
-  init_comm_options();
-  init_client_options();
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_client_options(settings);
 
-  cmdline_desc.add_options()
+  settings->cmdline_desc.add_options()
     ("with-broker", boo(false)->zero_token(),
      "Query applicable requests with Broker")
 
@@ -66,7 +66,6 @@ void Settings::init_app_options(){
      */
   ;
 }
-void Settings::init_post_cmd_args() { }
 
 }
 
@@ -477,7 +476,7 @@ class Test {
 }
 
 int main(int argc, char** argv) {
-  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
 
   SWC::Env::Clients::init(
     (SWC::Env::Config::settings()->get_bool("with-broker")

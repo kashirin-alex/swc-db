@@ -16,12 +16,12 @@ namespace SWC { namespace Config {
 
 
 
-void Settings::init_app_options() {
-  init_comm_options();
-  init_fs_options();
-  init_client_options();
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_fs_options(settings);
+  init_client_options(settings);
 
-  file_desc.add_options()
+  settings->file_desc.add_options()
     ("swc.fs.broker.host", str(),
       "FsBroker host (default resolve by hostname)")
     ("swc.fs.broker.port", i16(14000),
@@ -53,12 +53,16 @@ void Settings::init_app_options() {
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
   ;
-  alias("host", "swc.fs.broker.host");
+  settings->alias("host", "swc.fs.broker.host");
 }
 
-void Settings::init_post_cmd_args(){
-  parse_file(get_str("swc.fs.broker.cfg", ""), nullptr);
-  parse_file(get_str("swc.FsBroker.cfg", ""), "swc.FsBroker.cfg.dyn");
+void init_post_cmd_args(Settings* settings) {
+  settings->parse_file(
+    settings->get_str("swc.fs.broker.cfg", ""), nullptr
+  );
+  settings->parse_file(
+    settings->get_str("swc.FsBroker.cfg", ""), "swc.FsBroker.cfg.dyn"
+  );
 }
 
 

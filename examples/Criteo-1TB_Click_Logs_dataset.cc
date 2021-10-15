@@ -26,26 +26,6 @@ THE DATA INPUT IS WITH DATA-SAMPLES AVAILABLE AT:
 #include <fstream>
 
 
-namespace SWC { namespace Config {
-
-void Settings::init_app_options() {
-  init_comm_options();
-  init_client_options();
-
-  cmdline_desc.add_options()
-   ("criteo-samples-path",  str("./criteo_samples"),
-    "Path to Criteo data-samples 'day_[1-28]` "
-    "files from https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/")
-   ("criteo-separated-days",  boo(false),
-    "add Day# fraction at end of a Key")
-  ;
-}
-
-void Settings::init_post_cmd_args() { }
-
-}} // namespace SWC::Config
-
-
 
 namespace Examples {
 
@@ -207,14 +187,25 @@ SWC::DB::Schema::Ptr create_column() {
 
 
 
+void init_app_options(SWC::Config::Settings* settings) {
+  SWC::Config::init_comm_options(settings);
+  SWC::Config::init_client_options(settings);
 
+  settings->cmdline_desc.add_options()
+   ("criteo-samples-path",  SWC::Config::str("./criteo_samples"),
+    "Path to Criteo data-samples 'day_[1-28]` "
+    "files from https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/")
+   ("criteo-separated-days",  SWC::Config::boo(false),
+    "add Day# fraction at end of a Key")
+  ;
+}
 
 }
 
 
 int main(int argc, char** argv) {
 
-  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &Examples::init_app_options, nullptr);
 
   SWC::Env::Clients::init(
     SWC::client::Clients::make(

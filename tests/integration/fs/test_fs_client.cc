@@ -5,17 +5,19 @@
 
 
 #include "swcdb/core/comm/IoContext.h"
+#include "swcdb/core/comm/Settings.h"
 #include "swcdb/fs/Settings.h"
 #include "swcdb/fs/Interface.h"
 
 
-void SWC::Config::Settings::init_app_options() {
-  init_comm_options();
-  init_fs_options();
-}
-void SWC::Config::Settings::init_post_cmd_args() { }
-
 using namespace SWC;
+
+void init_app_options(Config::Settings* settings) {
+  Config::init_comm_options(settings);
+  Config::init_fs_options(settings);
+}
+
+
 
 void run(size_t thread_id){
 
@@ -361,7 +363,7 @@ void run(size_t thread_id){
 }
 
 int main(int argc, char** argv) {
-  Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &init_app_options, nullptr);
 
   Env::FsInterface::init(
     Env::Config::settings(),

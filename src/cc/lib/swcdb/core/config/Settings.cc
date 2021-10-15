@@ -39,7 +39,9 @@ Settings::Settings() {
 
 Settings::~Settings() noexcept { }
 
-void Settings::init(int argc, char *argv[]) {
+void Settings::init(int argc, char *argv[],
+                    Settings::init_option_t init_app_options,
+                    Settings::init_option_t init_post_cmd_args) {
 
   char path[1024];
   errno = 0;
@@ -62,11 +64,13 @@ void Settings::init(int argc, char *argv[]) {
 
   init_options();
 
-  init_app_options();
+  if(init_app_options)
+    init_app_options(this);
 
   parse_args(argc, argv);
 
-  init_post_cmd_args();
+  if(init_post_cmd_args)
+    init_post_cmd_args(this);
 
   auto verbose = get<Property::V_GBOOL>("verbose");
   if(verbose->get() && get_bool("quiet")) {

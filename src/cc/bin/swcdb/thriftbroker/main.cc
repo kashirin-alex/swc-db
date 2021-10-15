@@ -180,7 +180,12 @@ int run() {
 
 
 int main(int argc, char** argv) {
-  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::init(
+    argc,
+    argv,
+    &SWC::Config::init_app_options,
+    &SWC::Config::init_post_cmd_args
+  );
   SWC::Env::Config::settings()->init_process(true, "swc.ThriftBroker.port");
   return SWC::ThriftBroker::run();
 }

@@ -6,19 +6,18 @@
 #ifndef swcdb_app_thriftbroker_Settings_h
 #define swcdb_app_thriftbroker_Settings_h
 
-#include "swcdb/core/config/Settings.h"
-#include "swcdb/core/comm/Settings.h"
+#include "swcdb/db/client/Clients.h"
 #include "swcdb/fs/Settings.h"
 
 namespace SWC{ namespace Config {
 
 
-void Settings::init_app_options() {
-  init_comm_options();
-  init_fs_options();
-  init_client_options();
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_fs_options(settings);
+  init_client_options(settings);
 
-  file_desc.add_options()
+  settings->file_desc.add_options()
     ("swc.ThriftBroker.cfg", str(),
       "Specific cfg-file for ThriftBroker")
     ("swc.ThriftBroker.cfg.dyn", strs(),
@@ -53,9 +52,9 @@ void Settings::init_app_options() {
   ;
 }
 
-void Settings::init_post_cmd_args(){
-  parse_file(
-    get_str("swc.ThriftBroker.cfg", ""),
+void init_post_cmd_args(Settings* settings) {
+  settings->parse_file(
+    settings->get_str("swc.ThriftBroker.cfg", ""),
     "swc.ThriftBroker.cfg.dyn"
   );
 }

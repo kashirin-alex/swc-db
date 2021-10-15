@@ -64,7 +64,12 @@ int not_implemented(const std::string& cmd) {
 
 
 int main(int argc, char** argv) {
-  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::init(
+    argc,
+    argv,
+    &SWC::Config::init_app_options,
+    &SWC::Config::init_post_cmd_args
+  );
 
   int res;
   {

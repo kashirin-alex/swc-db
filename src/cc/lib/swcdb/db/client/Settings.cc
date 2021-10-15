@@ -8,8 +8,8 @@
 
 namespace SWC{ namespace Config {
 
-void Settings::init_client_options() {
-  cmdline_desc.add_options()
+void init_client_options(Settings* settings) {
+  settings->cmdline_desc.add_options()
     ("swc.cfg.dyn.period", g_i32(600000),
      "Dynamic cfg-file check interval in ms, zero without")
 

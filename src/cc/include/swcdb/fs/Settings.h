@@ -10,6 +10,7 @@
 
 namespace SWC { namespace Config {
 
+void init_fs_options(Settings* settings);
 
 }}
 

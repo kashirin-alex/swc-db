@@ -7,7 +7,6 @@
 #define swcdb_app_thriftbroker_AppContext_h
 
 
-#include "swcdb/db/client/Clients.h"
 #include "swcdb/thrift/broker/ThriftBrokerEnv.h"
 #include "swcdb/thrift/broker/AppHandler.h"
 

@@ -21,11 +21,13 @@ namespace SWC {
  */
 namespace Config {
 
+
 class Settings final : public Properties {
 
   public:
 
   typedef std::shared_ptr<Settings> Ptr;
+  typedef void init_option_t(Settings*);
 
   ParserConfig    cmdline_desc;
   ParserConfig    file_desc;
@@ -37,19 +39,10 @@ class Settings final : public Properties {
 
   ~Settings() noexcept;
 
-  void init(int argc, char *argv[]);
+  void init(int argc, char *argv[],
+            init_option_t app, init_option_t post_cmd_args);
 
   void init_options();
-
-  void init_app_options();
-
-  void init_comm_options();
-
-  void init_fs_options();
-
-  void init_client_options();
-
-  void init_post_cmd_args();
 
   void parse_args(int argc, char *argv[]);
 
@@ -101,8 +94,12 @@ class Config final {
 
   typedef std::shared_ptr<Config> Ptr;
 
-  static void init(int argc, char** argv) {
-    get()->m_settings->init(argc, argv);
+  static void init(
+        int argc,
+        char** argv,
+        SWC::Config::Settings::init_option_t init_app_options,
+        SWC::Config::Settings::init_option_t init_post_cmd_args) {
+    get()->m_settings->init(argc, argv, init_app_options, init_post_cmd_args);
   }
 
   static void set(Ptr env) noexcept {

@@ -12,11 +12,6 @@
 
 namespace SWC {
 
-namespace Config {
-void Settings::init_app_options() {}
-void Settings::init_post_cmd_args() {}
-}
-
 
 SWC_SHOULD_NOT_INLINE
 static

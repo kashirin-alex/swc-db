@@ -10,8 +10,8 @@
 
 namespace SWC{ namespace Config {
 
-void Settings::init_app_options() {
-  cmdline_desc
+void init_app_options(Settings* settings) {
+  settings->cmdline_desc
   .definition("Usage: %s [Options] [args]\nOptions")
   .add_options()
    ("i16", i16(1), "16-bit integer")
@@ -39,7 +39,6 @@ void Settings::init_app_options() {
    //("a.cmd.arg.qouted", str(), "a qouted string arg with spaces") require cmake escaping to testdiff
 }
 
-void Settings::init_post_cmd_args() { }
 } }
 
 using namespace SWC;
@@ -111,7 +110,7 @@ void run() {
 
 
 int main(int argc, char *argv[]) {
-  Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
   run();
   Env::Config::reset();
   return 0;

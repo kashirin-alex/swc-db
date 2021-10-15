@@ -38,22 +38,24 @@ namespace Utils { }
 namespace Config {
 
 
-void Settings::init_app_options() {
+void init_app_options(Settings* settings) {
 
-  init_comm_options();
-  init_client_options();
-  init_fs_options();
+  init_comm_options(settings);
+  init_client_options(settings);
+  init_fs_options(settings);
 
-  cmdline_desc
+  settings->cmdline_desc
   .definition(
-    usage_str("SWC-DB(utils) Usage: %s 'command' [options]\n\nOptions:")
+    settings->usage_str(
+      "SWC-DB(utils) Usage: %s 'command' [options]\n\nOptions:")
   )
   .add_options()
    ("command,cmd", str("shell"),
    "Command to execute shell|status|report|custom (1st arg token)")
    ("command",  1)
 
-   ("lib-path", str(install_path+"/lib/"), "Path to utilities libraries")
+   ("lib-path", str(settings->install_path+"/lib/"),
+    "Path to utilities libraries")
    ("lib", str(), "Utility-Library of the custom command")
 
    ("with-broker", boo(false)->zero_token(),
@@ -68,8 +70,8 @@ void Settings::init_app_options() {
 
 }
 
-void Settings::init_post_cmd_args() {
-  auto loglevel = get<Property::V_GENUM>("swc.logging.level");
+void init_post_cmd_args(Settings* settings) {
+  auto loglevel = settings->get<Property::V_GENUM>("swc.logging.level");
   if(loglevel->is_default())
     loglevel->set(LOG_WARN);
 }

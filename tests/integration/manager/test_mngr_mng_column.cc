@@ -23,12 +23,12 @@ namespace ProtocolExecutor = SWC::Comm::Protocol::Mngr;
 
 namespace SWC{ namespace Config {
 
-void Settings::init_app_options(){
-  init_comm_options();
-  init_client_options();
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_client_options(settings);
   // file_desc.add_options();
 }
-void Settings::init_post_cmd_args() { }
+
 }}
 
 
@@ -440,7 +440,7 @@ void chk_rename(size_t num_of_cols, bool verbose=false){
 
 
 int main(int argc, char** argv) {
-  Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
 
   Env::Clients::init(
     client::Clients::make(

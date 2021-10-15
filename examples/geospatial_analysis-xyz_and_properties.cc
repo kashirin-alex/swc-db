@@ -16,18 +16,6 @@
 #include <random>
 
 
-namespace SWC { namespace Config {
-
-void Settings::init_app_options() {
-  init_comm_options();
-  init_client_options();
-}
-
-void Settings::init_post_cmd_args() { }
-
-}} // namespace SWC::Config
-
-
 /*
 ### [height, degC, Density, Electronegativity, Thermal Conductivity, latitude, longitude ]
 
@@ -262,6 +250,10 @@ SWC::DB::Schema::Ptr create_column() {
 
 
 
+void init_app_options(SWC::Config::Settings* settings) {
+  SWC::Config::init_comm_options(settings);
+  SWC::Config::init_client_options(settings);
+}
 
 
 }
@@ -269,7 +261,7 @@ SWC::DB::Schema::Ptr create_column() {
 
 int main(int argc, char** argv) {
 
-  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &Examples::init_app_options, nullptr);
 
   SWC::Env::Clients::init(
     SWC::client::Clients::make(

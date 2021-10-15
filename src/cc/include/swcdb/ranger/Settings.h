@@ -17,12 +17,12 @@
 namespace SWC{ namespace Config {
 
 
-void Settings::init_app_options(){
-  init_comm_options();
-  init_fs_options();
-  init_client_options();
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_fs_options(settings);
+  init_client_options(settings);
 
-  file_desc.add_options()
+  settings->file_desc.add_options()
     ("swc.rgr.cfg", str(), "Specific cfg-file for Ranger")
     ("swc.rgr.cfg.dyn", strs(), "Specific dyn. cfg-file for Ranger")
 
@@ -101,8 +101,6 @@ void Settings::init_app_options(){
   ;
 
 }
-
-void Settings::init_post_cmd_args() { }
 
 }}
 

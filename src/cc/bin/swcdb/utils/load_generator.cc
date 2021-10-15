@@ -163,19 +163,22 @@ std::string repr_distrib_course(int typ) {
 
 namespace Config {
 
-void Settings::init_app_options() {
+void init_app_options(Settings* settings) {
+  init_comm_options(settings);
+  init_client_options(settings);
+
   Property::Value::get_pointer<Property::V_GENUM>(
-    cmdline_desc.get_default("swc.logging.level")
+    settings->cmdline_desc.get_default("swc.logging.level")
   )->set(LOG_ERROR); // default level
 
-  init_comm_options();
-  init_client_options();
+  init_comm_options(settings);
+  init_client_options(settings);
 
-  cmdline_desc.definition(usage_str(
+  settings->cmdline_desc.definition(settings->usage_str(
     "SWC-DB(load_generator) Usage: swcdb_load_generator [options]\n\nOptions:")
   );
 
-  cmdline_desc.add_options()
+  settings->cmdline_desc.add_options()
     ("with-broker", boo(false)->zero_token(),
      "Query applicable requests with Broker")
 
@@ -283,7 +286,6 @@ void Settings::init_app_options() {
   ;
 }
 
-void Settings::init_post_cmd_args() { }
 
 } // namespace Config
 
@@ -983,7 +985,7 @@ void generate() {
 
 
 int main(int argc, char** argv) {
-  SWC::Env::Config::init(argc, argv);
+  SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
 
   auto settings = SWC::Env::Config::settings();
 
