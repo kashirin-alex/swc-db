@@ -599,11 +599,11 @@ enum Flag {
   /** The Cell is an insert */
   INSERT          = 1,
 
-  /** The Cell is a delete */
-  DELETE          = 2,
+  /** The Cell is a delete versions lower-equal */
+  DELETE_LE       = 2,
 
-  /** The Cell is a delete-version */
-  DELETE_VERSION  = 3
+  /** The Cell is a  delete version equal */
+  DELETE_EQ       = 3
 }
 
 

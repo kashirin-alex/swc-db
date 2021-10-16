@@ -476,15 +476,15 @@ impl Flag {
   pub const NONE: Flag = Flag(0);
   /// The Cell is an insert
   pub const INSERT: Flag = Flag(1);
-  /// The Cell is a delete
-  pub const DELETE: Flag = Flag(2);
-  /// The Cell is a delete-version
-  pub const DELETE_VERSION: Flag = Flag(3);
+  /// The Cell is a delete versions lower-equal
+  pub const DELETE_LE: Flag = Flag(2);
+  /// The Cell is a  delete version equal
+  pub const DELETE_EQ: Flag = Flag(3);
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
     Self::INSERT,
-    Self::DELETE,
-    Self::DELETE_VERSION,
+    Self::DELETE_LE,
+    Self::DELETE_EQ,
   ];
   #[allow(clippy::trivially_copy_pass_by_ref)]
   pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
@@ -501,8 +501,8 @@ impl From<i32> for Flag {
     match i {
       0 => Flag::NONE,
       1 => Flag::INSERT,
-      2 => Flag::DELETE,
-      3 => Flag::DELETE_VERSION,
+      2 => Flag::DELETE_LE,
+      3 => Flag::DELETE_EQ,
       _ => Flag(i)
     }
   }

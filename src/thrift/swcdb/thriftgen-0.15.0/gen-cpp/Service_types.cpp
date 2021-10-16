@@ -541,13 +541,13 @@ int _kFlagValues[] = {
    */
   Flag::INSERT,
   /**
-   * The Cell is a delete
+   * The Cell is a delete versions lower-equal
    */
-  Flag::DELETE,
+  Flag::DELETE_LE,
   /**
-   * The Cell is a delete-version
+   * The Cell is a  delete version equal
    */
-  Flag::DELETE_VERSION
+  Flag::DELETE_EQ
 };
 const char* _kFlagNames[] = {
   /**
@@ -559,13 +559,13 @@ const char* _kFlagNames[] = {
    */
   "INSERT",
   /**
-   * The Cell is a delete
+   * The Cell is a delete versions lower-equal
    */
-  "DELETE",
+  "DELETE_LE",
   /**
-   * The Cell is a delete-version
+   * The Cell is a  delete version equal
    */
-  "DELETE_VERSION"
+  "DELETE_EQ"
 };
 const std::map<int, const char*> _Flag_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kFlagValues, _kFlagNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 

@@ -58,10 +58,10 @@ enum OutputFlag : uint8_t {
 namespace Cells {
 
 enum Flag : uint8_t {
-  NONE                      = 0x0, // empty instance
-  INSERT                    = 0x1,
-  DELETE                    = 0x2,
-  DELETE_VERSION            = 0x3
+  NONE      = 0x0, // empty instance
+  INSERT    = 0x1,
+  DELETE_LE = 0x2,
+  DELETE_EQ = 0x3
 };
 
 const char* SWC_CONST_FUNC to_string(Flag flag) noexcept;
@@ -508,9 +508,9 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
 constexpr SWC_CAN_INLINE
 bool Cell::is_removing(const int64_t& rev) const noexcept {
   return rev != AUTO_ASSIGN && removal() && (
-    (flag == DELETE  && get_timestamp() >= rev )
+    (flag == DELETE_LE  && get_timestamp() >= rev )
     ||
-    (flag == DELETE_VERSION && get_timestamp() == rev )
+    (flag == DELETE_EQ && get_timestamp() == rev )
     );
 }
 

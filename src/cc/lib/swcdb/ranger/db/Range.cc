@@ -584,7 +584,7 @@ void Range::on_change(bool removal,
   auto cid_f(std::to_string(cfg->cid));
 
   if(removal) {
-    cell.flag = DB::Cells::DELETE;
+    cell.flag = DB::Cells::DELETE_LE;
     cell.key.copy(m_interval.key_begin);
     cell.key.insert(0, cid_f);
     hdlr->column.add(cell);
@@ -631,7 +631,7 @@ void Range::on_change(bool removal,
       // remove begin-any should not happen
 
       cell.free();
-      cell.flag = DB::Cells::DELETE;
+      cell.flag = DB::Cells::DELETE_LE;
       cell.key.copy(*old_key_begin);
       cell.key.insert(0, std::to_string(cfg->cid));
       hdlr->column.add(cell);
@@ -998,7 +998,7 @@ void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
 
   auto updater = MetaRegOnLoadReq::make(shared_from_this(), hdlr->req);
   for(auto cell : cells) {
-    cell->flag = DB::Cells::DELETE;
+    cell->flag = DB::Cells::DELETE_LE;
     cell->free();
     updater->column.add(*cell);
   }

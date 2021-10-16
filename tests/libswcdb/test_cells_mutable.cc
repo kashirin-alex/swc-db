@@ -26,7 +26,7 @@ void op(Cells::Mutable::Ptr cells_mutable,
   int64_t took;
   std::string cell_number;
 
-  for(auto r=1;r<=(flag==Cells::DELETE ? 1 : num_revs);++r){
+  for(auto r=1;r<=(flag==Cells::DELETE_LE ? 1 : num_revs);++r){
   for(auto i=(reverse?num_cells:1);(reverse?i>=1:i<=num_cells);(reverse?--i:++i)){
       cell_number = std::to_string(i);
 
@@ -191,7 +191,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
   truclations = 0;
   op(cells_mutable, truclations, ts_total, latency_mutable,
      num_revs, reverse, num_cells, gen_historic,
-     Cells::DELETE, typ, time_order_desc);
+     Cells::DELETE_LE, typ, time_order_desc);
   ///
 
   if(cells_mutable->size() != num_cells) {

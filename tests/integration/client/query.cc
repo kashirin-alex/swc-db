@@ -458,7 +458,7 @@ class Test {
     auto& col = hdlr->create(schema);
 
     DB::Cells::Cell cell;
-    cell.flag = DB::Cells::DELETE;
+    cell.flag = DB::Cells::DELETE_LE;
     cell.set_time_order_desc(true);
 
     for(uint32_t i=0; i<ncells; ++i) {

@@ -532,7 +532,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
 
       for(auto& range : merged) {
         if(rid == range->rid) {
-          cell->flag = DB::Cells::DELETE;
+          cell->flag = DB::Cells::DELETE_LE;
           cell->free(); // no-need-value-data
           col->add(*cell);
           break;

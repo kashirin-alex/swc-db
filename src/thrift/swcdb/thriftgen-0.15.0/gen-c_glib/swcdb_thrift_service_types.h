@@ -112,8 +112,8 @@ toString_SpecFlagsOpt(int value);
 enum _swcdb_thriftFlag {
   SWCDB_THRIFT_FLAG_NONE = 0,
   SWCDB_THRIFT_FLAG_INSERT = 1,
-  SWCDB_THRIFT_FLAG_DELETE = 2,
-  SWCDB_THRIFT_FLAG_DELETE_VERSION = 3
+  SWCDB_THRIFT_FLAG_DELETE_LE = 2,
+  SWCDB_THRIFT_FLAG_DELETE_EQ = 3
 };
 typedef enum _swcdb_thriftFlag swcdb_thriftFlag;
 

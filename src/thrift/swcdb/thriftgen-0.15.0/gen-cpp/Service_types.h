@@ -303,13 +303,13 @@ struct Flag {
      */
     INSERT = 1,
     /**
-     * The Cell is a delete
+     * The Cell is a delete versions lower-equal
      */
-    DELETE = 2,
+    DELETE_LE = 2,
     /**
-     * The Cell is a delete-version
+     * The Cell is a  delete version equal
      */
-    DELETE_VERSION = 3
+    DELETE_EQ = 3
   };
 };
 

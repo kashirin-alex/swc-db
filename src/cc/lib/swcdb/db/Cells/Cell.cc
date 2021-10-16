@@ -18,10 +18,10 @@ const char* to_string(Flag flag) noexcept {
   switch(flag) {
     case Flag::INSERT:
       return "INSERT";
-    case Flag::DELETE:
-      return "DELETE";
-    case Flag::DELETE_VERSION:
-      return "DELETE_VERSION";
+    case Flag::DELETE_LE:
+      return "DELETE_LE";
+    case Flag::DELETE_EQ:
+      return "DELETE_EQ";
     case Flag::NONE:
       return "NONE";
     default:
@@ -31,15 +31,15 @@ const char* to_string(Flag flag) noexcept {
 
 Flag flag_from(const uint8_t* rptr, uint32_t len) noexcept {
   const char* ptr = reinterpret_cast<const char*>(rptr);
-  if(len >= 14) {
-    if(Condition::str_case_eq(ptr, "delete_version", 14))
-      return Flag::DELETE_VERSION;
+  if(len >= 9) {
+    if(Condition::str_case_eq(ptr, "DELETE_LE", 9))
+      return Flag::DELETE_LE;
+    if(Condition::str_case_eq(ptr, "DELETE_EQ", 9))
+      return Flag::DELETE_EQ;
   }
   if(len >= 6) {
     if(Condition::str_case_eq(ptr, "insert", 6))
       return Flag::INSERT;
-    if(Condition::str_case_eq(ptr, "delete", 6))
-      return Flag::DELETE;
   }
   return Flag::NONE;
 }

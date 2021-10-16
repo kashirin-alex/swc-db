@@ -502,7 +502,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
         auto& u_col = updater->create(
           meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
         for(auto cell : cells_meta) {
-          cell->flag = DB::Cells::DELETE;
+          cell->flag = DB::Cells::DELETE_LE;
           u_col->add(*cell);
           updater->commit_or_wait(u_col.get(), 1);
         }
@@ -512,7 +512,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
           DB::Types::SystemColumn::SYS_RGR_DATA,
           DB::Types::KeySeq::VOLUME, 1, 0, DB::Types::Column::PLAIN);
         for(auto cell : cells_rgrdata) {
-          cell->flag = DB::Cells::DELETE;
+          cell->flag = DB::Cells::DELETE_LE;
           u_col->add(*cell);
           updater->commit_or_wait(u_col.get(), 1);
         }

@@ -238,21 +238,21 @@ class Flag(object):
     """
     NONE = 0
     INSERT = 1
-    DELETE = 2
-    DELETE_VERSION = 3
+    DELETE_LE = 2
+    DELETE_EQ = 3
 
     _VALUES_TO_NAMES = {
         0: "NONE",
         1: "INSERT",
-        2: "DELETE",
-        3: "DELETE_VERSION",
+        2: "DELETE_LE",
+        3: "DELETE_EQ",
     }
 
     _NAMES_TO_VALUES = {
         "NONE": 0,
         "INSERT": 1,
-        "DELETE": 2,
-        "DELETE_VERSION": 3,
+        "DELETE_LE": 2,
+        "DELETE_EQ": 3,
     }
 
 

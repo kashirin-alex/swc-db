@@ -154,10 +154,9 @@ void QueryUpdate::read_cells() {
       if(err)
         return;
 
-      bool on_fraction = false;
       cid_t cid = DB::Schema::NO_CID;
       DB::Cells::Cell cell;
-      read_cell(cid, cell, on_fraction);
+      read_cell(cid, cell);
       if(err)
         return;
 
@@ -165,19 +164,15 @@ void QueryUpdate::read_cells() {
       expect_token(")", 1, bracket);
       if(err)
         return;
-      //if(on_fraction) // not impl.
-      //  hdlr->add(cid, cell);
-      //else
       hdlr->add(cid, cell);
     }
   }
 }
 
-void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
-                          bool& on_fraction) {
+void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell) {
   bool comma = false;
 
-  read_flag(cell.flag, on_fraction);
+  read_flag(cell.flag);
   if(!err)
     expect_comma(comma);
   if(err)
@@ -200,7 +195,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell,
   read_key(cell.key);
 
   comma = false;
-  bool require_ts = cell.flag == DB::Cells::DELETE_VERSION;
+  bool require_ts = cell.flag == DB::Cells::DELETE_EQ;
   if(!err && require_ts)
     expect_comma(comma);
   if(err)
@@ -452,7 +447,7 @@ void QueryUpdate::op_from(const uint8_t** ptrp, size_t* remainp,
   }
 }
 
-void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
+void QueryUpdate::read_flag(uint8_t& flag) {
   std::string buf;
   read(buf, ",");
   if(err)
@@ -463,27 +458,12 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
     switch(*buf.data()) {
       case '1':
         flag = DB::Cells::INSERT;
-        on_fraction = false;
         return;
       case '2':
-        flag = DB::Cells::DELETE;
-        on_fraction = false;
+        flag = DB::Cells::DELETE_LE;
         return;
       case '3':
-        flag = DB::Cells::DELETE_VERSION;
-        on_fraction = false;
-        return;
-      case '4':
-        flag = DB::Cells::INSERT;
-        on_fraction = true;
-        return;
-      case '5':
-        flag = DB::Cells::DELETE;
-        on_fraction = true;
-        return;
-      case '6':
-        flag = DB::Cells::DELETE_VERSION;
-        on_fraction = true;
+        flag = DB::Cells::DELETE_EQ;
         return;
       default:
         break;
@@ -493,41 +473,17 @@ void QueryUpdate::read_flag(uint8_t& flag, bool& on_fraction) {
   case 6: {
     if(Condition::str_case_eq(buf.data(), "INSERT", 6)) {
       flag = DB::Cells::INSERT;
-      on_fraction = false;
-      return;
-    }
-    if(Condition::str_case_eq(buf.data(), "DELETE", 6)) {
-      flag = DB::Cells::DELETE;
-      on_fraction = false;
       return;
     }
     break;
   }
-  case 14: {
-    if(Condition::str_case_eq(buf.data(), "DELETE_VERSION", 14)) {
-      flag = DB::Cells::DELETE_VERSION;
-      on_fraction = false;
+  case 9: {
+    if(Condition::str_case_eq(buf.data(), "DELETE_LE", 9)) {
+      flag = DB::Cells::DELETE_LE;
       return;
     }
-    break;
-  }
-  case 15: {
-    if(Condition::str_case_eq(buf.data(), "INSERT_FRACTION", 15)) {
-      flag = DB::Cells::INSERT;
-      on_fraction = true;
-      return;
-    }
-    if(Condition::str_case_eq(buf.data(), "DELETE_FRACTION", 15)) {
-      flag = DB::Cells::DELETE;
-      on_fraction = true;
-      return;
-    }
-    break;
-  }
-  case 23: {
-    if(Condition::str_case_eq(buf.data(), "DELETE_FRACTION_VERSION", 23)) {
-      flag = DB::Cells::DELETE_VERSION;
-      on_fraction = true;
+    if(Condition::str_case_eq(buf.data(), "DELETE_EQ", 9)) {
+      flag = DB::Cells::DELETE_EQ;
       return;
     }
     break;

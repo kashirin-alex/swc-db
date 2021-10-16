@@ -176,7 +176,7 @@ class FileWriter {
     cell_buff.add(DB::Cells::to_string(DB::Cells::Flag(cell.flag)));
 
     if(output_flags & OutputFlag::NO_VALUE ||
-      cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
+      cell.flag == Flag::DELETE_LE || cell.flag == Flag::DELETE_EQ) {
       cell_buff.add('\n');
       return;
     }
@@ -592,7 +592,7 @@ class FileReader {
     if((cell.flag = DB::Cells::flag_from(s, ptr-s)) == Flag::NONE)
       throw std::runtime_error("Bad cell Flag");
 
-    if(cell.flag == Flag::DELETE || cell.flag == Flag::DELETE_VERSION) {
+    if(cell.flag == Flag::DELETE_LE || cell.flag == Flag::DELETE_EQ) {
       if(*ptr == '\t')
         throw std::runtime_error("Expected end of line");
       goto cell_filled;

@@ -824,7 +824,7 @@ bool Statistics::truncate() {
       }
 
       for(auto cell : cells) {
-        cell->flag = DB::Cells::DELETE;
+        cell->flag = DB::Cells::DELETE_LE;
         col_updated->add(*cell);
         updater->commit_or_wait(col_updated.get());
         countp->fetch_add(1);

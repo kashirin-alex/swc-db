@@ -50,17 +50,12 @@ Usage Help:  'command' [options];
                          ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;
                     * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP "VALUE", ..])
   update            update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;
-                    -> UPDATE
-                         cell(DELETE,                  CID, ['K','E','Y']             );
-                         cell(DELETE_VERSION,          CID, ['K','E','Y'], TS         );
-                         cell(DELETE_FRACTION,         CID, ['K','E','Y']             );
-                         cell(DELETE_FRACTION_VERSION, CID, ['K','E'],     TS         );
-                         cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, ''),
-                         cell(INSERT,                  CID, ['K','E','Y'], DESC       ),
-                         cell(INSERT,                 NAME, ['K','E','Y'], '', 'DATA' ),
-                         cell(INSERT_FRACTION,        NAME, ['K','E'],     '', 'DATA' );
-                    * FLAG: INSERT|1 DELETE|2 DELETE_VERSION|3
-                           INSERT_FRACTION|4 DELETE_FRACTION|5 DELETE_FRACTION_VERSION|6
+                    -> UPDATE cell(DELETE_LE,  CID, ['K','E','Y']              ),
+                              cell(DELETE_EQ,  CID, ['K','E','Y'], TS          ),
+                              cell(INSERT,     CID, ['K','E','Y'], ASC, TS, '' ),
+                              cell(INSERT,     CID, ['K','E','Y'], DESC        ),
+                              cell(INSERT,     NAME, ['K','E','Y'], '', 'DATA' );
+                    * FLAG: INSERT|1 DELETE_LE|2 DELETE_EQ|3
                     * Encoder(ENC): at INSERT with DATA, options: ZLIB|2 SNAPPY|3 ZSTD|4
                     * DATA: PLAIN( val ) COUNTER( -/+/=val ) SERIAL( [ID:TYPE:val, ..] )
   dump              dump col='ID|NAME' into [FS] path='folder/path/' [FORMAT]

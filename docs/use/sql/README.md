@@ -39,8 +39,8 @@ sort: 2
   * [Update Query](#update-query)
     * [The Update Query syntax](#the-update-query-syntax)
     * [The Cell for Update syntax](#the-cell-for-update-syntax)
-    * [A DELETE Flag](#a-delete-flag)
-    * [A DELETE_VERSION Flag](#a-delete_version-flag)
+    * [A DELETE_LE Flag](#a-delete_le-flag)
+    * [A DELETE_EQ Flag](#a-delete_eq-flag)
     * [An INSERT Flag with auto-timestamp](#an-insert-flag-with-auto-timestamp)
     * [An INSERT Flag with version-timestamp config](#an-insert-flag-with-version-timestamp-config)
     * [An INSERT Flag for a SERIAL Column Type](#an-insert-flag-for-a-serial-column-type)
@@ -399,8 +399,8 @@ The Update Query sytrax consists the 'update' command followed by Cell or comma-
 * _An Example:_
 ```
 UPDATE
-  cell(DELETE,                  CID, ['K','E','Y']                         ),
-  cell(DELETE_VERSION,          CID, ['K','E','Y'], TS                     ),
+  cell(DELETE_LE,               CID, ['K','E','Y']                         ),
+  cell(DELETE_EQ,               CID, ['K','E','Y'], TS                     ),
   cell(INSERT,                  CID, ['K','E','Y'], ASC, TS, 'DATA'        ),
   cell(INSERT,                  CID, ['K','E','Y'], DESC,    'DATA'        ),
   cell(INSERT,                 NAME, ['K','E','Y'], '',      'DATA', 'ENC' );
@@ -410,11 +410,11 @@ UPDATE
 * #### The Cell for Update syntax
 The Syntax depends on the Flags and available definitions. 
 
-* ##### A **DELETE** Flag:
-  ```cell(``` ``` DELETE ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```) ``` 
+* ##### A **DELETE_LE** Flag:
+  ```cell(``` ``` DELETE_LE ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```) ``` 
 
-* ##### A **DELETE_VERSION** Flag:
-  ```cell(``` ``` DELETE_VERSION ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIMESTAMP ``` ```) ``` 
+* ##### A **DELETE_EQ** Flag:
+  ```cell(``` ``` DELETE_EQ ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIMESTAMP ``` ```) ``` 
 
 * ##### An **INSERT** Flag with auto-timestamp:
   ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` "" ``` ```,``` ``` VALUE-DATA ``` ```) ``` 

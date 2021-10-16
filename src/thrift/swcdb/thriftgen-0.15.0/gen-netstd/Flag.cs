@@ -23,11 +23,11 @@ public enum Flag
   /// </summary>
   INSERT = 1,
   /// <summary>
-  /// The Cell is a delete
+  /// The Cell is a delete versions lower-equal
   /// </summary>
-  DELETE = 2,
+  DELETE_LE = 2,
   /// <summary>
-  /// The Cell is a delete-version
+  /// The Cell is a  delete version equal
   /// </summary>
-  DELETE_VERSION = 3,
+  DELETE_EQ = 3,
 }

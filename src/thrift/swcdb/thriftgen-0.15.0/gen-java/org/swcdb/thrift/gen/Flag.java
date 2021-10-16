@@ -20,13 +20,13 @@ public enum Flag implements org.apache.thrift.TEnum {
    */
   INSERT(1),
   /**
-   * The Cell is a delete
+   * The Cell is a delete versions lower-equal
    */
-  DELETE(2),
+  DELETE_LE(2),
   /**
-   * The Cell is a delete-version
+   * The Cell is a  delete version equal
    */
-  DELETE_VERSION(3);
+  DELETE_EQ(3);
 
   private final int value;
 
@@ -53,9 +53,9 @@ public enum Flag implements org.apache.thrift.TEnum {
       case 1:
         return INSERT;
       case 2:
-        return DELETE;
+        return DELETE_LE;
       case 3:
-        return DELETE_VERSION;
+        return DELETE_EQ;
       default:
         return null;
     }

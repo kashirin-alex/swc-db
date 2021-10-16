@@ -899,7 +899,7 @@ void make_work_load(const DB::SchemasVec& schemas) {
     select_data(schemas, seed);
 
   if(settings->get_bool("gen-delete"))
-    update_data(schemas, DB::Cells::DELETE, seed);
+    update_data(schemas, DB::Cells::DELETE_LE, seed);
 
   if(settings->get_bool("gen-delete-column")) {
     int err = Error::OK;

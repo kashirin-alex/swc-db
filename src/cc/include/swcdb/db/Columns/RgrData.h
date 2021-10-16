@@ -79,7 +79,7 @@ class RgrData final {
     cell.set_time_order_desc(true);
     cell.key.add(std::to_string(cid));
     cell.key.add(std::to_string(rid));
-    cell.flag = DB::Cells::DELETE;
+    cell.flag = DB::Cells::DELETE_LE;
 
     colp->add(cell);
   }
@@ -143,7 +143,7 @@ class RgrData final {
         DB::Types::KeySeq::VOLUME, 1, 0, DB::Types::Column::PLAIN
       );
       for(auto cell : cells) {
-        cell->flag = DB::Cells::DELETE;
+        cell->flag = DB::Cells::DELETE_LE;
         col->add(*cell);
         hdlr->commit_or_wait(col.get());
       }

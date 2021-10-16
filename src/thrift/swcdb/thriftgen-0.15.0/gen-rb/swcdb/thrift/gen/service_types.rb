@@ -136,12 +136,12 @@ module Swcdb
         NONE = 0
         # The Cell is an insert
         INSERT = 1
-        # The Cell is a delete
-        DELETE = 2
-        # The Cell is a delete-version
-        DELETE_VERSION = 3
-        VALUE_MAP = {0 => "NONE", 1 => "INSERT", 2 => "DELETE", 3 => "DELETE_VERSION"}
-        VALID_VALUES = Set.new([NONE, INSERT, DELETE, DELETE_VERSION]).freeze
+        # The Cell is a delete versions lower-equal
+        DELETE_LE = 2
+        # The Cell is a  delete version equal
+        DELETE_EQ = 3
+        VALUE_MAP = {0 => "NONE", 1 => "INSERT", 2 => "DELETE_LE", 3 => "DELETE_EQ"}
+        VALID_VALUES = Set.new([NONE, INSERT, DELETE_LE, DELETE_EQ]).freeze
       end
 
       module CellsResult
