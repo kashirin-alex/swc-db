@@ -168,8 +168,8 @@ class FileSystemBroker final : public FileSystem {
   const Comm::EndPoints                 m_endpoints;
   Core::QueueSafe<Comm::ConnHandlerPtr> m_connections;
 
-  const Config::Property::V_GINT32::Ptr cfg_timeout;
-  const Config::Property::V_GINT32::Ptr cfg_timeout_ratio;
+  const Config::Property::Value_int32_g::Ptr cfg_timeout;
+  const Config::Property::Value_int32_g::Ptr cfg_timeout_ratio;
 };
 
 

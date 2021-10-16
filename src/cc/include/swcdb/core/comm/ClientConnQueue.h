@@ -63,8 +63,8 @@ class ConnQueue :
 
   SWC_CAN_INLINE
   ConnQueue(const IoContextPtr& ioctx,
-            const Config::Property::V_GINT32::Ptr keepalive_ms=nullptr,
-            const Config::Property::V_GINT32::Ptr again_delay_ms=nullptr)
+            const Config::Property::Value_int32_g::Ptr keepalive_ms=nullptr,
+            const Config::Property::Value_int32_g::Ptr again_delay_ms=nullptr)
             : cfg_keepalive_ms(keepalive_ms),
               cfg_again_delay_ms(again_delay_ms),
               m_ioctx(ioctx), m_conn(nullptr),
@@ -101,8 +101,8 @@ class ConnQueue :
 
   protected:
 
-  const Config::Property::V_GINT32::Ptr  cfg_keepalive_ms;
-  const Config::Property::V_GINT32::Ptr  cfg_again_delay_ms;
+  const Config::Property::Value_int32_g::Ptr  cfg_keepalive_ms;
+  const Config::Property::Value_int32_g::Ptr  cfg_again_delay_ms;
 
   private:
 

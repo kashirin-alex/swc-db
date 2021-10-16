@@ -71,7 +71,7 @@ class AppContext final : public Comm::AppContext {
 
     Env::Rgr::init();
 
-    auto period = settings->get<Config::Property::V_GINT32>(
+    auto period = settings->get<Config::Property::Value_int32_g>(
       "swc.cfg.dyn.period");
     if(period->get()) {
       Env::Rgr::io()->set_periodic_timer(
@@ -94,7 +94,7 @@ class AppContext final : public Comm::AppContext {
 
   AppContext()
       : Comm::AppContext(
-          Env::Config::settings()->get<Config::Property::V_GENUM>(
+          Env::Config::settings()->get<Config::Property::Value_enum_g>(
             "swc.rgr.comm.encoder")),
         m_metrics(Env::Rgr::metrics_track()) {
   }

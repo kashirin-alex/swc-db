@@ -13,16 +13,16 @@ namespace SWC { namespace Ranger {
 
 Compaction::Compaction()
           : cfg_read_ahead(
-              Env::Config::settings()->get<Config::Property::V_GUINT8>(
+              Env::Config::settings()->get<Config::Property::Value_uint8_g>(
                 "swc.rgr.compaction.read.ahead")),
             cfg_max_range(
-              Env::Config::settings()->get<Config::Property::V_GUINT8>(
+              Env::Config::settings()->get<Config::Property::Value_uint8_g>(
                 "swc.rgr.compaction.range.max")),
             cfg_max_log(
-              Env::Config::settings()->get<Config::Property::V_GUINT8>(
+              Env::Config::settings()->get<Config::Property::Value_uint8_g>(
                 "swc.rgr.compaction.commitlog.max")),
             cfg_check_interval(
-              Env::Config::settings()->get<Config::Property::V_GINT32>(
+              Env::Config::settings()->get<Config::Property::Value_int32_g>(
                 "swc.rgr.compaction.check.interval")),
             m_run(true), m_running(0), m_log_compactions(0),
             m_check_timer(

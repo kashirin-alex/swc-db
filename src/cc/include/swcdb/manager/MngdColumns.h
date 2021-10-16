@@ -27,11 +27,11 @@ class MngdColumns final {
   };
 
 
-  const Config::Property::V_GUINT8::Ptr   cfg_schema_replication;
-  const Config::Property::V_GUINT64::Ptr  cfg_schemas_store_cap;
-  const Config::Property::V_GINT32::Ptr   cfg_schemas_store_blksz;
-  const Config::Property::V_GENUM::Ptr    cfg_schemas_store_encoder;
-  const Config::Property::V_GINT32::Ptr   cfg_delay_cols_init;
+  const Config::Property::Value_uint8_g::Ptr   cfg_schema_replication;
+  const Config::Property::Value_uint64_g::Ptr  cfg_schemas_store_cap;
+  const Config::Property::Value_int32_g::Ptr   cfg_schemas_store_blksz;
+  const Config::Property::Value_enum_g::Ptr    cfg_schemas_store_encoder;
+  const Config::Property::Value_int32_g::Ptr   cfg_delay_cols_init;
 
 
   MngdColumns();

@@ -72,7 +72,7 @@ void Settings::init(int argc, char *argv[],
   if(init_post_cmd_args)
     init_post_cmd_args(this);
 
-  auto verbose = get<Property::V_GBOOL>("verbose");
+  auto verbose = get<Property::Value_bool_g>("verbose");
   if(verbose->get() && get_bool("quiet")) {
     verbose->set(false);
   }
@@ -80,7 +80,7 @@ void Settings::init(int argc, char *argv[],
   if(!get_bool("quiet") && !has("daemon"))
     SWC_PRINT << swcdb_copyrights() << SWC_PRINT_CLOSE;
 
-  auto loglevel = get<Property::V_GENUM>("swc.logging.level");
+  auto loglevel = get<Property::Value_enum_g>("swc.logging.level");
   if(get_bool("debug")) {
     loglevel->set(LOG_DEBUG);
 
@@ -184,7 +184,7 @@ void Settings::parse_file(const std::string& name, const char* onchg) {
 void Settings::load_files_by(const char* fileprop, bool allow_unregistered) {
   if(!fileprop || !has(fileprop))
     return;
-  auto ptr = get<Property::V_STRINGS>(fileprop);
+  auto ptr = get<Property::Value_strings>(fileprop);
   if(!ptr)
     return;
   std::string fname;

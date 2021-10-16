@@ -14,7 +14,7 @@ Reporting::Reporting(const Comm::IoContextPtr& a_io)
         : Common::Query::Update::Metric::Reporting(
             Env::Clients::get(),
             a_io,
-            Env::Config::settings()->get<Config::Property::V_GINT32>(
+            Env::Config::settings()->get<Config::Property::Value_int32_g>(
               "swc.mngr.metrics.report.interval"),
             Env::Config::settings()->get_bool(
               "swc.mngr.metrics.report.broker")

@@ -21,17 +21,17 @@ Brokers::Brokers(const Config::Settings& settings,
             ? bkr_ctx
             : ContextBroker::Ptr(new ContextBroker(settings))
         )),
-         settings.get<Config::Property::V_GINT32>(
+         settings.get<Config::Property::Value_int32_g>(
           "swc.client.Bkr.connection.timeout"),
-         settings.get<Config::Property::V_GUINT16>(
+         settings.get<Config::Property::Value_uint16_g>(
           "swc.client.Bkr.connection.probes"),
-         settings.get<Config::Property::V_GINT32>(
+         settings.get<Config::Property::Value_int32_g>(
           "swc.client.Bkr.connection.keepalive"),
-         settings.get<Config::Property::V_GINT32>(
+         settings.get<Config::Property::Value_int32_g>(
           "swc.client.request.again.delay")
       )),
       cfg_hosts(
-        settings.get<Config::Property::V_GSTRINGS>("swc.bkr.host")),
+        settings.get<Config::Property::Value_strings_g>("swc.bkr.host")),
       cfg_port(settings.get_i16("swc.bkr.port")) {
   on_cfg_update();
 }

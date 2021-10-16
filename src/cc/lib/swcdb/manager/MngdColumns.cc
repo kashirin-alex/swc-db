@@ -21,19 +21,19 @@ using ColumnMngFunc = Comm::Protocol::Mngr::Params::ColumnMng::Function;
 
 MngdColumns::MngdColumns()
     : cfg_schema_replication(
-        Env::Config::settings()->get<Config::Property::V_GUINT8>(
+        Env::Config::settings()->get<Config::Property::Value_uint8_g>(
           "swc.mngr.schema.replication")),
       cfg_schemas_store_cap(
-        Env::Config::settings()->get<Config::Property::V_GUINT64>(
+        Env::Config::settings()->get<Config::Property::Value_uint64_g>(
           "swc.mngr.schemas.store.from.capacity")),
       cfg_schemas_store_blksz(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.schemas.store.block.size")),
       cfg_schemas_store_encoder(
-        Env::Config::settings()->get<Config::Property::V_GENUM>(
+        Env::Config::settings()->get<Config::Property::Value_enum_g>(
           "swc.mngr.schemas.store.block.encoder")),
       cfg_delay_cols_init(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.ranges.assign.delay.afterColumnsInit")),
       m_run(true), m_schemas_set(false),
       m_cid_active(false),

@@ -33,8 +33,8 @@ Configurables* apply_local(Configurables* config) {
 
   config->path_root = config->settings->get_str(
     "swc.fs.local.path.root");
-  config->cfg_fds_max = config->settings->get<Config::Property::V_GINT32>(
-    "swc.fs.local.fds.max");
+  config->cfg_fds_max = config->settings
+    ->get<Config::Property::Value_int32_g>("swc.fs.local.fds.max");
   config->stats_enabled = config->settings->get_bool(
     "swc.fs.local.metrics.enabled");
   return config;

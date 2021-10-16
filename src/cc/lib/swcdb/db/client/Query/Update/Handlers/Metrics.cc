@@ -196,7 +196,7 @@ void Item_CountVolume::report(uint64_t for_ns, Handlers::Base::Column* colp,
 
 Reporting::Reporting(const Clients::Ptr& a_clients,
                      const Comm::IoContextPtr& a_io,
-                     Config::Property::V_GINT32::Ptr a_cfg_intval,
+                     Config::Property::Value_int32_g::Ptr a_cfg_intval,
                      Clients::Flag a_executor)
             : BaseSingleColumn(
                 a_clients,

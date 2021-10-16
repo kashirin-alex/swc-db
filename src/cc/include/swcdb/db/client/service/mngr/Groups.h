@@ -108,12 +108,12 @@ class Groups final : private Core::Vector<Group::Ptr>,
   void _add_host(uint8_t role, cid_t cid_begin, cid_t cid_end,
                  uint16_t port, std::string host_or_ips);
 
-  Config::Property::V_GSTRINGS::Ptr cfg_hosts;
-  const uint16_t                    cfg_port;
+  Config::Property::Value_strings_g::Ptr  cfg_hosts;
+  const uint16_t                          cfg_port;
 
-  Core::MutexSptd                   m_mutex;
-  Core::Vector<GroupHost>           m_active_g_host;
-  Comm::Networks                    m_nets;
+  Core::MutexSptd                         m_mutex;
+  Core::Vector<GroupHost>                 m_active_g_host;
+  Comm::Networks                          m_nets;
 
 };
 

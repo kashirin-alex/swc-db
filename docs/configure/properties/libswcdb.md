@@ -8,19 +8,19 @@ title: Client Library Configuration
 
 
 * ### swc.mngr.port
-```INT16```
+```TYPE_UINT16```
 The Manager default port, value used if not defined in ```swc.mngr.host```. \
 _default_ **```swc.mngr.port=15000```**
 
 
 * ### swc.rgr.port
-```INT16```
+```TYPE_UINT16```
 The Ranger default port, value used if not defined in ```swc.rgr.host```. \
 _default_ **```swc.rgr.port=16000```**
 
 
 * ### swc.bkr.port
-```INT16```
+```TYPE_UINT16```
 The Broker default port, value used if not defined in ```swc.bkr.host```. \
 _default_ **```swc.bkr.port=17000```**
 
@@ -30,13 +30,13 @@ _default_ **```swc.bkr.port=17000```**
  > **_The configuration properties applicable for dynamic reloading_**
 
 * ### swc.cfg.dyn.period
-```G_INT32```
+```TYPE_INT32_G```
 The Dynamic cfg-file check interval in milliseconds, The check is Off if value is zero. \
 _default_ **```swc.cfg.dyn.period=600000```**
 
 
 * ### swc.mngr.host
-```G_STRINGS```
+```TYPE_STRINGS_G```
 The Manager Host/s. The value format ```{ROLES}```|```{COLUMNS}```|```{ENDPOINTS}```|```PORT```  delimitted with ```|``` and aligned groupings of Role & Columns is require. The order is part of used configuration defnition to assign host-priority, 1st has initial preference for Active-State.
 > **_The Full Format Description_**: \
 ```{ROLES}``` - In curly-brackets comma-seperated-value, roles options: ```rangers```(manages Rangers), ```schemas``` {manages Schemas}. example ```{rangers,schemas}``` \
@@ -79,28 +79,28 @@ Multiple ```swc.mngr.host``` require aligment of Role/s and the Column-Intervals
 
 
 * ### swc.bkr.host
-```G_STRINGS```
+```TYPE_STRINGS_G```
 The Broker Host/s. Client will try to establish connection and proceed with the Broker hosts available by the order specified. \
 Value in format ```{ENDPOINTS}```|```PORT```, if PORT not specified ```swc.bkr.port``` is applied, ENDPOINTS a FQDN or comma-separated IPs as ```IPv4,IPv4,IPv6```.\
 _default_ **```swc.bkr.host=```**
 
 * ### swc.client.Bkr.connection.timeout
-```G_INT32```
+```TYPE_INT32_G```
 The Broker client connect timeout in milliseconds. \
 _default_ **```swc.client.Bkr.connection.timeout=10000```**
 
 * ### swc.client.Bkr.connection.probes
-```G_UINT16```
+```TYPE_UINT16_G```
 The Broker client connect probes. \
 _default_ **```swc.client.Bkr.connection.probes=1```**
 
 * ### swc.client.Bkr.connection.keepalive
-```G_INT32```
+```TYPE_INT32_G```
 The Broker client connection keepalive in milliseconds since last action. \
 _default_ **```swc.client.Bkr.connection.keepalive=30000```**
 
 * ### swc.client.Bkr.comm.encoder
-```G_ENUM```
+```TYPE_ENUM_G```
 The encoding to use in communication with Broker, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
@@ -108,106 +108,106 @@ The encoding to use in communication with Broker, options PLAIN/ZSTD/SNAPPY/ZLIB
 
 
 * ### swc.client.Rgr.connection.timeout
-```G_INT32```
+```TYPE_INT32_G```
 The Ranger client connect timeout in milliseconds. \
 _default_ **```swc.client.Rgr.connection.timeout=10000```**
 
 * ### swc.client.Rgr.connection.probes
-```G_UINT16```
+```TYPE_UINT16_G```
 The Ranger client connect probes. \
 _default_ **```swc.client.Rgr.connection.probes=1```**
 
 * ### swc.client.Rgr.connection.keepalive
-```G_INT32```
+```TYPE_INT32_G```
 The Ranger client connection keepalive in milliseconds since last action. \
 _default_ **```swc.client.Rgr.connection.keepalive=30000```**
 
 * ### swc.client.Rgr.comm.encoder
-```G_ENUM```
+```TYPE_ENUM_G```
 The encoding to use in communication with Ranger, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
   _default_ **```swc.client.Rgr.comm.encoder=ZSTD```**
 
 * ### swc.client.Rgr.range.res.expiry
-```G_INT32```
+```TYPE_INT32_G```
 The Range(column id + range id) to Ranger Endpoint resolution expiry in milliseconds. \
 _default_ **```swc.client.Rgr.range.res.expiry=1800000```**
 
 
 * ### swc.client.Mngr.connection.timeout
-```G_INT32```
+```TYPE_INT32_G```
 The Manager client connect timeout in milliseconds. \
 _default_ **```swc.client.Mngr.connection.timeout=10000```**
 
 * ### swc.client.Mngr.connection.probes
-```G_UINT16```
+```TYPE_UINT16_G```
 The Manager client connect probes. \
 _default_ **```swc.client.Mngr.connection.probes=1```**
 
 * ### swc.client.Mngr.connection.keepalive
-```G_INT32```
+```TYPE_INT32_G```
 The Manager client connection keepalive in milliseconds since last action. \
 _default_ **```swc.client.Mngr.connection.keepalive=30000```**
 
 * ### swc.client.Mngr.comm.encoder
-```G_ENUM```
+```TYPE_ENUM_G```
 The encoding to use in communication with Manager, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
   _default_ **```swc.client.Mngr.comm.encoder=ZSTD```**
 
 * ### swc.client.Mngr.range.master.expiry
-```G_INT32```
+```TYPE_INT32_G```
 The Located Master-Range and Ranger cache expiry in milliseconds. \
 _default_ **```swc.client.Mngr.range.master.expiry=1800000```**
 
 
 * ### swc.client.schema.expiry
-```G_INT32```
+```TYPE_INT32_G```
 The Schema cache expiry in milliseconds. \
 _default_ **```swc.client.schema.expiry=1800000```**
 
 
 * ### swc.client.send.buffer
-```G_INT32```
+```TYPE_INT32_G```
 The default Client send buffer size in bytes. \
 _default_ **```swc.client.send.buffer=8388608```**
 
 * ### swc.client.send.ahead
-```G_INT8```
+```TYPE_UINT8_G```
 The default Client send number of buffers ahead. \
 _default_ **```swc.client.send.ahead=3```**
 
 * ### swc.client.send.timeout
-```G_INT32```
+```TYPE_INT32_G```
 The default Client send timeout in milliseconds. \
 _default_ **```swc.client.send.timeout=800000```**
 
 * ### swc.client.send.timeout.bytes.ratio
-```G_INT32```
+```TYPE_INT32_G```
 The default Client timeout ratio to bytes ```bytes / ratio = milliseconds``` added to ```swc.client.send.timeout```(default Client send timeout). \
 _default_ **```swc.client.send.timeout.bytes.ratio=1000```**
 
 
 * ### swc.client.request.again.delay
-```G_INT32```
+```TYPE_INT32_G```
 The Client request again delay in milliseconds. \
 _default_ **```swc.client.request.again.delay=500```**
 
 
 * ### swc.client.recv.buffer
-```G_INT32```
+```TYPE_INT32_G```
 The default Client receive buffer size in bytes. \
 _default_ **```swc.client.recv.buffer=8388608```**
 
 * ### swc.client.recv.ahead
-```G_INT8```
+```TYPE_UINT8_G```
 The default Client receive number of buffers ahead. \
 _default_ **```swc.client.recv.ahead=3```**
 
 * ### swc.client.recv.timeout
-```G_INT32```
+```TYPE_INT32_G```
 The default Client receive timeout in milliseconds. \
 _default_ **```swc.client.recv.timeout=800000```**
 

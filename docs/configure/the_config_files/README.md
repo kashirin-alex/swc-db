@@ -39,26 +39,26 @@ NameOfProp.3.name=value_2
 ### Property Value
 The value of a property defaults to type String, the available specialized value types by function are:
   * single-value [
-  BOOL,
-  UINT8,
-  UINT16,
-  INT32,
-  INT64,
-  DOUBLE,
-  STRING,
-  ENUM]
+  TYPE_BOOL,
+  TYPE_UINT8,
+  TYPE_UINT16,
+  TYPE_INT32,
+  TYPE_INT64,
+  TYPE_DOUBLE,
+  TYPE_STRING,
+  TYPE_ENUM]
   * many-values [
-  STRINGS,
-  INT64S,
-  DOUBLES]
+  TYPE_STRINGS,
+  TYPE_INT64S,
+  TYPE_DOUBLES]
   * guarded-value/s [
-  G_BOOL,
-  G_UINT8,
-  G_UINT16,
-  G_INT32,
-  G_UINT64,
-  G_ENUM,
-  G_STRINGS
+  TYPE_BOOL_G,
+  TYPE_UINT8_G,
+  TYPE_UINT16_G,
+  TYPE_INT32_G,
+  TYPE_UINT64_G,
+  TYPE_ENUM_G,
+  TYPE_STRINGS_G
   ]
 
 

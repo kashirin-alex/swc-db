@@ -21,8 +21,8 @@ class Host final : public ConnQueue  {
   const EndPoints   endpoints;
 
   Host(const ConnQueuesPtr queues, const EndPoints& endpoints,
-       const Config::Property::V_GINT32::Ptr keepalive_ms,
-       const Config::Property::V_GINT32::Ptr again_delay_ms);
+       const Config::Property::Value_int32_g::Ptr keepalive_ms,
+       const Config::Property::Value_int32_g::Ptr again_delay_ms);
 
   virtual ~Host();
 
@@ -41,18 +41,18 @@ class ConnQueues final :
 
   public:
 
-  const Serialized::Ptr                    service;
-  const Config::Property::V_GINT32::Ptr    cfg_conn_timeout;
-  const Config::Property::V_GUINT16::Ptr   cfg_conn_probes;
-  const Config::Property::V_GINT32::Ptr    cfg_keepalive_ms;
-  const Config::Property::V_GINT32::Ptr    cfg_again_delay_ms;
+  const Serialized::Ptr                         service;
+  const Config::Property::Value_int32_g::Ptr    cfg_conn_timeout;
+  const Config::Property::Value_uint16_g::Ptr   cfg_conn_probes;
+  const Config::Property::Value_int32_g::Ptr    cfg_keepalive_ms;
+  const Config::Property::Value_int32_g::Ptr    cfg_again_delay_ms;
 
   SWC_CAN_INLINE
   ConnQueues(const Serialized::Ptr a_service,
-             const Config::Property::V_GINT32::Ptr timeout,
-             const Config::Property::V_GUINT16::Ptr probes,
-             const Config::Property::V_GINT32::Ptr keepalive_ms,
-             const Config::Property::V_GINT32::Ptr again_delay_ms) noexcept
+             const Config::Property::Value_int32_g::Ptr timeout,
+             const Config::Property::Value_uint16_g::Ptr probes,
+             const Config::Property::Value_int32_g::Ptr keepalive_ms,
+             const Config::Property::Value_int32_g::Ptr again_delay_ms) noexcept
             : service(a_service),
               cfg_conn_timeout(timeout),
               cfg_conn_probes(probes),
@@ -80,8 +80,8 @@ class ConnQueues final :
 
 SWC_CAN_INLINE
 Host::Host(const ConnQueuesPtr a_queues, const EndPoints& a_endpoints,
-           const Config::Property::V_GINT32::Ptr keepalive_ms,
-           const Config::Property::V_GINT32::Ptr again_delay_ms)
+           const Config::Property::Value_int32_g::Ptr keepalive_ms,
+           const Config::Property::Value_int32_g::Ptr again_delay_ms)
           : ConnQueue(a_queues->service->io(), keepalive_ms, again_delay_ms),
             endpoints(a_endpoints), queues(a_queues) {
 }

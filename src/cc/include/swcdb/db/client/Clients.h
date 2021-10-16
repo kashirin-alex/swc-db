@@ -259,23 +259,23 @@ class Clients : public std::enable_shared_from_this<Clients> {
   }
 
 
-  Core::AtomicBool                       running;
-  Core::Atomic<uint8_t>                  flags;
+  Core::AtomicBool                            running;
+  Core::Atomic<uint8_t>                       flags;
 
-  const Config::Property::V_GINT32::Ptr  cfg_send_buff_sz;
-  const Config::Property::V_GUINT8::Ptr  cfg_send_ahead;
-  const Config::Property::V_GINT32::Ptr  cfg_send_timeout;
-  const Config::Property::V_GINT32::Ptr  cfg_send_timeout_ratio;
+  const Config::Property::Value_int32_g::Ptr  cfg_send_buff_sz;
+  const Config::Property::Value_uint8_g::Ptr  cfg_send_ahead;
+  const Config::Property::Value_int32_g::Ptr  cfg_send_timeout;
+  const Config::Property::Value_int32_g::Ptr  cfg_send_timeout_ratio;
 
-  const Config::Property::V_GINT32::Ptr  cfg_recv_buff_sz;
-  const Config::Property::V_GUINT8::Ptr  cfg_recv_ahead;
-  const Config::Property::V_GINT32::Ptr  cfg_recv_timeout;
+  const Config::Property::Value_int32_g::Ptr  cfg_recv_buff_sz;
+  const Config::Property::Value_uint8_g::Ptr  cfg_recv_ahead;
+  const Config::Property::Value_int32_g::Ptr  cfg_recv_timeout;
 
-  Comm::IoContextPtr                     io_ctx;
-  Schemas                                schemas;
-  Managers                               managers;
-  Rangers                                rangers;
-  Brokers                                brokers;
+  Comm::IoContextPtr                          io_ctx;
+  Schemas                                     schemas;
+  Managers                                    managers;
+  Rangers                                     rangers;
+  Brokers                                     brokers;
 
 };
 

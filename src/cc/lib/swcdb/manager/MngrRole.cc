@@ -18,25 +18,25 @@ MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
       m_run(true),
       m_mngr_inchain(new Comm::client::ConnQueue(app_io)),
       cfg_conn_probes(
-        Env::Config::settings()->get<Config::Property::V_GUINT16>(
+        Env::Config::settings()->get<Config::Property::Value_uint16_g>(
           "swc.mngr.role.connection.probes")),
       cfg_conn_timeout(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.role.connection.timeout")),
       cfg_conn_fb_failures(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.role.connection.fallback.failures")),
       cfg_req_timeout(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.role.request.timeout")),
       cfg_delay_updated(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.role.check.delay.updated")),
       cfg_check_interval(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.role.check.interval")),
       cfg_delay_fallback(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.role.check.delay.fallback")) {
   schedule_checkin(3000);
 }

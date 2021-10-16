@@ -71,7 +71,7 @@ void init_app_options(Settings* settings) {
 }
 
 void init_post_cmd_args(Settings* settings) {
-  auto loglevel = settings->get<Property::V_GENUM>("swc.logging.level");
+  auto loglevel = settings->get<Property::Value_enum_g>("swc.logging.level");
   if(loglevel->is_default())
     loglevel->set(LOG_WARN);
 }

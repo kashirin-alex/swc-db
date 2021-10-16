@@ -153,21 +153,21 @@ class Rgr final {
     m_env = nullptr;
   }
 
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_req_add_concurrency;
+  const SWC::Config::Property::Value_uint8_g::Ptr  cfg_req_add_concurrency;
 
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_cs_max;
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_cs_sz;
+  const SWC::Config::Property::Value_uint8_g::Ptr  cfg_cs_max;
+  const SWC::Config::Property::Value_int32_g::Ptr  cfg_cs_sz;
 
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_rollout_ratio;
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_compact_cointervaling;
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_log_fragment_preload;
+  const SWC::Config::Property::Value_uint8_g::Ptr  cfg_log_rollout_ratio;
+  const SWC::Config::Property::Value_uint8_g::Ptr  cfg_log_compact_cointervaling;
+  const SWC::Config::Property::Value_uint8_g::Ptr  cfg_log_fragment_preload;
 
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_compact_percent;
-  const SWC::Config::Property::V_GUINT8::Ptr  cfg_cs_replication;
+  const SWC::Config::Property::Value_uint8_g::Ptr  cfg_compact_percent;
+  const SWC::Config::Property::Value_uint8_g::Ptr  cfg_cs_replication;
 
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_blk_size;
-  const SWC::Config::Property::V_GINT32::Ptr  cfg_blk_cells;
-  const SWC::Config::Property::V_GENUM::Ptr   cfg_blk_enc;
+  const SWC::Config::Property::Value_int32_g::Ptr  cfg_blk_size;
+  const SWC::Config::Property::Value_int32_g::Ptr  cfg_blk_cells;
+  const SWC::Config::Property::Value_enum_g::Ptr   cfg_blk_enc;
 
   Comm::IoContextPtr                            app_io;
   Comm::IoContextPtr                            mnt_io;
@@ -208,38 +208,49 @@ namespace SWC { namespace Env {
 
 Rgr::Rgr()
     : cfg_req_add_concurrency(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
-          "swc.rgr.Range.req.update.concurrency")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_uint8_g>(
+            "swc.rgr.Range.req.update.concurrency")),
       cfg_cs_max(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
-          "swc.rgr.Range.CellStore.count.max")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_uint8_g>(
+            "swc.rgr.Range.CellStore.count.max")),
       cfg_cs_sz(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.rgr.Range.CellStore.size.max")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.rgr.Range.CellStore.size.max")),
       cfg_log_rollout_ratio(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
-          "swc.rgr.Range.CommitLog.rollout.ratio")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_uint8_g>(
+            "swc.rgr.Range.CommitLog.rollout.ratio")),
       cfg_log_compact_cointervaling(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
-          "swc.rgr.Range.CommitLog.Compact.cointervaling")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_uint8_g>(
+            "swc.rgr.Range.CommitLog.Compact.cointervaling")),
       cfg_log_fragment_preload(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
-          "swc.rgr.Range.CommitLog.Fragment.preload")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_uint8_g>(
+            "swc.rgr.Range.CommitLog.Fragment.preload")),
       cfg_compact_percent(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
-          "swc.rgr.Range.compaction.percent")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_uint8_g>(
+            "swc.rgr.Range.compaction.percent")),
       cfg_cs_replication(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GUINT8>(
-          "swc.rgr.Range.CellStore.replication")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_uint8_g>(
+            "swc.rgr.Range.CellStore.replication")),
       cfg_blk_size(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.rgr.Range.block.size")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.rgr.Range.block.size")),
       cfg_blk_cells(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.rgr.Range.block.cells")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.rgr.Range.block.cells")),
       cfg_blk_enc(
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GENUM>(
-          "swc.rgr.Range.block.encoding")),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_enum_g>(
+            "swc.rgr.Range.block.encoding")),
       app_io(
         Comm::IoContext::make(
           "Ranger",
@@ -266,12 +277,15 @@ Rgr::Rgr()
       ),
       _resources(
         app_io,
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.rgr.ram.allowed.percent"),
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.rgr.ram.reserved.percent"),
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.rgr.ram.release.rate"),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.rgr.ram.allowed.percent"),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.rgr.ram.reserved.percent"),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.rgr.ram.release.rate"),
         _reporting ? &_reporting->system : nullptr,
         [this](size_t bytes) { return _columns->release(bytes); }
       ),

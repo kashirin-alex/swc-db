@@ -93,7 +93,7 @@ class AppContext final : public Comm::AppContext {
 
   AppContext()
       : Comm::AppContext(
-          Env::Config::settings()->get<Config::Property::V_GENUM>(
+          Env::Config::settings()->get<Config::Property::Value_enum_g>(
             "swc.FsBroker.comm.encoder")) {
 
     auto settings = Env::Config::settings();
@@ -126,7 +126,7 @@ class AppContext final : public Comm::AppContext {
     }
     Env::FsBroker::init();
 
-    auto period = settings->get<Config::Property::V_GINT32>(
+    auto period = settings->get<Config::Property::Value_int32_g>(
       "swc.cfg.dyn.period");
     if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(

@@ -60,8 +60,8 @@ class AppContext final : virtual public BrokerIfFactory,
       }
     );
 
-    auto period = Env::Config::settings()->get<Config::Property::V_GINT32>(
-      "swc.cfg.dyn.period");
+    auto period = Env::Config::settings()
+      ->get<Config::Property::Value_int32_g>("swc.cfg.dyn.period");
     if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
         period,

@@ -128,18 +128,21 @@ Bkr::Bkr()
           ? new Broker::Metric::Reporting(
               app_io,
               SWC::Env::Config::settings()
-                ->get<SWC::Config::Property::V_GINT32>(
+                ->get<SWC::Config::Property::Value_int32_g>(
                   "swc.bkr.metrics.report.interval"))
           : nullptr
       ),
       _resources(
         app_io,
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.bkr.ram.allowed.percent"),
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.bkr.ram.reserved.percent"),
-        SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-          "swc.bkr.ram.release.rate"),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.bkr.ram.allowed.percent"),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.bkr.ram.reserved.percent"),
+        SWC::Env::Config::settings()
+          ->get<SWC::Config::Property::Value_int32_g>(
+            "swc.bkr.ram.release.rate"),
         _reporting ? &_reporting->system : nullptr,
         nullptr
         //[this](size_t bytes) noexcept { (void)this; (void)bytes; return 0; }

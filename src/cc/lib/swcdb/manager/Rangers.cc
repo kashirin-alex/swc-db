@@ -24,25 +24,25 @@ namespace SWC { namespace Manager {
 
 Rangers::Rangers(const Comm::IoContextPtr& app_io)
     : cfg_rgr_failures(
-        Env::Config::settings()->get<Config::Property::V_GUINT16>(
+        Env::Config::settings()->get<Config::Property::Value_uint16_g>(
           "swc.mngr.ranges.assign.Rgr.remove.failures")),
       cfg_delay_rgr_chg(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.ranges.assign.delay.onRangerChange")),
       cfg_chk_assign(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.ranges.assign.interval.check")),
       cfg_assign_due(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.ranges.assign.due")),
       cfg_column_health_chk(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.column.health.interval.check")),
       cfg_column_health_chkers(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.column.health.checks")),
       cfg_column_health_chkers_delay(
-        Env::Config::settings()->get<Config::Property::V_GINT32>(
+        Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.column.health.checks.delay")),
       m_run(true),
       m_timer(asio::high_resolution_timer(app_io->executor())),

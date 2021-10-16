@@ -24,13 +24,13 @@ Managers::Managers(const Config::Settings& settings,
             ? mngr_ctx
             : ContextManager::Ptr(new ContextManager(settings))
         )),
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.Mngr.connection.timeout"),
-        settings.get<Config::Property::V_GUINT16>(
+        settings.get<Config::Property::Value_uint16_g>(
           "swc.client.Mngr.connection.probes"),
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.Mngr.connection.keepalive"),
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.request.again.delay")
       )),
       groups(Mngr::Groups::Ptr(new Mngr::Groups(settings))->init()),

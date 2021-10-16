@@ -47,7 +47,7 @@ class CachedRangers final
   public:
 
   SWC_CAN_INLINE
-  CachedRangers(const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
+  CachedRangers(const Config::Property::Value_int32_g::Ptr expiry_ms) noexcept
                 : m_expiry_ms(expiry_ms) {
   }
 
@@ -67,8 +67,8 @@ class CachedRangers final
 
   private:
 
-  Core::MutexSptd                   m_mutex;
-  Config::Property::V_GINT32::Ptr   m_expiry_ms;
+  Core::MutexSptd                       m_mutex;
+  Config::Property::Value_int32_g::Ptr  m_expiry_ms;
 
 };
 

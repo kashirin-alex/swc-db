@@ -167,7 +167,7 @@ void init_app_options(Settings* settings) {
   init_comm_options(settings);
   init_client_options(settings);
 
-  Property::Value::get_pointer<Property::V_GENUM>(
+  Property::Value::get_pointer<Property::Value_enum_g>(
     settings->cmdline_desc.get_default("swc.logging.level")
   )->set(LOG_ERROR); // default level
 
@@ -208,14 +208,14 @@ void init_app_options(Settings* settings) {
     ("gen-distrib-seed", i64(1),
       "Use this seed/step for Distribution injection")
     ("gen-distrib-course",
-      new Config::Property::V_ENUM(
+      new Config::Property::Value_enum(
         int(Utils::LoadGenerator::DistribCourse::STEP),
         Utils::LoadGenerator::from_string_distrib_course,
         Utils::LoadGenerator::repr_distrib_course
       ),
      "Fractions distrib Course STEP|R_STEP|SINGLE|R_SINGLE|LEVELS|R_LEVELS")
     ("gen-distrib",
-      new Config::Property::V_ENUM(
+      new Config::Property::Value_enum(
         int(Utils::LoadGenerator::Distrib::SEQUENTIAL),
         Utils::LoadGenerator::from_string_distrib,
         Utils::LoadGenerator::repr_distrib
@@ -1011,7 +1011,7 @@ int main(int argc, char** argv) {
   );
 
   auto period = settings->get<
-    SWC::Config::Property::V_GINT32>("swc.cfg.dyn.period");
+    SWC::Config::Property::Value_int32_g>("swc.cfg.dyn.period");
   if(period->get()) {
     io->set_periodic_timer(
       period,

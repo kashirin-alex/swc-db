@@ -58,7 +58,7 @@ Configurables* apply_ceph(Configurables* config) {
   config->path_root = config->settings->get_str(
     "swc.fs.ceph.path.root");
   config->cfg_fds_max = config->settings
-    ->get<Config::Property::V_GINT32>("swc.fs.ceph.fds.max");
+    ->get<Config::Property::Value_int32_g>("swc.fs.ceph.fds.max");
   config->stats_enabled = config->settings->get_bool(
     "swc.fs.ceph.metrics.enabled");
   return config;

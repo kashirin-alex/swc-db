@@ -46,7 +46,7 @@ class AppContext final : public Comm::AppContext {
 
   AppContext()
       : Comm::AppContext(
-          Env::Config::settings()->get<Config::Property::V_GENUM>(
+          Env::Config::settings()->get<Config::Property::Value_enum_g>(
             "swc.mngr.comm.encoder")) {
     auto settings = Env::Config::settings();
 
@@ -82,8 +82,8 @@ class AppContext final : public Comm::AppContext {
             const Comm::EndPoints& endpoints) override {
     Env::Mngr::init(endpoints);
 
-    auto period = Env::Config::settings()->get<Config::Property::V_GINT32>(
-      "swc.cfg.dyn.period");
+    auto period = Env::Config::settings()
+      ->get<Config::Property::Value_int32_g>("swc.cfg.dyn.period");
     if(period->get()) {
       Env::Mngr::io()->set_periodic_timer(
         period,

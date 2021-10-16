@@ -42,9 +42,9 @@ class Mem {
   public:
   typedef Mem*                          Ptr;
   typedef std::function<size_t(size_t)> ReleaseCall_t;
-  Config::Property::V_GINT32::Ptr       cfg_percent_allowed;
-  Config::Property::V_GINT32::Ptr       cfg_percent_reserved;
-  Config::Property::V_GINT32::Ptr       cfg_release_rate;
+  Config::Property::Value_int32_g::Ptr  cfg_percent_allowed;
+  Config::Property::Value_int32_g::Ptr  cfg_percent_reserved;
+  Config::Property::Value_int32_g::Ptr  cfg_release_rate;
 
   Core::Atomic<size_t>   free;
   Core::Atomic<size_t>   used;
@@ -56,9 +56,9 @@ class Mem {
   Core::Atomic<size_t>   reserved;
   Core::Atomic<size_t>   mem_buff_ms;
 
-  Mem(Config::Property::V_GINT32::Ptr ram_percent_allowed,
-      Config::Property::V_GINT32::Ptr ram_percent_reserved,
-      Config::Property::V_GINT32::Ptr ram_release_rate,
+  Mem(Config::Property::Value_int32_g::Ptr ram_percent_allowed,
+      Config::Property::Value_int32_g::Ptr ram_percent_reserved,
+      Config::Property::Value_int32_g::Ptr ram_release_rate,
       Notifier* a_notifier,
       ReleaseCall_t&& a_release_call=nullptr) noexcept
       : cfg_percent_allowed(ram_percent_allowed),

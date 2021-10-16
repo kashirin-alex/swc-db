@@ -89,7 +89,7 @@ void Group::_get_host(const Comm::EndPoint& point,
 
 Groups::Groups(const Config::Settings& settings)
         : cfg_hosts(
-            settings.get<Config::Property::V_GSTRINGS>("swc.mngr.host")),
+            settings.get<Config::Property::Value_strings_g>("swc.mngr.host")),
           cfg_port(settings.get_i16("swc.mngr.port")) {
   asio::error_code ec;
   Comm::Resolver::get_networks(

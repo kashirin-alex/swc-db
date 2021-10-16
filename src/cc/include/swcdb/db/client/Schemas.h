@@ -19,7 +19,7 @@ class Schemas final {
 
   SWC_CAN_INLINE
   Schemas(Clients* a_clients,
-          const Config::Property::V_GINT32::Ptr expiry_ms) noexcept
+          const Config::Property::Value_int32_g::Ptr expiry_ms) noexcept
           : _clients(a_clients), m_expiry_ms(expiry_ms) {
   }
 
@@ -87,7 +87,7 @@ class Schemas final {
   Core::MutexSptd                           m_mutex;
   std::unordered_map<cid_t, SchemaData>     m_schemas;
   Clients*                                  _clients;
-  Config::Property::V_GINT32::Ptr           m_expiry_ms;
+  Config::Property::Value_int32_g::Ptr      m_expiry_ms;
   std::unordered_map<cid_t,       Pending>  m_pending_cid;
   std::unordered_map<std::string, Pending>  m_pending_name;
 

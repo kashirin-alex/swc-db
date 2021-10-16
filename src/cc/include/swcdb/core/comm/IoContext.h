@@ -74,7 +74,7 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
 
   void set_signals();
 
-  void set_periodic_timer(const Config::Property::V_GINT32::Ptr ms,
+  void set_periodic_timer(const Config::Property::Value_int32_g::Ptr ms,
                           PeriodicTimer::Call_t&& call);
 
   void stop();

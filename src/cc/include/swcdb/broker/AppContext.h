@@ -86,7 +86,7 @@ class AppContext final : public Comm::AppContext {
 
     Env::Bkr::init();
 
-    auto period = settings->get<Config::Property::V_GINT32>(
+    auto period = settings->get<Config::Property::Value_int32_g>(
       "swc.cfg.dyn.period");
     if(period->get()) {
       Env::Bkr::io()->set_periodic_timer(
@@ -100,7 +100,7 @@ class AppContext final : public Comm::AppContext {
 
   AppContext()
       : Comm::AppContext(
-          Env::Config::settings()->get<Config::Property::V_GENUM>(
+          Env::Config::settings()->get<Config::Property::Value_enum_g>(
             "swc.bkr.comm.encoder")),
         m_metrics(Env::Bkr::metrics_track()) {
   }

@@ -47,18 +47,21 @@ class ThriftBroker final {
             ? new SWC::ThriftBroker::Metric::Reporting(
                 Env::IoCtx::io(),
                 SWC::Env::Config::settings()
-                  ->get<SWC::Config::Property::V_GINT32>(
+                  ->get<SWC::Config::Property::Value_int32_g>(
                     "swc.ThriftBroker.metrics.report.interval"))
             : nullptr
         ),
         _resources(
           Env::IoCtx::io(),
-          SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-            "swc.ThriftBroker.ram.allowed.percent"),
-          SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-            "swc.ThriftBroker.ram.reserved.percent"),
-          SWC::Env::Config::settings()->get<SWC::Config::Property::V_GINT32>(
-            "swc.ThriftBroker.ram.release.rate"),
+          SWC::Env::Config::settings()
+            ->get<SWC::Config::Property::Value_int32_g>(
+              "swc.ThriftBroker.ram.allowed.percent"),
+          SWC::Env::Config::settings()
+            ->get<SWC::Config::Property::Value_int32_g>(
+              "swc.ThriftBroker.ram.reserved.percent"),
+          SWC::Env::Config::settings()
+            ->get<SWC::Config::Property::Value_int32_g>(
+              "swc.ThriftBroker.ram.release.rate"),
           _reporting ? &_reporting->system : nullptr,
           std::move(release_call)
         ) {

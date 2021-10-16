@@ -17,124 +17,124 @@ namespace SWC {
 /* cfg methods for types
 *  @param v The default Value and a Type
 */
-Config::Property::V_BOOL::Ptr
+Config::Property::Value_bool::Ptr
 Config::boo(const bool& v) {
-  return new Config::Property::V_BOOL(v);
+  return new Config::Property::Value_bool(v);
 }
-Config::Property::V_UINT8::Ptr
+Config::Property::Value_uint8::Ptr
 Config::i8(const uint8_t& v) {
-  return new Config::Property::V_UINT8(v);
+  return new Config::Property::Value_uint8(v);
 }
-Config::Property::V_UINT16::Ptr
+Config::Property::Value_uint16::Ptr
 Config::i16(const uint16_t& v) {
-  return new Config::Property::V_UINT16(v);
+  return new Config::Property::Value_uint16(v);
 }
-Config::Property::V_INT32::Ptr
+Config::Property::Value_int32::Ptr
 Config::i32(const int32_t& v) {
-  return new Config::Property::V_INT32(v);
+  return new Config::Property::Value_int32(v);
 }
-Config::Property::V_INT64::Ptr
+Config::Property::Value_int64::Ptr
 Config::i64(const int64_t& v) {
-  return new Config::Property::V_INT64(v);
+  return new Config::Property::Value_int64(v);
 }
-Config::Property::V_DOUBLE::Ptr
+Config::Property::Value_double::Ptr
 Config::f64(const double& v) {
-  return new Config::Property::V_DOUBLE(v);
+  return new Config::Property::Value_double(v);
 }
-Config::Property::V_STRING::Ptr
+Config::Property::Value_string::Ptr
 Config::str(std::string&& v) {
-  return new Config::Property::V_STRING(std::move(v));
+  return new Config::Property::Value_string(std::move(v));
 }
-Config::Property::V_STRINGS::Ptr
+Config::Property::Value_strings::Ptr
 Config::strs(Strings&& v) {
-  return new Config::Property::V_STRINGS(std::move(v));
+  return new Config::Property::Value_strings(std::move(v));
 }
-Config::Property::V_INT64S::Ptr
+Config::Property::Value_int64s::Ptr
 Config::i64s(Int64s&& v) {
-  return new Config::Property::V_INT64S(std::move(v));
+  return new Config::Property::Value_int64s(std::move(v));
 }
-Config::Property::V_DOUBLES::Ptr
+Config::Property::Value_doubles::Ptr
 Config::f64s(Doubles&& v) {
-  return new Config::Property::V_DOUBLES(std::move(v));
+  return new Config::Property::Value_doubles(std::move(v));
 }
 
 /* cfg methods for guarded types
 *  @param v The default Value and a Type
 */
-Config::Property::V_GBOOL::Ptr
+Config::Property::Value_bool_g::Ptr
 Config::g_boo(const bool& v) {
-  return new Config::Property::V_GBOOL(v, nullptr);
+  return new Config::Property::Value_bool_g(v, nullptr);
 }
-Config::Property::V_GUINT8::Ptr
+Config::Property::Value_uint8_g::Ptr
 Config::g_i8(const uint8_t& v) {
-  return new Config::Property::V_GUINT8(v, nullptr);
+  return new Config::Property::Value_uint8_g(v, nullptr);
 }
-Config::Property::V_GUINT16::Ptr
+Config::Property::Value_uint16_g::Ptr
 Config::g_i16(const uint16_t& v) {
-  return new Config::Property::V_GUINT16(v, nullptr);
+  return new Config::Property::Value_uint16_g(v, nullptr);
 }
-Config::Property::V_GINT32::Ptr
+Config::Property::Value_int32_g::Ptr
 Config::g_i32(const int32_t& v) {
-  return new Config::Property::V_GINT32(v, nullptr);
+  return new Config::Property::Value_int32_g(v, nullptr);
 }
-Config::Property::V_GUINT64::Ptr
+Config::Property::Value_uint64_g::Ptr
 Config::g_i64(const uint64_t& v) {
-  return new Config::Property::V_GUINT64(v, nullptr);
+  return new Config::Property::Value_uint64_g(v, nullptr);
 }
-Config::Property::V_GSTRINGS::Ptr
+Config::Property::Value_strings_g::Ptr
 Config::g_strs(Strings&& v) {
-  return new Config::Property::V_GSTRINGS(std::move(v), nullptr);
+  return new Config::Property::Value_strings_g(std::move(v), nullptr);
 }
-Config::Property::V_GENUM::Ptr
+Config::Property::Value_enum_g::Ptr
 Config::g_enum(const int32_t& v,
-               Config::Property::V_GENUM::OnChg_t&& cb,
-               Config::Property::V_GENUM::FromString_t&& from_string,
-               Config::Property::V_GENUM::Repr_t&& repr) {
-  return new Config::Property::V_GENUM(
+               Config::Property::Value_enum_g::OnChg_t&& cb,
+               Config::Property::Value_enum_g::FromString_t&& from_string,
+               Config::Property::Value_enum_g::Repr_t&& repr) {
+  return new Config::Property::Value_enum_g(
     v, std::move(cb), std::move(from_string), std::move(repr));
 }
 
 /* cfg methods for types, a skippable option
 *  if no option parsed it is skipped
 */
-Config::Property::V_BOOL::Ptr Config::boo() {
-  return new Config::Property::V_BOOL(
+Config::Property::Value_bool::Ptr Config::boo() {
+  return new Config::Property::Value_bool(
     true, Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_UINT8::Ptr Config::i8() {
-  return new Config::Property::V_UINT8(
+Config::Property::Value_uint8::Ptr Config::i8() {
+  return new Config::Property::Value_uint8(
     0, Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_UINT16::Ptr Config::i16() {
-  return new Config::Property::V_UINT16(
+Config::Property::Value_uint16::Ptr Config::i16() {
+  return new Config::Property::Value_uint16(
     0, Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_INT32::Ptr Config::i32() {
-  return new Config::Property::V_INT32(
+Config::Property::Value_int32::Ptr Config::i32() {
+  return new Config::Property::Value_int32(
     0, Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_INT64::Ptr Config::i64() {
-  return new Config::Property::V_INT64(
+Config::Property::Value_int64::Ptr Config::i64() {
+  return new Config::Property::Value_int64(
     0, Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_DOUBLE::Ptr Config::f64() {
-  return new Config::Property::V_DOUBLE(
+Config::Property::Value_double::Ptr Config::f64() {
+  return new Config::Property::Value_double(
     0, Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_STRING::Ptr Config::str() {
-  return new Config::Property::V_STRING(
+Config::Property::Value_string::Ptr Config::str() {
+  return new Config::Property::Value_string(
     std::string(), Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_STRINGS::Ptr Config::strs() {
-  return new Config::Property::V_STRINGS(
+Config::Property::Value_strings::Ptr Config::strs() {
+  return new Config::Property::Value_strings(
     Strings(), Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_INT64S::Ptr Config::i64s() {
-  return new Config::Property::V_INT64S(
+Config::Property::Value_int64s::Ptr Config::i64s() {
+  return new Config::Property::Value_int64s(
     Int64s(), Config::Property::Value::SKIPPABLE);
 }
-Config::Property::V_DOUBLES::Ptr Config::f64s() {
-  return new Config::Property::V_DOUBLES(
+Config::Property::Value_doubles::Ptr Config::f64s() {
+  return new Config::Property::Value_doubles(
     Doubles(), Config::Property::Value::SKIPPABLE);
 }
 

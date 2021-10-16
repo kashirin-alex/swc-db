@@ -99,7 +99,7 @@ void run() {
   prs_file.print_options(std::cout);
 
   Config::Properties props;
-  Config::Property::V_BOOL dummy(true);
+  Config::Property::Value_bool dummy(true);
   props.set("dummy", &dummy);
   std::cout << props.to_string("dummy") << "\n";
 

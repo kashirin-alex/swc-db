@@ -7,11 +7,11 @@
 
 namespace SWC { namespace Comm {
 
-PeriodicTimer::PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
-                             PeriodicTimer::Call_t&& call,
-                             const IoContextPtr& ioctx)
-                            : m_ms(cfg_ms), m_call(std::move(call)),
-                              m_timer(ioctx->executor()) {
+PeriodicTimer::PeriodicTimer(
+      const Config::Property::Value_int32_g::Ptr cfg_ms,
+      PeriodicTimer::Call_t&& call,
+      const IoContextPtr& ioctx)
+      : m_ms(cfg_ms), m_call(std::move(call)), m_timer(ioctx->executor()) {
   schedule();
 }
 
@@ -52,7 +52,7 @@ void PeriodicTimers::stop() {
   clear();
 }
 
-void PeriodicTimers::set(const Config::Property::V_GINT32::Ptr ms,
+void PeriodicTimers::set(const Config::Property::Value_int32_g::Ptr ms,
                          PeriodicTimer::Call_t&& call,
                          const IoContextPtr& ioctx) {
   Core::MutexSptd::scope lock(m_mutex);

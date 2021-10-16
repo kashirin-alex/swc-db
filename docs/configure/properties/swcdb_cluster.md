@@ -9,7 +9,7 @@ These configuration properties are for sbin/swcdb_cluster a python script based 
 
 
 * ### swc.install.archive
-```STRING```
+```TYPE_STRING```
 The Full-Path or Uri to the SWC-DB `tar` archive package. An archive package from [available SWC-DB releases]({{ site.baseurl }}/install/getting_swcdb/#available-for-download) is suitable for the type of archive required.
 > The source-host SWC-DB installation files are copied if the property is not set.
 
@@ -17,7 +17,7 @@ The Full-Path or Uri to the SWC-DB `tar` archive package. An archive package fro
 
 
 * ### swc.cluster.rgr.host
-```STRINGS```
+```TYPE_STRINGS```
 A Ranger host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
 > without ```|port``` - no port applied and Program uses the default port \
 > with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use the default addresses.
@@ -26,7 +26,7 @@ A Ranger host, value in format ```default|hostname|port``` OR ```default|ip,ip,i
 
 
 * ### swc.cluster.fsbroker.host
-```STRINGS```
+```TYPE_STRINGS```
 A FsBroker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
 > without ```|port``` - no port applied and Program uses the default port \
 > with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use the default addresses.
@@ -35,7 +35,7 @@ A FsBroker host, value in format ```default|hostname|port``` OR ```default|ip,ip
 
 
 * ### swc.cluster.bkr.host
-```STRINGS```
+```TYPE_STRINGS```
 A Broker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
 > without ```|port``` - no port applied and Program uses the default port \
 > with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use the default addresses.
@@ -45,7 +45,7 @@ A Broker host, value in format ```default|hostname|port``` OR ```default|ip,ip,i
 
 
 * ### swc.cluster.thriftbroker.host
-```STRINGS```
+```TYPE_STRINGS```
 A ThriftBroker host, value in format ```default|hostname|port``` OR ```default|ip,ip,ip|port```. The hostname/ips need to be accessible from the source-host.
 > without ```|port``` - no port applied and Program uses the default port \
 > with ```default|``` - hostname/address used for ssh, no host applied to the Program and Program will use ```localhost``` address.

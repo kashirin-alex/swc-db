@@ -41,7 +41,7 @@ Configurables* apply_hadoop_jvm(Configurables* config) {
   config->path_root = config->settings->get_str(
     "swc.fs.hadoop_jvm.path.root");
   config->cfg_fds_max = config->settings
-    ->get<Config::Property::V_GINT32>("swc.fs.hadoop_jvm.fds.max");
+    ->get<Config::Property::Value_int32_g>("swc.fs.hadoop_jvm.fds.max");
   config->stats_enabled = config->settings->get_bool(
     "swc.fs.hadoop_jvm.metrics.enabled");
   return config;
@@ -125,7 +125,7 @@ FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
       m_nxt_fd(0), m_connecting(false),
       m_fs(setup_connection()),
       cfg_use_delay(
-        settings->get<Config::Property::V_GINT32>(
+        settings->get<Config::Property::Value_int32_g>(
           "swc.fs.hadoop_jvm.reconnect.delay.ms")) {
 }
 

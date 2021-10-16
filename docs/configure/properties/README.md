@@ -35,30 +35,30 @@ These properties are the initial settings that applied to any Program using the 
 > **_Only Command Line argument properties_**
 
 * ### --help / -h
-```BOOL```
+```TYPE_BOOL```
 Show the help contents for executing the Program.
 
 * ### --help-config
-```BOOL```
+```TYPE_BOOL```
 Show the help contents with the Program's configuration properties.
 
 * ### --version / -v
-```BOOL```
+```TYPE_BOOL```
 Show version of the Program.
 
 
 * ### --debug
-```BOOL```
+```TYPE_BOOL```
 a Shortcut to --swc.logging.level=debug . \
 _default_ **```False```**
 
 * ### --quiet
-```BOOL```
+```TYPE_BOOL```
 Minimal output, logging remains by swc.logging.level . \
 _default_ **```False```**
 
 * ### --daemon
-```BOOL```
+```TYPE_BOOL```
 Start process in background mode, if Program supports it . \
 _default_ **```False```**
 
@@ -67,23 +67,23 @@ _default_ **```False```**
 > **_File Configuration Properties_**
 
 * ### swc.cfg.path
-```STRING```
+```TYPE_STRING```
 The path to location of configuration files. \
 _default_ **```swc.cfg.path=SWC_INSTALL_PREIFX/etc/swcdb/```**
 
 * ### swc.cfg
-```STRING```
+```TYPE_STRING```
 The main configuration file, everything begins with this file . \
 _default_ **```swc.cfg=swc.cfg```**
 
 * ### swc.cfg.dyn
-```STRINGS```
+```TYPE_STRINGS```
 The main dynamic configuration file. \
 _default_ **```swc.cfg.dyn=```**
 
 
 * ### swc.logging.path
-```STRINGS```
+```TYPE_STRINGS```
 The path of log directories and files, ```YYYY/MM/DD``` sub-folders are create on this path. \
 _default_ **```swc.logging.path=SWC_INSTALL_PREIFX/var/log/swcdb/```**
 
@@ -93,7 +93,7 @@ _default_ **```swc.logging.path=SWC_INSTALL_PREIFX/var/log/swcdb/```**
 > **_The configuration properties applicable for dynamic reloading_**
 
 * ### swc.logging.level
-```G_ENUM```
+```TYPE_ENUM_G```
 The Logging Level: debug|info|notice|warn|error|crit|alert|fatal. \
 _default_ **```swc.logging.level=INFO```**
 
@@ -111,13 +111,13 @@ These properties are the initial communication settings that applied to any Prog
 > **_Only Command Line argument properties_**
 
 * ### --addr
-```STRINGS```
+```TYPE_STRINGS```
 The address(IP-port) to listen on else resolved by hostname with swc.ServiceName.port. \
 _Multiple argument is allowed ```./program --addr=ADDR-1 --addr=ADDR-2```_ \
 _default_ **```--addr=```**
 
 * ### --host
-```STRING```
+```TYPE_STRING```
 The host:port to resolve, listens on resolved IPv4 + IPv6, swc.ServiceName.port applied if port not specified. \
 _default_ **```--host=```**
 
@@ -128,7 +128,7 @@ _default_ **```--host=```**
 
 
 * ### swc.comm.network.priority
-```STRINGS```
+```TYPE_STRINGS```
 The Network Priority Access, By available endpoints of a server, try to establish connection in this priority of a network.
 > _recommended priority order:_ \
   ```swc.comm.network.priority = 127.0.0.0/8``` \
@@ -142,12 +142,12 @@ The Network Priority Access, By available endpoints of a server, try to establis
   _default_ **```swc.comm.network.priority```**
 
 * ### swc.comm.ssl
-```BOOL```
+```TYPE_BOOL```
 whether to use SSL in communications layer. \
 _default_ **```swc.comm.ssl=false```**
 
 * ### swc.comm.ssl.secure.network
-```STRINGS```
+```TYPE_STRINGS```
 The Networks that do not require SSL. To the extend, any network in the local-loop by default is considered a secure network, in a case of Server-IP is equal Client-IP the connection is not upgraded to a secure connection.
 > _recommended:_ \
   ```swc.comm.ssl.secure.network = 127.0.0.0/8``` \
@@ -156,27 +156,27 @@ The Networks that do not require SSL. To the extend, any network in the local-lo
   _default_ **```swc.comm.ssl.secure.network=```**
 
 * ### swc.comm.ssl.ciphers
-```STRING```
+```TYPE_STRING```
 The Ciphers to use, in format of openSSL for one string (delimitted with a colon ```:```). \
 _default_ **```swc.comm.ssl.ciphers=```**
 
 * ### swc.comm.ssl.subject_name
-```STRING```
+```TYPE_STRING```
 The Certificate or Cluster's domain-name, if set SRV-CRT is verified. \
 _default_ **```swc.comm.ssl.subject_name=```**
 
 * ### swc.comm.ssl.crt
-```STRING```
+```TYPE_STRING```
 The Cluster Certificate file. Filename without slash/dot applied on swc.cfg.path . \
 _default_ **```swc.comm.ssl.crt=cluster.crt```**
 
 * ### swc.comm.ssl.key
-```STRING```
+```TYPE_STRING```
 The Server Private-Key file. Filename without slash/dot applied on swc.cfg.path . \
 _default_ **```swc.comm.ssl.key=cluster.key```**
 
 
 * ### swc.comm.ssl.ca
-```STRING```
+```TYPE_STRING```
 The CA, used if set. Filename without slash/dot applied on swc.cfg.path . \
 _default_ **```swc.comm.ssl.ca=```**

@@ -22,10 +22,10 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
   public:
   typedef std::shared_ptr<AppContext> Ptr;
 
-  const Config::Property::V_GENUM::Ptr cfg_encoder;
+  const Config::Property::Value_enum_g::Ptr cfg_encoder;
 
   SWC_CAN_INLINE
-  AppContext(Config::Property::V_GENUM::Ptr a_cfg_encoder) noexcept
+  AppContext(Config::Property::Value_enum_g::Ptr a_cfg_encoder) noexcept
             : cfg_encoder(a_cfg_encoder) {
   }
 

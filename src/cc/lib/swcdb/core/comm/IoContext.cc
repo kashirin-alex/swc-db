@@ -20,8 +20,9 @@ void IoContext::set_signals() {
   signals.reset(new asio::signal_set(executor() , SIGINT, SIGTERM));
 }
 
-void IoContext::set_periodic_timer(const Config::Property::V_GINT32::Ptr ms,
-                                   PeriodicTimer::Call_t&& call) {
+void IoContext::set_periodic_timer(
+      const Config::Property::Value_int32_g::Ptr ms,
+      PeriodicTimer::Call_t&& call) {
   m_periodic_timers.set(ms, std::move(call), shared_from_this());
 }
 

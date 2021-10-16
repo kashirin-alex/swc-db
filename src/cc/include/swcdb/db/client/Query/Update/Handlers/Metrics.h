@@ -235,14 +235,14 @@ class Reporting : public BaseSingleColumn {
 
   typedef std::shared_ptr<Reporting> Ptr;
 
-  const Comm::IoContextPtr           io;
-  Config::Property::V_GINT32::Ptr    cfg_intval;
-  Core::Vector<Metric::Base::Ptr>    metrics;
-  Core::AtomicBool                   running;
+  const Comm::IoContextPtr              io;
+  Config::Property::Value_int32_g::Ptr  cfg_intval;
+  Core::Vector<Metric::Base::Ptr>       metrics;
+  Core::AtomicBool                      running;
 
   Reporting(const Clients::Ptr& a_clients,
             const Comm::IoContextPtr& a_io,
-            Config::Property::V_GINT32::Ptr a_cfg_intval,
+            Config::Property::Value_int32_g::Ptr a_cfg_intval,
             Clients::Flag a_executor=client::Clients::DEFAULT);
 
   virtual ~Reporting() noexcept { }

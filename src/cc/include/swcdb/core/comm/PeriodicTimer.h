@@ -17,7 +17,7 @@ class PeriodicTimer final {
   public:
   typedef const std::function<void()> Call_t;
 
-  PeriodicTimer(const Config::Property::V_GINT32::Ptr cfg_ms,
+  PeriodicTimer(const Config::Property::Value_int32_g::Ptr cfg_ms,
                 Call_t&& call, const IoContextPtr& ioctx);
 
   ~PeriodicTimer() noexcept;
@@ -28,10 +28,10 @@ class PeriodicTimer final {
 
   void schedule();
 
-  const Config::Property::V_GINT32::Ptr   m_ms;
-  const Call_t                            m_call;
-  Core::MutexAtomic                       m_mutex;
-  asio::high_resolution_timer             m_timer;
+  const Config::Property::Value_int32_g::Ptr  m_ms;
+  const Call_t                                m_call;
+  Core::MutexAtomic                           m_mutex;
+  asio::high_resolution_timer                 m_timer;
 };
 
 
@@ -44,7 +44,7 @@ class PeriodicTimers final
 
   void stop();
 
-  void set(const Config::Property::V_GINT32::Ptr ms,
+  void set(const Config::Property::Value_int32_g::Ptr ms,
            PeriodicTimer::Call_t&& call,
            const IoContextPtr& ioctx);
 

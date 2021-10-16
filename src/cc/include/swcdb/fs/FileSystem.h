@@ -46,10 +46,10 @@ enum Flags : uint8_t {
 
 
 struct Configurables {
-  Config::Settings::Ptr           settings;
-  Config::Property::V_GINT32::Ptr cfg_fds_max;
-  std::string                     path_root;
-  bool                            stats_enabled;
+  Config::Settings::Ptr                 settings;
+  Config::Property::Value_int32_g::Ptr  cfg_fds_max;
+  std::string                           path_root;
+  bool                                  stats_enabled;
   Configurables(const Config::Settings::Ptr& a_settings) noexcept
                 : settings(a_settings),
                   cfg_fds_max(nullptr), stats_enabled(false) {
@@ -73,8 +73,8 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   const std::string path_root;
   const std::string path_data;
 
-  const Config::Settings::Ptr           settings;
-  const Config::Property::V_GINT32::Ptr cfg_fds_max;
+  const Config::Settings::Ptr                settings;
+  const Config::Property::Value_int32_g::Ptr cfg_fds_max;
 
   Core::AtomicBool      m_run;
   Statistics            statistics;

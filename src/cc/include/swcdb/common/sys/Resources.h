@@ -53,9 +53,9 @@ class Resources final {
   Mem mem;
 
   Resources(const Comm::IoContextPtr& ioctx,
-            Config::Property::V_GINT32::Ptr ram_percent_allowed,
-            Config::Property::V_GINT32::Ptr ram_percent_reserved,
-            Config::Property::V_GINT32::Ptr ram_release_rate,
+            Config::Property::Value_int32_g::Ptr ram_percent_allowed,
+            Config::Property::Value_int32_g::Ptr ram_percent_reserved,
+            Config::Property::Value_int32_g::Ptr ram_release_rate,
             Notifier* notifier=nullptr,
             Mem::ReleaseCall_t&& release_call=nullptr)
             : cpu(notifier),

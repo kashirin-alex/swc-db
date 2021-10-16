@@ -11,7 +11,7 @@ namespace SWC { namespace Broker { namespace Metric {
 
 
 Reporting::Reporting(const Comm::IoContextPtr& a_io,
-                     Config::Property::V_GINT32::Ptr a_cfg_intval)
+                     Config::Property::Value_int32_g::Ptr a_cfg_intval)
         : Common::Query::Update::Metric::Reporting(
             Env::Clients::get(), a_io, a_cfg_intval),
           net(nullptr) {

@@ -47,7 +47,7 @@ Reporting::Reporting()
               Env::Clients::get(),
               Env::IoCtx::io(),
               Env::Config::settings()
-                ->get<Config::Property::V_GINT32>(
+                ->get<Config::Property::Value_int32_g>(
                   "swc.FsBroker.metrics.report.interval"),
               Env::Config::settings()->get_bool(
                 "swc.FsBroker.metrics.report.broker")

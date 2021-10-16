@@ -11,7 +11,7 @@ namespace SWC { namespace client {
 
 ContextRanger::ContextRanger(const Config::Settings& settings)
     : Comm::AppContext(
-        settings.get<Config::Property::V_GENUM>(
+        settings.get<Config::Property::Value_enum_g>(
           "swc.client.Rgr.comm.encoder")) {
 }
 

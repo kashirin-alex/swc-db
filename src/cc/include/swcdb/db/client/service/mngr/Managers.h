@@ -82,9 +82,9 @@ class Managers  {
 
     class Column final : private Core::Vector<Range> {
 
-      Config::Property::V_GINT32::Ptr expiry_ms;
-      DB::Types::KeySeq               key_seq;
-      mutable Core::MutexSptd         m_mutex;
+      Config::Property::Value_int32_g::Ptr  expiry_ms;
+      DB::Types::KeySeq                     key_seq;
+      mutable Core::MutexSptd               m_mutex;
 
       public:
 
@@ -92,7 +92,7 @@ class Managers  {
       ~Column() noexcept { }
 
       void init(DB::Types::KeySeq _key_seq,
-                Config::Property::V_GINT32::Ptr _expiry_ms) noexcept {
+                Config::Property::Value_int32_g::Ptr _expiry_ms) noexcept {
         key_seq = _key_seq;
         expiry_ms = _expiry_ms;
       }
@@ -130,8 +130,8 @@ class Managers  {
 
     SWC_CAN_INLINE
     MasterRangesCache(const Config::Settings& settings) noexcept {
-      Config::Property::V_GINT32::Ptr expiry_ms(
-        settings.get<Config::Property::V_GINT32>(
+      Config::Property::Value_int32_g::Ptr expiry_ms(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.Mngr.range.master.expiry"));
       for(cid_t cid=1; cid<=DB::Types::SystemColumn::CID_MASTER_END; ++cid) {
         columns[cid - 1].init(

@@ -44,15 +44,15 @@ class RangersResources final : private Core::Vector<RangerResources> {
 
   public:
 
-  const Config::Property::V_GINT32::Ptr cfg_check;
-  const Config::Property::V_GUINT8::Ptr cfg_rebalance_max;
+  const Config::Property::Value_int32_g::Ptr cfg_check;
+  const Config::Property::Value_uint8_g::Ptr cfg_rebalance_max;
 
   RangersResources():
         cfg_check(
-          Env::Config::settings()->get<Config::Property::V_GINT32>(
+          Env::Config::settings()->get<Config::Property::Value_int32_g>(
             "swc.mngr.rangers.resource.interval.check")),
         cfg_rebalance_max(
-          Env::Config::settings()->get<Config::Property::V_GUINT8>(
+          Env::Config::settings()->get<Config::Property::Value_uint8_g>(
             "swc.mngr.rangers.range.rebalance.max")),
         m_due(0), m_last_check(0) {
   }

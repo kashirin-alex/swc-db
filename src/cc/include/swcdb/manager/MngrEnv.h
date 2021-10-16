@@ -119,9 +119,9 @@ class Mngr final {
 
   Comm::IoContextPtr                  app_io;
 
-  SWC::Config::Property::V_GINT32     cfg_ram_percent_allowed;
-  SWC::Config::Property::V_GINT32     cfg_ram_percent_reserved;
-  SWC::Config::Property::V_GINT32     cfg_ram_release_rate;
+  SWC::Config::Property::Value_int32_g cfg_ram_percent_allowed;
+  SWC::Config::Property::Value_int32_g cfg_ram_percent_reserved;
+  SWC::Config::Property::Value_int32_g cfg_ram_release_rate;
   private:
 
   inline static std::shared_ptr<Mngr> m_env = nullptr;

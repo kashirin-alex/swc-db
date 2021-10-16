@@ -50,9 +50,9 @@ class Brokers {
 
   bool put(const Comm::client::ConnQueue::ReqBase::Ptr& req, BrokerIdx& idx);
 
-  const Comm::client::ConnQueuesPtr        queues;
-  const Config::Property::V_GSTRINGS::Ptr  cfg_hosts;
-  const uint16_t                           cfg_port;
+  const Comm::client::ConnQueuesPtr             queues;
+  const Config::Property::Value_strings_g::Ptr  cfg_hosts;
+  const uint16_t                                cfg_port;
 
   private:
   Core::MutexSptd  m_mutex;

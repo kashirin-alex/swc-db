@@ -12,42 +12,42 @@ namespace SWC { namespace Config { namespace Property {
 
 const char* Value::to_string(Type type) noexcept {
   switch(type) {
-    case BOOL:
-      return "BOOL";
-    case UINT8:
-      return "UINT8";
-    case UINT16:
-      return "UINT16";
-    case INT32:
-      return "INT32";
-    case INT64:
-      return "INT64";
-    case DOUBLE:
-      return "DOUBLE";
-    case STRING:
-      return "STRING";
-    case ENUM:
-      return "ENUM";
-    case STRINGS:
-      return "STRINGS";
-    case INT64S:
-      return "INT64S";
-    case DOUBLES:
-      return "DOUBLES";
-    case G_BOOL:
-      return "G_BOOL";
-    case G_UINT8:
-      return "G_UINT8";
-    case G_UINT16:
-      return "G_UINT16";
-    case G_INT32:
-      return "G_INT32";
-    case G_UINT64:
-      return "G_UINT64";
-    case G_ENUM:
-      return "G_ENUM";
-    case G_STRINGS:
-      return "G_STRINGS";
+    case TYPE_BOOL:
+      return "TYPE_BOOL";
+    case TYPE_UINT8:
+      return "TYPE_UINT8";
+    case TYPE_UINT16:
+      return "TYPE_UINT16";
+    case TYPE_INT32:
+      return "TYPE_INT32";
+    case TYPE_INT64:
+      return "TYPE_INT64";
+    case TYPE_DOUBLE:
+      return "TYPE_DOUBLE";
+    case TYPE_STRING:
+      return "TYPE_STRING";
+    case TYPE_ENUM:
+      return "TYPE_ENUM";
+    case TYPE_STRINGS:
+      return "TYPE_STRINGS";
+    case TYPE_INT64S:
+      return "TYPE_INT64S";
+    case TYPE_DOUBLES:
+      return "TYPE_DOUBLES";
+    case TYPE_BOOL_G:
+      return "TYPE_BOOL_G";
+    case TYPE_UINT8_G:
+      return "TYPE_UINT8_G";
+    case TYPE_UINT16_G:
+      return "TYPE_UINT16_G";
+    case TYPE_INT32_G:
+      return "TYPE_INT32_G";
+    case TYPE_UINT64_G:
+      return "TYPE_UINT64_G";
+    case TYPE_ENUM_G:
+      return "TYPE_ENUM_G";
+    case TYPE_STRINGS_G:
+      return "TYPE_STRINGS_G";
     default:
       return "unknown";
   }
@@ -215,251 +215,251 @@ void from_string(const char* s, int32_t* value) {
 
 
 
-V_BOOL::V_BOOL(const bool& v, uint8_t a_flags) noexcept
+Value_bool::Value_bool(const bool& v, uint8_t a_flags) noexcept
               : Value(a_flags), value(v) {
 }
 
-V_BOOL::V_BOOL(V_BOOL* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+Value_bool::Value_bool(Value_bool* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
-V_BOOL::~V_BOOL() noexcept { }
+Value_bool::~Value_bool() noexcept { }
 
-Value::Ptr V_BOOL::make_new(const Strings& values) {
-  auto ptr = new V_BOOL(this);
+Value::Ptr Value_bool::make_new(const Strings& values) {
+  auto ptr = new Value_bool(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_BOOL::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_BOOL>(ptr);
+void Value_bool::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_bool>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_BOOL::set_from(const Strings& values) {
+void Value_bool::set_from(const Strings& values) {
   auto& str = values.back();
   value = (str.length() == 1 && *str.data() == '1') ||
           Condition::str_case_eq(str.data(), "true", 4) ||
           Condition::str_case_eq(str.data(), "yes", 3);
 }
 
-Value::Type V_BOOL::type() const noexcept {
+Value::Type Value_bool::type() const noexcept {
   return value_type;
 }
 
-std::string V_BOOL::to_string() const {
+std::string Value_bool::to_string() const {
   return value ? "true" : "false";
 }
 
 
 
-V_UINT8::V_UINT8(const uint8_t& v, uint8_t a_flags) noexcept
+Value_uint8::Value_uint8(const uint8_t& v, uint8_t a_flags) noexcept
                 : Value(a_flags), value(v) {
 }
 
-V_UINT8::V_UINT8(V_UINT8* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+Value_uint8::Value_uint8(Value_uint8* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
-V_UINT8::~V_UINT8() noexcept { }
+Value_uint8::~Value_uint8() noexcept { }
 
-Value::Ptr V_UINT8::make_new(const Strings& values) {
-  auto ptr = new V_UINT8(this);
+Value::Ptr Value_uint8::make_new(const Strings& values) {
+  auto ptr = new Value_uint8(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_UINT8::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_UINT8>(ptr);
+void Value_uint8::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_uint8>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_UINT8::set_from(const Strings& values) {
+void Value_uint8::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_UINT8::type() const noexcept {
+Value::Type Value_uint8::type() const noexcept {
   return value_type;
 }
 
-std::string V_UINT8::to_string() const {
+std::string Value_uint8::to_string() const {
   return std::to_string(int16_t(value));
 }
 
 
 
-V_UINT16::V_UINT16(const uint16_t& v, uint8_t a_flags) noexcept
+Value_uint16::Value_uint16(const uint16_t& v, uint8_t a_flags) noexcept
                   : Value(a_flags), value(v) { }
 
-V_UINT16::V_UINT16(V_UINT16* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+Value_uint16::Value_uint16(Value_uint16* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
-V_UINT16::~V_UINT16() noexcept { }
+Value_uint16::~Value_uint16() noexcept { }
 
-Value::Ptr V_UINT16::make_new(const Strings& values) {
-  auto ptr = new V_UINT16(this);
+Value::Ptr Value_uint16::make_new(const Strings& values) {
+  auto ptr = new Value_uint16(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_UINT16::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_UINT16>(ptr);
+void Value_uint16::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_uint16>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_UINT16::set_from(const Strings& values) {
+void Value_uint16::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_UINT16::type() const noexcept {
+Value::Type Value_uint16::type() const noexcept {
   return value_type;
 }
 
-std::string V_UINT16::to_string() const {
+std::string Value_uint16::to_string() const {
   return std::to_string(value);
 }
 
 
 
-V_INT32::V_INT32(const int32_t& v, uint8_t a_flags) noexcept
+Value_int32::Value_int32(const int32_t& v, uint8_t a_flags) noexcept
                 : Value(a_flags), value(v) { }
 
-V_INT32::V_INT32(V_INT32* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+Value_int32::Value_int32(Value_int32* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
-V_INT32::~V_INT32() noexcept { }
+Value_int32::~Value_int32() noexcept { }
 
-Value::Ptr V_INT32::make_new(const Strings& values) {
-  auto ptr = new V_INT32(this);
+Value::Ptr Value_int32::make_new(const Strings& values) {
+  auto ptr = new Value_int32(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_INT32::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_INT32>(ptr);
+void Value_int32::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_int32>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_INT32::set_from(const Strings& values) {
+void Value_int32::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_INT32::type() const noexcept {
+Value::Type Value_int32::type() const noexcept {
   return value_type;
 }
 
-std::string V_INT32::to_string() const {
+std::string Value_int32::to_string() const {
   return std::to_string(value);
 }
 
 
 
-V_INT64::V_INT64(const int64_t& v, uint8_t a_flags) noexcept
+Value_int64::Value_int64(const int64_t& v, uint8_t a_flags) noexcept
                  : Value(a_flags), value(v) { }
 
-V_INT64::V_INT64(V_INT64* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+Value_int64::Value_int64(Value_int64* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
-V_INT64::~V_INT64() noexcept { }
+Value_int64::~Value_int64() noexcept { }
 
-Value::Ptr V_INT64::make_new(const Strings& values) {
-  auto ptr = new V_INT64(this);
+Value::Ptr Value_int64::make_new(const Strings& values) {
+  auto ptr = new Value_int64(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_INT64::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_INT64>(ptr);
+void Value_int64::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_int64>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_INT64::set_from(const Strings& values) {
+void Value_int64::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_INT64::type() const noexcept {
+Value::Type Value_int64::type() const noexcept {
   return value_type;
 }
 
-std::string V_INT64::to_string() const {
+std::string Value_int64::to_string() const {
   return std::to_string(value);
 }
 
 
 
-V_DOUBLE::V_DOUBLE(const double& v, uint8_t a_flags) noexcept
+Value_double::Value_double(const double& v, uint8_t a_flags) noexcept
                   : Value(a_flags), value(v) { }
 
-V_DOUBLE::V_DOUBLE(V_DOUBLE* ptr) noexcept : Value(ptr), value(ptr->get()) { }
+Value_double::Value_double(Value_double* ptr) noexcept : Value(ptr), value(ptr->get()) { }
 
-V_DOUBLE::~V_DOUBLE() noexcept { }
+Value_double::~Value_double() noexcept { }
 
-Value::Ptr V_DOUBLE::make_new(const Strings& values) {
-  auto ptr = new V_DOUBLE(this);
+Value::Ptr Value_double::make_new(const Strings& values) {
+  auto ptr = new Value_double(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_DOUBLE::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_DOUBLE>(ptr);
+void Value_double::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_double>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_DOUBLE::set_from(const Strings& values) {
+void Value_double::set_from(const Strings& values) {
   from_string(values.back(), &value);
 }
 
-Value::Type V_DOUBLE::type() const noexcept {
+Value::Type Value_double::type() const noexcept {
   return value_type;
 }
 
-std::string V_DOUBLE::to_string() const {
+std::string Value_double::to_string() const {
   return format("%g", value);
 }
 
 
 
-V_STRING::V_STRING(std::string&& v, uint8_t a_flags) noexcept
+Value_string::Value_string(std::string&& v, uint8_t a_flags) noexcept
                   : Value(a_flags), value(std::move(v)) {
 }
 
-V_STRING::V_STRING(V_STRING* ptr) : Value(ptr), value(ptr->get()) { }
+Value_string::Value_string(Value_string* ptr) : Value(ptr), value(ptr->get()) { }
 
-V_STRING::~V_STRING() noexcept { }
+Value_string::~Value_string() noexcept { }
 
-Value::Ptr V_STRING::make_new(const Strings& values) {
-  auto ptr = new V_STRING(this);
+Value::Ptr Value_string::make_new(const Strings& values) {
+  auto ptr = new Value_string(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_STRING::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_STRING>(ptr);
+void Value_string::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_string>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_STRING::set_from(const Strings& values) {
+void Value_string::set_from(const Strings& values) {
   value = values.back();
 }
 
-Value::Type V_STRING::type() const noexcept {
+Value::Type Value_string::type() const noexcept {
   return value_type;
 }
 
-std::string V_STRING::to_string() const {
+std::string Value_string::to_string() const {
   return value;
 }
 
 
 
-V_ENUM::V_ENUM(const int32_t& v,
+Value_enum::Value_enum(const int32_t& v,
                FromString_t&& from_string,
                Repr_t&& repr,
                uint8_t a_flags)
@@ -468,23 +468,23 @@ V_ENUM::V_ENUM(const int32_t& v,
                 call_repr(std::move(repr)) {
 }
 
-V_ENUM::V_ENUM(V_ENUM* ptr)
+Value_enum::Value_enum(Value_enum* ptr)
               : Value(ptr), value(ptr->get()),
                 call_from_string(ptr->call_from_string),
                 call_repr(ptr->call_repr) {
 }
 
-V_ENUM::~V_ENUM() noexcept { }
+Value_enum::~Value_enum() noexcept { }
 
-Value::Ptr V_ENUM::make_new(const Strings& values) {
-  auto ptr = new V_ENUM(this);
+Value::Ptr Value_enum::make_new(const Strings& values) {
+  auto ptr = new Value_enum(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_ENUM::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_ENUM>(ptr);
+void Value_enum::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_enum>(ptr);
   flags.store(from->flags);
   value = from->value;
   if(!call_from_string)
@@ -493,7 +493,7 @@ void V_ENUM::set_from(Value::Ptr ptr) {
     call_repr = from->call_repr;
 }
 
-void V_ENUM::set_from(const Strings& values) {
+void Value_enum::set_from(const Strings& values) {
   if(!call_from_string)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
               "Bad Value %s, no from_string cb set", values.back().c_str());
@@ -505,11 +505,11 @@ void V_ENUM::set_from(const Strings& values) {
   value = nv;
 }
 
-Value::Type V_ENUM::type() const noexcept {
+Value::Type Value_enum::type() const noexcept {
   return value_type;
 }
 
-std::string V_ENUM::to_string() const {
+std::string Value_enum::to_string() const {
   return format(
     "%s  # (%d)",
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
@@ -518,63 +518,63 @@ std::string V_ENUM::to_string() const {
 
 
 // lists
-V_STRINGS::V_STRINGS(Strings&& v, uint8_t a_flags) noexcept
+Value_strings::Value_strings(Strings&& v, uint8_t a_flags) noexcept
                     : Value(a_flags), value(std::move(v)) {
 }
 
-V_STRINGS::V_STRINGS(V_STRINGS* ptr) : Value(ptr), value(ptr->get()) { }
+Value_strings::Value_strings(Value_strings* ptr) : Value(ptr), value(ptr->get()) { }
 
-V_STRINGS::~V_STRINGS() noexcept { }
+Value_strings::~Value_strings() noexcept { }
 
-Value::Ptr V_STRINGS::make_new(const Strings& values) {
-  auto ptr = new V_STRINGS(this);
+Value::Ptr Value_strings::make_new(const Strings& values) {
+  auto ptr = new Value_strings(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_STRINGS::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_STRINGS>(ptr);
+void Value_strings::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_strings>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_STRINGS::set_from(const Strings& values) {
+void Value_strings::set_from(const Strings& values) {
   value = values;
 }
 
-Value::Type V_STRINGS::type() const noexcept {
+Value::Type Value_strings::type() const noexcept {
   return value_type;
 }
 
-std::string V_STRINGS::to_string() const {
+std::string Value_strings::to_string() const {
   return format_list(value);
 }
 
 
 
-V_INT64S::V_INT64S(Int64s&& v, uint8_t a_flags) noexcept
+Value_int64s::Value_int64s(Int64s&& v, uint8_t a_flags) noexcept
                   : Value(a_flags), value(std::move(v)) {
 }
 
-V_INT64S::V_INT64S(V_INT64S* ptr) : Value(ptr), value(ptr->get()) { }
+Value_int64s::Value_int64s(Value_int64s* ptr) : Value(ptr), value(ptr->get()) { }
 
-V_INT64S::~V_INT64S() noexcept { }
+Value_int64s::~Value_int64s() noexcept { }
 
-Value::Ptr V_INT64S::make_new(const Strings& values) {
-  auto ptr = new V_INT64S(this);
+Value::Ptr Value_int64s::make_new(const Strings& values) {
+  auto ptr = new Value_int64s(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_INT64S::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_INT64S>(ptr);
+void Value_int64s::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_int64s>(ptr);
   flags.store(from->flags);
   value = from->value;
 }
 
-void V_INT64S::set_from(const Strings& values) {
+void Value_int64s::set_from(const Strings& values) {
   value.clear();
   int64_t v;
   for(const std::string& s: values) {
@@ -583,38 +583,38 @@ void V_INT64S::set_from(const Strings& values) {
   }
 }
 
-Value::Type V_INT64S::type() const noexcept {
+Value::Type Value_int64s::type() const noexcept {
   return value_type;
 }
 
-std::string V_INT64S::to_string() const {
+std::string Value_int64s::to_string() const {
   return format_list(value);
 }
 
 
 
-V_DOUBLES::V_DOUBLES(Doubles&& v, uint8_t a_flags) noexcept
+Value_doubles::Value_doubles(Doubles&& v, uint8_t a_flags) noexcept
                      : Value(a_flags), value(std::move(v)) {
 }
 
-V_DOUBLES::V_DOUBLES(V_DOUBLES* ptr) : Value(ptr), value(ptr->get()) { }
+Value_doubles::Value_doubles(Value_doubles* ptr) : Value(ptr), value(ptr->get()) { }
 
-V_DOUBLES::~V_DOUBLES() noexcept { }
+Value_doubles::~Value_doubles() noexcept { }
 
-Value::Ptr V_DOUBLES::make_new(const Strings& values) {
-  auto ptr = new V_DOUBLES(this);
+Value::Ptr Value_doubles::make_new(const Strings& values) {
+  auto ptr = new Value_doubles(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_DOUBLES::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_DOUBLES>(ptr);
+void Value_doubles::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_doubles>(ptr);
   flags.store(from->flags);
   value = from->get();
 }
 
-void V_DOUBLES::set_from(const Strings& values) {
+void Value_doubles::set_from(const Strings& values) {
   value.clear();
   double v;
   for(const std::string& s: values) {
@@ -623,38 +623,38 @@ void V_DOUBLES::set_from(const Strings& values) {
   }
 }
 
-Value::Type V_DOUBLES::type() const noexcept {
+Value::Type Value_doubles::type() const noexcept {
   return value_type;
 }
 
-std::string V_DOUBLES::to_string() const {
+std::string Value_doubles::to_string() const {
   return format_list(value);
 }
 
 
 
 // Guarded Atomic
-V_GBOOL::V_GBOOL(const bool& v, V_GBOOL::OnChg_t&& cb, uint8_t a_flags)
+Value_bool_g::Value_bool_g(const bool& v, Value_bool_g::OnChg_t&& cb, uint8_t a_flags)
                 : Value(a_flags | Value::GUARDED),
                   value(v), on_chg_cb(std::move(cb)) {
 }
 
-V_GBOOL::V_GBOOL(V_GBOOL* ptr)
+Value_bool_g::Value_bool_g(Value_bool_g* ptr)
                 : Value(ptr),
                   value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
-V_GBOOL::~V_GBOOL() noexcept { }
+Value_bool_g::~Value_bool_g() noexcept { }
 
-Value::Ptr V_GBOOL::make_new(const Strings& values) {
-  auto ptr = new V_GBOOL(this);
+Value::Ptr Value_bool_g::make_new(const Strings& values) {
+  auto ptr = new Value_bool_g(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_GBOOL::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_GBOOL>(ptr);
+void Value_bool_g::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_bool_g>(ptr);
   flags.store(from->flags);
 
   bool chg = value != from->value;
@@ -665,58 +665,58 @@ void V_GBOOL::set_from(Value::Ptr ptr) {
     on_change();
 }
 
-void V_GBOOL::set_from(const Strings& values) {
+void Value_bool_g::set_from(const Strings& values) {
   auto& str = values.back();
   value.store((str.length() == 1 && *str.data() == '1') ||
               Condition::str_case_eq(str.data(), "true", 4) ||
               Condition::str_case_eq(str.data(), "yes", 3));
 }
 
-Value::Type V_GBOOL::type() const noexcept {
+Value::Type Value_bool_g::type() const noexcept {
   return value_type;
 }
 
-std::string V_GBOOL::to_string() const {
+std::string Value_bool_g::to_string() const {
   return value ? "true" : "false";
 }
 
-void V_GBOOL::set(bool v) noexcept {
+void Value_bool_g::set(bool v) noexcept {
   value.store(v);
 }
 
 
-void V_GBOOL::on_change() const {
+void Value_bool_g::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
 }
 
-void V_GBOOL::set_cb_on_chg(V_GBOOL::OnChg_t&& cb) {
+void Value_bool_g::set_cb_on_chg(Value_bool_g::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 
 
 
-V_GUINT8::V_GUINT8(const uint8_t& v, V_GUINT8::OnChg_t&& cb, uint8_t a_flags)
+Value_uint8_g::Value_uint8_g(const uint8_t& v, Value_uint8_g::OnChg_t&& cb, uint8_t a_flags)
                   : Value(a_flags | Value::GUARDED),
                     value(v), on_chg_cb(std::move(cb)) {
 }
 
-V_GUINT8::V_GUINT8(V_GUINT8* ptr)
+Value_uint8_g::Value_uint8_g(Value_uint8_g* ptr)
                   : Value(ptr),
                     value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
-V_GUINT8::~V_GUINT8() noexcept { }
+Value_uint8_g::~Value_uint8_g() noexcept { }
 
-Value::Ptr V_GUINT8::make_new(const Strings& values) {
-  auto ptr = new V_GUINT8(this);
+Value::Ptr Value_uint8_g::make_new(const Strings& values) {
+  auto ptr = new Value_uint8_g(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_GUINT8::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_GUINT8>(ptr);
+void Value_uint8_g::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_uint8_g>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->value.load());
@@ -726,53 +726,53 @@ void V_GUINT8::set_from(Value::Ptr ptr) {
     on_change();
 }
 
-void V_GUINT8::set_from(const Strings& values) {
+void Value_uint8_g::set_from(const Strings& values) {
   uint8_t v;
   from_string(values.back(), &v);
   value.store(v);
 }
 
-Value::Type V_GUINT8::type() const noexcept {
+Value::Type Value_uint8_g::type() const noexcept {
   return value_type;
 }
 
-std::string V_GUINT8::to_string() const {
+std::string Value_uint8_g::to_string() const {
   return std::to_string(int16_t(value));
 }
 
-void V_GUINT8::on_change() const {
+void Value_uint8_g::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
 }
 
-void V_GUINT8::set_cb_on_chg(V_GUINT8::OnChg_t&& cb) {
+void Value_uint8_g::set_cb_on_chg(Value_uint8_g::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 
 
 
-V_GUINT16::V_GUINT16(const uint16_t& v,
-                      V_GUINT16::OnChg_t&& cb, uint8_t a_flags)
+Value_uint16_g::Value_uint16_g(const uint16_t& v,
+                      Value_uint16_g::OnChg_t&& cb, uint8_t a_flags)
                     : Value(a_flags | Value::GUARDED),
                       value(v), on_chg_cb(std::move(cb)) {
 }
 
-V_GUINT16::V_GUINT16(V_GUINT16* ptr)
+Value_uint16_g::Value_uint16_g(Value_uint16_g* ptr)
                     : Value(ptr),
                       value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
-V_GUINT16::~V_GUINT16() noexcept { }
+Value_uint16_g::~Value_uint16_g() noexcept { }
 
-Value::Ptr V_GUINT16::make_new(const Strings& values) {
-  auto ptr = new V_GUINT16(this);
+Value::Ptr Value_uint16_g::make_new(const Strings& values) {
+  auto ptr = new Value_uint16_g(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_GUINT16::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_GUINT16>(ptr);
+void Value_uint16_g::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_uint16_g>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->value.load());
@@ -782,52 +782,52 @@ void V_GUINT16::set_from(Value::Ptr ptr) {
     on_change();
 }
 
-void V_GUINT16::set_from(const Strings& values) {
+void Value_uint16_g::set_from(const Strings& values) {
   uint16_t v;
   from_string(values.back(), &v);
   value.store(v);
 }
 
-Value::Type V_GUINT16::type() const noexcept {
+Value::Type Value_uint16_g::type() const noexcept {
   return value_type;
 }
 
-std::string V_GUINT16::to_string() const {
+std::string Value_uint16_g::to_string() const {
   return std::to_string(value);
 }
 
-void V_GUINT16::on_change() const {
+void Value_uint16_g::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
 }
 
-void V_GUINT16::set_cb_on_chg(V_GUINT16::OnChg_t&& cb) {
+void Value_uint16_g::set_cb_on_chg(Value_uint16_g::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 
 
 
-V_GINT32::V_GINT32(const int32_t& v, V_GINT32::OnChg_t&& cb, uint8_t a_flags)
+Value_int32_g::Value_int32_g(const int32_t& v, Value_int32_g::OnChg_t&& cb, uint8_t a_flags)
                   : Value(a_flags | Value::GUARDED),
                     value(v), on_chg_cb(std::move(cb)) {
 }
 
-V_GINT32::V_GINT32(V_GINT32* ptr)
+Value_int32_g::Value_int32_g(Value_int32_g* ptr)
                   : Value(ptr),
                     value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
-V_GINT32::~V_GINT32() noexcept { }
+Value_int32_g::~Value_int32_g() noexcept { }
 
-Value::Ptr V_GINT32::make_new(const Strings& values) {
-  auto ptr = new V_GINT32(this);
+Value::Ptr Value_int32_g::make_new(const Strings& values) {
+  auto ptr = new Value_int32_g(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_GINT32::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_GINT32>(ptr);
+void Value_int32_g::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_int32_g>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->value.load());
@@ -837,53 +837,53 @@ void V_GINT32::set_from(Value::Ptr ptr) {
     on_change();
 }
 
-void V_GINT32::set_from(const Strings& values) {
+void Value_int32_g::set_from(const Strings& values) {
   int32_t v;
   from_string(values.back(), &v);
   value.store(v);
 }
 
-Value::Type V_GINT32::type() const noexcept {
+Value::Type Value_int32_g::type() const noexcept {
   return value_type;
 }
 
-std::string V_GINT32::to_string() const {
+std::string Value_int32_g::to_string() const {
   return std::to_string(value);
 }
 
-void V_GINT32::on_change() const {
+void Value_int32_g::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
 }
 
-void V_GINT32::set_cb_on_chg(V_GINT32::OnChg_t&& cb) {
+void Value_int32_g::set_cb_on_chg(Value_int32_g::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 
 
 
-V_GUINT64::V_GUINT64(const uint64_t& v,
-                      V_GUINT64::OnChg_t&& cb, uint8_t a_flags)
+Value_uint64_g::Value_uint64_g(const uint64_t& v,
+                      Value_uint64_g::OnChg_t&& cb, uint8_t a_flags)
                     : Value(a_flags | Value::GUARDED),
                       value(v), on_chg_cb(std::move(cb)) {
 }
 
-V_GUINT64::V_GUINT64(V_GUINT64* ptr)
+Value_uint64_g::Value_uint64_g(Value_uint64_g* ptr)
                     : Value(ptr),
                       value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
-V_GUINT64::~V_GUINT64() noexcept { }
+Value_uint64_g::~Value_uint64_g() noexcept { }
 
-Value::Ptr V_GUINT64::make_new(const Strings& values) {
-  auto ptr = new V_GUINT64(this);
+Value::Ptr Value_uint64_g::make_new(const Strings& values) {
+  auto ptr = new Value_uint64_g(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_GUINT64::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_GUINT64>(ptr);
+void Value_uint64_g::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_uint64_g>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->value.load());
@@ -893,35 +893,35 @@ void V_GUINT64::set_from(Value::Ptr ptr) {
     on_change();
 }
 
-void V_GUINT64::set_from(const Strings& values) {
+void Value_uint64_g::set_from(const Strings& values) {
   uint64_t v;
   from_string(values.back(), &v);
   value.store(v);
 }
 
-Value::Type V_GUINT64::type() const noexcept {
+Value::Type Value_uint64_g::type() const noexcept {
   return value_type;
 }
 
-std::string V_GUINT64::to_string() const {
+std::string Value_uint64_g::to_string() const {
   return std::to_string(value);
 }
 
-void V_GUINT64::on_change() const {
+void Value_uint64_g::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
 }
 
-void V_GUINT64::set_cb_on_chg(V_GUINT64::OnChg_t&& cb) {
+void Value_uint64_g::set_cb_on_chg(Value_uint64_g::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 
 
 
-V_GENUM::V_GENUM(const int32_t& v,
-                 V_GENUM::OnChg_t&& cb,
-                 V_GENUM::FromString_t&& from_string,
-                 V_GENUM::Repr_t&& repr,
+Value_enum_g::Value_enum_g(const int32_t& v,
+                 Value_enum_g::OnChg_t&& cb,
+                 Value_enum_g::FromString_t&& from_string,
+                 Value_enum_g::Repr_t&& repr,
                  uint8_t a_flags)
                 : Value(a_flags | Value::GUARDED), value(v),
                   on_chg_cb(std::move(cb)),
@@ -929,24 +929,24 @@ V_GENUM::V_GENUM(const int32_t& v,
                   call_repr(std::move(repr)) {
 }
 
-V_GENUM::V_GENUM(V_GENUM* ptr)
+Value_enum_g::Value_enum_g(Value_enum_g* ptr)
                 : Value(ptr), value(ptr->get()),
                   on_chg_cb(ptr->on_chg_cb),
                   call_from_string(ptr->call_from_string),
                   call_repr(ptr->call_repr) {
 }
 
-V_GENUM::~V_GENUM() noexcept { }
+Value_enum_g::~Value_enum_g() noexcept { }
 
-Value::Ptr V_GENUM::make_new(const Strings& values) {
-  auto ptr = new V_GENUM(this);
+Value::Ptr Value_enum_g::make_new(const Strings& values) {
+  auto ptr = new Value_enum_g(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_GENUM::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_GENUM>(ptr);
+void Value_enum_g::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_enum_g>(ptr);
   flags.store(from->flags);
   bool chg = value != from->value;
   value.store(from->get());
@@ -961,7 +961,7 @@ void V_GENUM::set_from(Value::Ptr ptr) {
     on_change();
 }
 
-void V_GENUM::set_from(const Strings& values) {
+void Value_enum_g::set_from(const Strings& values) {
   if(!call_from_string)
     SWC_THROWF(Error::CONFIG_GET_ERROR,
               "Bad Value %s, no from_string cb set", values.back().c_str());
@@ -972,55 +972,55 @@ void V_GENUM::set_from(const Strings& values) {
   value.store(nv);
 }
 
-Value::Type V_GENUM::type() const noexcept {
+Value::Type Value_enum_g::type() const noexcept {
   return value_type;
 }
 
-std::string V_GENUM::to_string() const {
+std::string Value_enum_g::to_string() const {
   return format(
     "%s  # (%d)",
     (call_repr ? call_repr(get()).c_str() : "repr not defined"), get());
 }
 
-void V_GENUM::set(int32_t nv) {
+void Value_enum_g::set(int32_t nv) {
   value.store(nv);
   on_change();
 }
 
-void V_GENUM::on_change() const {
+void Value_enum_g::on_change() const {
   if(on_chg_cb)
     on_chg_cb(get());
 }
 
-void V_GENUM::set_cb_on_chg(V_GENUM::OnChg_t&& cb) {
+void Value_enum_g::set_cb_on_chg(Value_enum_g::OnChg_t&& cb) {
   on_chg_cb = std::move(cb);
 }
 
 
 
 // Guarded Mutex
-V_GSTRINGS::V_GSTRINGS(Strings&& v, V_GSTRINGS::OnChg_t&& cb,
+Value_strings_g::Value_strings_g(Strings&& v, Value_strings_g::OnChg_t&& cb,
                        uint8_t a_flags) noexcept
                       : Value(a_flags | Value::GUARDED),
                         value(std::move(v)), on_chg_cb(std::move(cb)) {
 }
 
-V_GSTRINGS::V_GSTRINGS(V_GSTRINGS* ptr)
+Value_strings_g::Value_strings_g(Value_strings_g* ptr)
                       : Value(ptr),
                         value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
-V_GSTRINGS::~V_GSTRINGS() noexcept { }
+Value_strings_g::~Value_strings_g() noexcept { }
 
-Value::Ptr V_GSTRINGS::make_new(const Strings& values) {
-  auto ptr = new V_GSTRINGS(this);
+Value::Ptr Value_strings_g::make_new(const Strings& values) {
+  auto ptr = new Value_strings_g(this);
   if(!values.empty())
     ptr->set_from(values);
   return ptr;
 }
 
-void V_GSTRINGS::set_from(Value::Ptr ptr) {
-  auto from = get_pointer<V_GSTRINGS>(ptr);
+void Value_strings_g::set_from(Value::Ptr ptr) {
+  auto from = get_pointer<Value_strings_g>(ptr);
   flags.store(from->flags);
   bool chg;
   {
@@ -1034,41 +1034,41 @@ void V_GSTRINGS::set_from(Value::Ptr ptr) {
     on_change();
 }
 
-void V_GSTRINGS::set_from(const Strings& values) {
+void Value_strings_g::set_from(const Strings& values) {
   Core::MutexAtomic::scope lock(mutex);
   value = values;
 }
 
-Value::Type V_GSTRINGS::type() const noexcept {
+Value::Type Value_strings_g::type() const noexcept {
   return value_type;
 }
 
-std::string V_GSTRINGS::to_string() const {
+std::string Value_strings_g::to_string() const {
   Core::MutexAtomic::scope lock(mutex);
   return format_list(value);
 }
 
-Strings V_GSTRINGS::get() const {
+Strings Value_strings_g::get() const {
   Core::MutexAtomic::scope lock(mutex);
   return value;
 }
 
-size_t V_GSTRINGS::size() noexcept {
+size_t Value_strings_g::size() noexcept {
   Core::MutexAtomic::scope lock(mutex);
   return value.size();
 }
 
-std::string V_GSTRINGS::get_item(size_t n) {
+std::string Value_strings_g::get_item(size_t n) {
   Core::MutexAtomic::scope lock(mutex);
   return value[n];
 }
 
-void V_GSTRINGS::on_change() const {
+void Value_strings_g::on_change() const {
   if(on_chg_cb)
     on_chg_cb();
 }
 
-void V_GSTRINGS::set_cb_on_chg(V_GSTRINGS::OnChg_t&& cb) {
+void Value_strings_g::set_cb_on_chg(Value_strings_g::OnChg_t&& cb) {
   Core::MutexAtomic::scope lock(mutex);
   on_chg_cb = std::move(cb);
 }

@@ -17,44 +17,45 @@ namespace SWC { namespace Config {
 /* cfg methods for types
 *  @param v The default Value and a Type
 */
-Property::V_BOOL::Ptr boo(const bool& v);
-Property::V_UINT8::Ptr i8(const uint8_t& v);
-Property::V_UINT16::Ptr i16(const uint16_t& v);
-Property::V_INT32::Ptr i32(const int32_t& v);
-Property::V_INT64::Ptr i64(const int64_t& v);
-Property::V_DOUBLE::Ptr f64(const double& v);
-Property::V_STRING::Ptr str(std::string&& v);
-Property::V_STRINGS::Ptr strs(Strings&& v);
-Property::V_INT64S::Ptr i64s(Int64s&& v);
-Property::V_DOUBLES::Ptr f64s(Doubles&& v);
+Property::Value_bool::Ptr     boo(const bool& v);
+Property::Value_uint8::Ptr    i8(const uint8_t& v);
+Property::Value_uint16::Ptr   i16(const uint16_t& v);
+Property::Value_int32::Ptr    i32(const int32_t& v);
+Property::Value_int64::Ptr    i64(const int64_t& v);
+Property::Value_double::Ptr   f64(const double& v);
+Property::Value_string::Ptr   str(std::string&& v);
+Property::Value_strings::Ptr  strs(Strings&& v);
+Property::Value_int64s::Ptr   i64s(Int64s&& v);
+Property::Value_doubles::Ptr  f64s(Doubles&& v);
 
 /* cfg methods for guarded types
 *  @param v The default Value and a Type
 */
-Property::V_GBOOL::Ptr g_boo(const bool& v);
-Property::V_GUINT8::Ptr g_i8(const uint8_t& v);
-Property::V_GUINT16::Ptr g_i16(const uint16_t& v);
-Property::V_GINT32::Ptr g_i32(const int32_t& v);
-Property::V_GUINT64::Ptr g_i64(const uint64_t& v);
-Property::V_GSTRINGS::Ptr g_strs(Strings&& v);
-Property::V_GENUM::Ptr g_enum(const int32_t& v,
-                              Property::V_GENUM::OnChg_t&& cb,
-                              Property::V_GENUM::FromString_t&& from_string,
-                              Property::V_GENUM::Repr_t&& repr);
+Property::Value_bool_g::Ptr     g_boo(const bool& v);
+Property::Value_uint8_g::Ptr    g_i8(const uint8_t& v);
+Property::Value_uint16_g::Ptr   g_i16(const uint16_t& v);
+Property::Value_int32_g::Ptr    g_i32(const int32_t& v);
+Property::Value_uint64_g::Ptr   g_i64(const uint64_t& v);
+Property::Value_strings_g::Ptr  g_strs(Strings&& v);
+Property::Value_enum_g::Ptr     g_enum(
+                          const int32_t& v,
+                          Property::Value_enum_g::OnChg_t&& cb,
+                          Property::Value_enum_g::FromString_t&& from_string,
+                          Property::Value_enum_g::Repr_t&& repr);
 
 /* cfg methods for types, a skippable option
 *  if no option parsed it is skipped
 */
-Property::V_BOOL::Ptr boo();
-Property::V_UINT8::Ptr i8();
-Property::V_UINT16::Ptr i16();
-Property::V_INT32::Ptr i32();
-Property::V_INT64::Ptr i64();
-Property::V_DOUBLE::Ptr f64();
-Property::V_STRING::Ptr str();
-Property::V_STRINGS::Ptr strs();
-Property::V_INT64S::Ptr i64s();
-Property::V_DOUBLES::Ptr f64s();
+Property::Value_bool::Ptr     boo();
+Property::Value_uint8::Ptr    i8();
+Property::Value_uint16::Ptr   i16();
+Property::Value_int32::Ptr    i32();
+Property::Value_int64::Ptr    i64();
+Property::Value_double::Ptr   f64();
+Property::Value_string::Ptr   str();
+Property::Value_strings::Ptr  strs();
+Property::Value_int64s::Ptr   i64s();
+Property::Value_doubles::Ptr  f64s();
 
 
 

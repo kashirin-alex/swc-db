@@ -36,27 +36,27 @@ class Value {
   public:
 
   enum Type : uint8_t {
-    BOOL,
-    UINT8,
-    UINT16,
-    INT32,
-    INT64,
-    DOUBLE,
+    TYPE_BOOL,
+    TYPE_UINT8,
+    TYPE_UINT16,
+    TYPE_INT32,
+    TYPE_INT64,
+    TYPE_DOUBLE,
 
-    STRING,
-    ENUM,
+    TYPE_STRING,
+    TYPE_ENUM,
 
-    STRINGS,
-    INT64S,
-    DOUBLES,
+    TYPE_STRINGS,
+    TYPE_INT64S,
+    TYPE_DOUBLES,
 
-    G_BOOL,
-    G_UINT8,
-    G_UINT16,
-    G_INT32,
-    G_UINT64,
-    G_ENUM,
-    G_STRINGS
+    TYPE_BOOL_G,
+    TYPE_UINT8_G,
+    TYPE_UINT16_G,
+    TYPE_INT32_G,
+    TYPE_UINT64_G,
+    TYPE_ENUM_G,
+    TYPE_STRINGS_G
   };
   static const char* SWC_CONST_FUNC to_string(Type type) noexcept;
 
@@ -135,15 +135,15 @@ void from_string(const std::string& s, T value) {
 
 
 
-class V_BOOL final : public Value {
+class Value_bool final : public Value {
   public:
-  static const Type value_type = BOOL;
+  static const Type value_type = TYPE_BOOL;
 
-  V_BOOL(const bool& v, uint8_t flags=0) noexcept;
+  Value_bool(const bool& v, uint8_t flags=0) noexcept;
 
-  V_BOOL(V_BOOL* ptr) noexcept;
+  Value_bool(Value_bool* ptr) noexcept;
 
-  virtual ~V_BOOL() noexcept;
+  virtual ~Value_bool() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -164,15 +164,15 @@ class V_BOOL final : public Value {
 };
 
 
-class V_UINT8 final : public Value {
+class Value_uint8 final : public Value {
   public:
-  static const Type value_type = UINT8;
+  static const Type value_type = TYPE_UINT8;
 
-  V_UINT8(const uint8_t& v, uint8_t flags=0) noexcept;
+  Value_uint8(const uint8_t& v, uint8_t flags=0) noexcept;
 
-  V_UINT8(V_UINT8* ptr) noexcept;
+  Value_uint8(Value_uint8* ptr) noexcept;
 
-  virtual ~V_UINT8() noexcept;
+  virtual ~Value_uint8() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -193,15 +193,15 @@ class V_UINT8 final : public Value {
 };
 
 
-class V_UINT16 final : public Value {
+class Value_uint16 final : public Value {
   public:
-  static const Type value_type = UINT16;
+  static const Type value_type = TYPE_UINT16;
 
-  V_UINT16(const uint16_t& v, uint8_t flags=0) noexcept;
+  Value_uint16(const uint16_t& v, uint8_t flags=0) noexcept;
 
-  V_UINT16(V_UINT16* ptr) noexcept;
+  Value_uint16(Value_uint16* ptr) noexcept;
 
-  virtual ~V_UINT16() noexcept;
+  virtual ~Value_uint16() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -222,15 +222,15 @@ class V_UINT16 final : public Value {
 };
 
 
-class V_INT32 final : public Value {
+class Value_int32 final : public Value {
   public:
-  static const Type value_type = INT32;
+  static const Type value_type = TYPE_INT32;
 
-  V_INT32(const int32_t& v, uint8_t flags=0) noexcept;
+  Value_int32(const int32_t& v, uint8_t flags=0) noexcept;
 
-  V_INT32(V_INT32* ptr) noexcept;
+  Value_int32(Value_int32* ptr) noexcept;
 
-  virtual ~V_INT32() noexcept;
+  virtual ~Value_int32() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -251,15 +251,15 @@ class V_INT32 final : public Value {
 };
 
 
-class V_INT64 final : public Value {
+class Value_int64 final : public Value {
   public:
-  static const Type value_type = INT64;
+  static const Type value_type = TYPE_INT64;
 
-  V_INT64(const int64_t& v, uint8_t flags=0) noexcept;
+  Value_int64(const int64_t& v, uint8_t flags=0) noexcept;
 
-  V_INT64(V_INT64* ptr) noexcept;
+  Value_int64(Value_int64* ptr) noexcept;
 
-  virtual ~V_INT64() noexcept;
+  virtual ~Value_int64() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -280,15 +280,15 @@ class V_INT64 final : public Value {
 };
 
 
-class V_DOUBLE final : public Value {
+class Value_double final : public Value {
   public:
-  static const Type value_type = DOUBLE;
+  static const Type value_type = TYPE_DOUBLE;
 
-  V_DOUBLE(const double& v, uint8_t flags=0) noexcept;
+  Value_double(const double& v, uint8_t flags=0) noexcept;
 
-  V_DOUBLE(V_DOUBLE* ptr) noexcept;
+  Value_double(Value_double* ptr) noexcept;
 
-  virtual ~V_DOUBLE() noexcept;
+  virtual ~Value_double() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -309,15 +309,15 @@ class V_DOUBLE final : public Value {
 };
 
 
-class V_STRING final : public Value {
+class Value_string final : public Value {
   public:
-  static const Type value_type = STRING;
+  static const Type value_type = TYPE_STRING;
 
-  V_STRING(std::string&& v, uint8_t flags=0) noexcept;
+  Value_string(std::string&& v, uint8_t flags=0) noexcept;
 
-  V_STRING(V_STRING* ptr);
+  Value_string(Value_string* ptr);
 
-  virtual ~V_STRING() noexcept;
+  virtual ~Value_string() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -338,21 +338,21 @@ class V_STRING final : public Value {
 };
 
 
-class V_ENUM final : public Value {
+class Value_enum final : public Value {
   public:
-  static const Type value_type = ENUM;
+  static const Type value_type = TYPE_ENUM;
 
   typedef std::function<int(const std::string&)>  FromString_t;
   typedef std::function<std::string(int)>         Repr_t;
 
-  V_ENUM(const int32_t& v,
+  Value_enum(const int32_t& v,
          FromString_t&& from_string,
          Repr_t&& repr,
          uint8_t flags=0);
 
-  V_ENUM(V_ENUM* ptr);
+  Value_enum(Value_enum* ptr);
 
-  virtual ~V_ENUM() noexcept;
+  virtual ~Value_enum() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -375,15 +375,15 @@ class V_ENUM final : public Value {
 };
 
 // lists
-class V_STRINGS final : public Value {
+class Value_strings final : public Value {
   public:
-  static const Type value_type = STRINGS;
+  static const Type value_type = TYPE_STRINGS;
 
-  V_STRINGS(Strings&& v, uint8_t flags=0) noexcept;
+  Value_strings(Strings&& v, uint8_t flags=0) noexcept;
 
-  V_STRINGS(V_STRINGS* ptr);
+  Value_strings(Value_strings* ptr);
 
-  virtual ~V_STRINGS() noexcept;
+  virtual ~Value_strings() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -404,15 +404,15 @@ class V_STRINGS final : public Value {
 };
 
 
-class V_INT64S final : public Value {
+class Value_int64s final : public Value {
   public:
-  static const Type value_type = INT64S;
+  static const Type value_type = TYPE_INT64S;
 
-  V_INT64S(Int64s&& v, uint8_t flags=0) noexcept;
+  Value_int64s(Int64s&& v, uint8_t flags=0) noexcept;
 
-  V_INT64S(V_INT64S* ptr);
+  Value_int64s(Value_int64s* ptr);
 
-  virtual ~V_INT64S() noexcept;
+  virtual ~Value_int64s() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -433,15 +433,15 @@ class V_INT64S final : public Value {
 };
 
 
-class V_DOUBLES final : public Value {
+class Value_doubles final : public Value {
   public:
-  static const Type value_type = DOUBLES;
+  static const Type value_type = TYPE_DOUBLES;
 
-  V_DOUBLES(Doubles&& v, uint8_t flags=0) noexcept;
+  Value_doubles(Doubles&& v, uint8_t flags=0) noexcept;
 
-  V_DOUBLES(V_DOUBLES* ptr);
+  Value_doubles(Value_doubles* ptr);
 
-  virtual ~V_DOUBLES() noexcept;
+  virtual ~Value_doubles() noexcept;
 
   Ptr make_new(const Strings& values = Strings()) override;
 
@@ -464,18 +464,18 @@ class V_DOUBLES final : public Value {
 
 
 // Guarded Atomic
-class V_GBOOL final : public Value {
+class Value_bool_g final : public Value {
   public:
-  static const Type value_type = G_BOOL;
+  static const Type value_type = TYPE_BOOL_G;
 
-  typedef V_GBOOL*                   Ptr;
+  typedef Value_bool_g*              Ptr;
   typedef std::function<void(bool)>  OnChg_t;
 
-  V_GBOOL(const bool& v, OnChg_t&& cb, uint8_t flags=0);
+  Value_bool_g(const bool& v, OnChg_t&& cb, uint8_t flags=0);
 
-  V_GBOOL(V_GBOOL* ptr);
+  Value_bool_g(Value_bool_g* ptr);
 
-  virtual ~V_GBOOL() noexcept;
+  virtual ~Value_bool_g() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -503,18 +503,18 @@ class V_GBOOL final : public Value {
 };
 
 
-class V_GUINT8 final : public Value {
+class Value_uint8_g final : public Value {
   public:
-  static const Type value_type = G_UINT8;
+  static const Type value_type = TYPE_UINT8_G;
 
-  typedef V_GUINT8*                     Ptr;
+  typedef Value_uint8_g*                     Ptr;
   typedef std::function<void(uint8_t)>  OnChg_t;
 
-  V_GUINT8(const uint8_t& v, OnChg_t&& cb, uint8_t flags=0);
+  Value_uint8_g(const uint8_t& v, OnChg_t&& cb, uint8_t flags=0);
 
-  V_GUINT8(V_GUINT8* ptr);
+  Value_uint8_g(Value_uint8_g* ptr);
 
-  virtual ~V_GUINT8() noexcept;
+  virtual ~Value_uint8_g() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -540,18 +540,18 @@ class V_GUINT8 final : public Value {
 };
 
 
-class V_GUINT16 final : public Value {
+class Value_uint16_g final : public Value {
   public:
-  static const Type value_type = G_UINT16;
+  static const Type value_type = TYPE_UINT16_G;
 
-  typedef V_GUINT16*                     Ptr;
+  typedef Value_uint16_g*                     Ptr;
   typedef std::function<void(uint16_t)>  OnChg_t;
 
-  V_GUINT16(const uint16_t& v, OnChg_t&& cb, uint8_t flags=0);
+  Value_uint16_g(const uint16_t& v, OnChg_t&& cb, uint8_t flags=0);
 
-  V_GUINT16(V_GUINT16* ptr);
+  Value_uint16_g(Value_uint16_g* ptr);
 
-  virtual ~V_GUINT16() noexcept;
+  virtual ~Value_uint16_g() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -578,18 +578,18 @@ class V_GUINT16 final : public Value {
 };
 
 
-class V_GINT32 final : public Value {
+class Value_int32_g final : public Value {
   public:
-  static const Type value_type = G_INT32;
+  static const Type value_type = TYPE_INT32_G;
 
-  typedef V_GINT32*                     Ptr;
+  typedef Value_int32_g*                     Ptr;
   typedef std::function<void(int32_t)>  OnChg_t;
 
-  V_GINT32(const int32_t& v, OnChg_t&& cb, uint8_t flags=0);
+  Value_int32_g(const int32_t& v, OnChg_t&& cb, uint8_t flags=0);
 
-  V_GINT32(V_GINT32* ptr);
+  Value_int32_g(Value_int32_g* ptr);
 
-  virtual ~V_GINT32() noexcept;
+  virtual ~Value_int32_g() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -616,18 +616,18 @@ class V_GINT32 final : public Value {
 };
 
 
-class V_GUINT64 final : public Value {
+class Value_uint64_g final : public Value {
   public:
-  static const Type value_type = G_UINT64;
+  static const Type value_type = TYPE_UINT64_G;
 
-  typedef V_GUINT64*                     Ptr;
+  typedef Value_uint64_g*                     Ptr;
   typedef std::function<void(uint64_t)>  OnChg_t;
 
-  V_GUINT64(const uint64_t& v, OnChg_t&& cb, uint8_t flags=0);
+  Value_uint64_g(const uint64_t& v, OnChg_t&& cb, uint8_t flags=0);
 
-  V_GUINT64(V_GUINT64* ptr);
+  Value_uint64_g(Value_uint64_g* ptr);
 
-  virtual ~V_GUINT64() noexcept;
+  virtual ~Value_uint64_g() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -654,24 +654,24 @@ class V_GUINT64 final : public Value {
 };
 
 
-class V_GENUM final : public Value {
+class Value_enum_g final : public Value {
   public:
-  static const Type value_type = G_ENUM;
+  static const Type value_type = TYPE_ENUM_G;
 
-  typedef V_GENUM*                      Ptr;
+  typedef Value_enum_g*                      Ptr;
   typedef std::function<void(int32_t)>  OnChg_t;
-  typedef V_ENUM::FromString_t          FromString_t;
-  typedef V_ENUM::Repr_t                Repr_t;
+  typedef Value_enum::FromString_t          FromString_t;
+  typedef Value_enum::Repr_t                Repr_t;
 
-  V_GENUM(const int32_t& v,
+  Value_enum_g(const int32_t& v,
           OnChg_t&& cb,
           FromString_t&& from_string,
           Repr_t&& repr,
           uint8_t flags=0);
 
-  V_GENUM(V_GENUM* ptr);
+  Value_enum_g(Value_enum_g* ptr);
 
-  virtual ~V_GENUM() noexcept;
+  virtual ~Value_enum_g() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 
@@ -703,18 +703,18 @@ class V_GENUM final : public Value {
 
 
 // Guarded Mutex
-class V_GSTRINGS final : public Value {
+class Value_strings_g final : public Value {
   public:
-  static const Type value_type = G_STRINGS;
+  static const Type value_type = TYPE_STRINGS_G;
 
-  typedef V_GSTRINGS*            Ptr;
+  typedef Value_strings_g*       Ptr;
   typedef std::function<void()>  OnChg_t;
 
-  V_GSTRINGS(Strings&& v, OnChg_t&& cb, uint8_t flags=0) noexcept;
+  Value_strings_g(Strings&& v, OnChg_t&& cb, uint8_t flags=0) noexcept;
 
-  V_GSTRINGS(V_GSTRINGS* ptr);
+  Value_strings_g(Value_strings_g* ptr);
 
-  virtual ~V_GSTRINGS() noexcept;
+  virtual ~Value_strings_g() noexcept;
 
   Value::Ptr make_new(const Strings& values = Strings()) override;
 

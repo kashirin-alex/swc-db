@@ -46,32 +46,32 @@ Clients::Clients(const Config::Settings& settings,
                  const ContextBroker::Ptr& bkr_ctx)
     : running(true), flags(Flag::DEFAULT | Flag::BROKER | Flag::SCHEMA),
       cfg_send_buff_sz(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.buffer")),
       cfg_send_ahead(
-        settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::Value_uint8_g>(
           "swc.client.send.ahead")),
       cfg_send_timeout(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.timeout")),
       cfg_send_timeout_ratio(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.timeout.bytes.ratio")),
 
       cfg_recv_buff_sz(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.recv.buffer")),
       cfg_recv_ahead(
-        settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::Value_uint8_g>(
           "swc.client.recv.ahead")),
       cfg_recv_timeout(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.recv.timeout")),
 
       io_ctx(a_io_ctx),
       schemas(
         this,
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.schema.expiry")),
       managers(settings, io_ctx, mngr_ctx),
       rangers(settings, io_ctx, rgr_ctx),
@@ -84,32 +84,32 @@ Clients::Clients(const Config::Settings& settings,
                  const ContextRanger::Ptr& rgr_ctx)
     : running(true), flags(Flag::DEFAULT),
       cfg_send_buff_sz(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.buffer")),
       cfg_send_ahead(
-        settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::Value_uint8_g>(
           "swc.client.send.ahead")),
       cfg_send_timeout(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.timeout")),
       cfg_send_timeout_ratio(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.timeout.bytes.ratio")),
 
       cfg_recv_buff_sz(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.recv.buffer")),
       cfg_recv_ahead(
-        settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::Value_uint8_g>(
           "swc.client.recv.ahead")),
       cfg_recv_timeout(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.recv.timeout")),
 
       io_ctx(a_io_ctx),
       schemas(
         this,
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.schema.expiry")),
       managers(settings, io_ctx, mngr_ctx),
       rangers(settings, io_ctx, rgr_ctx) {
@@ -120,32 +120,32 @@ Clients::Clients(const Config::Settings& settings,
                  const ContextBroker::Ptr& bkr_ctx)
     : running(true), flags(Flag::BROKER),
       cfg_send_buff_sz(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.buffer")),
       cfg_send_ahead(
-        settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::Value_uint8_g>(
           "swc.client.send.ahead")),
       cfg_send_timeout(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.timeout")),
       cfg_send_timeout_ratio(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.send.timeout.bytes.ratio")),
 
       cfg_recv_buff_sz(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.recv.buffer")),
       cfg_recv_ahead(
-        settings.get<SWC::Config::Property::V_GUINT8>(
+        settings.get<SWC::Config::Property::Value_uint8_g>(
           "swc.client.recv.ahead")),
       cfg_recv_timeout(
-        settings.get<SWC::Config::Property::V_GINT32>(
+        settings.get<SWC::Config::Property::Value_int32_g>(
           "swc.client.recv.timeout")),
 
       io_ctx(a_io_ctx),
       schemas(
         this,
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.schema.expiry")),
       brokers(settings, io_ctx, bkr_ctx) {
 }

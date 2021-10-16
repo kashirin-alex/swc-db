@@ -21,17 +21,17 @@ Rangers::Rangers(const Config::Settings& settings,
             ? rgr_ctx
             : ContextRanger::Ptr(new ContextRanger(settings))
         )),
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.Rgr.connection.timeout"),
-        settings.get<Config::Property::V_GUINT16>(
+        settings.get<Config::Property::Value_uint16_g>(
           "swc.client.Rgr.connection.probes"),
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.Rgr.connection.keepalive"),
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.request.again.delay")
       )),
       cache(
-        settings.get<Config::Property::V_GINT32>(
+        settings.get<Config::Property::Value_int32_g>(
           "swc.client.Rgr.range.res.expiry")) {
 }
 

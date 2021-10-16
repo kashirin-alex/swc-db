@@ -91,7 +91,7 @@ Configurables* apply_broker(Configurables* config) {
   );
 
   config->cfg_fds_max = config->settings
-    ->get<Config::Property::V_GINT32>("swc.fs.broker.fds.max");
+    ->get<Config::Property::Value_int32_g>("swc.fs.broker.fds.max");
   config->stats_enabled = config->settings->get_bool(
     "swc.fs.broker.metrics.enabled");
   return config;
@@ -145,10 +145,10 @@ FileSystemBroker::FileSystemBroker(Configurables* config)
       settings->get_str("swc.fs.broker.underlying"))),
     m_endpoints(get_endpoints(settings)),
     cfg_timeout(
-      settings->get<Config::Property::V_GINT32>(
+      settings->get<Config::Property::Value_int32_g>(
         "swc.fs.broker.timeout")),
     cfg_timeout_ratio(
-      settings->get<Config::Property::V_GINT32>(
+      settings->get<Config::Property::Value_int32_g>(
         "swc.fs.broker.timeout.bytes.ratio")) {
 }
 

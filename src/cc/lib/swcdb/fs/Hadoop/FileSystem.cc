@@ -47,7 +47,7 @@ Configurables* apply_hadoop(Configurables* config) {
   config->path_root = config->settings->get_str(
     "swc.fs.hadoop.path.root");
   config->cfg_fds_max = config->settings
-    ->get<Config::Property::V_GINT32>("swc.fs.hadoop.fds.max");
+    ->get<Config::Property::Value_int32_g>("swc.fs.hadoop.fds.max");
   config->stats_enabled = config->settings->get_bool(
     "swc.fs.hadoop.metrics.enabled");
   return config;
