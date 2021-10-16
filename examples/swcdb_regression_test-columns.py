@@ -238,7 +238,7 @@ class Test(object):
         schemas = self.client.list_columns(spec)
         for schema in schemas:
             ts_start = time.time()
-            self.client.mng_column(service.SchemaFunc.DELETE, schema)
+            self.client.mng_column(service.SchemaFunc.REMOVE, schema)
             print("remove cid:", schema.cid, "took:", time.time() - ts_start)
             sys.stdout.flush()
         # check Removed

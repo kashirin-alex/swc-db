@@ -66,7 +66,7 @@ toString_SchemaFunc(int value)
   static __thread char buf[16] = {0};
   switch(value) {
   case SWCDB_THRIFT_SCHEMA_FUNC_CREATE:return "SWCDB_THRIFT_SCHEMA_FUNC_CREATE";
-  case SWCDB_THRIFT_SCHEMA_FUNC_DELETE:return "SWCDB_THRIFT_SCHEMA_FUNC_DELETE";
+  case SWCDB_THRIFT_SCHEMA_FUNC_REMOVE:return "SWCDB_THRIFT_SCHEMA_FUNC_REMOVE";
   case SWCDB_THRIFT_SCHEMA_FUNC_MODIFY:return "SWCDB_THRIFT_SCHEMA_FUNC_MODIFY";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }

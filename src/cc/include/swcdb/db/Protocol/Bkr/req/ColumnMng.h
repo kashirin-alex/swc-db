@@ -73,7 +73,7 @@ class ColumnMng final : public ColumnMng_Base {
                      const uint32_t timeout,
                      DataArgsT&&... args) {
     request(
-      Mngr::Params::ColumnMng::Function::DELETE, schema, timeout, args...);
+      Mngr::Params::ColumnMng::Function::REMOVE, schema, timeout, args...);
   }
 
   virtual ~ColumnMng() noexcept { }

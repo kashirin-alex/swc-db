@@ -70,7 +70,7 @@ class ColumnMng final : public ColumnMng_Base {
   static void remove(const DB::Schema::Ptr& schema,
                      const uint32_t timeout,
                      DataArgsT&&... args) {
-    request(Params::ColumnMng::Function::DELETE, schema, timeout, args...);
+    request(Params::ColumnMng::Function::REMOVE, schema, timeout, args...);
   }
 
   virtual ~ColumnMng() noexcept { }

@@ -248,7 +248,7 @@ int _kSchemaFuncValues[] = {
   /**
    * Delete Column Function
    */
-  SchemaFunc::DELETE,
+  SchemaFunc::REMOVE,
   /**
    * Modify Column Function
    */
@@ -262,7 +262,7 @@ const char* _kSchemaFuncNames[] = {
   /**
    * Delete Column Function
    */
-  "DELETE",
+  "REMOVE",
   /**
    * Modify Column Function
    */

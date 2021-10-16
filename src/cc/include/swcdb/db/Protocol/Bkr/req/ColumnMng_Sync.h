@@ -70,7 +70,7 @@ class ColumnMng_Sync {
                      const uint32_t timeout,
                      DataArgsT&&... args) {
     request(
-      Mngr::Params::ColumnMng::Function::DELETE, schema, timeout, args...);
+      Mngr::Params::ColumnMng::Function::REMOVE, schema, timeout, args...);
   }
 
   Core::StateSynchronization        await;

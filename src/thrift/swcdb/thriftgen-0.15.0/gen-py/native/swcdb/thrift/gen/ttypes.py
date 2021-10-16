@@ -117,18 +117,18 @@ class SchemaFunc(object):
 
     """
     CREATE = 3
-    DELETE = 5
+    REMOVE = 5
     MODIFY = 7
 
     _VALUES_TO_NAMES = {
         3: "CREATE",
-        5: "DELETE",
+        5: "REMOVE",
         7: "MODIFY",
     }
 
     _NAMES_TO_VALUES = {
         "CREATE": 3,
-        "DELETE": 5,
+        "REMOVE": 5,
         "MODIFY": 7,
     }
 

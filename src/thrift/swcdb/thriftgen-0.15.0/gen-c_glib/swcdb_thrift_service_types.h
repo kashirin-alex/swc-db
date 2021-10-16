@@ -60,7 +60,7 @@ toString_EncodingType(int value);
 
 enum _swcdb_thriftSchemaFunc {
   SWCDB_THRIFT_SCHEMA_FUNC_CREATE = 3,
-  SWCDB_THRIFT_SCHEMA_FUNC_DELETE = 5,
+  SWCDB_THRIFT_SCHEMA_FUNC_REMOVE = 5,
   SWCDB_THRIFT_SCHEMA_FUNC_MODIFY = 7
 };
 typedef enum _swcdb_thriftSchemaFunc swcdb_thriftSchemaFunc;

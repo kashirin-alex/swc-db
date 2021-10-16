@@ -66,11 +66,11 @@ module Swcdb
         # Create Column Function
         CREATE = 3
         # Delete Column Function
-        DELETE = 5
+        REMOVE = 5
         # Modify Column Function
         MODIFY = 7
-        VALUE_MAP = {3 => "CREATE", 5 => "DELETE", 7 => "MODIFY"}
-        VALID_VALUES = Set.new([CREATE, DELETE, MODIFY]).freeze
+        VALUE_MAP = {3 => "CREATE", 5 => "REMOVE", 7 => "MODIFY"}
+        VALID_VALUES = Set.new([CREATE, REMOVE, MODIFY]).freeze
       end
 
       module Comp

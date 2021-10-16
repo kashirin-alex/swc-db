@@ -27,7 +27,7 @@ class ColumnMng : public Serializable {
     CREATE                = 3,
     INTERNAL_ACK_CREATE   = 4,
 
-    DELETE                = 5,
+    REMOVE                = 5,
     INTERNAL_ACK_DELETE   = 6,
 
     MODIFY                = 7,

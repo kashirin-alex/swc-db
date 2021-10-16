@@ -72,7 +72,7 @@ DbClient::DbClient()
     {"delete column|schema (schema definitions [name=value ]);"},
     [ptr=this](std::string& cmd){
       return ptr->mng_column(
-        Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE, cmd);
+        Comm::Protocol::Mngr::Params::ColumnMng::Function::REMOVE, cmd);
     },
     "(?i)^(delete|remove)\\s+(column|schema)(.*|$)"
   );
@@ -152,7 +152,7 @@ DbClient::~DbClient() {
   clients->stop();
 }
 
-// CREATE/MODIFY/DELETE COLUMN
+// CREATE/MODIFY/REMOVE COLUMN
 bool DbClient::mng_column(
                   Comm::Protocol::Mngr::Params::ColumnMng::Function func,
                   std::string& cmd) {

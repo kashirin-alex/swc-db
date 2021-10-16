@@ -151,7 +151,7 @@ struct SchemaFunc {
     /**
      * Delete Column Function
      */
-    DELETE = 5,
+    REMOVE = 5,
     /**
      * Modify Column Function
      */

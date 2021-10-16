@@ -444,7 +444,7 @@ void spec_delete_test_column(Client& client) {
       client.list_columns(schemas, spec);
 
       if(!schemas.empty()) {
-        client.mng_column(SchemaFunc::DELETE, schemas.back());
+        client.mng_column(SchemaFunc::REMOVE, schemas.back());
         schemas.clear();
         client.list_columns(schemas, spec);
         assert(schemas.empty());

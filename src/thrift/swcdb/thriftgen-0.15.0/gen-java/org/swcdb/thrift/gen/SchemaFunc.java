@@ -18,7 +18,7 @@ public enum SchemaFunc implements org.apache.thrift.TEnum {
   /**
    * Delete Column Function
    */
-  DELETE(5),
+  REMOVE(5),
   /**
    * Modify Column Function
    */
@@ -47,7 +47,7 @@ public enum SchemaFunc implements org.apache.thrift.TEnum {
       case 3:
         return CREATE;
       case 5:
-        return DELETE;
+        return REMOVE;
       case 7:
         return MODIFY;
       default:

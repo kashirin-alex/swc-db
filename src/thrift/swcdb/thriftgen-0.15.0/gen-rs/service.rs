@@ -238,12 +238,12 @@ impl SchemaFunc {
   /// Create Column Function
   pub const CREATE: SchemaFunc = SchemaFunc(3);
   /// Delete Column Function
-  pub const DELETE: SchemaFunc = SchemaFunc(5);
+  pub const REMOVE: SchemaFunc = SchemaFunc(5);
   /// Modify Column Function
   pub const MODIFY: SchemaFunc = SchemaFunc(7);
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::CREATE,
-    Self::DELETE,
+    Self::REMOVE,
     Self::MODIFY,
   ];
   #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -260,7 +260,7 @@ impl From<i32> for SchemaFunc {
   fn from(i: i32) -> Self {
     match i {
       3 => SchemaFunc::CREATE,
-      5 => SchemaFunc::DELETE,
+      5 => SchemaFunc::REMOVE,
       7 => SchemaFunc::MODIFY,
       _ => SchemaFunc(i)
     }

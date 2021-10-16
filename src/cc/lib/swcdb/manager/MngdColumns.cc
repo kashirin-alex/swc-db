@@ -317,7 +317,7 @@ void MngdColumns::update_status(ColumnMngFunc func,
   bool do_update = false;
   switch(func) {
 
-    case ColumnMngFunc::DELETE: {
+    case ColumnMngFunc::REMOVE: {
       auto col = get_column(err, schema->cid);
       if(err &&
          err != Error::COLUMN_NOT_EXISTS &&
@@ -1003,7 +1003,7 @@ void MngdColumns::run_actions() {
             update(err, req->schema, schema);
           break;
         }
-        case ColumnMngFunc::DELETE: {
+        case ColumnMngFunc::REMOVE: {
           if(!schema)
             err = Error::COLUMN_SCHEMA_NAME_NOT_EXISTS;
           else if(schema->cid != req->schema->cid ||

@@ -21,7 +21,7 @@ public enum SchemaFunc
   /// <summary>
   /// Delete Column Function
   /// </summary>
-  DELETE = 5,
+  REMOVE = 5,
   /// <summary>
   /// Modify Column Function
   /// </summary>

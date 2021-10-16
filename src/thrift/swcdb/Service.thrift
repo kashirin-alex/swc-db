@@ -198,7 +198,7 @@ enum SchemaFunc {
   CREATE                = 3,
 
   /** Delete Column Function */
-  DELETE                = 5,
+  REMOVE                = 5,
 
   /** Modify Column Function */
   MODIFY                = 7

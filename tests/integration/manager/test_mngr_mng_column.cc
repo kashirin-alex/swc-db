@@ -91,14 +91,14 @@ void check_delete(int num_of_cols, bool modified) {
       ProtocolExecutor::Req::ColumnMng
         <ProtocolExecutor::Req::Functional_ColumnMng>
           ::request(
-            Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE,
+            Comm::Protocol::Mngr::Params::ColumnMng::Function::REMOVE,
             rsp.schema,
             300000,
             Env::Clients::get(),
             [sem=sem]
             (void*, Comm::client::ConnQueue::ReqBase::Ptr _req_ptr, int _err) {
               if(_err)
-              SWC_PRINT << "ColumnMng DELETE err=" << _err
+              SWC_PRINT << "ColumnMng REMOVE err=" << _err
                         << "(" << Error::get_text(_err) << ")"
                         << SWC_PRINT_CLOSE;
               if(_err == Error::REQUEST_TIMEOUT)
@@ -316,7 +316,7 @@ void chk(Comm::Protocol::Mngr::Params::ColumnMng::Function func,
             (func == Comm::Protocol::Mngr::Params::ColumnMng::Function::CREATE
               && err != Error::COLUMN_SCHEMA_NAME_EXISTS)
             ||
-            (func == Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE
+            (func == Comm::Protocol::Mngr::Params::ColumnMng::Function::REMOVE
               && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS
               && err != Error::COLUMN_SCHEMA_NAME_NOT_CORRES)
             ||

@@ -151,7 +151,7 @@ Manage Columns schema function Flags
 |Name|Value|Description|
 |---|---|---|
 |```CREATE```|```3```|Create Column Function |
-|```DELETE```|```5```|Delete Column Function |
+|```REMOVE```|```5```|Delete Column Function |
 |```MODIFY```|```7```|Modify Column Function |
 
 ### Enumeration: Comp

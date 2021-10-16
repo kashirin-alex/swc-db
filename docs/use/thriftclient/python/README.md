@@ -10,7 +10,7 @@ The package `swcdb` has the SWC-DB ```thrift``` module which consist of modules 
 * The ```swcdb.thrift.tornado``` is the implementation for using with [Tornado](https://pypi.org/project/tornado/) a Python web framework.
 * The ```swcdb.thrift.twisted``` is the implementation for using with [Twisted](https://pypi.org/project/twisted/) an event-based framework for internet applications.
 * The ```swcdb.thrift.zopeif``` is the Zope Interface for using with [Zope](https://pypi.org/project/zope/) implementations.
- 
+
 
 
 ## The Methods
@@ -34,11 +34,11 @@ from swcdb.thrift import service
 
 # Establish Connection
 client = service.Client(
-  "localhost", 
-  18000, 
-  timeout_ms=900000, 
-  socket=None, 
-  do_open=True, 
+  "localhost",
+  18000,
+  timeout_ms=900000,
+  socket=None,
+  do_open=True,
   framed=True
 )
 
@@ -112,7 +112,7 @@ test_colm_name = 'py-thrift-example-sql'
 client.sql_mng_column("create column(name='" + test_colm_name + "' seq=VOLUME)")
 
 # Get Column
-schemas = client.sql_list_columns("get column " + test_colm_name) 
+schemas = client.sql_list_columns("get column " + test_colm_name)
 assert(len(schemas) == 1)
 schema = schemas[0]
 assert(schema.col_name == test_colm_name)
@@ -122,7 +122,7 @@ n_cells = 1000
 client.sql_update(
     "update " +
     ",".join(["cell(INSERT, " + str(schema.cid) + ", [" + str(n) + "], '', 'Value of F(1) is " + str(n) + "')"
-              for n in range(0, n_cells, 1)]), 
+              for n in range(0, n_cells, 1)]),
     0)
 
 # Select all the cells, expect in Volume Sequence
@@ -140,7 +140,7 @@ client.sql_mng_column("delete column(cid=" + str(schema.cid) + " name='" + schem
 # check Removed
 schemas = []
 try:
-    schemas = client.sql_list_columns("get column " + test_colm_name) 
+    schemas = client.sql_list_columns("get column " + test_colm_name)
 except:
     pass
 assert(len(schemas) == 0)
@@ -197,7 +197,7 @@ client.update(
 specs = service.SpecScan(
     columns=[
         service.SpecColumn(
-            cid=schema.cid, 
+            cid=schema.cid,
             intervals=[service.SpecInterval()]
         )
     ],
@@ -212,7 +212,7 @@ for cell in list.cells:
     n += 1
 
 # Remove/Delete Column
-client.mng_column(service.SchemaFunc.DELETE, schema)
+client.mng_column(service.SchemaFunc.REMOVE, schema)
 
 # check Removed
 schemas = []

@@ -28,7 +28,7 @@ Add compiler flags to your program:
 
 
 ## a Making of a Basic Program
-1. Establish a connection to Thrift-Broker 
+1. Establish a connection to Thrift-Broker
 2. List all Columns
 3. Create a Column with name `cpp-thrift-example`
 4. Get the Created Column
@@ -180,7 +180,7 @@ int main() {
 
   /* 8. Delete the Column */
   std::cout << std::endl << "Deleting the Column" << std::endl;
-  client.mng_column(SWC::Thrift::SchemaFunc::DELETE, schema);
+  client.mng_column(SWC::Thrift::SchemaFunc::REMOVE, schema);
 
 
 

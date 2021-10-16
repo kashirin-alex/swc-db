@@ -159,7 +159,7 @@ class Test {
     auto _cb = [this, cb]
       (void*, Comm::client::ConnQueue::ReqBase::Ptr req_ptr, int err) {
         if(err && err != Error::COLUMN_SCHEMA_NAME_NOT_EXISTS) {
-          SWC_PRINT << "ColumnMng::DELETE err="
+          SWC_PRINT << "ColumnMng::REMOVE err="
                     << err << "(" << Error::get_text(err) << ")"
                     << SWC_PRINT_CLOSE;
           return req_ptr->request_again();
@@ -172,7 +172,7 @@ class Test {
         cb();
       };
 
-    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE;
+    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::REMOVE;
     with_broker
       ? Comm::Protocol::Bkr::Req::ColumnMng
           <Comm::Protocol::Bkr::Req::Functional_ColumnMng>

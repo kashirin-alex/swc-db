@@ -904,7 +904,7 @@ void make_work_load(const DB::SchemasVec& schemas) {
   if(settings->get_bool("gen-delete-column")) {
     int err = Error::OK;
     bool with_broker = Env::Config::settings()->get_bool("with-broker");
-    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::DELETE;
+    auto func = Comm::Protocol::Mngr::Params::ColumnMng::Function::REMOVE;
     for(auto& schema : schemas) {
       with_broker
         ? Comm::Protocol::Bkr::Req::ColumnMng_Sync::request(

@@ -38,11 +38,11 @@ int ColumnSchema::parse(ColumnSchema::Func* func) {
 
     if(found_token("delete", 6) ||
        found_token("remove", 6)) {
-      return parse((*func = Func::DELETE), true);
+      return parse((*func = Func::REMOVE), true);
     }
 
     bool token_cmd = false;
-    expect_token("CREATE|MODIFY|DELETE", 20, token_cmd);
+    expect_token("CREATE|MODIFY|REMOVE", 20, token_cmd);
     break;
   }
   return err;
@@ -63,14 +63,14 @@ int ColumnSchema::parse(ColumnSchema::Func func, bool token_cmd) {
        (func == Func::MODIFY && (found_token("modify", 6) ||
                                  found_token("update", 6) ||
                                  found_token("change", 6))) ||
-       (func == Func::DELETE && (found_token("delete", 6) ||
+       (func == Func::REMOVE && (found_token("delete", 6) ||
                                  found_token("remove", 6)))
       )) {
       token_cmd = true;
       continue;
     }
     if(!token_cmd) {
-      expect_token("CREATE|MODIFY|DELETE", 20, token_cmd);
+      expect_token("CREATE|MODIFY|REMOVE", 20, token_cmd);
       break;
     }
     if(!token_typ && (found_token("column", 6) || found_token("schema", 6))) {
