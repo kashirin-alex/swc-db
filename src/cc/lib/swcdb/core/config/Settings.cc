@@ -39,6 +39,12 @@ Settings::Settings() {
 
 Settings::~Settings() noexcept { }
 
+
+#if defined(__MINGW64__) || defined(_WIN32)
+  #define readlink(_path, _buff, _size) 0
+#endif
+
+
 void Settings::init(int argc, char *argv[],
                     Settings::init_option_t init_app_options,
                     Settings::init_option_t init_post_cmd_args) {
@@ -214,6 +220,10 @@ void Settings::load_files_by(const char* fileprop, bool allow_unregistered) {
 
 void Settings::init_process(bool with_pid_file, const char* port_cfg) {
   bool daemon = has("daemon");
+  #if defined(__MINGW64__) || defined(_WIN32)
+    daemon = false;
+    #define fork() false
+  #endif
 
   if(daemon && fork())
     SWC_QUICK_EXIT(EXIT_SUCCESS);

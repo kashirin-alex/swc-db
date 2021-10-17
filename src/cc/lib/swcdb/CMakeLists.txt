@@ -3,6 +3,9 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
+if(MINGW)
+  include (GenerateExportHeader)
+endif()
 
 get_property(SWC_VERSION_SRC GLOBAL PROPERTY SWC_VERSION_SRC)
 

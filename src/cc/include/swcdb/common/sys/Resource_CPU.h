@@ -8,7 +8,12 @@
 #define swcdb_common_sys_Resources_CPU_h
 
 
+#if defined(__MINGW64__) || defined(_WIN32)
+#include <processthreadsapi.h>
+#else
 #include <sys/sysinfo.h>
+#endif
+
 #include <fstream>
 
 
@@ -59,11 +64,36 @@ class CPU {
       return (stat_chk + ms_intval) - ts;
 
     try {
+      uint64_t utime = 0, stime = 0, _nthreads = 0;
+
+      #if defined(__MINGW64__) || defined(_WIN32)
+      FILETIME sysIdle, sysKernel, sysUser;
+      if(!GetSystemTimes(&sysIdle, &sysKernel, &sysUser))
+        return FAIL_MS;
+
+      ULARGE_INTEGER t;
+      t.HighPart = sysKernel.dwHighDateTime;
+      t.LowPart = sysKernel.dwLowDateTime;
+      stime = t.QuadPart;
+      t.HighPart = sysIdle.dwHighDateTime;
+      t.LowPart = sysIdle.dwLowDateTime;
+      if(stime > t.QuadPart)
+        stime -= t.QuadPart;
+      else
+        stime = 0;
+      t.HighPart = sysUser.dwHighDateTime;
+      t.LowPart = sysUser.dwLowDateTime;
+      utime = t.QuadPart;
+
+      stime *= 10;
+      utime *= 10;
+
+      #else
       std::ifstream buffer("/proc/self/stat");
       if(!buffer.is_open())
         return FAIL_MS;
       std::string str_tmp;
-      uint64_t tmp = 0, utime = 0, stime = 0, _nthreads = 0;
+      uint64_t tmp = 0;
       buffer >> tmp >> str_tmp >> str_tmp
              >> tmp >> tmp >> tmp
              >> tmp >> tmp >> tmp
@@ -72,6 +102,8 @@ class CPU {
              >> tmp >> tmp >> tmp
              >> tmp >> _nthreads;
       buffer.close();
+      #endif
+
       threads.store(_nthreads);
       if(notifier)
         notifier->cpu_threads(_nthreads);
@@ -83,7 +115,13 @@ class CPU {
       } else {
         uint64_t chk = ts;
         std::swap(stat_chk, chk);
-        chk = ((stat_chk - chk) * sysconf(_SC_CLK_TCK) * concurrency) / 1000;
+
+        #if defined(__MINGW64__) || defined(_WIN32)
+          chk = stat_chk - chk;
+        #else
+          chk = ((stat_chk - chk) * sysconf(_SC_CLK_TCK) * concurrency) / 1000;
+        #endif
+
         std::swap(stat_utime, utime);
         utime = ((stat_utime - utime) * 100000) / chk;
         std::swap(stat_stime, stime);
@@ -98,6 +136,10 @@ class CPU {
       SWC_LOG_CURRENT_EXCEPTION("");
     }
 
+    #if defined(__MINGW64__) || defined(_WIN32)
+      mhz.store(0);
+
+    #else
     try {
       std::ifstream buffer(
         "/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq");
@@ -137,6 +179,7 @@ class CPU {
       SWC_LOG_CURRENT_EXCEPTION("");
       return FAIL_MS;
     }
+    #endif
     return ms_intval;
   }
 

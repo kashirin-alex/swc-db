@@ -10,9 +10,14 @@
 //#include <format>
 #include <regex>
 #include <variant>
-#include <netdb.h>
 #include <optional>
 
+#if defined(__MINGW64__) || defined(_WIN32)
+  #include <Winsock2.h>
+  #include <ws2tcpip.h>
+#else
+  #include <netdb.h>
+#endif
 
 
 namespace SWC { namespace Error {

@@ -104,6 +104,14 @@ uint32_t LogWriter::_seconds() {
   // seconds since start of a day
 }
 
+
+#if defined(__MINGW64__) || defined(_WIN32)
+  #define SWC_MKDIR(_path, _perms) ::mkdir(_path)
+#else
+  #define SWC_MKDIR(_path, _perms) ::mkdir(_path, _perms)
+#endif
+
+
 void LogWriter::renew_files() {
   errno = 0;
   m_last_time = (::time(nullptr)/86400)*86400;
@@ -113,15 +121,15 @@ void LogWriter::renew_files() {
   filepath.reserve(m_logs_path.size() + m_name.size() + 16);
   filepath.append(m_logs_path);
 
-  ::mkdir(filepath.c_str(), 0755);
+  SWC_MKDIR(filepath.c_str(), 0755);
   filepath.append(std::to_string(1900+ltm->tm_year));
-  ::mkdir(filepath.c_str(), 0755);
+  SWC_MKDIR(filepath.c_str(), 0755);
   filepath.append("/");
   filepath.append(std::to_string(1+ltm->tm_mon));
-  ::mkdir(filepath.c_str(), 0755);
+  SWC_MKDIR(filepath.c_str(), 0755);
   filepath.append("/");
   filepath.append(std::to_string(ltm->tm_mday));
-  ::mkdir(filepath.c_str(), 0755);
+  SWC_MKDIR(filepath.c_str(), 0755);
   if(errno == EEXIST)
     errno = 0;
   filepath.append("/");
@@ -145,6 +153,7 @@ void LogWriter::renew_files() {
     ::fdopen(0, "wt");
   }*/
 }
+#undef SWC_MKDIR
 
 SWC_SHOULD_NOT_INLINE
 void LogWriter::log(uint8_t priority, const char* fmt, ...) {

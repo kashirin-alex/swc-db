@@ -7,7 +7,13 @@
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Error.h"
 #include <future>
-#include <netdb.h>
+
+#if defined(__MINGW64__) || defined(_WIN32)
+  #include <Winsock2.h>
+  #include <ws2tcpip.h>
+#else
+  #include <netdb.h>
+#endif
 
 
 

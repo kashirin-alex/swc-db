@@ -23,7 +23,7 @@ namespace Error {
 
 
 #define SWC_ERRNO_SYS_BEGIN     0
-#define SWC_ERRNO_SYS_END       2048
+#define SWC_ERRNO_SYS_END       2048 // ? 16000
 
 #define SWC_ERRNO_FUTURE_BEGIN  2049
 #define SWC_ERRNO_FUTURE_END    2059

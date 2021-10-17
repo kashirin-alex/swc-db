@@ -8,8 +8,12 @@
 #define swcdb_common_sys_Resources_Mem_h
 
 
+#if defined(__MINGW64__) || defined(_WIN32)
+#include <sysinfoapi.h>
+#else
 #include <sys/sysinfo.h>
 #include <fstream>
+#endif
 
 
 #if defined TCMALLOC_MINIMAL || defined TCMALLOC
@@ -67,9 +71,12 @@ class Mem {
         free(0), used(0), used_reg(0), used_releasable(0), used_future(0),
         total(0), allowed(0), reserved(0), mem_buff_ms(0),
         notifier(a_notifier), release_call(std::move(a_release_call)),
-        page_size(sysconf(_SC_PAGE_SIZE)),
         chk_stat_ts(0), chk_statm_ts(0), chk_low_state_ts(0),
         chk_release_ts(0) {
+
+    #if !defined(__MINGW64__) && !defined(_WIN32)
+    page_size = sysconf(_SC_PAGE_SIZE);
+    #endif
 
     #if defined TCMALLOC_MINIMAL || defined TCMALLOC
     release_rate_default = MallocExtension::instance()->GetMemoryReleaseRate();
@@ -230,6 +237,16 @@ class Mem {
   bool _check_stat() {
     if(notifier)
       notifier->rss_used_reg(used_reg);
+
+    #if defined(__MINGW64__) || defined(_WIN32)
+    MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof (statex);
+    if(!GlobalMemoryStatusEx (&statex) || !statex.ullTotalPhys || !statex.ullAvailPhys)
+      return false;
+    total.store(statex.ullTotalPhys);
+    free.store(statex.ullAvailPhys);
+
+    #else
     std::ifstream buffer("/proc/meminfo");
     if(!buffer.is_open())
       return false;
@@ -260,6 +277,7 @@ class Mem {
       }
     } while (looking && !buffer.eof());
     buffer.close();
+    #endif
 
     size_t _allowed = (total/100) * cfg_percent_allowed->get();
     allowed.store(_allowed);
@@ -274,13 +292,24 @@ class Mem {
   }
 
   bool _check_statm() {
+    size_t rss = 0;
+    #if defined(__MINGW64__) || defined(_WIN32)
+    MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof (statex);
+    if(!GlobalMemoryStatusEx (&statex) || !statex.ullTotalPhys || !statex.ullAvailPhys)
+      return false;
+    rss = statex.ullTotalPhys - statex.ullAvailPhys;
+
+    #else
     std::ifstream buffer("/proc/self/statm");
     if(!buffer.is_open())
       return false;
-    size_t sz = 0, rss = 0;
+    size_t sz = 0;
     buffer >> sz >> rss;
     buffer.close();
     rss *= page_size;
+    #endif
+
     used.store(used > allowed || used > rss ? (used + rss) / 2 : rss);
     if(notifier)
       notifier->rss_used(rss);
@@ -330,6 +359,13 @@ class Mem {
       mi = ::mallinfo2();
       bytes = mi.uordblks;
 
+    #elif defined(__MINGW64__) || defined(_WIN32)
+      MEMORYSTATUSEX statex;
+      statex.dwLength = sizeof (statex);
+      if(!GlobalMemoryStatusEx (&statex) || !statex.ullTotalPhys || !statex.ullAvailPhys)
+        return false;
+      bytes = statex.ullTotalPhys - statex.ullAvailPhys;
+
     #elif defined(SWC_ENABLE_SANITIZER)
       bytes = used;
 
@@ -377,6 +413,10 @@ class Mem {
     #elif defined JEMALLOC
       // ...
 
+    #elif defined(__MINGW64__) || defined(_WIN32)
+      if(used > allowed || is_low_mem_state())
+        _heapmin();
+
     #else
       ssize_t keep = reserved;
       keep -= free;
@@ -393,7 +433,10 @@ class Mem {
 
   Notifier*           notifier;
   const ReleaseCall_t release_call;
+
+  #if !defined(__MINGW64__) && !defined(_WIN32)
   uint32_t            page_size;
+  #endif
 
   uint64_t            chk_stat_ts;
   uint64_t            chk_statm_ts;

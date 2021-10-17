@@ -89,7 +89,7 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
     fs_lib.append(settings->install_path);
     fs_lib.append("/lib/libswcdb_fs_"); // (./lib/libswcdb_fs_local.so)
     fs_lib.append(fs_name);
-    fs_lib.append(".so");
+    fs_lib.append(SWC_DSO_EXT);
   }
 
   const char* err = dlerror();

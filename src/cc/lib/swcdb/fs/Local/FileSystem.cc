@@ -10,6 +10,39 @@
 #include <dirent.h>
 
 
+#if defined(__MINGW64__) || defined(_WIN32)
+  #include <Windows.h>
+  #include <io.h>
+  #include <fileapi.h>
+
+  namespace {
+  SWC_CAN_INLINE
+  ssize_t __pread(int fd, uint8_t* ptr, size_t n, off_t offset) noexcept {
+    long unsigned int read_bytes = 0;
+    OVERLAPPED overlapped;
+    memset(&overlapped, 0, sizeof(OVERLAPPED));
+    overlapped.OffsetHigh = offset >> 32;
+    overlapped.Offset = ((offset << 32) >> 32);
+    SetLastError(0);
+    if(!ReadFile(HANDLE(_get_osfhandle(fd)), ptr, n, &read_bytes, &overlapped)) {
+      errno = GetLastError();
+      return -1;
+    }
+    return read_bytes;
+  }
+  }
+  #define SWC_MKDIR(path, perms)            ::mkdir(path)
+  #define SWC_FSYNC(fd)                     ::_commit(fd)
+  #define SWC_PREAD(fd, ptr, nleft, offset) __pread(fd, ptr, nleft, offset)
+
+#else
+  #define SWC_MKDIR(path, perms)            ::mkdir(path, perms)
+  #define SWC_FSYNC(fd)                     ::fsync(fd)
+  #define SWC_PREAD(fd, ptr, nleft, offset) ::pread(fd, ptr, nleft, offset)
+#endif
+
+
+
 namespace SWC { namespace FS {
 
 
@@ -115,7 +148,7 @@ int _mkdirs(std::string& dirname) {
       if(errno != ENOENT)
         break;
       errno = 0;
-      if(mkdir(dirname.c_str(), 0755)) {
+      if(SWC_MKDIR(dirname.c_str(), 0755)) {
         if(errno != EEXIST)
           break;
       }
@@ -143,6 +176,31 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
   std::string abspath;
   get_abspath(name, abspath);
 
+  #if defined(__MINGW64__) || defined(_WIN32)
+  const std::filesystem::path _dir_path(std::move(abspath));
+  std::error_code ec;
+  _do:
+  for(auto const& de : std::filesystem::directory_iterator(_dir_path, ec)) {
+    bool is_dir = de.is_directory(ec);
+    size_t sz;
+    if(!ec) {
+      sz = is_dir ? 0 : de.file_size(ec);
+      // auto t = de.last_write_time(ec); ? no-reason
+    }
+    if(ec) {
+      if(ec.value() == ENOENT) {
+        results.clear();
+        ec.clear();
+        goto _do; // and do all again directory changed
+      }
+      break;
+    }
+    results.emplace_back(
+      de.path().filename().string().c_str(), 0, is_dir, sz);
+  }
+  err = ec.value();
+
+  #else
   DIR* dirp;
   std::string full_entry_path;
   struct stat statbuf;
@@ -179,6 +237,8 @@ void FileSystemLocal::readdir(int& err, const std::string& name,
   _finish:
     if(dirp)
       closedir(dirp);
+  #endif
+
     SWC_FS_READDIR_FINISH(err, abspath, results.size(), tracker);
 }
 
@@ -332,7 +392,7 @@ SWC_CAN_INLINE
 ssize_t _pread(int fd, off_t offset, uint8_t* ptr, size_t n) noexcept {
   ssize_t nleft = n;
   for(ssize_t nread; nleft; nleft -= nread, ptr += nread, offset += nread) {
-    if((nread = ::pread(fd, ptr, nleft, offset)) < 0) {
+    if((nread = SWC_PREAD(fd, ptr, nleft, offset)) < 0) {
       if(errno == EINTR)
         nread = 0;/* and call read() again */
       else if(errno == EAGAIN)
@@ -395,7 +455,7 @@ size_t FileSystemLocal::append(int& err, SmartFd::Ptr& smartfd,
   } else {
     smartfd->forward(buffer.size);
     if((flags == Flags::FLUSH || flags == Flags::SYNC) &&
-       ::fsync(smartfd->fd())) {
+       SWC_FSYNC(smartfd->fd())) {
       err = errno;
     } else {
       err = Error::OK;
@@ -429,7 +489,7 @@ void FileSystemLocal::sync(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::SYNC_SYNC);
   SWC_FS_SYNC_START(smartfd);
 
-  err = ::fsync(smartfd->fd()) ? errno : Error::OK;
+  err = SWC_FSYNC(smartfd->fd()) ? errno : Error::OK;
   SWC_FS_SYNC_FINISH(err, smartfd, tracker);
 }
 
@@ -454,6 +514,10 @@ void FileSystemLocal::close(int& err, SmartFd::Ptr& smartfd) {
 }} // namespace SWC
 
 
+
+#undef SWC_MKDIR
+#undef SWC_FSYNC
+#undef SWC_PREAD
 
 
 extern "C" {

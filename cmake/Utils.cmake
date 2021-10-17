@@ -605,10 +605,12 @@ function(ADD_LIB_TARGET)
 
 
   # STATIC LIBS
-  add_library(${OPT_NAME}-static STATIC $<TARGET_OBJECTS:obj_${OPT_NAME}>)
-  SET_TARGET_PROPERTIES(${OPT_NAME}-static PROPERTIES OUTPUT_NAME ${OPT_NAME} CLEAN_DIRECT_OUTPUT 1)
-  target_compile_options(${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
-  target_link_options(${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
+  if (NOT CMAKE_GENERATOR MATCHES "Ninja")
+    add_library(${OPT_NAME}-static STATIC $<TARGET_OBJECTS:obj_${OPT_NAME}>)
+    SET_TARGET_PROPERTIES(${OPT_NAME}-static PROPERTIES OUTPUT_NAME ${OPT_NAME} CLEAN_DIRECT_OUTPUT 1)
+    target_compile_options(${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
+    target_link_options(${OPT_NAME}-static PRIVATE ${OPT_FLAGS})
+  endif()
 
   # SHARED LIBS
   add_library(${OPT_NAME}-shared SHARED $<TARGET_OBJECTS:obj_${OPT_NAME}>)
@@ -642,7 +644,9 @@ function(ADD_LIB_TARGET)
   endif ()
 
   if(NOT INSTALL_TARGETS OR ${OPT_NAME} IN_LIST INSTALL_TARGETS)
-    install(TARGETS ${OPT_NAME}-static ARCHIVE DESTINATION lib)
+    if(NOT CMAKE_GENERATOR MATCHES "Ninja")
+      install(TARGETS ${OPT_NAME}-static ARCHIVE DESTINATION lib)
+    endif()
     install(TARGETS ${OPT_NAME}-shared LIBRARY DESTINATION lib)
   endif ()
 

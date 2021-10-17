@@ -7,12 +7,11 @@
 #include <stdio.h>
 #include <glib/gprintf.h>
 
+#include <inttypes.h>
 #define SWC_STRINGIFY(s) #s
-#ifdef _WIN32
-  #define SWC_FMT_LU SWC_STRINGIFY(%llu)
-#else
-  #define SWC_FMT_LU SWC_STRINGIFY(%lu)
-#endif
+#define SWC_FMT_LU SWC_STRINGIFY(%) PRIu64
+#define SWC_FMT_LD SWC_STRINGIFY(%) PRId64
+
 
 int main() {
   puts ("Started Testing\n");
@@ -52,7 +51,7 @@ int main() {
     }
     g_clear_object(&schemas);
   }
-  
+
   if(error != NULL) {
     printf("service_handler_sql_list_columns GError: %s\n", error->message);
     g_error_free (error);
@@ -60,14 +59,14 @@ int main() {
   }
 
   if(exception != NULL) {
-    printf("service_handler_sql_list_columns Exception: code=%d %s\n", 
+    printf("service_handler_sql_list_columns Exception: code=%d %s\n",
             error->code, error->message);
     g_free(exception);
     exception = NULL;
   }
 
-  
-  
+
+
   if(!swcdb_thrift_client_disconnect(&client, &error)) {
     if(error != NULL) {
       printf("Disconnect failed: %s\n", error->message);
@@ -78,7 +77,7 @@ int main() {
     }
     return 1;
   }
-  
+
   puts ("\nFinished Testing");
   return 0;
 }

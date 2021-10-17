@@ -94,19 +94,9 @@ static_assert(
 #endif
 
 
-
-#ifdef _WIN32
-  #define SWC_FMT_LU SWC_STRINGIFY(%llu)
-  #define SWC_FMT_LD SWC_STRINGIFY(%lld)
-
-  #define SWC_QUICK_EXIT(_CODE_) exit(_CODE_)
-#else
-  #define SWC_FMT_LU SWC_STRINGIFY(%lu)
-  #define SWC_FMT_LD SWC_STRINGIFY(%ld)
-
-  #define SWC_QUICK_EXIT(_CODE_) std::quick_exit(_CODE_)
-#endif
-
+#include <cinttypes>
+#define SWC_FMT_LU SWC_STRINGIFY(%) PRIu64
+#define SWC_FMT_LD SWC_STRINGIFY(%) PRId64
 
 
 # define SWC_CAN_INLINE  \
@@ -185,6 +175,15 @@ static_assert(
   #define SWC_ABORT std::raise(SIGABRT)
 #endif
 
+#if defined(__MINGW64__) || defined(_WIN32)
+  #define ENOKEY  126
+  #define EBADR   51
+  #define SWC_QUICK_EXIT(_CODE_) exit(_CODE_)
+  #define SWC_DSO_EXT ".dll"
+#else
+  #define SWC_QUICK_EXIT(_CODE_) std::quick_exit(_CODE_)
+  #define SWC_DSO_EXT ".so"
+#endif
 
 #if defined(SWC_ENABLE_SANITIZER)
   #define SWC_CAN_QUICK_EXIT(_CODE_)
