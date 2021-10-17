@@ -18,6 +18,23 @@ extern "C" {
 
 namespace SWC { namespace Time {
 
+SWC_CAN_INLINE
+int32_t parse_digit(int& err, const char** bufp,
+                   const char delimitter) noexcept {
+  errno = 0;
+  char* last = nullptr;
+  int32_t v = strtol(*bufp, &last, 0);
+  if(errno) {
+    err = errno;
+  } else {
+    if(**bufp && *bufp != last && (!delimitter || *last == delimitter)) {
+      *bufp = last + bool(delimitter);
+    } else {
+      err = EINVAL;
+    }
+  }
+  return v;
+}
 
 int64_t parse_ns(int& err, const std::string& buf) {
   const char* ptr = buf.c_str();
@@ -34,10 +51,31 @@ int64_t parse_ns(int& err, const std::string& buf) {
   int64_t ns = 0;
 
   struct tm info;
-  if(!strptime(ptr, "%Y/%m/%d %H:%M:%S", &info)) {
+  /*if(!strptime(ptr, "%Y/%m/%d %H:%M:%S", &info)) {
     err = EINVAL;
     return ns;
+  }*/
+  info.tm_yday = info.tm_wday = 0;
+  info.tm_isdst = -1;
+  info.tm_year = parse_digit(err, &ptr, '/') - 1900;
+  if(!err) {
+    info.tm_mon = parse_digit(err, &ptr, '/') - 1;
+    if(!err) {
+      info.tm_mday = parse_digit(err, &ptr, ' ');
+      if(!err) {
+        info.tm_hour = parse_digit(err, &ptr, ':');
+        if(!err) {
+          info.tm_min = parse_digit(err, &ptr, ':');
+          if(!err) {
+            info.tm_sec = parse_digit(err, &ptr, 0);
+          }
+        }
+      }
+    }
   }
+  if(err)
+    return ns;
+
   ns += mktime(&info) * 1000000000;
 
   while(*ptr && *ptr++ != '.');
