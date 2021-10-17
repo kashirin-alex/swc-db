@@ -3,7 +3,7 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 set(MALLOC_FLAGS )
-if (USE_GLIBC_MALLOC OR (
+if (USE_DEFAULT_MALLOC OR (
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i386" OR
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i586" OR
               CMAKE_SYSTEM_PROCESSOR STREQUAL "i686"))

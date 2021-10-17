@@ -27,11 +27,11 @@ sort: 3
 |SWC_INSTALL_DEP_LIBS|  Install the 3rd-party dependencies libaries used for linking | ON/OFF | OFF |
 |SWC_WITHOUT_JAVA| skip java/maven builds | ON/OFF | OFF |
 |SWC_ENABLE_SANITIZER| Enable build-wide the specified sanitizer (slower perf. by x3-x10) | address/thread | OFF |
-|USE_GLIBC_MALLOC| use compiler malloc | ON/OFF | OFF |
+|USE_DEFAULT_MALLOC| use compiler/libc malloc | ON/OFF | OFF |
 |USE_JEMALLOC| use libjemalloc | ON/OFF | OFF |
 |USE_HOARD| use libhoard | ON/OFF | OFF |
 |USE_MIMALLOC| use libmimalloc | ON/OFF | OFF |
-|USE_TCMALLOC| use libtcmalloc | ON/OFF | OFF(default libtcmalloc_minimal or USE_GLIBC_MALLOC) |
+|USE_TCMALLOC| use libtcmalloc | ON/OFF | OFF(default libtcmalloc_minimal or USE_DEFAULT_MALLOC) |
 |USE_LIBSSL| The SSL-Library to use | open/wolf | open |
 |SWC_LANGUAGES| require to build with support of listed languages  | NONE or ANY / applicable CSV: py2,py3,pypy2,pypy3,java,netstd,c_glib | any possible |
 |SWC_BUILTIN_FS| builtin filesystems (impl./prelinked without use of dynamic linking loader), suggested=local,broker | applicable CSV: local,broker,hadoop_jvm,hadoop,ceph | any possible |
