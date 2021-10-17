@@ -174,9 +174,9 @@ void Settings::parse_file(const std::string& name, const char* onchg) {
 
   std::error_code ec;
   if(!std::filesystem::exists(fname, ec))
-    SWC_THROWF(ENOENT, "cfg file=%s not found", fname.c_str());
+    SWC_THROWF(ENOENT, "cfg file=%s not found", fname.string().c_str());
 
-  load(fname.native(), file_desc, cmdline_desc, false);
+  load(fname.string(), file_desc, cmdline_desc, false);
   load_files_by(onchg, false);
   load_from(m_cmd_args);  // Inforce cmdline properties
 }
@@ -266,7 +266,7 @@ void Settings::init_process(bool with_pid_file, const char* port_cfg) {
           SWC_QUICK_EXIT(EXIT_FAILURE);
         }
       }
-      ::unlink(pid_file.c_str());
+      std::filesystem::remove(pid_file, ec);
     }
   }
 

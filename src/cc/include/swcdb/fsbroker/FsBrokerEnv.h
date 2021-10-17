@@ -10,6 +10,7 @@
 #include "swcdb/common/sys/Resources.h"
 #include "swcdb/fs/Broker/Protocol/Commands.h"
 #include "swcdb/fsbroker/queries/update/MetricsReporting.h"
+#include <fcntl.h>
 
 
 namespace SWC { namespace FsBroker {
