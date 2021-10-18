@@ -15,8 +15,12 @@ void Column::init(int &err) {
   FS::IdEntries_t entries;
   Env::FsInterface::interface()->get_structured_ids(
     err, DB::RangeBase::get_path(cfg->cid), entries);
-  if(err)
-    return;
+  if(err) {
+    if(err == ENOENT)
+      create(err = Error::OK, cfg->cid);
+    if(err)
+      return;
+  }
   if(entries.empty()) {
     SWC_LOGF(LOG_INFO, "Init. New Column(" SWC_FMT_LU ") Range(1)", cfg->cid);
     entries.push_back(1);

@@ -104,7 +104,7 @@ void Rangers::schedule_check(uint32_t t_ms) {
   };
   m_timer.async_wait(TimerTask(this));
 
-  if(t_ms > 10000)
+  if(t_ms >= 5000)
     SWC_LOGF(LOG_DEBUG, "Rangers scheduled in ms=%u", t_ms);
 }
 
@@ -524,7 +524,7 @@ void Rangers::print(std::ostream& out) {
 void Rangers::assign_ranges() {
   if(!Env::Mngr::mngd_columns()->expected_ready() ||
       m_assignments >= cfg_assign_due->get())
-    return schedule_check(5000);
+    return schedule_check(5001);
 
   struct Task {
     Rangers* ptr;
@@ -554,12 +554,13 @@ void Rangers::assign_ranges_run() {
       return schedule_check();
     }
     if(!(range = columns.get_next_unassigned(state=false))) {
-      if(state) // waiting-on-meta-ranges
-        schedule_check(2000);
       m_assign.stop();
+      if(state) // waiting-on-meta-ranges
+        return schedule_check(2000);
       break;
     }
-
+    SWC_LOGF(LOG_DEBUG, "Assigning Range(" SWC_FMT_LU "/" SWC_FMT_LU ")",
+                         range->cfg->cid, range->rid);
     next_rgr(range, rgr = nullptr);
     if(!rgr) {
       m_assign.stop();

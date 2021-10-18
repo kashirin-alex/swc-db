@@ -276,6 +276,9 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
         m_expected_load.push_front(cid);
       } else {
         --m_expected_remain;
+        SWC_LOGF(LOG_DEBUG,
+          "Expected Column(" SWC_FMT_LU ") was Loaded remain=" SWC_FMT_LU,
+          cid, m_expected_remain);
       }
     }
     need = m_expected_remain;
@@ -288,9 +291,9 @@ void MngdColumns::set_expect(cid_t cid_begin, cid_t cid_end, uint64_t total,
         cid_begin, cid_end);
     } else {
       SWC_LOGF(LOG_DEBUG,
-        "Expected Columns to Load size=" SWC_FMT_LU
+        "Expected Columns to Load size=" SWC_FMT_LU "/" SWC_FMT_LU
         " for cid(begin=" SWC_FMT_LU " end=" SWC_FMT_LU ")",
-        need, cid_begin, cid_end);
+        need, total, cid_begin, cid_end);
     }
   }
 }
@@ -735,6 +738,8 @@ bool MngdColumns::columns_load() {
       columns.clear();
 
       for(; it_batch != it; ++it_batch) {
+        SWC_LOGF(LOG_DEBUG,
+          "Set Expected Load cid(" SWC_FMT_LU ")", (*it_batch)->cid);
         update_status(
           ColumnMngFunc::INTERNAL_LOAD, *it_batch, Error::OK, 0, true);
       }
