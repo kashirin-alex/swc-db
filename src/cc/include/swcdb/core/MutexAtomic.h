@@ -18,7 +18,7 @@ class MutexAtomic {
   public:
 
   constexpr SWC_CAN_INLINE
-  explicit MutexAtomic() noexcept { }
+  explicit MutexAtomic() noexcept : want(0) { }
 
   MutexAtomic(const MutexAtomic&)             = delete;
   MutexAtomic(MutexAtomic&&)                  = delete;
