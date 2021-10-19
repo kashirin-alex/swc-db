@@ -43,12 +43,11 @@ void IoContext::stop() {
     SWC_LOGF(LOG_DEBUG, "Waiting for IO-ctx(%s)", name.c_str());
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
+  pool.stop();
+  pool.wait();
 
   SWC_LOGF(LOG_DEBUG, "Wait for IO-ctx(%s) finished %sgracefully",
            name.c_str(), untracked ? "" : "not-");
-
-  pool.stop();
-  pool.wait();
 }
 
 

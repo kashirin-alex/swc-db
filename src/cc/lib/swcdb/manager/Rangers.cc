@@ -71,6 +71,10 @@ void Rangers::stop(bool shuttingdown) {
   if(shuttingdown) {
     SWC_LOG(LOG_INFO, "Stopping Rangers wait_health_check");
     wait_health_check();
+    SWC_LOG(LOG_INFO, "Stopping Rangers assignments");
+    while(m_assign.running())
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
+    m_assign.stop();
   }
 }
 

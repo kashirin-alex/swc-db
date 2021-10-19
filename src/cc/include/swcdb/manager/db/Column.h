@@ -101,20 +101,20 @@ class Column final : private Core::Vector<Range::Ptr> {
   }
 
   void assigned(rgrid_t rgrid, size_t& num,
-                Core::Vector<Range::Ptr>& ranges) {
+                Core::Vector<Range::Ptr>& _ranges) {
     Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
       if(range->assigned(rgrid)) {
-        ranges.push_back(range);
+        _ranges.push_back(range);
         if(!-num)
           break;
       }
     }
   }
 
-  void get_ranges(Core::Vector<Range::Ptr>& ranges) {
+  void get_ranges(Core::Vector<Range::Ptr>& _ranges) {
     Core::SharedLock lock(m_mutex);
-    ranges.assign(cbegin(), cend());
+    _ranges.assign(cbegin(), cend());
   }
 
   Range::Ptr get_range(const rid_t rid) {
@@ -296,13 +296,13 @@ class Column final : private Core::Vector<Range::Ptr> {
   }
 
   void need_health_check(int64_t ts, uint32_t ms,
-                         Core::Vector<Range::Ptr> &ranges,
+                         Core::Vector<Range::Ptr> &_ranges,
                          rgrid_t rgrid = 0, size_t max = 0) {
     Core::SharedLock lock(m_mutex);
     for(auto& range : *this) {
       if(range->need_health_check(ts, ms, rgrid)) {
-        ranges.push_back(range);
-        if(max && ranges.size() == max)
+        _ranges.push_back(range);
+        if(max && _ranges.size() == max)
           return;
       }
     }

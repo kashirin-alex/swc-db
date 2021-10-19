@@ -121,26 +121,23 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   }
 
   void assigned(rgrid_t rgrid, size_t num, Core::Vector<Range::Ptr>& ranges) {
-    Column::Ptr chk;
-    cids_t chked;
-    do {
-      chk = nullptr;
+    for(Column::Ptr chk; num; ) {
       {
+        const_iterator it;
         Core::MutexSptd::scope lock(m_mutex);
-        chked.reserve(size());
-        for(auto it = cbegin(); it != cend(); ++it) {
-          if(std::find(chked.cbegin(), chked.cend(), it->first)
-              == chked.cend()) {
-            chk = it->second;
-            chked.push_back(it->first);
+        if(chk) {
+          if((it = find(chk->cfg->cid)) == cend())
             break;
-          }
+          ++it;
+        } else {
+          it = cbegin();
         }
+        if(it == cend())
+          break;
+        chk = it->second;
       }
-      if(!chk)
-        return;
       chk->assigned(rgrid, num, ranges);
-    } while(num);
+    }
   }
 
   Column::Ptr get_need_health_check(int64_t ts, uint32_t ms) {
