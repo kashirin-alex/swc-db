@@ -295,8 +295,7 @@ Rgr::Rgr()
 }
 
 Rgr::~Rgr() noexcept {
-  if(_compaction)
-    delete _compaction;
+  delete _compaction;
   delete _columns;
 }
 

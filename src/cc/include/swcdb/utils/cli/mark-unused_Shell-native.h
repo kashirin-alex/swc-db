@@ -171,8 +171,7 @@ class Interface {
             const Call_t& a_call, const re2::RE2* a_re) 
           : name(a_name), desc(a_desc), call(a_call), re(a_re) { }
     ~Option() noexcept {
-      if(re)
-        delete re;
+      delete re;
     }
     const std::string name;
     const std::string desc;

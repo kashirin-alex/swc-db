@@ -147,8 +147,7 @@ CompactRange::CompactRange(Compaction* a_compactor,
 }
 
 CompactRange::~CompactRange() noexcept {
-  if(m_inblock)
-    delete m_inblock;
+  delete m_inblock;
 
   InBlock* blk;
   while(m_q_intval.pop(&blk))
@@ -236,8 +235,7 @@ void CompactRange::initial_commitlog(uint32_t tnum) {
 
 void CompactRange::initial_commitlog_done(const CommitLog::Compact* compact) {
   if(m_stopped) {
-    if(compact)
-      delete compact;
+    delete compact;
     return;
   }
   if(compact) {
@@ -427,8 +425,7 @@ void CompactRange::commitlog(uint32_t tnum) {
 
 void CompactRange::commitlog_done(const CommitLog::Compact* compact) {
   if(m_stopped) {
-    if(compact)
-      delete compact;
+    delete compact;
     return;
   }
   if(compact) {

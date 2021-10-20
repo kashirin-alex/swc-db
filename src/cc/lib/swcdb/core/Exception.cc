@@ -156,8 +156,7 @@ Exception::Exception(const Exception& other)
 }
 
 Exception::~Exception() noexcept {
-  if(_prev)
-    delete _prev;
+  delete _prev;
 }
 
 std::string Exception::message() const {

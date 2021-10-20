@@ -81,8 +81,7 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
     SWC_CAN_INLINE
     ~Pending() noexcept {
-      if(timer)
-        delete timer;
+      delete timer;
     }
 
     SWC_CAN_INLINE

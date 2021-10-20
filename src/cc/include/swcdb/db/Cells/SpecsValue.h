@@ -114,10 +114,9 @@ class Value {
 
   SWC_CAN_INLINE
   void _free() noexcept {
-    if(own && data)
+    if(own)
       delete [] data;
-    if(matcher)
-      delete matcher;
+    delete matcher;
   }
 
   SWC_CAN_INLINE

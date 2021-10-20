@@ -285,8 +285,7 @@ void SerializedServer::connection_del(const ConnHandlerPtr& conn) {
 }
 
 SerializedServer::~SerializedServer() noexcept {
-  if(m_ssl_cfg)
-    delete m_ssl_cfg;
+  delete m_ssl_cfg;
 }
 
 

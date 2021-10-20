@@ -26,8 +26,7 @@ Serialized::Serialized(const Config::Settings& settings,
 }
 
 Serialized::~Serialized() noexcept {
-  if(m_ssl_cfg)
-    delete m_ssl_cfg;
+  delete m_ssl_cfg;
 }
 
 // Sync

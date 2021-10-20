@@ -74,17 +74,14 @@ struct Buffer {
 
   SWC_CAN_INLINE
   void _free() noexcept {
-    if(own && base)
+    if(own)
       delete [] base;
   }
 
   SWC_CAN_INLINE
   void free() noexcept {
-    if(base) {
-      if(own)
-        delete [] base;
-      base = nullptr;
-    }
+    _free();
+    base = nullptr;
     size = 0;
   }
 

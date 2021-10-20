@@ -75,8 +75,7 @@ class ConnQueue :
   }
 
   virtual ~ConnQueue() noexcept {
-    if(m_timer)
-      delete m_timer;
+    delete m_timer;
   }
 
   virtual bool connect()  {

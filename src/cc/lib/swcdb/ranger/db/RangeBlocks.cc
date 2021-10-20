@@ -458,8 +458,7 @@ void Blocks::_clear() {
   m_blocks_idx.clear();
   Block::Ptr blk = m_block;
   for(; blk; blk=blk->next) {
-    if(blk->prev)
-      delete blk->prev;
+    delete blk->prev;
     if(!blk->next) {
       delete blk;
       break;

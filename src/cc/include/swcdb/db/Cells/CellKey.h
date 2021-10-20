@@ -65,7 +65,7 @@ class Key final {
 
   SWC_CAN_INLINE
   void _free() noexcept {
-    if(own && data)
+    if(own)
       delete [] data;
   }
 

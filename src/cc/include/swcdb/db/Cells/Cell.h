@@ -136,7 +136,7 @@ class Cell final {
 
   SWC_CAN_INLINE
   void _free() noexcept {
-    if(own && value)
+    if(own)
       delete [] value;
   }
 
