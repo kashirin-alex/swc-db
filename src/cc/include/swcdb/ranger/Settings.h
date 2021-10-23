@@ -69,6 +69,8 @@ void init_app_options(Settings* settings) {
      "Max Allowed Ranges at a time for compaction")
     ("swc.rgr.compaction.commitlog.max", g_i8(3),
      "Max Allowed Commitlog including Total-Range compactions")
+    ("swc.rgr.compaction.range.uncompacted.max", g_i32(100),
+     "Max Allowed uncompacted Ranges")
 
     ("swc.rgr.Range.CellStore.count.max", g_i8(10),
      "Schema default cellstore-max in range before range-split")

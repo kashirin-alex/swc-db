@@ -18,7 +18,8 @@ SWC_CAN_INLINE
 Fragments::Fragments(const DB::Types::KeySeq key_seq)
                     : stopping(false), m_cells(key_seq),
                       m_compacting(false), m_deleting(false),
-                      m_sem(5), m_last_id(0), m_releasable_bytes(0) {
+                      m_sem(5), m_last_id(0),
+                      m_releasable_bytes(0), m_modification_ts(0) {
 }
 
 Fragments::~Fragments() noexcept {
@@ -50,6 +51,7 @@ void Fragments::add(const DB::Cells::Cell& cell) {
 }
 
 void Fragments::commit() noexcept {
+  m_modification_ts.store(Time::now_ns());
   if(m_commit.running())
     return;
   bool run = m_mutex_cells.try_lock_shared();

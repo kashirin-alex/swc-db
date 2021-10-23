@@ -45,6 +45,11 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
 
   void schema_update();
 
+  SWC_CAN_INLINE
+  int64_t modification_ts() const noexcept {
+    return m_modification_ts.load();
+  }
+
   void add(const DB::Cells::Cell& cell);
 
   void commit() noexcept;
@@ -148,6 +153,7 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
   Core::Semaphore             m_sem;
   uint64_t                    m_last_id;
   Core::Atomic<size_t>        m_releasable_bytes;
+  Core::Atomic<size_t>        m_modification_ts;
 };
 
 

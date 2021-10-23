@@ -24,13 +24,16 @@ Compaction::Compaction()
             cfg_check_interval(
               Env::Config::settings()->get<Config::Property::Value_int32_g>(
                 "swc.rgr.compaction.check.interval")),
+            cfg_uncompacted_max(
+              Env::Config::settings()->get<Config::Property::Value_int32_g>(
+                "swc.rgr.compaction.range.uncompacted.max")),
             m_run(true), m_running(0), m_log_compactions(0),
             m_check_timer(
               asio::high_resolution_timer(
                 Env::Rgr::maintenance_io()->executor())),
             m_last_cid(0), m_idx_cid(0),
             m_last_rid(0), m_idx_rid(0),
-            m_next(false)  {
+            m_next(false), m_uncompacted(0) {
 }
 
 SWC_CAN_INLINE
@@ -135,6 +138,9 @@ void Compaction::run(bool initial) {
   }
 
   m_next.store(m_idx_cid);
+  if(!m_idx_cid)
+    m_uncompacted = 0;
+
   m_schedule.stop();
   if(stopped()) {
     Core::ScopedLock lock(m_mutex);
@@ -168,7 +174,7 @@ uint8_t Compaction::compact(const RangePtr& range) {
   bool do_compaction = false;
   std::string need;
 
-  if((do_compaction = range->compact_required() && commitlog.cells_count())) {
+  if((do_compaction = range->compact_required() && !commitlog.empty())) {
     need.append("Required");
 
   } else if((do_compaction = (value = commitlog.size_bytes(true))
@@ -194,6 +200,14 @@ uint8_t Compaction::compact(const RangePtr& range) {
   } else if((do_compaction = range->blocks.cellstores.get_cell_revs()
                               > cell_revs)) {
     need.append("CsVersions");
+
+  } else if((do_compaction =
+        (Time::now_ns() - commitlog.modification_ts())/1000000
+          > cfg_check_interval->get() &&
+        !commitlog.empty() &&
+        ++m_uncompacted > size_t(cfg_uncompacted_max->get()))) {
+    need.append("Uncompacted=");
+    need.append(std::to_string(m_uncompacted--));
   }
 
   if(stopped() || !do_compaction) {
@@ -275,7 +289,7 @@ void Compaction::compacted() {
 }
 
 void Compaction::_schedule(uint32_t t_ms) {
-  if(stopped() || m_schedule)
+  if(stopped())
     return;
 
   auto set_in = std::chrono::milliseconds(m_next ? 2 : t_ms);

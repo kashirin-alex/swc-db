@@ -25,6 +25,7 @@ class Compaction final {
   const Config::Property::Value_uint8_g::Ptr   cfg_max_range;
   const Config::Property::Value_uint8_g::Ptr   cfg_max_log;
   const Config::Property::Value_int32_g::Ptr   cfg_check_interval;
+  const Config::Property::Value_int32_g::Ptr   cfg_uncompacted_max;
 
   explicit Compaction();
 
@@ -79,6 +80,7 @@ class Compaction final {
   cid_t                           m_last_rid;
   size_t                          m_idx_rid;
   Core::AtomicBool                m_next;
+  size_t                          m_uncompacted;
 
   Core::Vector<CompactRange::Ptr> m_compacting;
 
