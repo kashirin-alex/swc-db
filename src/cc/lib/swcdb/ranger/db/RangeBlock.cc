@@ -200,7 +200,7 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   }
 }
 
-SWC_CAN_INLINE
+SWC_SHOULD_NOT_INLINE
 size_t Block::load_cells(const uint8_t* buf, size_t remain,
                          uint32_t revs, size_t avail,
                          bool& was_splitted, bool synced) {

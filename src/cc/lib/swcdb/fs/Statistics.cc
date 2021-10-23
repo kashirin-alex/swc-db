@@ -48,6 +48,7 @@ void Statistics::Metric::reset() noexcept {
 
 
 
+SWC_SHOULD_NOT_INLINE
 void Statistics::gather(Statistics& stats) noexcept {
   for(uint8_t i = 0; i < Command::MAX; ++i) {
     metrics[i].gather(stats.metrics[i]);

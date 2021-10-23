@@ -125,14 +125,6 @@ bool MutableVec::split(Mutable& cells, MutableVec::const_iterator it) {
   return false;
 }
 
-SWC_CAN_INLINE
-void MutableVec::add_sorted(const Cell& cell) {
-  if(Vec::empty())
-    push_back(new Mutable(key_seq, max_revs, ttl, type));
-  back()->add_sorted(cell);
-  split(*back(), cend());
-}
-
 
 
 }}}

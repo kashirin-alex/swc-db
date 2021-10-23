@@ -179,6 +179,7 @@ ParserConfig& ParserConfig::definition(std::string&& u) {
 }
 
 /* populate from other Parser Config */
+SWC_SHOULD_NOT_INLINE
 ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
   usage.append(other_cfg.usage);
 
@@ -192,24 +193,26 @@ ParserConfig& ParserConfig::add(const ParserConfig& other_cfg) {
 }
 
 /* Method to add option */
+SWC_SHOULD_NOT_INLINE
 ParserConfig& ParserConfig::add(const char* names,
                                 Property::Value::Ptr vptr,
                                 const char* description) {
   Strings aliases;
-  std::string s;
-  for(; *names; ++names) {
-    if(std::isspace(*names))
-      continue;
-    if(*names == ',') {
-      if(!s.empty())
-        aliases.emplace_back(std::move(s));
-    } else {
-      s += *names;
+  {
+    std::string s;
+    for(; *names; ++names) {
+      if(std::isspace(*names))
+        continue;
+      if(*names == ',') {
+        if(!s.empty())
+          aliases.emplace_back(std::move(s));
+      } else {
+        s += *names;
+      }
     }
+    if(aliases.empty() || !s.empty())
+      aliases.emplace_back(std::move(s));
   }
-  if(aliases.empty() || !s.empty())
-    aliases.emplace_back(std::move(s));
-
   ParserOpt& opt = options[aliases.front()];
   opt.value = vptr;
   opt.desc = description;
@@ -262,6 +265,7 @@ std::string ParserConfig::position_name(int n) {
   return "";
 }
 
+SWC_SHOULD_NOT_INLINE
 bool ParserConfig::has(const std::string& name) const noexcept {
   for(const auto& info : options) {
     if(Condition::str_eq(name, info.first))
@@ -274,6 +278,7 @@ bool ParserConfig::has(const std::string& name) const noexcept {
   return false;
 }
 
+SWC_SHOULD_NOT_INLINE
 bool ParserConfig::has(const std::string& name,
                        std::string& alias_to) const noexcept {
   for(const auto& info : options) {
@@ -289,6 +294,7 @@ bool ParserConfig::has(const std::string& name,
   return false;
 }
 
+SWC_SHOULD_NOT_INLINE
 Property::Value::Ptr ParserConfig::get_default(const std::string& name) {
   for(const auto& info : options) {
     if(Condition::str_eq(name, info.first))
@@ -312,32 +318,30 @@ void ParserConfig::remove(const std::string& name) {
 }
 
 void ParserConfig::print(std::ostream& os) const {
-  os << usage << "\n";
+  os << usage << '\n';
 
-  size_t tmp;
-  size_t len_name=5;
-  size_t len_desc=5;
+  size_t offset_name = 5;
+  size_t offset_desc = 5;
   for (const auto& kv : options) {
-    tmp = (!kv.second.aliases.empty()?
-            format_list(kv.second.aliases).length()+2 : 0);
-    if(len_name < tmp+kv.first.length())
-      len_name = tmp+kv.first.length();
-    if(len_desc < kv.second.desc.length())
-      len_desc = kv.second.desc.length();
+    size_t tmp = (!kv.second.aliases.empty()?
+               format_list(kv.second.aliases).length()+2 : 0);
+    if(offset_name < (tmp += kv.first.length()))
+      offset_name = tmp;
+    if(offset_desc < kv.second.desc.length())
+      offset_desc = kv.second.desc.length();
   }
-  int offset_name = static_cast<int>(len_name)+2;
-  int offset_desc = static_cast<int>(len_desc);
+  offset_name += 2;
 
   for (const auto& kv : options) {
-    os  << std::left << std::setw(2) << " "
-        << std::left << std::setw(offset_name+2) <<
+    os  << std::left << std::setw(2) << ' '
+        << std::left << std::setw(offset_name + 2) <<
           format("--%s %s", kv.first.c_str(),
                 (!kv.second.aliases.empty()?
                   format("-%s",format_list(kv.second.aliases).c_str()).c_str()
                   : ""))
         << std::left << std::setw(offset_desc+2) << kv.second.desc
         << std::left << std::setw(2) << kv.second.value->to_string()
-        << "\n";
+        << '\n';
   }
 }
 
@@ -384,17 +388,17 @@ void Parser::free() noexcept {
   config.free();
 }
 
+SWC_SHOULD_NOT_INLINE
 void Parser::parse_filedata(std::ifstream& in) {
-  size_t at;
-  std::string group;
-  std::string line, g_tmp;
-  while(std::getline(in, line)) {
+  {
+  std::string line;
+  for(std::string group; std::getline(in, line); ) {
     if(line.find_first_of("[") == 0) {
 
-      at = line.find_first_of("]");
+      size_t at = line.find_first_of("]");
       if(at != std::string::npos) {
 
-        g_tmp = line.substr(1, at-1);
+        std::string g_tmp = line.substr(1, at-1);
         if(!group.empty()){
           group.pop_back(); // remove a dot
           if(Condition::str_eq(g_tmp, group+"=end")) {
@@ -404,14 +408,14 @@ void Parser::parse_filedata(std::ifstream& in) {
             continue;
           }
         }
-        group = g_tmp+".";
+        group = g_tmp + ".";
         // a start of group "[groupname]"
         line.clear();
         continue;
       }
     }
-    parse_line(group+line);
-
+    parse_line(group + line);
+  }
   }
   make_options();
 }
@@ -420,6 +424,7 @@ void Parser::parse_cmdline(int argc, char *argv[]) {
   parse_cmdline(args_to_strings(argc, argv));
 }
 
+SWC_SHOULD_NOT_INLINE
 void Parser::parse_cmdline(const Strings& raw_strings) {
 
   if(raw_strings.empty()) {
@@ -445,7 +450,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
 
       // if not arg with name=Value
       if(name.find_first_of("=") == std::string::npos){
-        opt.append("=");
+        opt += '=';
 
         if(!config.has(name) || !config.get_default(name)->is_zero_token()) {
           if(len_o > n) {
@@ -453,7 +458,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
             continue;
           }
         }
-        opt.append("1"); // zero-token true default
+        opt += '1'; // zero-token true default
       }
     } else {
       // position based name with position's value
@@ -484,6 +489,7 @@ void Parser::parse_cmdline(const Strings& raw_strings) {
   make_options();
 }
 
+SWC_SHOULD_NOT_INLINE
 void Parser::parse_line(const std::string& line) {
   size_t at = line.find_first_of("="); // is a cfg type
   if(at == std::string::npos)
@@ -528,6 +534,7 @@ void Parser::set_pos_parse(const std::string& name, const std::string& value) {
   raw_opts[name].emplace_back(value);
 }
 
+SWC_SHOULD_NOT_INLINE
 bool Parser::parse_opt(const std::string& s){
   size_t at = s.find_first_of("=");
   if(at == std::string::npos)
@@ -545,6 +552,7 @@ bool Parser::parse_opt(const std::string& s){
   return true;
 }
 
+SWC_SHOULD_NOT_INLINE
 void Parser::make_options() {
   for(const auto& kv : raw_opts) {
     if(!config.has(kv.first) && m_unregistered)
@@ -561,6 +569,7 @@ void Parser::make_options() {
 }
 
 // convert, validate and add property to options
+SWC_SHOULD_NOT_INLINE
 void Parser::add_opt(const std::string& name, Property::Value::Ptr p,
                      const Strings& raw_opt) {
   auto tmp = p ? p : str();
@@ -582,15 +591,15 @@ const Parser::Options& Parser::get_options() const noexcept {
 }
 
 void Parser::print(std::ostream& os) const {
-  os << "*** Raw Parsed Options:\n";
+  os << "*** Raw Parsed Options:" << '\n';
   for (const auto& kv : raw_opts)
-    os << kv.first << "=" << format_list(kv.second) << "\n";
+    os << kv.first << '=' << format_list(kv.second) << '\n';
 }
 
 void Parser::print_options(std::ostream& os) const {
-  os << "*** Parsed Options:\n";
+  os << "*** Parsed Options:" << '\n';
   for(const auto& kv : m_opts.map)
-    os << kv.first << "=" << kv.second->to_string() << "\n";
+    os << kv.first << '=' << kv.second->to_string() << '\n';
 }
 
 std::ostream& operator<<(std::ostream& os, const Parser& prs) {

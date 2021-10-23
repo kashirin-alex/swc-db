@@ -8,6 +8,8 @@
 
 namespace SWC{ namespace Config {
 
+
+SWC_SHOULD_NOT_INLINE
 void init_comm_options(Settings* settings) {
   settings->file_desc.add_options()
     ("addr", strs(),

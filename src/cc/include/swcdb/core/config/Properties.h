@@ -64,6 +64,7 @@ class Properties {
   Property::Value::Ptr get_ptr(const char* name, bool null_ok=false) const;
 
   template <typename T>
+  SWC_SHOULD_NOT_INLINE
   T* get(const char* name) const {
     return Property::Value::get_pointer<T>(get_ptr(name));
   }

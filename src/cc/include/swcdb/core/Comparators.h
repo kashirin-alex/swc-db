@@ -266,8 +266,8 @@ bool sbs(const uint8_t* p1, uint32_t p1_len,
 }
 
 extern SWC_CAN_INLINE
-bool po_sbs(const uint8_t* p1, uint32_t p1_len,
-            const uint8_t* p2, uint32_t p2_len) noexcept {
+bool SWC_PURE_FUNC po_sbs(const uint8_t* p1, uint32_t p1_len,
+                          const uint8_t* p2, uint32_t p2_len) noexcept {
   if(p1_len > p2_len)
     return false;
   const uint8_t* p1_end = p1 + p1_len;
@@ -280,8 +280,8 @@ bool po_sbs(const uint8_t* p1, uint32_t p1_len,
 }
 
 extern SWC_CAN_INLINE
-bool fo_sbs(const uint8_t* p1, uint32_t p1_len,
-            const uint8_t* p2, uint32_t p2_len) noexcept {
+bool SWC_PURE_FUNC fo_sbs(const uint8_t* p1, uint32_t p1_len,
+                          const uint8_t* p2, uint32_t p2_len) noexcept {
   if(p1_len > p2_len)
     return false;
   bool start = false;

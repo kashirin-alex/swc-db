@@ -8,6 +8,8 @@
 
 namespace SWC{ namespace Config {
 
+
+SWC_SHOULD_NOT_INLINE
 void init_client_options(Settings* settings) {
   settings->cmdline_desc.add_options()
     ("swc.cfg.dyn.period", g_i32(600000),

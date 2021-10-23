@@ -54,7 +54,7 @@ class Settings final : public Properties {
 
   std::string usage_str(const char *usage = nullptr);
 
-  void check_dynamic_files();
+  void check_dynamic_files() noexcept;
 
   private:
 
@@ -94,6 +94,7 @@ class Config final {
 
   typedef std::shared_ptr<Config> Ptr;
 
+  SWC_SHOULD_NOT_INLINE
   static void init(
         int argc,
         char** argv,
@@ -113,7 +114,7 @@ class Config final {
   }
 
   static SWC::Config::Settings::Ptr& settings() {
-    SWC_ASSERT(m_env);
+    //SWC_ASSERT(m_env);
     return m_env->m_settings;
   }
 

@@ -87,7 +87,7 @@ class AppContext final : public Comm::AppContext {
     if(period->get()) {
       Env::Mngr::io()->set_periodic_timer(
         period,
-        [](){Env::Config::settings()->check_dynamic_files();}
+        []() noexcept { Env::Config::settings()->check_dynamic_files(); }
       );
     }
 

@@ -1015,7 +1015,7 @@ int main(int argc, char** argv) {
   if(period->get()) {
     io->set_periodic_timer(
       period,
-      [](){SWC::Env::Config::settings()->check_dynamic_files();}
+      []() noexcept { SWC::Env::Config::settings()->check_dynamic_files(); }
     );
   }
 

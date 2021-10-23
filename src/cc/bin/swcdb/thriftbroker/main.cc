@@ -27,11 +27,13 @@ namespace SWC {
  */
 namespace ThriftBroker {
 
+namespace {
+  typedef Core::Vector<std::unique_ptr<std::thread>> Threads_t;
+  typedef Core::Vector<std::shared_ptr<thrift::server::TThreadPoolServer>> Servers_t;
+}
 
-int run() {
-  SWC_TRY_OR_LOG("",
-
-  {
+SWC_SHOULD_NOT_INLINE
+AppContext::Ptr make_service(Threads_t& threads, Servers_t& servers) {
   auto settings = Env::Config::settings();
 
   uint32_t reactors = 1; // settings->get_i32("swc.ThriftBroker.reactors");
@@ -51,7 +53,7 @@ int run() {
   } else {
     SWC_LOGF(
       LOG_FATAL, "No implementation for transport=%s", transport.c_str());
-    return 1;
+    SWC_QUICK_EXIT(EXIT_FAILURE);
   }
 
   Config::Strings addrs;
@@ -87,8 +89,6 @@ int run() {
   tmp.push_back(std::cref(endpoints.front()));
   app_ctx->init(host, tmp); //missing socket->getLocalAddr
   }
-  Core::Vector<std::unique_ptr<std::thread>> threads;
-  Core::Vector<std::shared_ptr<thrift::server::TThreadPoolServer>> servers;
 
   for(uint32_t reactor=0; reactor < reactors; ++reactor) {
 
@@ -148,9 +148,11 @@ int run() {
       );
     }
   }
+  return app_ctx;
+}
 
-  app_ctx->wait_while_run();
-
+SWC_SHOULD_NOT_INLINE
+int exiting(Threads_t& threads, Servers_t& servers) {
   for(auto& server : servers) {
     server->stop();
     server->getThreadManager()->stop();
@@ -165,14 +167,21 @@ int run() {
   SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
 
   Env::Config::reset();
-  }
 
   std::this_thread::sleep_for(std::chrono::seconds(1));
   return 0;
-  );
+}
 
+int run() {
+  SWC_TRY_OR_LOG("",
+  Threads_t threads;
+  Servers_t servers;
+  make_service(threads, servers)->wait_while_run();
+  return exiting(threads, servers);
+  );
   return 1;
 }
+
 
 
 }} //namespace SWC::ThriftBroker

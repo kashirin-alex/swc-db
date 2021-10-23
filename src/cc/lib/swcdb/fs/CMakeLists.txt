@@ -26,6 +26,7 @@ ADD_LIB_TARGET(
   SRCS      ${swcdb_fscore_sources}
   TARGETS   ${SWC_LIB_CORE_TARGET}
             ${SWC_LIB_CORE_CONFIG_TARGET}
+            ${BUILTIN_FS_TARGETS}
   SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
             ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
   STATIC    ${SWC_LIB_CORE_LIBRARIES_STATIC}
@@ -70,13 +71,18 @@ set(swcdb_fsBroker_sources
 
   Broker/Protocol/req/Base.cc
 )
+set(cross_target)
+if(NOT SWC_BUILD_PKG AND NOT swcdb_fs_broker IN_LIST BUILTIN_FS_TARGETS)
+  set(cross_target swcdb_fs)
+endif()
+
 ADD_LIB_TARGET(
   NAME      swcdb_fs_broker
   SRCS      ${swcdb_fsBroker_sources}
   TARGETS   ${SWC_LIB_CORE_TARGET}
             ${SWC_LIB_CORE_CONFIG_TARGET}
             ${SWC_LIB_CORE_COMM_TARGET}
-            ${SWC_LIB_FS_TARGET}
+            ${cross_target}
   SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
             ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
             ${SWC_LIB_CORE_COMM_LIBRARIES_SHARED}
@@ -101,12 +107,18 @@ set(swcdb_fsLocal_sources
   ${SWC_VERSION_SRC}
   Local/FileSystem.cc
 )
+
+set(cross_target)
+if(NOT SWC_BUILD_PKG AND NOT swcdb_fs_local IN_LIST BUILTIN_FS_TARGETS)
+  set(cross_target swcdb_fs)
+endif()
+
 ADD_LIB_TARGET(
   NAME      swcdb_fs_local
   SRCS      ${swcdb_fsLocal_sources}
   TARGETS   ${SWC_LIB_CORE_TARGET}
             ${SWC_LIB_CORE_CONFIG_TARGET}
-            ${SWC_LIB_FS_TARGET}
+            ${cross_target}
   SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
             ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
             ${SWC_LIB_FS_LIBRARIES_SHARED}
@@ -132,6 +144,10 @@ if(CEPH_LIBRARIES_SHARED)
     ${SWC_VERSION_SRC}
     Ceph/FileSystem.cc
   )
+  set(cross_target)
+  if(NOT SWC_BUILD_PKG AND NOT swcdb_fs_ceph IN_LIST BUILTIN_FS_TARGETS)
+    set(cross_target swcdb_fs)
+  endif()
   if(NOT CEPH_LIBRARIES_STATIC)
     set(CEPH_LIBRARIES_STATIC ${CEPH_LIBRARIES_SHARED})
   endif()
@@ -140,7 +156,7 @@ if(CEPH_LIBRARIES_SHARED)
     SRCS      ${swcdb_fsCeph_sources}
     TARGETS   ${SWC_LIB_CORE_TARGET}
               ${SWC_LIB_CORE_CONFIG_TARGET}
-              ${SWC_LIB_FS_TARGET}
+              ${cross_target}
     SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
               ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
               ${SWC_LIB_FS_LIBRARIES_SHARED}
@@ -175,12 +191,17 @@ if(HADOOP_LIBRARIES_SHARED AND PROTOBUF_LIBRARIES_SHARED AND GSASL_LIBRARIES_SHA
     Hadoop/FileSystem.cc
   )
 
+  set(cross_target)
+  if(NOT SWC_BUILD_PKG AND NOT swcdb_fs_${hadoop_name} IN_LIST BUILTIN_FS_TARGETS)
+    set(cross_target swcdb_fs)
+  endif()
+
   ADD_LIB_TARGET(
     NAME      swcdb_fs_${hadoop_name}
     SRCS      ${swcdb_fsHadoop_sources}
     TARGETS   ${SWC_LIB_CORE_TARGET}
               ${SWC_LIB_CORE_CONFIG_TARGET}
-              ${SWC_LIB_FS_TARGET}
+              ${cross_target}
     SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
               ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
               ${SWC_LIB_FS_LIBRARIES_SHARED}
@@ -236,12 +257,18 @@ if(HADOOP_JVM_LIBRARIES_SHARED) # static require (AND JAVA_LIBRARIES_SHARED)
     ${SWC_VERSION_SRC}
     HadoopJVM/FileSystem.cc
   )
+
+  set(cross_target)
+  if(NOT SWC_BUILD_PKG AND NOT swcdb_fs_hadoop_jvm IN_LIST BUILTIN_FS_TARGETS)
+    set(cross_target swcdb_fs)
+  endif()
+
   ADD_LIB_TARGET(
     NAME      swcdb_fs_hadoop_jvm
     SRCS      ${swcdb_fsHadoop_jvm_sources}
     TARGETS   ${SWC_LIB_CORE_TARGET}
               ${SWC_LIB_CORE_CONFIG_TARGET}
-              ${SWC_LIB_FS_TARGET}
+              ${cross_target}
     SHARED    ${SWC_LIB_CORE_LIBRARIES_SHARED}
               ${SWC_LIB_CORE_CONFIG_LIBRARIES_SHARED}
               ${SWC_LIB_FS_LIBRARIES_SHARED}

@@ -92,7 +92,7 @@ class Blocks final {
 
   private:
 
-  size_t _size();
+  size_t SWC_PURE_FUNC _size() const noexcept;
 
   size_t _size_bytes();
 
@@ -102,7 +102,7 @@ class Blocks final {
 
   void init_blocks(int& err);
 
-  size_t _get_block_idx(const Block::Ptr blk) const;
+  size_t SWC_PURE_FUNC _get_block_idx(const Block::Ptr blk) const noexcept;
 
   size_t _narrow(const DB::Cell::Key& key) const;
 

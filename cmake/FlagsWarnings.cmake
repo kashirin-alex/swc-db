@@ -29,9 +29,11 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op -Wno-error=logical-op")
 
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=compatible-local -Wshadow=local -Wshadow=global -Wshadow")
-  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=262144")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=shadow=compatible-local -Wno-error=shadow=local -Wno-error=shadow=global -Wno-error=shadow")
 
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtrampolines")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstack-usage=16384 -Wno-error=stack-usage=16384")
+
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtrampolines")
 
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=const -Wno-error=suggest-attribute=const")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-attribute=pure -Wno-error=suggest-attribute=pure")

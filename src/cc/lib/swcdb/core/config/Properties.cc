@@ -16,6 +16,7 @@ void Properties::reset() noexcept {
   m_map.clear();
 }
 
+SWC_SHOULD_NOT_INLINE
 void Properties::load_from(const Config::Parser::Options& opts,
                            bool only_guarded) {
   for(const auto& kv : opts.map) {
@@ -27,22 +28,25 @@ void Properties::load_from(const Config::Parser::Options& opts,
   }
 }
 
+SWC_SHOULD_NOT_INLINE
 void Properties::load(const std::string& fname,
                       const Config::ParserConfig& filedesc,
                       const Config::ParserConfig& cmddesc,
                       bool allow_unregistered,
                       bool only_guarded) {
   Config::Parser prs(false);
-  prs.config.add(filedesc);
-  prs.config.add(cmddesc);
+  {
+    prs.config.add(filedesc);
+    prs.config.add(cmddesc);
 
-  std::ifstream in(fname.c_str());
-  prs.parse_filedata(in);
-
+    std::ifstream in(fname.c_str());
+    prs.parse_filedata(in);
+  }
   load_from(prs.get_options(), only_guarded);
   (void)allow_unregistered;
 }
 
+SWC_SHOULD_NOT_INLINE
 void Properties::reload(const std::string& fname,
                         const Config::ParserConfig& filedesc,
                         const Config::ParserConfig& cmddesc) {
@@ -62,6 +66,7 @@ void Properties::alias(const char* primary, const char* secondary) {
   m_alias_map[secondary] = primary;
 }
 
+SWC_SHOULD_NOT_INLINE
 void Properties::set(const char* name, Property::Value::Ptr p) {
   auto ptr = get_ptr(name, true);
   if(!ptr) {
@@ -73,6 +78,7 @@ void Properties::set(const char* name, Property::Value::Ptr p) {
   }
 }
 
+SWC_SHOULD_NOT_INLINE
 bool Properties::has(const char* name) const noexcept {
   for(auto it=m_map.cbegin(); it!=m_map.cend(); ++it) {
     if(Condition::str_eq(it->first.c_str(), name))
@@ -109,7 +115,7 @@ void Properties::remove(const char* name) {
   }
 }
 
-
+SWC_SHOULD_NOT_INLINE
 Property::Value::Ptr Properties::get_ptr(const char* name,
                                          bool null_ok) const {
   for(auto it=m_map.cbegin(); it!=m_map.cend(); ++it) {

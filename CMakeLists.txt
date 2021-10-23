@@ -62,6 +62,9 @@ include(FlagsBuild)
 # Compiler Warning Flags
 include(FlagsWarnings)
 
+# Compiler Profile Flags
+include(FlagsProfile)
+
 
 
 if(NOT SWC_INSTALL_DEP_LIBS)

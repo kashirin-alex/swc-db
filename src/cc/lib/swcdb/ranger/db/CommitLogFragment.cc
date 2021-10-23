@@ -409,7 +409,7 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
     release();
 }
 
-SWC_CAN_INLINE
+SWC_SHOULD_NOT_INLINE
 void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
   if(!marked_removed()) {
     if(m_buffer.size) {

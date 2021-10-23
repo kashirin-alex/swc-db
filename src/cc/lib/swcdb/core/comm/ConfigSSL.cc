@@ -11,7 +11,7 @@
 
 namespace SWC { namespace Comm {
 
-
+SWC_SHOULD_NOT_INLINE
 ConfigSSL::ConfigSSL(const Config::Settings& settings, bool is_client)
                     : ctx(is_client
                             ? asio::ssl::context::tlsv13_client

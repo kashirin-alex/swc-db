@@ -9,6 +9,7 @@
 namespace SWC { namespace Config {
 
 
+SWC_SHOULD_NOT_INLINE
 void init_fs_options(Settings* settings) {
   settings->file_desc.add_options()
     ("swc.fs.path.data", str("swcdb/"),

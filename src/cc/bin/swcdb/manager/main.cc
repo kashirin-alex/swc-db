@@ -20,12 +20,10 @@ namespace SWC {
 namespace Manager {
 
 
-int run() {
-  SWC_TRY_OR_LOG("",
 
-  {
+SWC_SHOULD_NOT_INLINE
+Comm::server::SerializedServer::Ptr make_service() {
   AppContext::Ptr app_ctx(new AppContext());
-
   Comm::server::SerializedServer::Ptr srv(
     new Comm::server::SerializedServer(
       *Env::Config::settings(),
@@ -37,20 +35,29 @@ int run() {
     )
   );
   app_ctx->set_srv(srv);
-  srv->run();
+  return srv;
+}
 
+SWC_SHOULD_NOT_INLINE
+int exiting() {
   SWC_LOG(LOG_INFO, "Exit");
   SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
 
   Env::Config::reset();
-  }
 
   std::this_thread::sleep_for(std::chrono::seconds(1));
   return 0;
-  );
+}
 
+SWC_SHOULD_NOT_INLINE
+int run() {
+  SWC_TRY_OR_LOG("",
+    make_service()->run();
+    return exiting();
+  );
   return 1;
 }
+
 
 
 }} // namespace SWC::Manager

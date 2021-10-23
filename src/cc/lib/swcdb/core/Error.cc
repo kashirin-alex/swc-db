@@ -22,7 +22,9 @@ namespace SWC {
 
 namespace {
 
-const std::unordered_map<int, const char *> text_map {
+SWC_SHOULD_NOT_INLINE
+void set_errors_map_core(std::unordered_map<int, const char *>& tmp_map) {
+  tmp_map.insert({
 
   { Error::EXCEPTION_BAD,                  "Bad Exception" },
   { Error::EXCEPTION_UNKNOWN,              "Unknown Exception" },
@@ -46,7 +48,14 @@ const std::unordered_map<int, const char *> text_map {
   { Error::INCOMPATIBLE_OPTIONS,            "incompatible options" },
 
   { Error::SERIALIZATION_INPUT_OVERRUN,     "SERIALIZATION input overrun" },
-  { Error::CHECKSUM_MISMATCH,               "checksum mismatch" },
+  { Error::CHECKSUM_MISMATCH,               "checksum mismatch" }
+
+  });
+}
+
+SWC_SHOULD_NOT_INLINE
+void set_errors_map_core_comm(std::unordered_map<int, const char *>& tmp_map) {
+  tmp_map.insert({
 
   { Error::COMM_NOT_CONNECTED,              "COMM not connected" },
   { Error::COMM_CONNECT_ERROR,              "COMM connect error" },
@@ -61,11 +70,25 @@ const std::unordered_map<int, const char *> text_map {
   { Error::NOT_IMPLEMENTED,                 "not implemented"},
 
   { Error::ENCODER_ENCODE,                  "encoder decode-error" },
-  { Error::ENCODER_DECODE,                  "encoder encode-error" },
+  { Error::ENCODER_DECODE,                  "encoder encode-error" }
+
+  });
+}
+
+SWC_SHOULD_NOT_INLINE
+void set_errors_map_core_config(std::unordered_map<int, const char *>& tmp_map) {
+  tmp_map.insert({
 
   { Error::CONFIG_BAD_CFG_FILE,             "bad cfg file"},
   { Error::CONFIG_GET_ERROR,                "failed to get config value"},
-  { Error::CONFIG_BAD_VALUE,                "bad config value"},
+  { Error::CONFIG_BAD_VALUE,                "bad config value"}
+
+  });
+}
+
+SWC_SHOULD_NOT_INLINE
+void set_errors_map_services(std::unordered_map<int, const char *>& tmp_map) {
+  tmp_map.insert({
 
   { Error::SERVER_NOT_READY,                "server not ready" },
   { Error::SERVER_SHUTTING_DOWN,            "server shutting down" },
@@ -81,7 +104,14 @@ const std::unordered_map<int, const char *> text_map {
   { Error::FS_BAD_FILE_HANDLE,              "FS bad file handle" },
   { Error::FS_PERMISSION_DENIED,            "FS permission denied" },
   { Error::FS_EOF,                          "FS end of file" },
-  { Error::FS_PATH_NOT_FOUND,               "FS destination path" },
+  { Error::FS_PATH_NOT_FOUND,               "FS destination path" }
+
+  });
+}
+
+SWC_SHOULD_NOT_INLINE
+void set_errors_map_db(std::unordered_map<int, const char *>& tmp_map) {
+  tmp_map.insert({
 
   { Error::COLUMN_NOT_READY,                "Column is not ready"},
   { Error::COLUMN_NOT_EXISTS,               "Column does not exist"},
@@ -112,9 +142,26 @@ const std::unordered_map<int, const char *> text_map {
 
   { Error::CLIENT_DATA_REMAINED,            "Data remained on client input" },
   { Error::CLIENT_MISMATCHED_CID,           "cid of response mismatching the cid of request"},
-  { Error::CLIENT_STOPPING,                 "client stopping"},
+  { Error::CLIENT_STOPPING,                 "client stopping"}
 
-};
+  });
+}
+
+SWC_SHOULD_NOT_INLINE
+std::unordered_map<int, const char *> get_errors_map() {
+  std::unordered_map<int, const char *> tmp_map;
+  tmp_map.reserve(74);
+  set_errors_map_core(tmp_map);
+  set_errors_map_core_config(tmp_map);
+  set_errors_map_core_comm(tmp_map);
+  set_errors_map_services(tmp_map);
+  set_errors_map_db(tmp_map);
+  return tmp_map;
+}
+
+
+
+const std::unordered_map<int, const char *> text_map = get_errors_map();
 
 static const char ERROR_NOT_REGISTERED[] = "ERROR NOT REGISTERED";
 

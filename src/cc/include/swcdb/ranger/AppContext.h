@@ -40,6 +40,7 @@ class AppContext final : public Comm::AppContext {
   public:
   typedef std::shared_ptr<AppContext> Ptr;
 
+  SWC_SHOULD_NOT_INLINE
   static Ptr make() {
     auto settings = Env::Config::settings();
 
@@ -76,7 +77,7 @@ class AppContext final : public Comm::AppContext {
     if(period->get()) {
       Env::Rgr::io()->set_periodic_timer(
         period,
-        [](){Env::Config::settings()->check_dynamic_files();}
+        []() noexcept { Env::Config::settings()->check_dynamic_files(); }
       );
     }
 

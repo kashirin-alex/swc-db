@@ -190,17 +190,14 @@ class Item_Net : public Base {
     bool secure = false;
     _do_layer:
     for(auto& addr : m_addresses[secure]) {
-      DB::Cell::KeyVec key;
-      key.reserve(parent_key.size() + 3);
-      key.copy(parent_key);
-      key.add("net");
-      key.add(addr->addr.to_string());
-      key.add(secure ? "SECURE" : "PLAIN");
 
       DB::Cells::Cell cell;
       cell.flag = DB::Cells::INSERT;
       cell.set_time_order_desc(true);
-      cell.key.add(key);
+      cell.key.add(parent_key);
+      cell.key.add("net");
+      cell.key.add(addr->addr.to_string());
+      cell.key.add(secure ? "SECURE" : "PLAIN");
 
 
       Core::Vector<int64_t>     ids;
@@ -286,6 +283,7 @@ class Item_Net : public Base {
         sz += names[i].size();
         sz += labels[i].size();
       }
+      {
       DB::Cell::Serial::Value::FieldsWriter wfields;
       wfields.ensure(sz);
       wfields.add(ids);
@@ -294,6 +292,7 @@ class Item_Net : public Base {
       wfields.add(aggregations);
       wfields.add(relations);
       cell.set_value(DB::Types::Encoder::ZSTD, wfields.base, wfields.fill());
+      }
       colp->add(cell);
     }
 
@@ -781,7 +780,8 @@ class Item_FS : public Base {
   virtual void report(uint64_t for_ns,
                       client::Query::Update::Handlers::Base::Column* colp,
                       const DB::Cell::KeyVec& parent_key) override {
-    FS::Statistics stats(true);
+    std::unique_ptr<FS::Statistics> statsp(new FS::Statistics(true));
+    FS::Statistics& stats(*statsp.get());
     fs->statistics.gather(stats);
     uint64_t open_fds = fs->statistics.fds_count.load();
 
@@ -805,17 +805,13 @@ class Item_FS : public Base {
     if(!sz)
       return;
 
-    DB::Cell::KeyVec key;
-    key.reserve(parent_key.size() + 2);
-    key.copy(parent_key);
-    key.add("fs");
-    key.add(FS::to_string(fs->get_type()));
-
     DB::Cells::Cell cell;
     cell.flag = DB::Cells::INSERT;
     cell.set_time_order_desc(true);
     cell.set_timestamp(for_ns);
-    cell.key.add(key);
+    cell.key.add(parent_key);
+    cell.key.add("fs");
+    cell.key.add(FS::to_string(fs->get_type()));
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(sz);

@@ -65,7 +65,7 @@ class AppContext final : virtual public BrokerIfFactory,
     if(period->get()) {
       Env::IoCtx::io()->set_periodic_timer(
         period,
-        [](){Env::Config::settings()->check_dynamic_files();}
+        []() noexcept { Env::Config::settings()->check_dynamic_files(); }
       );
     }
     if((m_metrics = Env::ThriftBroker::metrics_track())) {

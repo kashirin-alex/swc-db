@@ -81,11 +81,13 @@ class ParserConfig final {
   int           line_length;
   bool          own;
 
-
+  SWC_SHOULD_NOT_INLINE
   explicit ParserConfig(int line_len=0, bool own=true) noexcept;
 
+  SWC_SHOULD_NOT_INLINE
   explicit ParserConfig(const char* usage, int line_len=0, bool own=true);
 
+  SWC_SHOULD_NOT_INLINE
   explicit ParserConfig(const ParserConfig& other);
 
   ~ParserConfig() noexcept;
@@ -151,6 +153,7 @@ class Parser final {
     bool  own;
     std::map<std::string, Property::Value::Ptr> map;
 
+    SWC_SHOULD_NOT_INLINE
     Options(bool own=true) noexcept;
 
     ~Options() noexcept;
@@ -158,6 +161,7 @@ class Parser final {
     void free() noexcept;
   };
 
+  SWC_SHOULD_NOT_INLINE
   explicit Parser(bool unregistered=false) noexcept;
 
   ~Parser() noexcept;

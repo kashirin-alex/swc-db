@@ -43,7 +43,7 @@ endif()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   SET (SWC_MALLOC_NOT_INSISTENT ON)
 endif()
-  
+
 if(SWC_MALLOC_NOT_INSISTENT)
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWC_MALLOC_NOT_INSISTENT")
 endif(SWC_MALLOC_NOT_INSISTENT)
@@ -98,7 +98,7 @@ else()
     if (O_LEVEL STREQUAL "2")
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-  
+
       if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-linker-plugin -ffat-lto-objects")
         SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdevirtualize-at-ltrans")
@@ -129,7 +129,7 @@ else()
     if(O_LEVEL MATCHES "[4-7]")
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
       SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-  
+
       if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-linker-plugin -ffat-lto-objects")
         SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdevirtualize-at-ltrans")
@@ -159,3 +159,4 @@ else()
 endif ()
 
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpack-struct=1 -fshort-enums")
+# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsplit-stack ")

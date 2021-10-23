@@ -64,7 +64,7 @@ class ColumnsUnloadRsp final : public Serializable {
 
   private:
 
-  size_t internal_encoded_length() const override {
+  size_t SWC_PURE_FUNC internal_encoded_length() const override {
     size_t sz = Serialization::encoded_length_vi32(err);
     if(err)
       return sz;

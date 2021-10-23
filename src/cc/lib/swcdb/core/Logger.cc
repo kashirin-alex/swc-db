@@ -56,6 +56,7 @@ uint8_t LogWriter::from_string(const std::string& loglevel) noexcept {
   return -1;
 }
 
+SWC_SHOULD_NOT_INLINE
 LogWriter::LogWriter(const std::string& name, const std::string& logs_path)
                     : m_name(name), m_logs_path(logs_path),
                       m_file_out(stdout), //m_file_err(stderr),
@@ -65,6 +66,7 @@ LogWriter::LogWriter(const std::string& name, const std::string& logs_path)
 }
 LogWriter::~LogWriter() noexcept { }
 
+SWC_SHOULD_NOT_INLINE
 void LogWriter::initialize(const std::string& name) {
   //std::cout << " LogWriter::initialize name=" << name
   //          << " ptr=" << size_t(this) << "\n";
@@ -73,6 +75,7 @@ void LogWriter::initialize(const std::string& name) {
   m_name.append(name);
 }
 
+SWC_SHOULD_NOT_INLINE
 void LogWriter::daemon(const std::string& logs_path) {
   //std::cout << " LogWriter::daemon logs_path=" << logs_path
   //          << " ptr=" << size_t(this) << "\n";

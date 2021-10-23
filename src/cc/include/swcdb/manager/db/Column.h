@@ -381,7 +381,7 @@ class Column final : private Core::Vector<Range::Ptr> {
       m_check_ts = 0;
   }
 
-  rid_t _get_next_rid() {
+  rid_t SWC_PURE_FUNC _get_next_rid() const noexcept {
     rid_t rid = 0;
     for(bool unused; ++rid; ) {
       unused = true;

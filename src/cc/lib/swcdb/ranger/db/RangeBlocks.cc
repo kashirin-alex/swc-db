@@ -428,7 +428,7 @@ void Blocks::print(std::ostream& out, bool minimal) {
 }
 
 SWC_CAN_INLINE
-size_t Blocks::_size() {
+size_t Blocks::_size() const noexcept {
   size_t sz = 0;
   for(Block::Ptr blk=m_block; blk; blk=blk->next)
     ++sz;
@@ -501,7 +501,7 @@ void Blocks::init_blocks(int& err) {
 }
 
 SWC_CAN_INLINE
-size_t Blocks::_get_block_idx(Block::Ptr blk) const {
+size_t Blocks::_get_block_idx(Block::Ptr blk) const noexcept {
   for(auto it=m_blocks_idx.cbegin(); it != m_blocks_idx.cend();++it)
     if(*it == blk)
       return it - m_blocks_idx.cbegin();

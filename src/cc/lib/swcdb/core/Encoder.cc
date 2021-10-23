@@ -148,75 +148,101 @@ void Encoder::decode(
 }
 
 
+
+namespace {
+
+SWC_SHOULD_NOT_INLINE
+bool encode_zlib(const uint8_t* src, size_t src_sz,
+                 size_t* sz_enc, DynamicBuffer& output,
+                 uint32_t reserve, bool ok_more) {
+  z_stream strm;
+  memset(&strm, 0, sizeof(z_stream));
+  strm.zalloc = Z_NULL;
+  strm.zfree = Z_NULL;
+  strm.opaque = Z_NULL;
+  if(::deflateInit(&strm, Z_DEFAULT_COMPRESSION) == Z_OK) {
+
+    uint32_t avail_out = src_sz + 6 + (((src_sz / 16000) + 1) * 5);
+    output.ensure(reserve + avail_out);
+    output.ptr += reserve;
+
+    strm.avail_out = avail_out;
+    strm.next_out = output.ptr;
+    strm.avail_in = src_sz;
+    strm.next_in = const_cast<Bytef*>(src);
+    if(::deflate(&strm, Z_FINISH) == Z_STREAM_END)
+      *sz_enc = avail_out - strm.avail_out;
+  }
+  ::deflateEnd(&strm);
+  if(*sz_enc && (ok_more || *sz_enc < src_sz)) {
+    output.ptr += *sz_enc;
+    return true;
+  }
+  return false;
+}
+
+SWC_SHOULD_NOT_INLINE
+bool encode_snappy(const uint8_t* src, size_t src_sz,
+                   size_t* sz_enc, DynamicBuffer& output,
+                   uint32_t reserve, bool ok_more) {
+  output.ensure(reserve + snappy::MaxCompressedLength(src_sz));
+  output.ptr += reserve;
+  snappy::RawCompress(
+    reinterpret_cast<const char*>(src), src_sz,
+    reinterpret_cast<char*>(output.ptr), sz_enc);
+  if(*sz_enc && (ok_more || *sz_enc < src_sz)) {
+    output.ptr += *sz_enc;
+    return true;
+  }
+  return false;
+}
+
+SWC_SHOULD_NOT_INLINE
+bool encode_zstd(const uint8_t* src, size_t src_sz,
+                 size_t* sz_enc, DynamicBuffer& output,
+                 uint32_t reserve, bool ok_more) {
+  size_t const avail_out = ZSTD_compressBound(src_sz);
+  output.ensure(reserve + avail_out);
+  output.ptr += reserve;
+
+  *sz_enc = ZSTD_compress(
+    static_cast<void*>(output.ptr), avail_out,
+    static_cast<void*>(const_cast<uint8_t*>(src)), src_sz,
+    ZSTD_CLEVEL_DEFAULT
+  );
+  if(*sz_enc && !ZSTD_isError(*sz_enc) && (ok_more || *sz_enc < src_sz)) {
+    output.ptr += *sz_enc;
+    return true;
+  }
+  return false;
+}
+
+}
+
 void Encoder::encode(
             int&, Encoder::Type encoder,
             const uint8_t* src, size_t src_sz,
             size_t* sz_enc, DynamicBuffer& output,
             uint32_t reserve, bool no_plain_out, bool ok_more) {
-
   switch(encoder) {
     case Encoder::Type::ZLIB: {
-
-      z_stream strm;
-      memset(&strm, 0, sizeof(z_stream));
-      strm.zalloc = Z_NULL;
-      strm.zfree = Z_NULL;
-      strm.opaque = Z_NULL;
-      if(::deflateInit(&strm, Z_DEFAULT_COMPRESSION) == Z_OK) {
-
-        uint32_t avail_out = src_sz + 6 + (((src_sz / 16000) + 1) * 5);
-        output.ensure(reserve + avail_out);
-        output.ptr += reserve;
-
-        strm.avail_out = avail_out;
-        strm.next_out = output.ptr;
-        strm.avail_in = src_sz;
-        strm.next_in = const_cast<Bytef*>(src);
-        if(::deflate(&strm, Z_FINISH) == Z_STREAM_END)
-          *sz_enc = avail_out - strm.avail_out;
-      }
-      ::deflateEnd(&strm);
-      if(*sz_enc && (ok_more || *sz_enc < src_sz)) {
-        output.ptr += *sz_enc;
+      if(encode_zlib(src, src_sz, sz_enc, output, reserve, ok_more))
         return;
-      }
       break;
     }
-
     case Encoder::Type::SNAPPY: {
-      output.ensure(reserve + snappy::MaxCompressedLength(src_sz));
-      output.ptr += reserve;
-      snappy::RawCompress(
-        reinterpret_cast<const char*>(src), src_sz,
-        reinterpret_cast<char*>(output.ptr), sz_enc);
-      if(*sz_enc && (ok_more || *sz_enc < src_sz)) {
-        output.ptr += *sz_enc;
+      if(encode_snappy(src, src_sz, sz_enc, output, reserve, ok_more))
         return;
-      }
       break;
     }
-
     case Encoder::Type::ZSTD: {
-      size_t const avail_out = ZSTD_compressBound(src_sz);
-      output.ensure(reserve + avail_out);
-      output.ptr += reserve;
-
-      *sz_enc = ZSTD_compress(
-        static_cast<void*>(output.ptr), avail_out,
-        static_cast<void*>(const_cast<uint8_t*>(src)), src_sz,
-        ZSTD_CLEVEL_DEFAULT
-      );
-      if(*sz_enc && !ZSTD_isError(*sz_enc) && (ok_more || *sz_enc < src_sz)) {
-        output.ptr += *sz_enc;
+      if(encode_zstd(src, src_sz, sz_enc, output, reserve, ok_more))
         return;
-      }
       break;
     }
-
     default:
       break;
   }
-
   *sz_enc = 0;
   if(no_plain_out)
     return;

@@ -25,6 +25,13 @@ void MutableVec::configure(uint32_t split,
     cells->configure(max_revs, ttl, type);
 }
 
+void MutableVec::add_sorted(const Cell& cell) {
+  if(Vec::empty())
+    push_back(new Mutable(key_seq, max_revs, ttl, type));
+  back()->add_sorted(cell);
+  split(*back(), cend());
+}
+
 void MutableVec::add_raw(const Cell& cell) {
   for(auto it = cbegin(); it != cend();) {
     Mutable* cells = *it;

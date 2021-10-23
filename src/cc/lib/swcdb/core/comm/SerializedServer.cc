@@ -13,7 +13,7 @@ namespace SWC { namespace Comm { namespace server {
 
 
 struct Acceptor::Mixed {
-  
+
   struct Handshaker {
     ConnHandlerSSL::Ptr conn;
     SWC_CAN_INLINE
@@ -95,7 +95,7 @@ struct Acceptor::Plain {
   }
 };
 
-
+SWC_SHOULD_NOT_INLINE
 Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
                    AppContext::Ptr& app_ctx,
                    ConfigSSL* ssl_cfg)
@@ -130,7 +130,7 @@ void Acceptor::stop() {
 }
 
 
-
+SWC_SHOULD_NOT_INLINE
 SerializedServer::SerializedServer(
     const Config::Settings& settings,
     std::string&& name,
@@ -186,18 +186,17 @@ SerializedServer::SerializedServer(
     ));
 
     for (std::size_t i = 0; i < endpoints.size(); ++i) {
-      auto& endpoint = endpoints[i];
-      bool ssl_conn = m_ssl_cfg && m_ssl_cfg->need_ssl(endpoint);
+      bool ssl_conn = m_ssl_cfg && m_ssl_cfg->need_ssl(endpoints[i]);
 
       SWC_LOG_OUT(LOG_INFO,
-        SWC_LOG_OSTREAM << "Binding On: " << endpoint
+        SWC_LOG_OSTREAM << "Binding On: " << endpoints[i]
           << ' ' << (ssl_conn ? "SECURE" : "PLAIN");
       );
 
       if(!reactor) {
         auto acceptor = asio::ip::tcp::acceptor(
           m_io_contexts.back()->executor(),
-          endpoint
+          endpoints[i]
         );
         m_acceptors.emplace_back(new Acceptor(
           acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
@@ -206,7 +205,8 @@ SerializedServer::SerializedServer(
       } else {
         auto acceptor = asio::ip::tcp::acceptor(
           m_io_contexts.back()->executor(),
-          endpoint.protocol(), dup(m_acceptors[i]->sock()->native_handle())
+          endpoints[i].protocol(),
+          dup(m_acceptors[i]->sock()->native_handle())
         );
         m_acceptors.emplace_back(new Acceptor(
           acceptor, app_ctx, ssl_conn ? m_ssl_cfg : nullptr));
@@ -225,6 +225,7 @@ SerializedServer::SerializedServer(
   }
 }
 
+SWC_SHOULD_NOT_INLINE
 void SerializedServer::run() {
   for(auto& io : m_io_contexts)
     io->pool.join();

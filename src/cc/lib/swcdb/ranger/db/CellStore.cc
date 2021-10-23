@@ -47,7 +47,7 @@ Read::Ptr Read::make(int& err, const csid_t csid, const RangePtr& range,
   );
 }
 
-SWC_CAN_INLINE
+SWC_SHOULD_NOT_INLINE
 bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
                          uint32_t& cell_revs,
                          uint32_t& blks_idx_count,
@@ -114,7 +114,7 @@ bool Read::load_trailer(int& err, FS::SmartFd::Ptr& smartfd,
   return loaded;
 }
 
-SWC_CAN_INLINE
+SWC_SHOULD_NOT_INLINE
 void Read::load_blocks_index(int& err, FS::SmartFd::Ptr& smartfd,
                               DB::Cell::Key& prev_key_end,
                               DB::Cell::Key& key_end,
