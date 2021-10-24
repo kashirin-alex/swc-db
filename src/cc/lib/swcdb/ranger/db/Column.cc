@@ -46,8 +46,8 @@ RangePtr Column::get_next(cid_t& last_rid, size_t &idx) {
   Core::MutexSptd::scope lock(m_mutex);
   if(last_rid) {
     auto it = find(last_rid);
-    if(it != end()) {
-      if(++it != end()) {
+    if(it != cend()) {
+      if(++it != cend()) {
         last_rid = it->second->rid;
         return it->second;
       }
@@ -96,7 +96,7 @@ void Column::schema_update(const DB::SchemaPrimitives& schema) {
       it->second->schema_update(compact);
   }
   if(compact)
-    Env::Rgr::compaction_schedule(100);
+    Env::Rgr::compaction_schedule(0);
 }
 
 void Column::compact() {
@@ -105,7 +105,7 @@ void Column::compact() {
     for(auto it = cbegin(); it != cend(); ++it)
       it->second->compact_require(true);
   }
-  Env::Rgr::compaction_schedule(100);
+  Env::Rgr::compaction_schedule(0);
 }
 
 

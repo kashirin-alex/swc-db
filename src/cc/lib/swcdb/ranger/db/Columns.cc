@@ -31,8 +31,8 @@ ColumnPtr Columns::get_next(cid_t& last_cid, size_t& idx) {
   Core::MutexSptd::scope lock(m_mutex);
   if(last_cid) {
     auto it = find(last_cid);
-    if(it != end()) {
-      if(++it != end()) {
+    if(it != cend()) {
+      if(++it != cend()) {
         last_cid = it->second->cfg->cid;
         return it->second;
       }

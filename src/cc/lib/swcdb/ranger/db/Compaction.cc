@@ -55,7 +55,8 @@ void Compaction::log_compact_finished() noexcept {
 
 SWC_CAN_INLINE
 bool Compaction::available() noexcept {
-  return m_running < cfg_max_range->get();
+  return m_running < cfg_max_range->get() &&
+         (!m_running || !Env::Rgr::res().is_low_mem_state());
 }
 
 void Compaction::stop() {
@@ -92,36 +93,22 @@ void Compaction::stop() {
 }
 
 SWC_CAN_INLINE
-void Compaction::schedule() {
-  schedule(cfg_check_interval->get());
-}
-
-SWC_CAN_INLINE
-void Compaction::schedule(uint32_t t_ms) {
-  Core::ScopedLock lock(m_mutex);
-  _schedule(t_ms);
-}
-
-SWC_CAN_INLINE
 bool Compaction::stopped() {
   return !m_run;
 }
 
 void Compaction::run() {
-  if(stopped() || m_running == cfg_max_range->get() || m_schedule.running())
-    goto _set_schedule;
-  
-  {
-  RangePtr range  = nullptr;
   for(ColumnPtr col = nullptr;
-      !stopped() && m_running < cfg_max_range->get() &&
-      (!m_running || !Env::Rgr::res().is_low_mem_state()) &&
+      !stopped() && available() &&
       (col || (col=Env::Rgr::columns()->get_next(m_last_cid, m_idx_cid)));) {
 
+    RangePtr range;
     if(col->removing() ||
        !(range = col->get_next(m_last_rid, m_idx_rid))) {
       ++m_idx_cid;
       col = nullptr;
+      m_last_rid = 0;
+      m_idx_rid = 0;
       continue;
     }
     ++m_idx_rid;
@@ -135,21 +122,17 @@ void Compaction::run() {
 
     compact(range);
   }
-
   m_next.store(m_idx_cid);
   if(!m_idx_cid)
     m_uncompacted = 0;
-
   m_schedule.stop();
+
   if(stopped()) {
     Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
+  } else {
+    schedule(cfg_check_interval->get());
   }
-
-  }
-  _set_schedule:
-    schedule();
-
 }
 
 void Compaction::compact(const RangePtr& range) {
@@ -239,7 +222,6 @@ void Compaction::compact(const RangePtr& range) {
   Env::Rgr::maintenance_post(std::move(task));
 }
 
-
 void Compaction::compacted(const CompactRange::Ptr req,
                            const RangePtr& range, bool all) {
   if(all) {
@@ -269,48 +251,56 @@ void Compaction::compacted(const CompactRange::Ptr req,
 
 SWC_CAN_INLINE
 void Compaction::compacted() {
-  uint8_t ran = m_running.fetch_sub(1);
-  if(!m_schedule && m_next) {
-    struct Task {
-      Compaction* ptr;
-      SWC_CAN_INLINE
-      Task(Compaction* a_ptr) noexcept : ptr(a_ptr) { }
-      void operator()() { ptr->run(); }
-    };
-    Env::Rgr::maintenance_post(Task(this));
-
-  } else if(ran == 1 && stopped()) {
+  if(m_running.fetch_sub(1) == 1 && stopped()) {
     Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
+  } else {
+    schedule(cfg_check_interval->get());
   }
 }
 
-void Compaction::_schedule(uint32_t t_ms) {
-  if(stopped())
+SWC_SHOULD_NOT_INLINE
+void Compaction::schedule(uint32_t t_ms) {
+  if(stopped() || !available())
     return;
 
-  auto set_in = std::chrono::milliseconds(m_next ? 2 : t_ms);
-  auto set_on = m_check_timer.expiry();
-  auto now = asio::high_resolution_timer::clock_type::now();
-  if(set_on > now && set_on < now + set_in)
-    return;
-
-  m_check_timer.expires_after(set_in);
-  struct TimerTask {
-    Compaction* ptr;
-    SWC_CAN_INLINE
-    TimerTask(Compaction* a_ptr) noexcept : ptr(a_ptr) { }
-    void operator()(const asio::error_code& ec) {
-      if(ec != asio::error::operation_aborted)
-        ptr->run();
+  if(t_ms < 3 || m_next) {
+    if(!m_schedule.running()) {
+      struct Task {
+        Compaction* ptr;
+        SWC_CAN_INLINE
+        Task(Compaction* a_ptr) noexcept : ptr(a_ptr) { }
+        void operator()() { ptr->run(); }
+      };
+      Env::Rgr::maintenance_post(Task(this));
     }
-  };
-  m_check_timer.async_wait(TimerTask(this));
+    return;
+  }
 
+  {
+    auto set_in = std::chrono::milliseconds(t_ms);
+    auto now = asio::high_resolution_timer::clock_type::now();
+    Core::ScopedLock lock(m_mutex);
+    auto set_on = m_check_timer.expiry();
+    if(set_on > now) {
+      if(set_on < now + set_in)
+        return;
+      m_check_timer.cancel();
+    }
+    m_check_timer.expires_after(set_in);
+    struct TimerTask {
+      Compaction* ptr;
+      SWC_CAN_INLINE
+      TimerTask(Compaction* a_ptr) noexcept : ptr(a_ptr) { }
+      void operator()(const asio::error_code& ec) {
+        if(ec != asio::error::operation_aborted)
+          ptr->schedule(0);
+      }
+    };
+    m_check_timer.async_wait(TimerTask(this));
+  }
   SWC_LOGF(LOG_DEBUG, "Ranger compaction scheduled in ms=%u", t_ms);
-  return;
 }
-
 
 
 

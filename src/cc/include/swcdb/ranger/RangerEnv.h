@@ -301,7 +301,7 @@ Rgr::~Rgr() noexcept {
 
 void Rgr::start() {
   m_env->_compaction = new Ranger::Compaction();
-  m_env->_compaction->schedule();
+  m_env->_compaction->schedule(30000);
 }
 
 void Rgr::shuttingdown() {

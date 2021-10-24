@@ -45,14 +45,12 @@ class Compaction final {
 
   void stop();
 
-  void schedule();
-
-  void schedule(uint32_t t_ms);
-
   bool stopped();
 
   void compacted(const CompactRange::Ptr req,
                  const RangePtr& range, bool all=false);
+
+  void schedule(uint32_t t_ms);
 
   private:
 
@@ -61,8 +59,6 @@ class Compaction final {
   void compact(const RangePtr& range);
 
   void compacted();
-
-  void _schedule(uint32_t t_ms = 300000);
 
 
   Core::AtomicBool                m_run;
