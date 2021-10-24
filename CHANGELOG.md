@@ -10,7 +10,57 @@
 
 
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.5...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.6...master)
+******
+
+
+
+
+### [SWC-DB v0.5.6](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.6) (2021-10-25)
+
+    added applicable function attributes const and pure
+    added Utilities Shell Interface::add_option & moved Option to private
+    added -fdevirtualize-at-ltrans with -flto optimization builds
+    fixed Endpoints re-use in Query Update::Committer locate_on_ranger ReqData
+    added cmake option -DUSE_LIBSSL=open/wolf and support with libwolfssl
+    changed ConnHandlerSSL::handshake & set_verify to STL by Handler
+    added ConnHandlerSSL::Ptr ConfigSSL::make_connection(..)
+    removed ConfigSSL::make_client/server
+    removed class Comm::client::ServerConnections
+    removed 'preserve' option in client::Serialized
+    changed Sync client::Serialized::get_connection to single function
+    added (private sub-class) client::Serialized::Connector<CbT>
+    changed Async Serialized::get_connection to STL and rm use of lambda
+    added open-connections management in FileSystemBroker
+    changed Manager MngrRole::managers_checker CB-handler to struct
+    changed Comm::client::Host::connect() CB-handler to struct
+    added const char* Core::type_name(const T& obj) & added type-name logging
+    added bool Env::Mngr::is_shuttingdown()
+    fixed Manager shutting-down while at Range::get_last_rgr
+    added macros SWC_FMT_LU/LD, SWC_QUICK_EXIT
+    added a static function typedef Config::Setting::init_option_t
+    changed Config::Setting 'init' interface with func* init_app/post_cmd_args
+    changed applications Settings functions defition to run with init_option_t
+    changed '*.probes' Config Properties to G_UINT16
+    renamed classes Config V_* to Value_* and enum Value::Type::* to TYPE_*
+    changed DB::Cells::Flag DELETE to DELETE_LE & DELETE_VERSION to DELETE_EQ
+    changed Comm Protocol::Mngr::Params::ColumnMng::Function::DELETE to REMOVE
+    updated SWC::Thrift protocol to changes in SWC::Comm Protocol::
+    fixed use of keywords 'DELETE' & 'BOOL' for cross-platform/compilers
+    changed Config::Settings to use std::filesystem::remove instead ::unlink
+    renamed cmake option USE_GLIBC_MALLOC to USE_DEFAULT_MALLOC
+    changed strptime to specialized parser in Core::Time::parse_ns(..)
+    added Experimental(at non-production) support for msys2-MingW64
+    added Manager create Ranges-Dir in Column::init (halted/bad remove/create)
+    fixed weak-iteration in Manager::Columns::assigned(rgr_t, ..)
+    added separate cmake Flags files cmake/Flags{Build,Warnings,Profile}.cmake
+    removed nullptr pointer checks before ::operator::delete/[]
+    changed stack-usage reductions to down-under 1024-bytes
+    added Ranger cfg-property 'swc.rgr.compaction.range.uncompacted.max'
+    added ThriftBroker AppHandler Processing state and wait-completion at stop
+    updated for ASIO-1.20.0
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.5...v0.5.6)
 ******
 
 

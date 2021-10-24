@@ -31,7 +31,7 @@ Fill the ```SWCDB_INSTALL_PATH``` ```SWCDB_VERSION``` ```SWCDB_VERSION_SPECIFIC`
 
 ```bash
 SWCDB_INSTALL_PATH="/opt/swcdb";
-SWCDB_VERSION="0.5.5";
+SWCDB_VERSION="0.5.6";
 SWCDB_VERSION_SPECIFIC="debug.amd64";
 
 wget https://github.com/kashirin-alex/swc-db/releases/download/v${SWCDB_VERSION}/swcdb-${SWCDB_VERSION}.${SWCDB_VERSION_SPECIFIC}.tar.xz;
@@ -59,8 +59,8 @@ _installation path defaults to "/opt/swcdb"_
 * #### download:
 
 ```bash
-SWCDB_VERSION="0.5.5";
-SWCDB_VERSION_SPECIFIC="Ubuntu_20_04_2_LTS.amd64";
+SWCDB_VERSION="0.5.6";
+SWCDB_VERSION_SPECIFIC="Ubuntu_20_04_3_LTS.amd64";
 
 wget https://github.com/kashirin-alex/swc-db/releases/download/v${SWCDB_VERSION}/swcdb-${SWCDB_VERSION}.${SWCDB_VERSION_SPECIFIC}.deb;
 ```
@@ -108,15 +108,20 @@ The Packages of SWC-DB are available at [Archlinux(AUR) keyword=swcdb](https://a
 
 |   Version   |   Version-Specific                 |  Package Type     |     Build Type    | Compiler    | Architectures / Platforms           | Link           |
 |     ---     |          ---                       |       ---         |        ---        |     ---     | ---                                 |  ---           |
+| 0.5.6       | debug.amd64                        | tar.xz            | debug             | GCC-11.2    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.6/swcdb-0.5.6.debug.amd64.tar.xz) |
+| 0.5.6       | amd64                              | tar.xz            | standard          | GCC-11.2    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.6/swcdb-0.5.6.amd64.tar.xz) |
+| 0.5.6       | optimized.amd64                    | tar.xz            | optimized         | GCC-11.2    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.6/swcdb-0.5.6.optimized.amd64.tar.xz) |
+| 0.5.6       | Ubuntu_20_04_3_LTS.amd64           | deb               | standard          | GCC-9.3     | GLIBC-2.31 Ubuntu-20.04.3 LTS amd64    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.6/swcdb-0.5.6.Ubuntu_20_04_3_LTS.amd64.deb) |
+|             |                       |                   |                   |             |                                     |                 |
 | 0.5.5       | debug.amd64                        | tar.xz            | debug             | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.5/swcdb-0.5.5.debug.amd64.tar.xz) |
 | 0.5.5       | amd64                              | tar.xz            | standard          | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.5/swcdb-0.5.5.amd64.tar.xz) |
 | 0.5.5       | optimized.amd64                    | tar.xz            | optimized         | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.5/swcdb-0.5.5.optimized.amd64.tar.xz) |
-| 0.5.5       | Ubuntu_20_04_3_LTS.amd64           | deb               | standard          | GCC-9.3     | GLIBC-2.31 Ubuntu-20.04_2LTS amd64    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.5/swcdb-0.5.5.Ubuntu_20_04_3_LTS.amd64.deb) |
+| 0.5.5       | Ubuntu_20_04_3_LTS.amd64           | deb               | standard          | GCC-9.3     | GLIBC-2.31 Ubuntu-20.04.3 LTS amd64    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.5/swcdb-0.5.5.Ubuntu_20_04_3_LTS.amd64.deb) |
 |             |                       |                   |                   |             |                                     |                 |
 | 0.5.4       | debug.amd64                        | tar.xz            | debug             | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.4/swcdb-0.5.4.debug.amd64.tar.xz) |
 | 0.5.4       | amd64                              | tar.xz            | standard          | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.4/swcdb-0.5.4.amd64.tar.xz) |
 | 0.5.4       | optimized.amd64                    | tar.xz            | optimized         | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.4/swcdb-0.5.4.optimized.amd64.tar.xz) |
-| 0.5.4       | Ubuntu_20_04_2_LTS.amd64           | deb               | standard          | GCC-9.3     | GLIBC-2.31 Ubuntu-20.04_2LTS amd64    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.4/swcdb-0.5.4.Ubuntu_20_04_2_LTS.amd64.deb) |
+| 0.5.4       | Ubuntu_20_04_2_LTS.amd64           | deb               | standard          | GCC-9.3     | GLIBC-2.31 Ubuntu-20.04.2 LTS amd64    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.4/swcdb-0.5.4.Ubuntu_20_04_2_LTS.amd64.deb) |
 |             |                       |                   |                   |             |                                     |                 |
 | 0.5.3       | debug.amd64                        | tar.xz            | debug             | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.3/swcdb-0.5.3.debug.amd64.tar.xz) |
 | 0.5.3       | amd64                              | tar.xz            | standard          | GCC-10.3    | GLIBC-2.27 amd64                    | [download](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.3/swcdb-0.5.3.amd64.tar.xz) |
