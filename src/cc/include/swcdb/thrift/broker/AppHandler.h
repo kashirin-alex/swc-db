@@ -36,16 +36,44 @@ using namespace Thrift;
 class AppHandler final : virtual public BrokerIf {
   public:
 
+  typedef std::shared_ptr<AppHandler> Ptr;
+
   const std::shared_ptr<thrift::transport::TSocket> socket;
 
   AppHandler(const std::shared_ptr<thrift::transport::TSocket>& a_socket)
-            : socket(a_socket) {
+            : socket(a_socket), m_processing(0), m_run(true) {
   }
 
   virtual ~AppHandler() noexcept { }
 
+  void stop() {
+    m_run.store(false);
+    size_t n = 0;
+    bool closed = false;
+    for(size_t updaters = 0;;) {
+      if(!m_processing) {
+        if(!closed) {
+          socket->close();
+          closed = true;
+        }
+        Core::MutexSptd::scope lock(m_mutex);
+        if(!(updaters = m_updaters.size()))
+          return;
+      }
+      if(!(++n % 10)) {
+        SWC_LOGF(LOG_WARN,
+          "In-process=" SWC_FMT_LU " updaters=" SWC_FMT_LU " check=" SWC_FMT_LU,
+          m_processing.load(), updaters, n
+        );
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    }
+  }
+
   /* SQL any */
   void exec_sql(Result& _return, const std::string& sql) override {
+    Processing process(this);
+
     int err = Error::OK;
     std::string message;
     auto cmd = client::SQL::recognize_cmd(err, sql, message);
@@ -84,6 +112,8 @@ class AppHandler final : virtual public BrokerIf {
 
   /* SQL SCHEMAS/COLUMNS */
   void sql_list_columns(Schemas& _return, const std::string& sql) override {
+    Processing process(this);
+
     int err = Error::OK;
     DB::SchemasVec dbschemas;
     get_schemas(err, "list", sql, dbschemas);
@@ -91,6 +121,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void sql_mng_column(const std::string& sql) override {
+    Processing process(this);
+
     int err = Error::OK;
     std::string message;
     DB::Schema::Ptr schema;
@@ -107,6 +139,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void sql_compact_columns(CompactResults& _return,
                            const std::string& sql) override {
+    Processing process(this);
+
     int err = Error::OK;
     DB::SchemasVec dbschemas;
     get_schemas(err, "compact", sql, dbschemas);
@@ -134,6 +168,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void sql_query(CellsGroup& _return, const std::string& sql,
                  const CellsResult::type rslt) override {
+    Processing process(this);
+
     switch(rslt) {
       case CellsResult::ON_COLUMN : {
         sql_select_rslt_on_column(_return.ccells, sql);
@@ -155,6 +191,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void sql_select(Cells& _return, const std::string& sql) override {
+    Processing process(this);
+
     auto hdlr = sync_select(sql);
 
     int err = Error::OK;
@@ -165,6 +203,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void sql_select_rslt_on_column(CCells& _return,
                                  const std::string& sql) override {
+    Processing process(this);
+
     auto hdlr = sync_select(sql);
 
     int err = Error::OK;
@@ -175,6 +215,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void sql_select_rslt_on_key(KCells& _return,
                               const std::string& sql) override {
+    Processing process(this);
+
     auto hdlr = sync_select(sql);
 
     int err = Error::OK;
@@ -185,6 +227,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void sql_select_rslt_on_fraction(FCells& _return,
                                    const std::string& sql) override {
+    Processing process(this);
+
     auto hdlr = sync_select(sql);
 
     int err = Error::OK;
@@ -195,6 +239,7 @@ class AppHandler final : virtual public BrokerIf {
 
   /* SQL UPDATE */
   void sql_update(const std::string& sql, const int64_t updater_id) override {
+    Processing process(this);
 
     client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
     if(updater_id)
@@ -225,6 +270,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void list_columns(Schemas& _return,
                     const SpecSchemas& spec) override {
+    Processing process(this);
+
     int err = Error::OK;
     DB::SchemasVec dbschemas;
     get_schemas(err, spec, dbschemas);
@@ -233,6 +280,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void mng_column(const SchemaFunc::type func,
                   const Schema& schema) override {
+    Processing process(this);
+
     DB::Schema::Ptr dbschema = DB::Schema::make();
     Converter::set(schema, dbschema);
     mng_column(
@@ -243,6 +292,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void compact_columns(CompactResults& _return,
                        const SpecSchemas& spec) override {
+    Processing process(this);
+
     int err = Error::OK;
     DB::SchemasVec dbschemas;
     get_schemas(err, spec, dbschemas);
@@ -295,6 +346,8 @@ class AppHandler final : virtual public BrokerIf {
 
   void scan_rslt_on(CellsGroup& _return, const SpecScan& specs,
                     const CellsResult::type rslt) override {
+    Processing process(this);
+
     switch(rslt) {
       case CellsResult::ON_COLUMN : {
         scan_rslt_on_column(_return.ccells, specs);
@@ -316,6 +369,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void scan(Cells& _return, const SpecScan& specs) override {
+    Processing process(this);
+
     auto hdlr = sync_select(specs);
 
     int err = Error::OK;
@@ -325,6 +380,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void scan_rslt_on_column(CCells& _return, const SpecScan& specs) override {
+    Processing process(this);
+
     auto hdlr = sync_select(specs);
 
     int err = Error::OK;
@@ -334,6 +391,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void scan_rslt_on_key(KCells& _return, const SpecScan& specs) override {
+    Processing process(this);
+
     auto hdlr = sync_select(specs);
 
     int err = Error::OK;
@@ -343,6 +402,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void scan_rslt_on_fraction(FCells& _return, const SpecScan& specs) override {
+    Processing process(this);
+
     auto hdlr = sync_select(specs);
 
     int err = Error::OK;
@@ -354,6 +415,8 @@ class AppHandler final : virtual public BrokerIf {
 
   /* UPDATER */
   int64_t updater_create(const int32_t buffer_size) override {
+    Processing process(this);
+
     Core::MutexSptd::scope lock(m_mutex);
 
     int64_t id = 1;
@@ -373,6 +436,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   void updater_close(const int64_t id) override {
+    Processing process(this);
+
     client::Query::Update::Handlers::Common::Ptr hdlr;
     {
       Core::MutexSptd::scope lock(m_mutex);
@@ -390,6 +455,8 @@ class AppHandler final : virtual public BrokerIf {
 
   /* UPDATE */
   void update(const UCCells& cells, const int64_t updater_id) override  {
+    Processing process(this);
+
     client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
     if(updater_id)
       updater(updater_id, hdlr);
@@ -398,16 +465,17 @@ class AppHandler final : virtual public BrokerIf {
         Env::Clients::get());
 
     int err = Error::OK;
-    DB::Cells::Cell dbcell;
-    cid_t cid;
     for(auto& col_cells : cells) {
-      auto col = hdlr->get(cid = col_cells.first);
-      if(!col) {
-        auto schema = hdlr->clients->get_schema(err, cid);
+      if(!hdlr->get(col_cells.first)) {
+        auto schema = hdlr->clients->get_schema(err, col_cells.first);
         if(err)
           Converter::exception(err);
-        col = hdlr->create(schema);
+        hdlr->create(schema);
       }
+    }
+    DB::Cells::Cell dbcell;
+    for(auto& col_cells : cells) {
+      auto col = hdlr->get(col_cells.first);
       for(auto& cell : col_cells.second) {
         dbcell.flag = uint8_t(cell.f);
         dbcell.key.read(cell.k);
@@ -440,6 +508,8 @@ class AppHandler final : virtual public BrokerIf {
   /* UPDATE-SERIAL */
   void update_serial(const UCCellsSerial& cells,
                      const int64_t updater_id) override {
+    Processing process(this);
+
     client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
     if(updater_id)
       updater(updater_id, hdlr);
@@ -448,16 +518,17 @@ class AppHandler final : virtual public BrokerIf {
         Env::Clients::get());
 
     int err = Error::OK;
-    DB::Cells::Cell dbcell;
-    cid_t cid;
     for(auto& col_cells : cells) {
-      auto col = hdlr->get(cid = col_cells.first);
-      if(!col) {
-        auto schema = hdlr->clients->get_schema(err, cid);
+      if(!hdlr->get(col_cells.first)) {
+        auto schema = hdlr->clients->get_schema(err, col_cells.first);
         if(err)
           Converter::exception(err);
-        col = hdlr->create(schema);
+        hdlr->create(schema);
       }
+    }
+    DB::Cells::Cell dbcell;
+    for(auto& col_cells : cells) {
+      auto col = hdlr->get(col_cells.first);
       for(auto& cell : col_cells.second) {
         dbcell.flag = uint8_t(cell.f);
         dbcell.key.read(cell.k);
@@ -913,9 +984,23 @@ class AppHandler final : virtual public BrokerIf {
     }
   }
 
+  struct Processing {
+    AppHandler* hdlr;
+    Processing(AppHandler* a_hdlr) : hdlr(a_hdlr) {
+      if(!hdlr->m_run)
+        Converter::exception(Error::SERVER_SHUTTING_DOWN);
+      hdlr->m_processing.fetch_add(1);
+    }
+    ~Processing() {
+      hdlr->m_processing.fetch_sub(1);
+    }
+  };
+
   Core::MutexSptd m_mutex;
   std::unordered_map<
     int64_t, client::Query::Update::Handlers::Common::Ptr> m_updaters;
+  Core::Atomic<size_t>                                     m_processing;
+  Core::AtomicBool                                         m_run;
 };
 
 

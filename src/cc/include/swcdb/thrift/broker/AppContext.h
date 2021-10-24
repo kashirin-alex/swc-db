@@ -177,6 +177,17 @@ class AppContext final : virtual public BrokerIfFactory,
         m_metrics->wait();
     #endif
 
+    for(AppHandler::Ptr hdlr;;) {
+      {
+        Core::MutexSptd::scope lock(m_mutex_handlers);
+        if(m_handlers.empty())
+          break;
+        hdlr = *m_handlers.cbegin();
+      }
+      hdlr->stop();
+      std::this_thread::yield();
+    }
+
     Env::Clients::get()->stop_services();
     Env::IoCtx::io()->stop();
 
@@ -198,7 +209,7 @@ class AppContext final : virtual public BrokerIfFactory,
   size_t release(size_t bytes) {
     size_t released = 0;
     try {
-      std::shared_ptr<AppHandler> handler;
+      AppHandler::Ptr handler;
       for(size_t idx=0;;++idx) {
         {
           Core::MutexSptd::scope lock(m_mutex_handlers);
@@ -232,20 +243,20 @@ class AppContext final : virtual public BrokerIfFactory,
 
   struct HandlerLess {
     using is_transparent = void;
-    bool operator()(const std::shared_ptr<AppHandler>& lhs,
-                    const std::shared_ptr<AppHandler>& rhs) const noexcept {
+    bool operator()(const AppHandler::Ptr& lhs,
+                    const AppHandler::Ptr& rhs) const noexcept {
       return lhs.get() < rhs.get();
     }
-    bool operator()(const std::shared_ptr<AppHandler>& lhs,
+    bool operator()(const AppHandler::Ptr& lhs,
                     const AppHandler* rhs) const noexcept {
       return lhs.get() < rhs;
     }
     bool operator()(const AppHandler* lhs,
-                    const std::shared_ptr<AppHandler>& rhs) const noexcept {
+                    const AppHandler::Ptr& rhs) const noexcept {
       return lhs < rhs.get();
     }
   };
-  std::set<std::shared_ptr<AppHandler>, HandlerLess>  m_handlers;
+  std::set<AppHandler::Ptr, HandlerLess>  m_handlers;
 
 };
 
