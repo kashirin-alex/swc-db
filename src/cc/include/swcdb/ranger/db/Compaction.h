@@ -51,14 +51,14 @@ class Compaction final {
 
   bool stopped();
 
-  void run(bool initial=true);
-
   void compacted(const CompactRange::Ptr req,
                  const RangePtr& range, bool all=false);
 
   private:
 
-  uint8_t compact(const RangePtr& range);
+  void run();
+
+  void compact(const RangePtr& range);
 
   void compacted();
 

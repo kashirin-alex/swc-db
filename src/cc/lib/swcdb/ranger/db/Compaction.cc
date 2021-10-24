@@ -107,11 +107,11 @@ bool Compaction::stopped() {
   return !m_run;
 }
 
-void Compaction::run(bool initial) {
+void Compaction::run() {
   if(stopped() || m_running == cfg_max_range->get() || m_schedule.running())
-    return;
-
-  uint8_t added = 0;
+    goto _set_schedule;
+  
+  {
   RangePtr range  = nullptr;
   for(ColumnPtr col = nullptr;
       !stopped() && m_running < cfg_max_range->get() &&
@@ -133,8 +133,7 @@ void Compaction::run(bool initial) {
         !range->compact_possible())
       continue;
 
-    if(compact(range))
-      ++added;
+    compact(range);
   }
 
   m_next.store(m_idx_cid);
@@ -145,16 +144,19 @@ void Compaction::run(bool initial) {
   if(stopped()) {
     Core::ScopedLock lock(m_mutex);
     m_cv.notify_all();
-  } else if(initial && !added) {
-    schedule();
   }
+
+  }
+  _set_schedule:
+    schedule();
+
 }
 
-uint8_t Compaction::compact(const RangePtr& range) {
+void Compaction::compact(const RangePtr& range) {
 
   if(!range->is_loaded() || stopped()) {
     range->compacting(Range::COMPACT_NONE);
-    return 0;
+    return;
   }
 
   auto& commitlog  = range->blocks.commitlog;
@@ -212,11 +214,11 @@ uint8_t Compaction::compact(const RangePtr& range) {
 
   if(stopped() || !do_compaction) {
     range->compacting(Range::COMPACT_NONE);
-    return 0;
+    return;
   }
 
   Env::Rgr::res().more_mem_future(blk_size);
-  uint8_t running = m_running.add_rslt(1);
+  m_running.fetch_add(1);
 
   SWC_LOGF(LOG_INFO, "COMPACT-STARTED " SWC_FMT_LU "/" SWC_FMT_LU " %s",
            range->cfg->cid, range->rid, need.c_str());
@@ -235,7 +237,6 @@ uint8_t Compaction::compact(const RangePtr& range) {
     m_compacting.push_back(task.req);
   }
   Env::Rgr::maintenance_post(std::move(task));
-  return running;
 }
 
 
@@ -274,17 +275,13 @@ void Compaction::compacted() {
       Compaction* ptr;
       SWC_CAN_INLINE
       Task(Compaction* a_ptr) noexcept : ptr(a_ptr) { }
-      void operator()() { ptr->run(false); }
+      void operator()() { ptr->run(); }
     };
     Env::Rgr::maintenance_post(Task(this));
 
-  } else if(ran == 1) {
-    if(stopped()) {
-      Core::ScopedLock lock(m_mutex);
-      m_cv.notify_all();
-    } else {
-      schedule();
-    }
+  } else if(ran == 1 && stopped()) {
+    Core::ScopedLock lock(m_mutex);
+    m_cv.notify_all();
   }
 }
 
