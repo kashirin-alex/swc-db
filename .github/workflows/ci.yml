@@ -65,7 +65,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        git clone --branch asio-1-18-2 https://github.com/chriskohlhoff/asio.git
+        git clone --branch asio-1-20-0 https://github.com/chriskohlhoff/asio.git
         if [[ ${{ matrix.runs-on }} =~ ^ubuntu-* ]]; then
           sudo apt-get update -y
           # sudo apt-get upgrade -y
