@@ -235,7 +235,7 @@ class FileWriter {
     smartfd = fds.emplace_back(
       new FS::SmartFd(
         std::move(filepath), FS::OpenFlags::OPEN_FLAG_OVERWRITE));
-    while(interface->create(err, smartfd, 0, 0));
+    while(interface->create(err, smartfd, 0));
     if(!err)
       flush_vol = 0;
   }

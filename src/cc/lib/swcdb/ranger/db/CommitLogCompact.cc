@@ -128,7 +128,6 @@ void Compact::Group::write() {
     frag->write(
       Error::UNPOSSIBLE,
       compact->log->range->cfg->file_replication(),
-      -1,
       buff_write,
       &sem
     );

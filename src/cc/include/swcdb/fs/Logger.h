@@ -128,11 +128,10 @@
 // SmartFd based
 
 
-#define SWC_FS_CREATE_START(_smartfd, _replication, _blksz) \
+#define SWC_FS_CREATE_START(_smartfd, _replication) \
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print( \
-      SWC_LOG_OSTREAM << "create replicas=" << int(_replication) \
-                      << " blksz=" << _blksz << ' '); \
+      SWC_LOG_OSTREAM << "create replicas=" << int(_replication)  << ' '); \
   );
 
 #define SWC_FS_CREATE_FINISH(_error, _smartfd, _open_fds, _tracker) \
@@ -154,11 +153,10 @@
 
 
 
-#define SWC_FS_WRITE_START(_smartfd, _replication, _blksz, _amount) \
+#define SWC_FS_WRITE_START(_smartfd, _replication, _amount) \
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print( \
       SWC_LOG_OSTREAM << "write replicas=" << int(_replication) \
-                      << " blksz=" << _blksz \
                       << " amt=" << _amount << ' '); \
   );
 

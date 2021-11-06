@@ -417,9 +417,9 @@ void FileSystemHadoop::rename(int& err, const std::string& from,
 }
 
 void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
-                              uint8_t replication, int64_t blksz) {
+                              uint8_t replication) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
-  SWC_FS_CREATE_START(smartfd, replication, blksz);
+  SWC_FS_CREATE_START(smartfd, replication);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 
@@ -427,7 +427,6 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
   if(!(smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE))
     oflags |= O_APPEND;
 
-  blksz = blksz <= hdfs_cfg_min_blk_sz ? 0 : (blksz/512)*512;
   int tmperr;
 
   auto fs = get_fs(err);
@@ -437,8 +436,7 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
     /* Open the file */
     hdfs::FileHandle* fd = nullptr;
     (void)oflags;
-    // fd = hdfsOpenFile(
-      // fs->srv, abspath.c_str(), oflags, replication, blksz);
+    // fd = hdfsOpenFile(fs->srv, abspath.c_str(), oflags, replication, 0);
     if(!fd) {
       need_reconnect(tmperr = errno, fs);
       hadoop_fd->file(fd);

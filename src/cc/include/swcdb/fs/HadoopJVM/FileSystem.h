@@ -67,9 +67,8 @@ class FileSystemHadoopJVM final : public FileSystem {
                         const std::string& to)  override;
 
   void write(int& err, SmartFd::Ptr& smartfd,
-             uint8_t replication, int64_t blksz,
-             StaticBuffer& buffer) override {
-    default_write(err, smartfd, replication, blksz, buffer);
+             uint8_t replication, StaticBuffer& buffer) override {
+    default_write(err, smartfd, replication, buffer);
   }
 
   void read(int& err, const std::string& name, StaticBuffer* dst) override {
@@ -82,8 +81,7 @@ class FileSystemHadoopJVM final : public FileSystem {
     default_combi_pread(err, smartfd, offset, amount, dst);
   }
 
-  void create(int& err, SmartFd::Ptr& smartfd,
-              uint8_t replication, int64_t blksz) override;
+  void create(int& err, SmartFd::Ptr& smartfd, uint8_t replication) override;
 
   void open(int& err, SmartFd::Ptr& smartfd) override;
 

@@ -73,7 +73,6 @@ static inline void set_rgr(const DB::RgrData& data,
       FS::SmartFd::make_ptr(
         std::move(filepath), FS::OpenFlags::OPEN_FLAG_OVERWRITE),
       replication,
-      -1,
       send_buf
     );
   } catch(...) {

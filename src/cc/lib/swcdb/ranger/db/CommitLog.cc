@@ -149,7 +149,6 @@ size_t Fragments::_commit(bool finalize) {
     frag->write(
       Error::UNPOSSIBLE,
       range->cfg->file_replication(),
-      -1,
       buff_write,
       &m_sem
     );

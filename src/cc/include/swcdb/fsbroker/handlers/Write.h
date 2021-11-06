@@ -30,10 +30,10 @@ void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const auto& fs = Env::FsInterface::fs();
 
     //Env::FsInterface::fs()->write(
-    //  err, smartfd, params.replication, params.blksz, ev->data_ext
+    //  err, smartfd, params.replication, ev->data_ext
     //); needs fds state
 
-    fs->create(err, smartfd, params.replication, params.blksz);
+    fs->create(err, smartfd, params.replication);
     if(smartfd->valid()) {
       int32_t fd = Env::FsBroker::fds().add(smartfd);
 

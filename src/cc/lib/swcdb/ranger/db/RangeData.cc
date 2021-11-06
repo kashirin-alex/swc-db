@@ -50,7 +50,6 @@ void RangeData::save(int& err, CellStore::Readers& cellstores) {
       FS::OpenFlags::OPEN_FLAG_OVERWRITE
     ),
     1, // as hint-file without cellstores.range->cfg->file_replication()
-    -1,
     send_buf
   );
 }

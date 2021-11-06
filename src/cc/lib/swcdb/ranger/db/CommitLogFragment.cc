@@ -257,7 +257,7 @@ const std::string& Fragment::get_filepath() const noexcept {
   return m_smartfd->filepath();
 }
 
-void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
+void Fragment::write(int err, uint8_t blk_replicas,
                      const StaticBuffer::Ptr& buff_write,
                      Core::Semaphore* sem) {
   if(err && err != Error::SERVER_SHUTTING_DOWN) {
@@ -268,33 +268,32 @@ void Fragment::write(int err, uint8_t blk_replicas, int64_t blksz,
       );
 
     Env::FsInterface::fs()->write(
-      [frag=ptr(), blk_replicas, blksz, buff_write, sem]
+      [frag=ptr(), blk_replicas, buff_write, sem]
       (int _err, const FS::SmartFd::Ptr&) mutable {
         struct Task {
           Ptr               frag;
           StaticBuffer::Ptr buff_write;
           Core::Semaphore*  sem;
-          int64_t           blksz;
           int               error;
           uint8_t           blk_replicas;
           SWC_CAN_INLINE
-          Task(Ptr&& a_frag, uint8_t a_blk_replicas, int64_t a_blksz,
+          Task(Ptr&& a_frag, uint8_t a_blk_replicas,
                const StaticBuffer::Ptr& a_buff_write,
                Core::Semaphore* a_sem, int a_error) noexcept
                : frag(std::move(a_frag)),
                  buff_write(a_buff_write), sem(a_sem),
-                 blksz(a_blksz), error(a_error),
+                 error(a_error),
                  blk_replicas(a_blk_replicas) {
           }
           ~Task() noexcept { }
           void operator()() {
-            frag->write(error, blk_replicas, blksz, buff_write, sem);
+            frag->write(error, blk_replicas, buff_write, sem);
           }
         };
         Env::Rgr::post(
-          Task(std::move(frag), blk_replicas, blksz, buff_write, sem, _err));
+          Task(std::move(frag), blk_replicas, buff_write, sem, _err));
       },
-      m_smartfd, blk_replicas, blksz, *buff_write.get()
+      m_smartfd, blk_replicas, *buff_write.get()
     );
     return;
   }

@@ -113,7 +113,7 @@ void run(size_t thread_id){
     FS::SmartFd::Ptr smartfd = FS::SmartFd::make_ptr(
       "testfile_"+std::to_string(thread_id),
       FS::OpenFlags::OPEN_FLAG_OVERWRITE);
-    Env::FsInterface::fs()->create(err, smartfd, 0, -1);
+    Env::FsInterface::fs()->create(err, smartfd, 0);
     if(err != Error::OK || !smartfd->valid()) {
      std::cerr << "ERROR(create) err=" << err << " " << smartfd->to_string() <<"\n";
      exit(1);
@@ -149,7 +149,7 @@ void run(size_t thread_id){
     // >> open >> read >> seek >> read(suff) >> seek(for EOF) >> read(EOF) >> pread >> pread(EOF) >> close >> remove
 
     // create >>
-    Env::FsInterface::fs()->create(err, smartfd, 0, -1);
+    Env::FsInterface::fs()->create(err, smartfd, 0);
     if(err != Error::OK || !smartfd->valid()) {
      std::cerr << "ERROR(create) err=" << err << " " << smartfd->to_string() <<"\n";
      exit(1);

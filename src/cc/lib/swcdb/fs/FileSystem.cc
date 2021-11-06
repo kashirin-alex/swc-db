@@ -188,12 +188,11 @@ void FileSystem::rename(Callback::RmdirCb_t&& cb,
 }
 
 void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
-                               uint8_t replication, int64_t blksz,
-                               StaticBuffer& buffer) {
+                               uint8_t replication, StaticBuffer& buffer) {
   auto tracker = statistics.tracker(Statistics::WRITE_SYNC);
-  SWC_FS_WRITE_START(smartfd, replication, blksz, buffer.size);
+  SWC_FS_WRITE_START(smartfd, replication, buffer.size);
 
-  create(err, smartfd, replication, blksz);
+  create(err, smartfd, replication);
   if(!smartfd->valid() || err) {
     if(!err)
       err = EBADF;
@@ -217,10 +216,9 @@ void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
 }
 
 void FileSystem::write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
-                       uint8_t replication, int64_t blksz,
-                       StaticBuffer& buffer) {
+                       uint8_t replication, StaticBuffer& buffer) {
   int err = Error::OK;
-  write(err, smartfd, replication, blksz, buffer);
+  write(err, smartfd, replication, buffer);
   cb(err, smartfd);
 }
 
@@ -308,9 +306,9 @@ void FileSystem::combi_pread(Callback::CombiPreadCb_t&& cb,
 }
 
 void FileSystem::create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
-                        uint8_t replication, int64_t blksz) {
+                        uint8_t replication) {
   int err = Error::OK;
-  create(err, smartfd, replication, blksz);
+  create(err, smartfd, replication);
   cb(err, smartfd);
 }
 

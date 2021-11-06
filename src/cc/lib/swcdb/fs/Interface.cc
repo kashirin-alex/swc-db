@@ -371,10 +371,9 @@ size_t Interface::length(int& err, const std::string& name) {
 
 
 void Interface::write(int& err, SmartFd::Ptr smartfd,
-                      uint8_t replication, int64_t blksz,
-                      StaticBuffer& buffer) {
+                      uint8_t replication, StaticBuffer& buffer) {
   for(buffer.own=false;;) {
-    m_fs->write(err = Error::OK, smartfd, replication, blksz, buffer);
+    m_fs->write(err = Error::OK, smartfd, replication, buffer);
     switch(err) {
       case Error::OK:
       case Error::FS_PATH_NOT_FOUND:
@@ -426,9 +425,8 @@ bool Interface::open(int& err, SmartFd::Ptr& smartfd) {
   }
 }
 
-bool Interface::create(int& err, SmartFd::Ptr& smartfd,
-                       uint8_t replication, int64_t blksz) {
-  m_fs->create(err = Error::OK, smartfd, replication, blksz);
+bool Interface::create(int& err, SmartFd::Ptr& smartfd, uint8_t replication) {
+  m_fs->create(err = Error::OK, smartfd, replication);
   switch(err) {
     case Error::OK:
     case Error::FS_PATH_NOT_FOUND:

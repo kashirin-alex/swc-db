@@ -101,13 +101,11 @@ class Interface final : public std::enable_shared_from_this<Interface> {
   void read(int& err, const std::string& name, StaticBuffer* dst);
 
   void write(int& err, SmartFd::Ptr smartfd,
-             uint8_t replication, int64_t blksz,
-             StaticBuffer& buffer);
+             uint8_t replication, StaticBuffer& buffer);
 
   bool open(int& err, SmartFd::Ptr& smartfd);
 
-  bool create(int& err, SmartFd::Ptr& smartfd,
-              uint8_t replication, int64_t blksz);
+  bool create(int& err, SmartFd::Ptr& smartfd, uint8_t replication);
 
   void close(int& err, SmartFd::Ptr& smartfd);
 

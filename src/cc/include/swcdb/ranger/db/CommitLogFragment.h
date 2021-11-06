@@ -111,7 +111,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   const std::string& get_filepath() const noexcept;
 
-  void write(int err, uint8_t blk_replicas, int64_t blksz,
+  void write(int err, uint8_t blk_replicas,
              const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
 
   void load(LoadCallback* cb);

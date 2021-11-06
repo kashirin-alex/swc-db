@@ -22,14 +22,14 @@ class Create final : public Base {
   SWC_CAN_INLINE
   Create(const FS::FileSystem::Ptr& a_fs,
          uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
-         uint8_t replication, int64_t blksz,
+         uint8_t replication,
          FS::Callback::CreateCb_t&& a_cb)
          : Base(
             a_fs->statistics, FS::Statistics::CREATE_ASYNC,
             Buffers::make(
               Params::CreateReq(
                 a_smartfd->filepath(), a_smartfd->flags(),
-                replication, blksz
+                replication
               ),
               0,
               FUNCTION_CREATE, timeout

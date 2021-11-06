@@ -21,14 +21,14 @@ class Write final : public Base {
   SWC_CAN_INLINE
   Write(FS::Statistics& stats,
         uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
-        uint8_t replication, int64_t blksz, StaticBuffer& buffer,
+        uint8_t replication, StaticBuffer& buffer,
         FS::Callback::WriteCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::WRITE_ASYNC,
             Buffers::make(
               Params::WriteReq(
                 a_smartfd->filepath(), a_smartfd->flags(),
-                replication, blksz
+                replication
               ),
               buffer,
               0,

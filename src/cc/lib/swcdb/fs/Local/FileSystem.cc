@@ -268,9 +268,9 @@ void FileSystemLocal::rename(int& err, const std::string& from,
 }
 
 void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
-                             uint8_t replication, int64_t blksz) {
+                             uint8_t replication) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
-  SWC_FS_CREATE_START(smartfd, replication, blksz);
+  SWC_FS_CREATE_START(smartfd, replication);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 

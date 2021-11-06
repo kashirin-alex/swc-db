@@ -30,9 +30,7 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     auto smartfd = FS::SmartFd::make_ptr(
       std::move(params.fname), params.flags);
 
-    Env::FsInterface::fs()->create(
-      err, smartfd, params.replication, params.blksz
-    );
+    Env::FsInterface::fs()->create(err, smartfd, params.replication);
 
     if(smartfd->valid())
       fd = Env::FsBroker::fds().add(smartfd);

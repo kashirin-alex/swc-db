@@ -634,7 +634,7 @@ csid_t CompactRange::create_cs(int& err) {
       ? range->prev_range_end
       : cellstores.back()->blocks.back()->header.interval.key_end
   ));
-  cs_writer->create(err, range->cfg->file_replication(), -1);
+  cs_writer->create(err, range->cfg->file_replication());
 
   if(!m_chk_final) {
     uint32_t p = range->cfg->compact_percent()/10;

@@ -136,14 +136,11 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   // File(fd) Actions
   virtual void write(int& err, SmartFd::Ptr& smartfd,
-                     uint8_t replication, int64_t blksz,
-                     StaticBuffer& buffer) = 0;
+                     uint8_t replication, StaticBuffer& buffer) = 0;
   void default_write(int& err, SmartFd::Ptr& smartfd,
-                     uint8_t replication, int64_t blksz,
-                     StaticBuffer& buffer);
+                     uint8_t replication, StaticBuffer& buffer);
   virtual void write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
-                     uint8_t replication, int64_t blksz,
-                     StaticBuffer& buffer);
+                     uint8_t replication, StaticBuffer& buffer);
 
   virtual void read(int& err, const std::string& name, StaticBuffer* dst) = 0;
   void default_read(int& err, const std::string& name, StaticBuffer* dst);
@@ -161,9 +158,9 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
                            uint64_t offset, uint32_t amount);
 
   virtual void create(int& err, SmartFd::Ptr& smartfd,
-                      uint8_t replication, int64_t blksz) = 0;
+                      uint8_t replication) = 0;
   virtual void create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
-                      uint8_t replication, int64_t blksz);
+                      uint8_t replication);
 
   virtual void open(int& err, SmartFd::Ptr& smartfd) = 0;
   virtual void open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd);

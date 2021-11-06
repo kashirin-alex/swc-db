@@ -77,7 +77,6 @@ void save(int &err, const DB::Schema::Ptr& schema, uint8_t replication=0) {
     FS::SmartFd::make_ptr(
       filepath(schema->cid), FS::OpenFlags::OPEN_FLAG_OVERWRITE),
     replication,
-    -1,
     send_buf
   );
 }
