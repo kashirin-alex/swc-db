@@ -144,10 +144,6 @@ FileSystemHadoop::setup_connection() {
   //get_abspath("", abspath);
   //hdfsSetWorkingDirectory(fs->srv, abspath.c_str());
 
-  //int value = 0;
-  //hdfsConfGetInt("dfs.namenode.fs-limits.min-block-size", &value);
-  //if(value)
-    //hdfs_cfg_min_blk_sz = value;
   /*
   char* host;
   uint16_t port;

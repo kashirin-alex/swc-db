@@ -36,6 +36,8 @@ Configurables* apply_hadoop_jvm(Configurables* config) {
       "Size of read buffer in bytes")
     ("swc.fs.hadoop_jvm.write.buffer.size", Config::g_i32(0),
       "Size of write buffer in bytes")
+    ("swc.fs.hadoop_jvm.block.size", Config::g_i32(0),
+      "Size of block in aligned 512 bytes")
   ;
 
   config->settings->parse_file(
@@ -127,8 +129,6 @@ FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
 
 FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
     : FileSystem(apply_hadoop_jvm(config)),
-      m_nxt_fd(0), m_connecting(false),
-      m_fs(setup_connection()),
       cfg_use_delay(
         settings->get<Config::Property::Value_int32_g>(
           "swc.fs.hadoop_jvm.reconnect.delay.ms")),
@@ -137,7 +137,12 @@ FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
           "swc.fs.hadoop_jvm.read.buffer.size")),
       cfg_w_buffer_size(
         settings->get<Config::Property::Value_int32_g>(
-          "swc.fs.hadoop_jvm.write.buffer.size")) {
+          "swc.fs.hadoop_jvm.write.buffer.size")),
+      cfg_block_size(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.hadoop_jvm.block.size")),
+      m_nxt_fd(0), m_connecting(false),
+      m_fs(setup_connection()) {
 }
 
 FileSystemHadoopJVM::~FileSystemHadoopJVM() noexcept { }
@@ -181,10 +186,24 @@ FileSystemHadoopJVM::setup_connection() {
   get_abspath("", abspath);
   hdfsSetWorkingDirectory(fs->srv, abspath.c_str());
 
-  int value = 0;
-  hdfsConfGetInt("dfs.namenode.fs-limits.min-block-size", &value);
-  if(value)
-    hdfs_cfg_min_blk_sz = value;
+  if(cfg_block_size->get()) {
+    int value;
+    if(cfg_block_size->get() % 512 != 0) {
+      value = (cfg_block_size->get()/512)*512;
+      SWC_LOGF(LOG_WARN, "FS-HadoopJVM, block-size=%d is not 512-aligned changing to=%d",
+                          cfg_block_size->get(), value);
+      cfg_block_size->value.store(value);
+    }
+    value = 0;
+    hdfsConfGetInt("dfs.namenode.fs-limits.min-block-size", &value);
+    if(!value)
+      value = 1048576;
+    if(cfg_block_size->get() < value) {
+      SWC_LOGF(LOG_WARN, "FS-HadoopJVM, block-size=%d is to low changing to=%d",
+                         cfg_block_size->get(), value);
+      cfg_block_size->value.store(value);
+    }
+  }
   /*
   char* host;
   uint16_t port;
@@ -478,7 +497,7 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
     /* Open the file */
     auto hfile = hdfsOpenFile(
       fs->srv, abspath.c_str(), oflags,
-      cfg_w_buffer_size->get(), replication, 0
+      cfg_w_buffer_size->get(), replication, cfg_block_size->get()
     );
     if(!hfile) {
       need_reconnect(tmperr = errno, fs);

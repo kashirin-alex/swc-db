@@ -147,18 +147,18 @@ class FileSystemHadoopJVM final : public FileSystem {
 
   SmartFdHadoopJVM::Ptr get_fd(SmartFd::Ptr& smartfd);
 
-  Core::Atomic<int32_t>   m_nxt_fd;
 
-  std::mutex              m_mutex;
-  std::condition_variable m_cv;
-  bool                    m_connecting;
-
-  Service::Ptr            m_fs;
-
-  int hdfs_cfg_min_blk_sz = 1048576;
   const Config::Property::Value_int32_g::Ptr cfg_use_delay;
   const Config::Property::Value_int32_g::Ptr cfg_r_buffer_size;
   const Config::Property::Value_int32_g::Ptr cfg_w_buffer_size;
+  const Config::Property::Value_int32_g::Ptr cfg_block_size;
+
+  Core::Atomic<int32_t>   m_nxt_fd;
+  std::mutex              m_mutex;
+  std::condition_variable m_cv;
+  bool                    m_connecting;
+  Service::Ptr            m_fs;
+
 
 };
 

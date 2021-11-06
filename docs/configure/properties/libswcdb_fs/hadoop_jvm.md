@@ -59,11 +59,15 @@ _default_ **```swc.fs.hadoop_jvm.reconnect.delay.ms=3000```**
 
 * ### swc.fs.hadoop_jvm.read.buffer.size
 ```TYPE_INT32_G```
-The size of read buffer in bytes. \
+The size of read buffer in bytes. '0' to use default HDFS configured value. \
 _default_ **```swc.fs.hadoop_jvm.read.buffer.size=0```**
 
 * ### swc.fs.hadoop_jvm.write.buffer.size
 ```TYPE_INT32_G```
-The size of write buffer in bytes. \
+The size of write buffer in bytes. '0' to use default HDFS configured value. \
 _default_ **```swc.fs.hadoop_jvm.write.buffer.size=0```**
 
+* ### swc.fs.hadoop_jvm.block.size
+```TYPE_INT32_G```
+The size of block in aligned 512 bytes. '0' to use default HDFS configured value. \
+_default_ **```swc.fs.hadoop_jvm.block.size=0```**

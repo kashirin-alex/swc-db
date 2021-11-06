@@ -148,8 +148,6 @@ class FileSystemHadoop final : public FileSystem {
   bool                    m_connecting;
 
   Service::Ptr            m_fs;
-
-  int hdfs_cfg_min_blk_sz = 1048576;
 };
 
 
