@@ -418,8 +418,7 @@ void FileSystemCeph::rename(int& err, const std::string& from,
 
 
 void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
-                            int32_t bufsz, uint8_t replication,
-                            int64_t objsz) {
+                            uint8_t replication, int64_t objsz) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
 
   int oflags = O_WRONLY | O_CREAT;
@@ -428,16 +427,13 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
   else
     oflags |= O_TRUNC;
 
-  if (bufsz <= -1)
-    bufsz = 0;
-
   if (objsz <= -1 || objsz <= ceph_cfg_min_obj_sz) {
     objsz = 0;
   } else {
     objsz /= 512;
     objsz *= 512;
   }
-  SWC_FS_CREATE_START(smartfd, bufsz, replication, objsz);
+  SWC_FS_CREATE_START(smartfd, replication, objsz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 
@@ -465,9 +461,9 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
   SWC_FS_CREATE_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
-void FileSystemCeph::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
+void FileSystemCeph::open(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
-  SWC_FS_OPEN_START(smartfd, bufsz);
+  SWC_FS_OPEN_START(smartfd);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 

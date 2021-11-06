@@ -147,8 +147,7 @@ class Write final {
 
   ~Write() noexcept { }
 
-  void create(int& err,
-              int32_t bufsz=-1, uint8_t blk_replicas=0, int64_t blksz=-1);
+  void create(int& err, uint8_t blk_replicas=0, int64_t blksz=-1);
 
   void block_encode(int& err, DynamicBuffer& cells_buff,
                     Block::Header&& header);

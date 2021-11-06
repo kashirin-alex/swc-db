@@ -33,7 +33,7 @@ void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     //  err, smartfd, params.replication, params.blksz, ev->data_ext
     //); needs fds state
 
-    fs->create(err, smartfd, 0, params.replication, params.blksz);
+    fs->create(err, smartfd, params.replication, params.blksz);
     if(smartfd->valid()) {
       int32_t fd = Env::FsBroker::fds().add(smartfd);
 

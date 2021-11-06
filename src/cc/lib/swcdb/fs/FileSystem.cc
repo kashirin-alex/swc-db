@@ -193,7 +193,7 @@ void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
   auto tracker = statistics.tracker(Statistics::WRITE_SYNC);
   SWC_FS_WRITE_START(smartfd, replication, blksz, buffer.size);
 
-  create(err, smartfd, 0, replication, blksz);
+  create(err, smartfd, replication, blksz);
   if(!smartfd->valid() || err) {
     if(!err)
       err = EBADF;
@@ -308,16 +308,15 @@ void FileSystem::combi_pread(Callback::CombiPreadCb_t&& cb,
 }
 
 void FileSystem::create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
-                        int32_t bufsz, uint8_t replication, int64_t blksz) {
+                        uint8_t replication, int64_t blksz) {
   int err = Error::OK;
-  create(err, smartfd, bufsz, replication, blksz);
+  create(err, smartfd, replication, blksz);
   cb(err, smartfd);
 }
 
-void FileSystem::open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd,
-                      int32_t bufsz) {
+void FileSystem::open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
-  open(err, smartfd, bufsz);
+  open(err, smartfd);
   cb(err, smartfd);
 }
 

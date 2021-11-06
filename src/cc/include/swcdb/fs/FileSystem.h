@@ -161,13 +161,12 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
                            uint64_t offset, uint32_t amount);
 
   virtual void create(int& err, SmartFd::Ptr& smartfd,
-                      int32_t bufsz, uint8_t replication, int64_t blksz) = 0;
+                      uint8_t replication, int64_t blksz) = 0;
   virtual void create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
-                      int32_t bufsz, uint8_t replication, int64_t blksz);
+                      uint8_t replication, int64_t blksz);
 
-  virtual void open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz=0) = 0;
-  virtual void open(Callback::OpenCb_t&& cb,
-                    SmartFd::Ptr& smartfd, int32_t bufsz=0);
+  virtual void open(int& err, SmartFd::Ptr& smartfd) = 0;
+  virtual void open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd);
 
 
   virtual size_t read(int& err, SmartFd::Ptr& smartfd,

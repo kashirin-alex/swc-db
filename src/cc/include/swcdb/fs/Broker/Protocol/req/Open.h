@@ -20,12 +20,12 @@ class Open final : public Base {
 
   SWC_CAN_INLINE
   Open(const FS::FileSystem::Ptr& a_fs,
-       uint32_t timeout, FS::SmartFd::Ptr& a_smartfd, int32_t bufsz,
+       uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
        FS::Callback::OpenCb_t&& a_cb)
       : Base(
           a_fs->statistics, FS::Statistics::OPEN_ASYNC,
           Buffers::make(
-            Params::OpenReq(a_smartfd->filepath(), a_smartfd->flags(), bufsz),
+            Params::OpenReq(a_smartfd->filepath(), a_smartfd->flags()),
             0,
             FUNCTION_OPEN, timeout
           )

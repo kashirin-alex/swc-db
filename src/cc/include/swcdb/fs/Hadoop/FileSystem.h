@@ -24,7 +24,7 @@ class FileSystemHadoop final : public FileSystem {
   struct Service {
     typedef std::shared_ptr<Service> Ptr;
 
-    Service(hdfs::FileSystem* srv) noexcept : srv(srv) { }
+    Service(hdfs::FileSystem* a_srv) noexcept : srv(a_srv) { }
 
     ~Service() noexcept {
       //if(srv) hdfsDisconnect(srv);
@@ -85,9 +85,9 @@ class FileSystemHadoop final : public FileSystem {
   }
 
   void create(int& err, SmartFd::Ptr& smartfd,
-              int32_t bufsz, uint8_t replication, int64_t blksz) override;
+              uint8_t replication, int64_t blksz) override;
 
-  void open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz = -1) override;
+  void open(int& err, SmartFd::Ptr& smartfd) override;
 
   size_t read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) override;

@@ -29,7 +29,7 @@ void open(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     auto smartfd = FS::SmartFd::make_ptr(
       std::move(params.fname), params.flags);
 
-    Env::FsInterface::fs()->open(err, smartfd, params.bufsz);
+    Env::FsInterface::fs()->open(err, smartfd);
 
     if(smartfd->valid())
       fd = Env::FsBroker::fds().add(smartfd);

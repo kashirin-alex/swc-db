@@ -128,11 +128,10 @@
 // SmartFd based
 
 
-#define SWC_FS_CREATE_START(_smartfd, _bufsz, _replication, _blksz) \
+#define SWC_FS_CREATE_START(_smartfd, _replication, _blksz) \
   SWC_LOG_OUT(LOG_DEBUG, \
     _smartfd->print( \
-      SWC_LOG_OSTREAM << "create bufsz=" << _bufsz \
-                      << " replicas=" << int(_replication) \
+      SWC_LOG_OSTREAM << "create replicas=" << int(_replication) \
                       << " blksz=" << _blksz << ' '); \
   );
 
@@ -143,9 +142,9 @@
 
 
 
-#define SWC_FS_OPEN_START(_smartfd, _bufsz) \
+#define SWC_FS_OPEN_START(_smartfd) \
   SWC_LOG_OUT(LOG_DEBUG, \
-    _smartfd->print(SWC_LOG_OSTREAM << "open bufsz=" << _bufsz << ' '); \
+    _smartfd->print(SWC_LOG_OSTREAM << "open "); \
   );
 
 #define SWC_FS_OPEN_FINISH(_error, _smartfd, _open_fds, _tracker) \

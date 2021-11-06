@@ -29,7 +29,7 @@ class Schemas final : public DB::Schemas {
     auto smartfd = FS::SmartFd::make_ptr(
       schemas_file, FS::OpenFlags::OPEN_FLAG_OVERWRITE);
 
-    Env::FsInterface::interface()->create(err, smartfd, 0, replicas, -1);
+    Env::FsInterface::interface()->create(err, smartfd, replicas, -1);
     if(err)
       return store_remove(smartfd);
 

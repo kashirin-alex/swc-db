@@ -22,13 +22,13 @@ class CreateSync final : public BaseSync, public Base {
   SWC_CAN_INLINE
   CreateSync(const FS::FileSystem::Ptr& a_fs,
              uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
-             int32_t bufsz, uint8_t replication, int64_t blksz)
+             uint8_t replication, int64_t blksz)
             : Base(
                 a_fs->statistics, FS::Statistics::CREATE_SYNC,
                 Buffers::make(
                   Params::CreateReq(
                     a_smartfd->filepath(), a_smartfd->flags(),
-                    bufsz, replication, blksz
+                    replication, blksz
                   ),
                   0,
                   FUNCTION_CREATE, timeout

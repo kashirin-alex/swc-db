@@ -31,7 +31,7 @@ void create(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       std::move(params.fname), params.flags);
 
     Env::FsInterface::fs()->create(
-      err, smartfd, params.bufsz, params.replication, params.blksz
+      err, smartfd, params.replication, params.blksz
     );
 
     if(smartfd->valid())

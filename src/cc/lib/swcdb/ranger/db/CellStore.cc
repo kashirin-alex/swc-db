@@ -429,11 +429,9 @@ Write::Write(const csid_t a_csid, std::string&& filepath,
               size(0) {
 }
 
-void Write::create(int& err, int32_t bufsz, uint8_t blk_replicas,
-                   int64_t blksz) {
+void Write::create(int& err, uint8_t blk_replicas, int64_t blksz) {
   while(
-    Env::FsInterface::interface()->create(
-      err, smartfd, bufsz, blk_replicas, blksz));
+    Env::FsInterface::interface()->create(err, smartfd, blk_replicas, blksz));
 }
 
 void Write::block_encode(int& err, DynamicBuffer& cells_buff,
@@ -613,7 +611,7 @@ Read::Ptr create_initial(int& err, const RangePtr& range) {
     1, range->get_path_cs(1), range, range->cfg->cell_versions(),
     DB::Cell::Key()
   );
-  writer.create(err, -1, range->cfg->file_replication(), -1);
+  writer.create(err, range->cfg->file_replication(), -1);
   if(err)
     return nullptr;
 

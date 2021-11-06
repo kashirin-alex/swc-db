@@ -21,14 +21,13 @@ class OpenReq final : public Serializable {
   OpenReq() noexcept { }
 
   SWC_CAN_INLINE
-  OpenReq(const std::string& a_fname, uint32_t a_flags, int32_t a_bufsz)
-          : fname(a_fname), flags(a_flags), bufsz(a_bufsz) { }
+  OpenReq(const std::string& a_fname, uint32_t a_flags)
+          : fname(a_fname), flags(a_flags) { }
 
   ~OpenReq() noexcept { }
 
   std::string fname;
   uint32_t    flags;
-  int32_t     bufsz;
 
   private:
 

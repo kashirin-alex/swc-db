@@ -417,10 +417,9 @@ void FileSystemHadoop::rename(int& err, const std::string& from,
 }
 
 void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
-                                 int32_t bufsz, uint8_t replication,
-                                 int64_t blksz) {
+                              uint8_t replication, int64_t blksz) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
-  SWC_FS_CREATE_START(smartfd, bufsz, replication, blksz);
+  SWC_FS_CREATE_START(smartfd, replication, blksz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 
@@ -428,8 +427,6 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
   if(!(smartfd->flags() & OpenFlags::OPEN_FLAG_OVERWRITE))
     oflags |= O_APPEND;
 
-  if (bufsz <= -1)
-    bufsz = 0;
   blksz = blksz <= hdfs_cfg_min_blk_sz ? 0 : (blksz/512)*512;
   int tmperr;
 
@@ -441,7 +438,7 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
     hdfs::FileHandle* fd = nullptr;
     (void)oflags;
     // fd = hdfsOpenFile(
-      // fs->srv, abspath.c_str(), oflags, bufsz, replication, blksz);
+      // fs->srv, abspath.c_str(), oflags, replication, blksz);
     if(!fd) {
       need_reconnect(tmperr = errno, fs);
       hadoop_fd->file(fd);
@@ -462,10 +459,9 @@ void FileSystemHadoop::create(int& err, SmartFd::Ptr& smartfd,
   SWC_FS_CREATE_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
-void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
-                               int32_t bufsz) {
+void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
-  SWC_FS_OPEN_START(smartfd, bufsz);
+  SWC_FS_OPEN_START(smartfd);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
   int oflags = O_RDONLY;
@@ -478,9 +474,7 @@ void FileSystemHadoop::open(int& err, SmartFd::Ptr& smartfd,
     /* Open the file */
     hdfs::FileHandle* fd = nullptr;
     (void)oflags;
-    (void)bufsz;
-    //fd = hdfsOpenFile(fs->srv, abspath.c_str(), oflags,
-    //                        bufsz<=-1 ? 0 : bufsz, 0, 0);
+    //fd = hdfsOpenFile(fs->srv, abspath.c_str(), oflags, 0, 0, 0);
     if(!fd) {
       need_reconnect(tmperr = errno, fs);
       hadoop_fd->file(fd);

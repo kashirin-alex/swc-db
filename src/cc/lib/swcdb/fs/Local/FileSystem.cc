@@ -268,10 +268,9 @@ void FileSystemLocal::rename(int& err, const std::string& from,
 }
 
 void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
-                             int32_t bufsz, uint8_t replication,
-                             int64_t blksz) {
+                             uint8_t replication, int64_t blksz) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
-  SWC_FS_CREATE_START(smartfd, bufsz, replication, blksz);
+  SWC_FS_CREATE_START(smartfd, replication, blksz);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 
@@ -310,9 +309,9 @@ void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
   SWC_FS_CREATE_FINISH(tmperr, smartfd, fds_open(), tracker);
 }
 
-void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
+void FileSystemLocal::open(int& err, SmartFd::Ptr& smartfd) {
   auto tracker = statistics.tracker(Statistics::OPEN_SYNC);
-  SWC_FS_OPEN_START(smartfd, bufsz);
+  SWC_FS_OPEN_START(smartfd);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 

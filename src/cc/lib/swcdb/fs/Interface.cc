@@ -427,8 +427,8 @@ bool Interface::open(int& err, SmartFd::Ptr& smartfd) {
 }
 
 bool Interface::create(int& err, SmartFd::Ptr& smartfd,
-                       int32_t bufsz, uint8_t replication, int64_t blksz) {
-  m_fs->create(err = Error::OK, smartfd, bufsz, replication, blksz);
+                       uint8_t replication, int64_t blksz) {
+  m_fs->create(err = Error::OK, smartfd, replication, blksz);
   switch(err) {
     case Error::OK:
     case Error::FS_PATH_NOT_FOUND:

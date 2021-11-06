@@ -109,10 +109,10 @@ class FileSystemBroker final : public FileSystem {
                    uint64_t offset, uint32_t amount) override;
 
   void create(int& err, SmartFd::Ptr& smartfd,
-              int32_t bufsz, uint8_t replication, int64_t blksz) override;
+              uint8_t replication, int64_t blksz) override;
 
   void create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
-              int32_t bufsz, uint8_t replication, int64_t blksz) override;
+              uint8_t replication, int64_t blksz) override;
 
   size_t append(int& err, SmartFd::Ptr& smartfd,
                 StaticBuffer& buffer, Flags flags) override;
@@ -120,10 +120,9 @@ class FileSystemBroker final : public FileSystem {
   void append(Callback::AppendCb_t&& cb, SmartFd::Ptr& smartfd,
               StaticBuffer& buffer, Flags flags) override;
 
-  void open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) override;
+  void open(int& err, SmartFd::Ptr& smartfd) override;
 
-  void open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd,
-            int32_t bufsz) override;
+  void open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd) override;
 
   size_t read(int& err, SmartFd::Ptr& smartfd,
               void *dst, size_t amount) override;

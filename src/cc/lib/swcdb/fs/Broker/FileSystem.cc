@@ -432,14 +432,13 @@ void FileSystemBroker::combi_pread(Callback::CombiPreadCb_t&& cb,
 }
 
 void FileSystemBroker::create(int& err, SmartFd::Ptr& smartfd,
-                              int32_t bufsz, uint8_t replication,
-                              int64_t blksz) {
-  SWC_FS_CREATE_START(smartfd, bufsz, replication, blksz);
+                              uint8_t replication, int64_t blksz) {
+  SWC_FS_CREATE_START(smartfd, replication, blksz);
 
   Comm::Protocol::FsBroker::Req::CreateSync::Ptr hdlr(
     new Comm::Protocol::FsBroker::Req::CreateSync(
       shared_from_this(),
-      cfg_timeout->get(), smartfd, bufsz, replication, blksz)
+      cfg_timeout->get(), smartfd, replication, blksz)
   );
   while(!send_request(hdlr));
   hdlr->wait();
@@ -448,14 +447,13 @@ void FileSystemBroker::create(int& err, SmartFd::Ptr& smartfd,
 
 void FileSystemBroker::create(Callback::CreateCb_t&& cb,
                               SmartFd::Ptr& smartfd,
-                              int32_t bufsz, uint8_t replication,
-                              int64_t blksz) {
-  SWC_FS_CREATE_START(smartfd, bufsz, replication, blksz);
+                              uint8_t replication, int64_t blksz) {
+  SWC_FS_CREATE_START(smartfd, replication, blksz);
 
   Comm::Protocol::FsBroker::Req::Create::Ptr hdlr(
     new Comm::Protocol::FsBroker::Req::Create(
       shared_from_this(),
-      cfg_timeout->get(), smartfd, bufsz, replication, blksz, std::move(cb))
+      cfg_timeout->get(), smartfd, replication, blksz, std::move(cb))
   );
   while(!send_request(hdlr));
 }
@@ -490,24 +488,23 @@ void FileSystemBroker::append(Callback::AppendCb_t&& cb,
   while(!send_request(hdlr));
 }
 
-void FileSystemBroker::open(int& err, SmartFd::Ptr& smartfd, int32_t bufsz) {
-  SWC_FS_OPEN_START(smartfd, bufsz);
+void FileSystemBroker::open(int& err, SmartFd::Ptr& smartfd) {
+  SWC_FS_OPEN_START(smartfd);
 
   Comm::Protocol::FsBroker::Req::OpenSync::Ptr hdlr(
     new Comm::Protocol::FsBroker::Req::OpenSync(
-      shared_from_this(), cfg_timeout->get(), smartfd, bufsz));
+      shared_from_this(), cfg_timeout->get(), smartfd));
   while(!send_request(hdlr));
   hdlr->wait();
   err = hdlr->error;
 }
 
-void FileSystemBroker::open(Callback::OpenCb_t&& cb,
-                            SmartFd::Ptr& smartfd, int32_t bufsz) {
-  SWC_FS_OPEN_START(smartfd, bufsz);
+void FileSystemBroker::open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd) {
+  SWC_FS_OPEN_START(smartfd);
 
   Comm::Protocol::FsBroker::Req::Open::Ptr hdlr(
     new Comm::Protocol::FsBroker::Req::Open(
-    shared_from_this(), cfg_timeout->get(), smartfd, bufsz, std::move(cb)));
+    shared_from_this(), cfg_timeout->get(), smartfd, std::move(cb)));
   while(!send_request(hdlr));
 }
 

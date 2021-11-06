@@ -20,13 +20,12 @@ class OpenSync final : public BaseSync, public Base {
 
   SWC_CAN_INLINE
   OpenSync(const FS::FileSystem::Ptr& a_fs,
-           uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
-           int32_t bufsz)
+           uint32_t timeout, FS::SmartFd::Ptr& a_smartfd)
           : Base(
               a_fs->statistics, FS::Statistics::OPEN_SYNC,
               Buffers::make(
                 Params::OpenReq(
-                  a_smartfd->filepath(), a_smartfd->flags(), bufsz),
+                  a_smartfd->filepath(), a_smartfd->flags()),
                 0,
                 FUNCTION_OPEN, timeout
               )

@@ -21,16 +21,15 @@ class CreateReq final : public Serializable {
   CreateReq() noexcept { }
 
   SWC_CAN_INLINE
-  CreateReq(const std::string& a_fname, uint32_t a_flags, int32_t a_bufsz,
+  CreateReq(const std::string& a_fname, uint32_t a_flags,
             uint8_t a_replication, int64_t a_blksz)
-            : fname(a_fname), flags(a_flags), bufsz(a_bufsz),
+            : fname(a_fname), flags(a_flags),
               replication(a_replication), blksz(a_blksz) { }
 
   ~CreateReq() noexcept { }
 
   std::string fname;
   uint32_t    flags;
-  int32_t     bufsz;
   uint8_t     replication;
   int64_t     blksz;
 
