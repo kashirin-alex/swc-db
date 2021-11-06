@@ -111,7 +111,7 @@ void FileSystemCeph::setup_connection() {
       m_filesystem, settings->get_i32("swc.fs.ceph.replication"));
 
   /*
-    ceph_cfg_min_obj_sz = ceph_conf_get(
+    int ceph_cfg_min_obj_sz = ceph_conf_get(
       m_filesystem, "object_size", char *buf, size_t len)
     int ceph_conf_set(m_filesystem, const char *option, const char *value);
     int ceph_conf_get(m_filesystem, const char *option, char *buf, size_t len);
@@ -418,7 +418,7 @@ void FileSystemCeph::rename(int& err, const std::string& from,
 
 
 void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
-                            uint8_t replication, int64_t objsz) {
+                            uint8_t replication) {
   auto tracker = statistics.tracker(Statistics::CREATE_SYNC);
 
   int oflags = O_WRONLY | O_CREAT;
@@ -427,19 +427,13 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
   else
     oflags |= O_TRUNC;
 
-  if (objsz <= -1 || objsz <= ceph_cfg_min_obj_sz) {
-    objsz = 0;
-  } else {
-    objsz /= 512;
-    objsz *= 512;
-  }
-  SWC_FS_CREATE_START(smartfd, replication, objsz);
+  SWC_FS_CREATE_START(smartfd, replication);
   std::string abspath;
   get_abspath(smartfd->filepath(), abspath);
 
   errno = 0;
   int tmperr = ceph_open_layout(m_filesystem, abspath.c_str(), oflags, 644,
- 		                     0, 0, objsz, nullptr);
+ 		                     0, 0, 0, nullptr);
   if(tmperr < 0) {
     tmperr = -tmperr;
   } else if(tmperr > 0) {
