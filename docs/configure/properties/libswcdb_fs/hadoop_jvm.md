@@ -57,3 +57,13 @@ The time in milliseconds to delay use of a connection after re-connect. \
 _default_ **```swc.fs.hadoop_jvm.reconnect.delay.ms=3000```**
 
 
+* ### swc.fs.hadoop_jvm.read.buffer.size
+```TYPE_INT32_G```
+The size of read buffer in bytes. \
+_default_ **```swc.fs.hadoop_jvm.read.buffer.size=0```**
+
+* ### swc.fs.hadoop_jvm.write.buffer.size
+```TYPE_INT32_G```
+The size of write buffer in bytes. \
+_default_ **```swc.fs.hadoop_jvm.write.buffer.size=0```**
+

@@ -159,6 +159,8 @@ class FileSystemHadoopJVM final : public FileSystem {
 
   int hdfs_cfg_min_blk_sz = 1048576;
   const Config::Property::Value_int32_g::Ptr cfg_use_delay;
+  const Config::Property::Value_int32_g::Ptr cfg_r_buffer_size;
+  const Config::Property::Value_int32_g::Ptr cfg_w_buffer_size;
 
 };
 

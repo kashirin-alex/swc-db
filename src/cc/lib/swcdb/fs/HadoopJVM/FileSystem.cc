@@ -31,6 +31,11 @@ Configurables* apply_hadoop_jvm(Configurables* config) {
       "Max Open Fds for opt. without closing")
     ("swc.fs.hadoop_jvm.reconnect.delay.ms", Config::g_i32(3000),
       "In ms delay use of connection after re-connect")
+
+    ("swc.fs.hadoop_jvm.read.buffer.size", Config::g_i32(0),
+      "Size of read buffer in bytes")
+    ("swc.fs.hadoop_jvm.write.buffer.size", Config::g_i32(0),
+      "Size of write buffer in bytes")
   ;
 
   config->settings->parse_file(
@@ -126,7 +131,13 @@ FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
       m_fs(setup_connection()),
       cfg_use_delay(
         settings->get<Config::Property::Value_int32_g>(
-          "swc.fs.hadoop_jvm.reconnect.delay.ms")) {
+          "swc.fs.hadoop_jvm.reconnect.delay.ms")),
+      cfg_r_buffer_size(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.hadoop_jvm.read.buffer.size")),
+      cfg_w_buffer_size(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.hadoop_jvm.write.buffer.size")) {
 }
 
 FileSystemHadoopJVM::~FileSystemHadoopJVM() noexcept { }
@@ -468,7 +479,9 @@ void FileSystemHadoopJVM::create(int& err, SmartFd::Ptr& smartfd,
     errno = 0;
     /* Open the file */
     auto hfile = hdfsOpenFile(
-      fs->srv, abspath.c_str(), oflags, 0, replication, blksz);
+      fs->srv, abspath.c_str(), oflags,
+      cfg_w_buffer_size->get(), replication, blksz
+    );
     if(!hfile) {
       need_reconnect(tmperr = errno, fs);
       if(tmperr == EACCES || tmperr == ENOENT)
@@ -499,7 +512,10 @@ void FileSystemHadoopJVM::open(int& err, SmartFd::Ptr& smartfd) {
     auto hadoop_fd = get_fd(smartfd);
     errno = 0;
     /* Open the file */
-    auto hfile = hdfsOpenFile(fs->srv, abspath.c_str(), oflags, 0, 0, 0);
+    auto hfile = hdfsOpenFile(
+      fs->srv, abspath.c_str(), oflags,
+      cfg_r_buffer_size->get(), 0, 0
+    );
     if(!hfile) {
       need_reconnect(tmperr = errno, fs);
       if(tmperr == EACCES || tmperr == ENOENT)
