@@ -65,7 +65,7 @@ Configurables* apply_local(Configurables* config) {
      "Handlers for async filesystem")
     #endif
 
-    ("swc.fs.local.fds.max", Config::g_i32(1024),
+    ("swc.fs.local.fds.max", Config::g_i32(512),
       "Max Open Fds for opt. without closing")
   ;
   config->settings->parse_file(

@@ -56,4 +56,4 @@ _default_ **```swc.fs.hadoop.handlers=48```**
 * ### swc.fs.hadoop.fds.max
 ```TYPE_INT32_G```
 The Max Open File Descriptors for the option of not closing, Condition dependable by the Program using the filesystem. \
-_default_ **```swc.fs.hadoop.fds.max=1024```**
+_default_ **```swc.fs.hadoop.fds.max=256```**

@@ -35,8 +35,6 @@ class FileSystemCeph final : public FileSystem {
   std::string to_string() const override;
 
 
-
-
   bool exists(int& err, const std::string& name) override;
 
   void remove(int& err, const std::string& name) override;
@@ -100,6 +98,10 @@ class FileSystemCeph final : public FileSystem {
   void close(int& err, SmartFd::Ptr& smartfd) override;
 
   private:
+
+  const Config::Property::Value_int32_g::Ptr cfg_stripe_unit;
+  const Config::Property::Value_int32_g::Ptr cfg_stripe_count;
+  const Config::Property::Value_int32_g::Ptr cfg_object_size;
 
   struct ceph_mount_info* m_filesystem;
   UserPerm*               m_perm;

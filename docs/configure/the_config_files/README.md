@@ -72,24 +72,24 @@ filenames cfg properties structured on corresponding role/service/program naming
 
 _**The following cfg-files for roles are used:**_
 
-| Roles         |  type       | filename.cfg                | filename.dyn.cfg               |
-| ---           | ---         | ---                         | ---                            |
-| All           |             | ```swc.cfg```               | ```swc.dyn.cfg```              |
-|               |             |                             |                                |
-| Manager       |             | ```swc_mngr.cfg```          | ```swc_mngr.dyn.cfg```         |
-| Ranger        |             | ```swc_rgr.cfg```           | ```swc_rgr.dyn.cfg```          |
-| FsBroker      |             | ```swc_fsbroker.cfg```      | ```swc_fsbroker.dyn.cfg```     |
-| Broker        |             | ```swc_bkr.cfg```           | ```swc_bkr.dyn.cfg```          |
-| ThriftBroker  |             | ```swc_thriftbroker.cfg```  | ```swc_thriftbroker.dyn.cfg``` |
-|               |             |                             |                                |
-| libswcdb_fs_* | Type of FS  |                             |                                |
-|               | local       | ```swc_fs_local.cfg```      |                                |
-|               | broker      | ```swc_fs_broker.cfg```     | ```swc_fs_broker.dyn.cfg```    |
-|               | hadoop_jvm  | ```swc_fs_hadoop_jvm.cfg``` |                                |
-|               | hadoop      | ```swc_fs_hadoop.cfg```     |                                |
-|               | ceph        | ```swc_fs_ceph.cfg```       |                                |
-|               |             |                             |                                |
-| swcdb_cluster |             | ```swc_cluster.cfg```       |                                |
-|               |             |                             |                                |
+| Roles         |  type       | filename.cfg                | filename.dyn.cfg                |
+| ---           | ---         | ---                         | ---                             |
+| All           |             | ```swc.cfg```               | ```swc.dyn.cfg```               |
+|               |             |                             |                                 |
+| Manager       |             | ```swc_mngr.cfg```          | ```swc_mngr.dyn.cfg```          |
+| Ranger        |             | ```swc_rgr.cfg```           | ```swc_rgr.dyn.cfg```           |
+| FsBroker      |             | ```swc_fsbroker.cfg```      | ```swc_fsbroker.dyn.cfg```      |
+| Broker        |             | ```swc_bkr.cfg```           | ```swc_bkr.dyn.cfg```           |
+| ThriftBroker  |             | ```swc_thriftbroker.cfg```  | ```swc_thriftbroker.dyn.cfg```  |
+|               |             |                             |                                 |
+| libswcdb_fs_* | Type of FS  |                             |                                 |
+|               | local       | ```swc_fs_local.cfg```      | ```swc_fs_local.dyn.cfg```      |
+|               | broker      | ```swc_fs_broker.cfg```     | ```swc_fs_broker.dyn.cfg```     |
+|               | hadoop_jvm  | ```swc_fs_hadoop_jvm.cfg``` | ```swc_fs_hadoop_jvm.dyn.cfg``` |
+|               | hadoop      | ```swc_fs_hadoop.cfg```     |                                 |
+|               | ceph        | ```swc_fs_ceph.cfg```       | ```swc_fs_ceph.dyn.cfg```       |
+|               |             |                             |                                 |
+| swcdb_cluster |             | ```swc_cluster.cfg```       |                                 |
+|               |             |                             |                                 |
 
 

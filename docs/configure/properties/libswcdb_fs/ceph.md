@@ -10,7 +10,7 @@ The SWC-DB Ceph Filesystem Library can be configured with these configuration pr
 * ### swc.fs.ceph.cfg.dyn
 ```TYPE_STRINGS```
 The Dynamic cfg-file to use. Config Handler will check & reload this cfg-file by swc.cfg.dyn.period \
-_default_ **```swc.fs.ceph.cfg.dyn=```**
+_default_ **```swc.fs.ceph.cfg.dyn=swc_fs_ceph.dyn.cfg```**
 
 * ### swc.fs.ceph.path.root
 ```TYPE_STRING```
@@ -53,21 +53,6 @@ The CephFs Permission User. \
 _default_ **```swc.fs.ceph.perm.user=```**
 
 
-* ### swc.fs.ceph.stripe.unit
-```TYPE_INT32```
-The CephFs default stripe_unit. \
-_default_ **```swc.fs.ceph.stripe.unit=```**
-
-* ### swc.fs.ceph.stripe.count
-```TYPE_INT32```
-The CephFs default stripe_count. \
-_default_ **```swc.fs.ceph.stripe.count=```**
-
-* ### swc.fs.ceph.object.size
-```TYPE_INT32```
-The CephFs default object_size. \
-_default_ **```swc.fs.ceph.object.size=```**
-
 * ### swc.fs.ceph.replication
 ```TYPE_INT32```
 The CephFs default replication. \
@@ -82,3 +67,17 @@ _default_ **```swc.fs.ceph.replication=```**
 The Max Open File Descriptors for the option of not closing, Condition dependable by the Program using the filesystem. \
 _default_ **```swc.fs.ceph.fds.max=256```**
 
+* ### swc.fs.ceph.stripe.unit
+```TYPE_INT32_G```
+The size of CephFs stripe unit. '0' for CephFs default configurations. \
+_default_ **```swc.fs.ceph.stripe.unit=0```**
+
+* ### swc.fs.ceph.stripe.count
+```TYPE_INT32_G```
+The count of CephFs stripes. '0' for CephFs default configurations. \
+_default_ **```swc.fs.ceph.stripe.count=0```**
+
+* ### swc.fs.ceph.object.size
+```TYPE_INT32_G```
+The size of CephFs object. '0' for CephFs default configurations. \
+_default_ **```swc.fs.ceph.object.size=0```**

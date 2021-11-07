@@ -29,15 +29,6 @@ Configurables* apply_ceph(Configurables* config) {
     ("swc.fs.ceph.perm.user", Config::i32(),
       "CephFs Permission User")
 
-    ("swc.fs.ceph.stripe.unit", Config::i32(),
-      "CephFs default stripe_unit")
-    ("swc.fs.ceph.stripe.count", Config::i32(),
-      "CephFs default stripe_count")
-    ("swc.fs.ceph.object.size", Config::i32(),
-      "CephFs default object_size")
-    ("swc.fs.ceph.replication", Config::i32(),
-      "CephFs default replication")
-
     ("swc.fs.ceph.configuration.file", Config::str(),
       "The ceph configuration file 'ceph.conf'")
     ("swc.fs.ceph.mon.addr", Config::str(),
@@ -46,8 +37,18 @@ Configurables* apply_ceph(Configurables* config) {
     ("swc.fs.ceph.metrics.enabled", Config::boo(true),
      "Enable or Disable Metrics Tracking")
 
+    ("swc.fs.ceph.replication", Config::i32(),
+      "CephFs default replication")
+
     ("swc.fs.ceph.fds.max", Config::g_i32(256),
       "Max Open Fds for opt. without closing")
+
+    ("swc.fs.ceph.stripe.unit", Config::g_i32(0),
+      "Size of ceph stripe unit")
+    ("swc.fs.ceph.stripe.count", Config::g_i32(0),
+      "Count of ceph stripes")
+    ("swc.fs.ceph.object.size", Config::g_i32(0),
+      "Size of ceph object")
   ;
 
   config->settings->parse_file(
@@ -69,6 +70,15 @@ Configurables* apply_ceph(Configurables* config) {
 
 FileSystemCeph::FileSystemCeph(Configurables* config)
     : FileSystem(apply_ceph(config), 0),
+      cfg_stripe_unit(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.ceph.stripe.unit")),
+      cfg_stripe_count(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.ceph.stripe.count")),
+      cfg_object_size(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.ceph.object.size")),
       m_filesystem(nullptr), m_perm(nullptr) {
   setup_connection();
 }
@@ -94,17 +104,15 @@ void FileSystemCeph::setup_connection() {
     SWC_ASSERT(!err);
   }
 
-  if(settings->has("swc.fs.ceph.stripe.unit"))
-    ceph_set_default_file_stripe_unit(
-      m_filesystem, settings->get_i32("swc.fs.ceph.stripe.unit"));
-
-  if(settings->has("swc.fs.ceph.stripe.count"))
-    ceph_set_default_file_stripe_count(
-      m_filesystem, settings->get_i32("swc.fs.ceph.stripe.count"));
-
-  if(settings->has("swc.fs.ceph.object.size"))
-    ceph_set_default_object_size(
-      m_filesystem, settings->get_i32("swc.fs.ceph.object.size"));
+  /* cfg-values set at file create (No longer available)
+  int value;
+  if((value = cfg_stripe_unit->get()))
+    ceph_set_default_file_stripe_unit(m_filesystem, value);
+  if((value = cfg_stripe_count->get()))
+    ceph_set_default_file_stripe_count(m_filesystem, value);
+  if((value = cfg_object_size->get()))
+    ceph_set_default_object_size(m_filesystem, value);
+  */
 
   if(settings->has("swc.fs.ceph.replication"))
     ceph_set_default_file_replication(
@@ -432,8 +440,11 @@ void FileSystemCeph::create(int& err, SmartFd::Ptr& smartfd,
   get_abspath(smartfd->filepath(), abspath);
 
   errno = 0;
-  int tmperr = ceph_open_layout(m_filesystem, abspath.c_str(), oflags, 644,
- 		                     0, 0, 0, nullptr);
+  int tmperr = ceph_open_layout(
+    m_filesystem, abspath.c_str(), oflags, 644,
+    cfg_stripe_unit->get(), cfg_stripe_count->get(), cfg_object_size->get(),
+    nullptr
+  );
   if(tmperr < 0) {
     tmperr = -tmperr;
   } else if(tmperr > 0) {

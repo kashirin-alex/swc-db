@@ -10,7 +10,7 @@ The SWC-DB Hadoop-JVM Filesystem Library can be configured with these configurat
 * ### swc.fs.hadoop_jvm.cfg.dyn
 ```TYPE_STRINGS```
 The Dynamic cfg-file to use. Config Handler will check & reload this cfg-file by swc.cfg.dyn.period \
-_default_ **```swc.fs.hadoop_jvm.cfg.dyn=```**
+_default_ **```swc.fs.hadoop_jvm.cfg.dyn=swc_fs_hadoop_jvm.dyn.cfg```**
 
 * ### swc.fs.hadoop_jvm.path.root
 ```TYPE_STRING```
@@ -48,7 +48,7 @@ _default_ **```swc.fs.hadoop_jvm.user=```**
 * ### swc.fs.hadoop_jvm.fds.max
 ```TYPE_INT32_G```
 The Max Open File Descriptors for the option of not closing, Condition dependable by the Program using the filesystem. \
-_default_ **```swc.fs.hadoop_jvm.fds.max=1024```**
+_default_ **```swc.fs.hadoop_jvm.fds.max=256```**
 
 
 * ### swc.fs.hadoop_jvm.reconnect.delay.ms

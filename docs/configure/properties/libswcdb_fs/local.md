@@ -10,7 +10,7 @@ The SWC-DB Local Filesystem Library can be configured with these configuration p
 * ### swc.fs.local.cfg.dyn
 ```TYPE_STRINGS```
 The Dynamic cfg-file to use. Config Handler will check & reload this cfg-file by swc.cfg.dyn.period \
-_default_ **```swc.fs.local.cfg.dyn=```**
+_default_ **```swc.fs.local.cfg.dyn=swc_fs_local.dyn.cfg```**
 
 * ### swc.fs.local.path.root
 ```TYPE_STRING```
@@ -29,5 +29,5 @@ _default_ **```swc.fs.local.metrics.enabled=true```**
 * ### swc.fs.local.fds.max
 ```TYPE_INT32_G```
 The Max Open File Descriptors for the option of not closing, Condition dependable by the Program using the filesystem. \
-_default_ **```swc.fs.local.fds.max=1024```**
+_default_ **```swc.fs.local.fds.max=512```**
 
