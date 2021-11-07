@@ -45,6 +45,12 @@ else()
   SET(CORE_LIBS ${CORE_LIBS} dl pthread) # stdc++fs
 endif()
 
+if(SWC_IO_URING_AS_DEFAULT OR SWC_FS_LOCAL_USE_IO_URING)
+  SET_DEPS(NAME "IO_URING" REQUIRED TRUE LIB_PATHS "" INC_PATHS "" STATIC  SHARED uring INCLUDE liburing.h INSTALL FALSE) # (LGPL! liburing.a )
+  SET (CORE_LIBS ${CORE_LIBS} uring)
+endif()
+
+
 
 if(SWC_ENABLE_SANITIZER STREQUAL "address")
   SET(CORE_LIBS ${CORE_LIBS} rt)

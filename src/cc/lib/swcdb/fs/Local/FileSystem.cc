@@ -9,6 +9,10 @@
 #include <fcntl.h>
 #include <dirent.h>
 
+#if defined(SWC_FS_LOCAL_USE_IO_URING)
+#include <asio/stream_file.hpp>
+#endif
+
 
 #if defined(__MINGW64__) || defined(_WIN32)
   #include <Windows.h>
@@ -56,6 +60,11 @@ Configurables* apply_local(Configurables* config) {
     ("swc.fs.local.metrics.enabled", Config::boo(true),
      "Enable or Disable Metrics Tracking")
 
+    #if defined(SWC_FS_LOCAL_USE_IO_URING)
+    ("swc.fs.local.handlers", Config::i32(12),
+     "Handlers for async filesystem")
+    #endif
+
     ("swc.fs.local.fds.max", Config::g_i32(1024),
       "Max Open Fds for opt. without closing")
   ;
@@ -75,12 +84,31 @@ Configurables* apply_local(Configurables* config) {
 
 
 FileSystemLocal::FileSystemLocal(Configurables* config)
-    : FileSystem(apply_local(config), 0),
+    : FileSystem(
+        apply_local(config),
+        0
+        #if defined(SWC_FS_LOCAL_USE_IO_URING)
+        | OPT_ASYNC_READALL
+        #endif
+      ),
       m_directio(settings->get_bool(
-        "swc.fs.local.DirectIO", false)) {
+        "swc.fs.local.DirectIO", false))
+      #if defined(SWC_FS_LOCAL_USE_IO_URING)
+      ,
+      m_io(new Comm::IoContext(
+        "FsLocal", settings->get_i32("swc.fs.local.handlers")))
+      #endif
+      {
 }
 
 FileSystemLocal::~FileSystemLocal() noexcept { }
+
+#if defined(SWC_FS_LOCAL_USE_IO_URING)
+void FileSystemLocal::stop() {
+  m_io->stop();
+  FileSystem::stop();
+}
+#endif
 
 Type FileSystemLocal::get_type() const noexcept {
   return Type::LOCAL;
@@ -266,6 +294,153 @@ void FileSystemLocal::rename(int& err, const std::string& from,
   err = ec.value();
   SWC_FS_RENAME_FINISH(err, abspath_from, abspath_to, tracker);
 }
+
+#if defined(SWC_FS_LOCAL_USE_IO_URING)
+/*
+void FileSystemLocal::read(Callback::ReadAllCb_t&& cb,
+                           const std::string& name) {
+  SWC_FS_READALL_START(name);
+
+  struct HandlerReadAll {
+    FS::SmartFd::Ptr                smartfd;
+    Callback::ReadAllCb_t           cb;
+    StaticBuffer::Ptr               buffer;
+    asio::stream_file               sf;
+    size_t                          recved;
+    FS::Statistics::Metric::Tracker tracker;
+
+    HandlerReadAll(Callback::ReadAllCb_t&& a_cb,
+                   const Comm::IoContextPtr& io, FS::Statistics& stats)
+                  : cb(std::move(a_cb)), sf(io->executor()), recved(0),
+                    tracker(stats.tracker(Statistics::READ_ALL_SYNC)) {
+    }
+    void run(size_t sz) {
+      sf.assign(smartfd->fd());
+      buffer.reset(new StaticBuffer(sz));
+      operator()(asio::error_code(), 0);
+    }
+    void operator()(const asio::error_code& ec, size_t bytes) {
+      SWC_PRINT << "HandlerReadAll() ec=" << ec << " is_open=" << sf.is_open() << " bytes=" << bytes << " left=" << (buffer->size - bytes) << SWC_PRINT_CLOSE;
+      if(!ec && (recved += bytes) < buffer->size) {
+        sf.async_read_some(
+          asio::buffer(buffer->base + bytes, buffer->size - bytes),
+          std::move(*this)
+        );
+      } else {
+        callback(ec.value());
+      }
+    }
+    void callback(int err) {
+      SWC_PRINT << "HandlerReadAll callback() err=" << err << " recved=" << recved << SWC_PRINT_CLOSE;
+      if(sf.is_open()) {
+        asio::error_code tmp;
+        sf.close(tmp);
+      }
+      SWC_FS_READALL_FINISH(err, smartfd->filepath(), recved, tracker);
+      cb(
+        err
+          ? (err == ENOENT ? Error::FS_PATH_NOT_FOUND : err)
+          : (recved != buffer->size ? Error::FS_EOF : err),
+        smartfd->filepath(),
+        buffer
+      );
+    }
+  };
+
+  HandlerReadAll hdlr(std::move(cb), m_io, statistics);
+
+  int err = Error::OK;
+  size_t len;
+  if(!exists(err, name)) {
+    if(!err)
+      err = Error::FS_PATH_NOT_FOUND;
+    len = 0;
+    goto finish;
+  }
+  len = length(err, name);
+  if(err)
+    goto finish;
+
+  hdlr.smartfd = FS::SmartFd::make_ptr(name, 0);
+
+  open(err, hdlr.smartfd);
+  if(!err && !hdlr.smartfd->valid())
+    err = EBADR;
+  finish:
+  err ? hdlr.callback(err) : hdlr.run(len);
+}
+*/
+
+void FileSystemLocal::read(Callback::ReadAllCb_t&& cb,
+                           const std::string& name) {
+  SWC_FS_READALL_START(name);
+
+  struct HandlerReadAll {
+    std::string                     name;
+    Callback::ReadAllCb_t           cb;
+    StaticBuffer::Ptr               buffer;
+    asio::stream_file               sf;
+    size_t                          recved;
+    FS::Statistics::Metric::Tracker tracker;
+
+    HandlerReadAll(FileSystemLocal* fs,
+                   const std::string& a_name, Callback::ReadAllCb_t&& a_cb,
+                   const Comm::IoContextPtr& io, FS::Statistics& stats)
+                  : name(a_name), cb(std::move(a_cb)),
+                    sf(io->executor()), recved(0),
+                    tracker(stats.tracker(Statistics::READ_ALL_SYNC)) {
+      std::string abspath;
+      fs->get_abspath(name, abspath);
+
+      asio::error_code ec;
+      sf.open(abspath, asio::stream_file::read_only, ec);
+      SWC_PRINT << "HandlerReadAll() open ec=" << ec << SWC_PRINT_CLOSE;
+      if(!ec) {
+        size_t sz = sf.size(ec);
+        //if(!ec)
+        //  sf.seek(0, asio::stream_file::seek_set);
+        SWC_PRINT << "HandlerReadAll() ec=" << ec << " sz=" << sz << SWC_PRINT_CLOSE;
+        if(!ec) {
+          buffer.reset(new StaticBuffer(sz));
+          operator()(ec, 0);
+          return;
+        }
+      }
+      callback(ec.value());
+    }
+    void operator()(const asio::error_code& ec, size_t bytes) {
+      SWC_PRINT << "HandlerReadAll() ec=" << ec << " is_open=" << sf.is_open() << " bytes=" << bytes << " left=" << (buffer->size - bytes) << SWC_PRINT_CLOSE;
+      if(!ec && (recved += bytes) < buffer->size) {
+        sf.async_read_some(
+          asio::buffer(buffer->base + bytes, buffer->size - bytes),
+          std::move(*this)
+        );
+      } else {
+        callback(ec.value());
+      }
+    }
+    void callback(int err) {
+      SWC_PRINT << "HandlerReadAll callback() err=" << err << " recved=" << recved << SWC_PRINT_CLOSE;
+      if(sf.is_open()) {
+        asio::error_code tmp;
+        sf.close(tmp);
+      }
+      SWC_FS_READALL_FINISH(err, name, recved, tracker);
+      cb(
+        err
+          ? (err == ENOENT ? Error::FS_PATH_NOT_FOUND : err)
+          : (recved != buffer->size ? Error::FS_EOF : err),
+        name,
+        buffer
+      );
+    }
+  };
+
+  SWC_PRINT << "HandlerReadAll 1 " << SWC_PRINT_CLOSE;
+  HandlerReadAll(this, name, std::move(cb), m_io, statistics);
+  SWC_PRINT << "HandlerReadAll 2 " << SWC_PRINT_CLOSE;
+}
+#endif
 
 void FileSystemLocal::create(int& err, SmartFd::Ptr& smartfd,
                              uint8_t replication) {

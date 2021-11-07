@@ -8,6 +8,11 @@
 
 #include "swcdb/fs/FileSystem.h"
 
+#if defined(SWC_FS_LOCAL_USE_IO_URING)
+#include "swcdb/core/comm/IoContext.h"
+#endif
+
+
 namespace SWC { namespace FS {
 
 
@@ -20,6 +25,10 @@ class FileSystemLocal final : public FileSystem {
   FileSystemLocal(Configurables* config);
 
   virtual ~FileSystemLocal() noexcept;
+
+  #if defined(SWC_FS_LOCAL_USE_IO_URING)
+  void stop() override;
+  #endif
 
   Type SWC_CONST_FUNC get_type() const noexcept override;
 
@@ -50,6 +59,10 @@ class FileSystemLocal final : public FileSystem {
   void read(int& err, const std::string& name, StaticBuffer* dst) override {
     default_read(err, name, dst);
   }
+
+  #if defined(SWC_FS_LOCAL_USE_IO_URING)
+  void read(Callback::ReadAllCb_t&& cb, const std::string& name) override;
+  #endif
 
   void combi_pread(int& err, SmartFd::Ptr& smartfd,
                    uint64_t offset, uint32_t amount,
@@ -90,6 +103,11 @@ class FileSystemLocal final : public FileSystem {
 
   private:
   bool m_directio;
+
+  #if defined(SWC_FS_LOCAL_USE_IO_URING)
+  Comm::IoContextPtr m_io;
+  #endif
+
 };
 
 

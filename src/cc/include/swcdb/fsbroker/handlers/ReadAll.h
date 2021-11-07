@@ -14,6 +14,16 @@ namespace SWC { namespace Comm { namespace Protocol {
 namespace FsBroker {  namespace Handler {
 
 
+namespace {
+void send_response(const ConnHandlerPtr& conn, const Event::Ptr& ev,
+                   int err, StaticBuffer& buffer) {
+  auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, buffer, 4);
+  cbp->append_i32(err);
+  conn->send_response(cbp);
+}
+}
+
+
 void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
   int err = Error::OK;
@@ -26,12 +36,21 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::ReadAllReq params;
     params.decode(&ptr, &remain);
 
-    //Env::FsInterface::fs()->read(err, params.name, &rbuf); needs fds state
+    const auto& fs = Env::FsInterface::fs();
+    if(fs->has_option_async(FS::FileSystem::OPT_ASYNC_READALL)) {
+      fs->read(
+        [conn=conn, ev=ev](int _err, const std::string&,
+                           const StaticBuffer::Ptr& buffer) {
+          send_response(conn, ev, _err, *buffer.get());
+        },
+        params.name
+      );
+      return;
+    }
 
     FS::SmartFd::Ptr smartfd;
     int32_t fd = -1;
     size_t len;
-    const auto& fs = Env::FsInterface::fs();
     if(!fs->exists(err, params.name)) {
       if(!err)
         err = Error::FS_PATH_NOT_FOUND;
@@ -68,9 +87,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     err = e.code();
   }
 
-  auto cbp = err ? Buffers::make(ev, 4) : Buffers::make(ev, rbuf, 4);
-  cbp->append_i32(err);
-  conn->send_response(cbp);
+  send_response(conn, ev, err, rbuf);
 
 }
 
