@@ -98,7 +98,7 @@ FileSystemHadoop::get_fd(SmartFd::Ptr& smartfd){
 
 
 FileSystemHadoop::FileSystemHadoop(Configurables* config)
-    : FileSystem(apply_hadoop(config)),
+    : FileSystem(apply_hadoop(config), 0),
       m_nxt_fd(0), m_connecting(false),
       m_fs(setup_connection()) {
 }

@@ -129,27 +129,27 @@ FileSystemBroker::get_endpoints(const Config::Settings::Ptr& settings) {
 
 
 FileSystemBroker::FileSystemBroker(Configurables* config)
-  : FileSystem(apply_broker(config)),
-    m_io(new Comm::IoContext("FsBroker",
-      settings->get_i32("swc.fs.broker.handlers"))),
-    m_service(
-      new Comm::client::Serialized(
-        *settings,
-        "FS-BROKER",
-        m_io,
-        client::FsBroker::AppContext::Ptr(
-          new client::FsBroker::AppContext(*settings))
-      )
-    ),
-    m_type_underlying(fs_type(
-      settings->get_str("swc.fs.broker.underlying"))),
-    m_endpoints(get_endpoints(settings)),
-    cfg_timeout(
-      settings->get<Config::Property::Value_int32_g>(
-        "swc.fs.broker.timeout")),
-    cfg_timeout_ratio(
-      settings->get<Config::Property::Value_int32_g>(
-        "swc.fs.broker.timeout.bytes.ratio")) {
+    : FileSystem(apply_broker(config), OPT_ASYNC_ALL),
+      m_io(new Comm::IoContext("FsBroker",
+        settings->get_i32("swc.fs.broker.handlers"))),
+      m_service(
+        new Comm::client::Serialized(
+          *settings,
+          "FS-BROKER",
+          m_io,
+          client::FsBroker::AppContext::Ptr(
+            new client::FsBroker::AppContext(*settings))
+        )
+      ),
+      m_type_underlying(fs_type(
+        settings->get_str("swc.fs.broker.underlying"))),
+      m_endpoints(get_endpoints(settings)),
+      cfg_timeout(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.broker.timeout")),
+      cfg_timeout_ratio(
+        settings->get<Config::Property::Value_int32_g>(
+          "swc.fs.broker.timeout.bytes.ratio")) {
 }
 
 FileSystemBroker::~FileSystemBroker() noexcept { }

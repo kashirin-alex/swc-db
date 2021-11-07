@@ -75,9 +75,9 @@ Configurables* apply_local(Configurables* config) {
 
 
 FileSystemLocal::FileSystemLocal(Configurables* config)
-                : FileSystem(apply_local(config)),
-                  m_directio(settings->get_bool(
-                    "swc.fs.local.DirectIO", false)) {
+    : FileSystem(apply_local(config), 0),
+      m_directio(settings->get_bool(
+        "swc.fs.local.DirectIO", false)) {
 }
 
 FileSystemLocal::~FileSystemLocal() noexcept { }

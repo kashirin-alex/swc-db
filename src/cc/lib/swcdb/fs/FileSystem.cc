@@ -64,8 +64,9 @@ const char* to_string(Type typ) noexcept {
 }
 
 
-FileSystem::FileSystem(const Configurables* config)
-    : path_root(config->path_root.empty()
+FileSystem::FileSystem(const Configurables* config, uint32_t impl_opts_async)
+    : impl_options_async(impl_opts_async),
+      path_root(config->path_root.empty()
         ? "" : normalize_pathname(config->path_root)),
       path_data(
         normalize_pathname(config->settings->get_str("swc.fs.path.data"))),
@@ -81,6 +82,10 @@ void FileSystem::stop() {
   if(statistics.fds_count.load())
     SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=" SWC_FMT_LU,
              to_string().c_str(), statistics.fds_count.load());
+}
+
+bool FileSystem::has_option_async(uint32_t opts_async) const noexcept {
+  return impl_options_async & opts_async;
 }
 
 Type FileSystem::get_type() const noexcept {

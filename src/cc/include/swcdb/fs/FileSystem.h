@@ -70,20 +70,49 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   typedef std::shared_ptr<FileSystem> Ptr;
 
+  static const uint32_t OPT_ASYNC_EXISTS      = 0x01;
+  static const uint32_t OPT_ASYNC_REMOVE      = OPT_ASYNC_EXISTS << 1;
+  static const uint32_t OPT_ASYNC_LENGTH      = OPT_ASYNC_REMOVE << 1;
+  static const uint32_t OPT_ASYNC_MKDIRS      = OPT_ASYNC_LENGTH << 1;
+  static const uint32_t OPT_ASYNC_READDIR     = OPT_ASYNC_MKDIRS << 1;
+  static const uint32_t OPT_ASYNC_RMDIR       = OPT_ASYNC_READDIR << 1;
+  static const uint32_t OPT_ASYNC_RENAME      = OPT_ASYNC_RMDIR << 1;
+  static const uint32_t OPT_ASYNC_WRITE       = OPT_ASYNC_RENAME << 1;
+  static const uint32_t OPT_ASYNC_COMBI_PREAD = OPT_ASYNC_WRITE << 1;
+  static const uint32_t OPT_ASYNC_CREATE      = OPT_ASYNC_COMBI_PREAD << 1;
+  static const uint32_t OPT_ASYNC_OPEN        = OPT_ASYNC_CREATE << 1;
+  static const uint32_t OPT_ASYNC_READ        = OPT_ASYNC_OPEN << 1;
+  static const uint32_t OPT_ASYNC_PREAD       = OPT_ASYNC_READ << 1;
+  static const uint32_t OPT_ASYNC_APPEND      = OPT_ASYNC_PREAD << 1;
+  static const uint32_t OPT_ASYNC_SEEK        = OPT_ASYNC_APPEND << 1;
+  static const uint32_t OPT_ASYNC_FLUSH       = OPT_ASYNC_SEEK << 1;
+  static const uint32_t OPT_ASYNC_SYNC        = OPT_ASYNC_FLUSH << 1;
+  static const uint32_t OPT_ASYNC_CLOSE       = OPT_ASYNC_SYNC << 1;
+  static const uint32_t OPT_ASYNC_READALL     = OPT_ASYNC_CLOSE << 1;
+  static const uint32_t OPT_ASYNC_ALL         = OPT_ASYNC_READALL |
+    OPT_ASYNC_CLOSE | OPT_ASYNC_SYNC | OPT_ASYNC_FLUSH | OPT_ASYNC_SEEK |
+    OPT_ASYNC_APPEND | OPT_ASYNC_PREAD | OPT_ASYNC_READ | OPT_ASYNC_OPEN |
+    OPT_ASYNC_CREATE | OPT_ASYNC_COMBI_PREAD | OPT_ASYNC_WRITE |
+    OPT_ASYNC_RENAME | OPT_ASYNC_RMDIR | OPT_ASYNC_READDIR |
+    OPT_ASYNC_MKDIRS | OPT_ASYNC_LENGTH | OPT_ASYNC_REMOVE | OPT_ASYNC_EXISTS;
+
+  const uint32_t    impl_options_async;
   const std::string path_root;
   const std::string path_data;
 
   const Config::Settings::Ptr                settings;
   const Config::Property::Value_int32_g::Ptr cfg_fds_max;
 
-  Core::AtomicBool      m_run;
-  Statistics            statistics;
+  Core::AtomicBool  m_run;
+  Statistics        statistics;
 
-  FileSystem(const Configurables* config);
+  FileSystem(const Configurables* config, uint32_t impl_opts_async);
 
   virtual ~FileSystem() noexcept;
 
   virtual void stop();
+
+  bool SWC_PURE_FUNC has_option_async(uint32_t opts_async) const noexcept;
 
   virtual Type SWC_CONST_FUNC get_type() const noexcept;
 

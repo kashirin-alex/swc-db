@@ -68,8 +68,8 @@ Configurables* apply_ceph(Configurables* config) {
 
 
 FileSystemCeph::FileSystemCeph(Configurables* config)
-        : FileSystem(apply_ceph(config)),
-          m_filesystem(nullptr), m_perm(nullptr) {
+    : FileSystem(apply_ceph(config), 0),
+      m_filesystem(nullptr), m_perm(nullptr) {
   setup_connection();
 }
 

@@ -128,7 +128,7 @@ FileSystemHadoopJVM::get_fd(SmartFd::Ptr& smartfd){
 
 
 FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
-    : FileSystem(apply_hadoop_jvm(config)),
+    : FileSystem(apply_hadoop_jvm(config), 0),
       cfg_use_delay(
         settings->get<Config::Property::Value_int32_g>(
           "swc.fs.hadoop_jvm.reconnect.delay.ms")),
