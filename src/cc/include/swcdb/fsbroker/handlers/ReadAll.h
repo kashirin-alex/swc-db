@@ -39,8 +39,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     const auto& fs = Env::FsInterface::fs();
     if(fs->has_option_async(FS::FileSystem::OPT_ASYNC_READALL)) {
       fs->read(
-        [conn=conn, ev=ev](int _err, const std::string&,
-                           const StaticBuffer::Ptr& buffer) {
+        [conn=conn, ev=ev](int _err, const StaticBuffer::Ptr& buffer) {
           send_response(conn, ev, _err, *buffer.get());
         },
         params.name

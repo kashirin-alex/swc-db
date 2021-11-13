@@ -40,7 +40,7 @@ class Pread final : public Base {
     size_t amount = 0;
     Base::handle_pread(ev, smartfd, amount);
     StaticBuffer::Ptr buf(amount ? new StaticBuffer(ev->data_ext) : nullptr);
-    cb(error, smartfd, buf);
+    cb(error, buf);
   }
 
   private:

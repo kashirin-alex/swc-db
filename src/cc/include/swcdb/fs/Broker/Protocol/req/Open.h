@@ -37,7 +37,7 @@ class Open final : public Base {
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_open(fs, ev, smartfd);
-    cb(error, smartfd);
+    cb(error);
   }
 
   private:

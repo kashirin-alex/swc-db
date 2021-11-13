@@ -39,7 +39,7 @@ class Read final : public Base {
     size_t amount = 0;
     Base::handle_read(ev, smartfd, amount);
     StaticBuffer::Ptr buf(amount ? new StaticBuffer(ev->data_ext) : nullptr);
-    cb(error, smartfd, buf);
+    cb(error, buf);
   }
 
   private:

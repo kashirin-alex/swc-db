@@ -246,7 +246,7 @@ void Read::load_open(int err) {
       );
       if(cellstore->smartfd->valid()) {
         Env::FsInterface::interface()->close(
-          [this](int, FS::SmartFd::Ptr) { load_open(Error::OK); },
+          [this](int) { load_open(Error::OK); },
           cellstore->smartfd
         );
         return;
@@ -257,7 +257,7 @@ void Read::load_open(int err) {
 
   cellstore->smartfd->valid()
     ? Env::FsInterface::fs()->pread(
-        [ptr=this](int _err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buff) {
+        [ptr=this](int _err, const StaticBuffer::Ptr& buff) {
           struct Task {
             Read*             ptr;
             int               error;
@@ -273,7 +273,7 @@ void Read::load_open(int err) {
         cellstore->smartfd, header.offset_data, header.size_enc
       )
     : Env::FsInterface::fs()->open(
-        [this](int _err, FS::SmartFd::Ptr) { load_open(_err); },
+        [this](int _err) { load_open(_err); },
         cellstore->smartfd
       );
 }

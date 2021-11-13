@@ -40,7 +40,7 @@ class Append final : public Base {
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     size_t amount = 0;
     Base::handle_append(ev, smartfd, amount);
-    cb(error, smartfd, amount);
+    cb(error, amount);
   }
 
   private:

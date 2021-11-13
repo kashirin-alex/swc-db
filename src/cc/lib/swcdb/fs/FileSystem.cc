@@ -185,7 +185,7 @@ void FileSystem::rmdir(Callback::RmdirCb_t&& cb,
   cb(err);
 }
 
-void FileSystem::rename(Callback::RmdirCb_t&& cb,
+void FileSystem::rename(Callback::RenameCb_t&& cb,
                         const std::string& from, const std::string& to) {
   int err = Error::OK;
   rename(err, from, to);
@@ -224,7 +224,7 @@ void FileSystem::write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
                        uint8_t replication, StaticBuffer& buffer) {
   int err = Error::OK;
   write(err, smartfd, replication, buffer);
-  cb(err, smartfd);
+  cb(err);
 }
 
 void FileSystem::default_read(int& err, const std::string& name,
@@ -271,7 +271,7 @@ void FileSystem::read(Callback::ReadAllCb_t&& cb,
   int err = Error::OK;
   StaticBuffer::Ptr dst(new StaticBuffer());
   read(err, name, dst.get());
-  cb(err, name, dst);
+  cb(err, dst);
 }
 
 void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
@@ -307,20 +307,20 @@ void FileSystem::combi_pread(Callback::CombiPreadCb_t&& cb,
   int err = Error::OK;
   StaticBuffer::Ptr dst(new StaticBuffer());
   combi_pread(err, smartfd, offset, amount, dst.get());
-  cb(err, smartfd, dst);
+  cb(err, dst);
 }
 
 void FileSystem::create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
                         uint8_t replication) {
   int err = Error::OK;
   create(err, smartfd, replication);
-  cb(err, smartfd);
+  cb(err);
 }
 
 void FileSystem::open(Callback::OpenCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
   open(err, smartfd);
-  cb(err, smartfd);
+  cb(err);
 }
 
 size_t FileSystem::default_read(int& err, SmartFd::Ptr& smartfd,
@@ -335,7 +335,7 @@ void FileSystem::read(Callback::ReadCb_t&& cb, SmartFd::Ptr& smartfd,
   int err = Error::OK;
   StaticBuffer::Ptr dst(new StaticBuffer());
   read(err, smartfd, dst.get(), amount);
-  cb(err, smartfd, dst);
+  cb(err, dst);
 }
 
 size_t FileSystem::default_pread(int& err, SmartFd::Ptr& smartfd,
@@ -351,39 +351,39 @@ void FileSystem::pread(Callback::PreadCb_t&& cb, SmartFd::Ptr& smartfd,
   int err = Error::OK;
   StaticBuffer::Ptr dst(new StaticBuffer());
   pread(err, smartfd, offset, dst.get(), amount);
-  cb(err, smartfd, dst);
+  cb(err, dst);
 }
 
 void FileSystem::append(Callback::AppendCb_t&& cb, SmartFd::Ptr& smartfd,
                         StaticBuffer& buffer, Flags flags) {
   int err = Error::OK;
   size_t len = append(err, smartfd, buffer, flags);
-  cb(err, smartfd, len);
+  cb(err, len);
 }
 
-void FileSystem::seek(Callback::CloseCb_t&& cb, SmartFd::Ptr& smartfd,
+void FileSystem::seek(Callback::SeekCb_t&& cb, SmartFd::Ptr& smartfd,
                       size_t offset) {
   int err = Error::OK;
   seek(err, smartfd, offset);
-  cb(err, smartfd);
+  cb(err);
 }
 
 void FileSystem::flush(Callback::FlushCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
   flush(err, smartfd);
-  cb(err, smartfd);
+  cb(err);
 }
 
 void FileSystem::sync(Callback::SyncCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
   sync(err, smartfd);
-  cb(err, smartfd);
+  cb(err);
 }
 
 void FileSystem::close(Callback::CloseCb_t&& cb, SmartFd::Ptr& smartfd) {
   int err = Error::OK;
   close(err, smartfd);
-  cb(err, smartfd);
+  cb(err);
 }
 
 

@@ -160,7 +160,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual void rename(int& err, const std::string& from,
                                 const std::string& to) = 0;
-  virtual void rename(Callback::RmdirCb_t&& cb,
+  virtual void rename(Callback::RenameCb_t&& cb,
                       const std::string& from, const std::string& to);
 
   // File(fd) Actions
@@ -173,8 +173,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
 
   virtual void read(int& err, const std::string& name, StaticBuffer* dst) = 0;
   void default_read(int& err, const std::string& name, StaticBuffer* dst);
-  virtual void read(Callback::ReadAllCb_t&& cb,
-                    const std::string& name);
+  virtual void read(Callback::ReadAllCb_t&& cb, const std::string& name);
 
   virtual void combi_pread(int& err, SmartFd::Ptr& smartfd,
                            uint64_t offset, uint32_t amount,

@@ -268,8 +268,7 @@ void Fragment::write(int err, uint8_t blk_replicas,
       );
 
     Env::FsInterface::fs()->write(
-      [frag=ptr(), blk_replicas, buff_write, sem]
-      (int _err, const FS::SmartFd::Ptr&) mutable {
+      [frag=ptr(), blk_replicas, buff_write, sem] (int _err) mutable {
         struct Task {
           Ptr               frag;
           StaticBuffer::Ptr buff_write;
@@ -363,9 +362,7 @@ void Fragment::load(Fragment::LoadCallback* cb) {
         ~Task() noexcept { }
         void operator()() {
           Env::FsInterface::fs()->combi_pread(
-            [frag=frag]
-            (int err, FS::SmartFd::Ptr,
-             const StaticBuffer::Ptr& buffer) mutable {
+            [frag=frag] (int err, const StaticBuffer::Ptr& buffer) mutable {
               Env::Rgr::post(TaskLoadRead(std::move(frag), err, buffer));
             },
             frag->m_smartfd, frag->offset_data, frag->size_enc
@@ -580,7 +577,7 @@ void Fragment::remove(int &err) {
 void Fragment::remove(int&, Core::Semaphore* sem) {
   if(m_smartfd->valid()) {
     Env::FsInterface::interface()->close(
-      [sem, frag=ptr()](int err, FS::SmartFd::Ptr) {
+      [sem, frag=ptr()](int err) {
         frag->remove(err=Error::OK, sem);
       },
       m_smartfd
@@ -631,8 +628,7 @@ void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
         print(SWC_LOG_OSTREAM << ' ');
       );
       Env::FsInterface::fs()->combi_pread(
-        [frag=ptr()]
-        (int _err, FS::SmartFd::Ptr, const StaticBuffer::Ptr& buff) mutable {
+        [frag=ptr()] (int _err, const StaticBuffer::Ptr& buff) mutable {
           Env::Rgr::post(TaskLoadRead(std::move(frag), _err, buff));
         },
         m_smartfd, offset_data, size_enc

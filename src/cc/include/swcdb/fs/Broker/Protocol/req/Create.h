@@ -42,7 +42,7 @@ class Create final : public Base {
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_create(fs, ev, smartfd);
-    cb(error, smartfd);
+    cb(error);
   }
 
   private:

@@ -37,7 +37,7 @@ class Flush final : public Base {
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_flush(ev, smartfd);
-    cb(error, smartfd);
+    cb(error);
   }
 
   private:
