@@ -129,7 +129,7 @@ FileSystemBroker::get_endpoints(const Config::Settings::Ptr& settings) {
 
 
 FileSystemBroker::FileSystemBroker(Configurables* config)
-    : FileSystem(apply_broker(config), OPT_ASYNC_ALL),
+    : FileSystem(apply_broker(config), ImplOptions(true)),
       m_io(new Comm::IoContext("FsBroker",
         settings->get_i32("swc.fs.broker.handlers"))),
       m_service(

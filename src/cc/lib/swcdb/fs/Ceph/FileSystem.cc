@@ -69,7 +69,7 @@ Configurables* apply_ceph(Configurables* config) {
 
 
 FileSystemCeph::FileSystemCeph(Configurables* config)
-    : FileSystem(apply_ceph(config), 0),
+    : FileSystem(apply_ceph(config), ImplOptions()),
       cfg_stripe_unit(
         settings->get<Config::Property::Value_int32_g>(
           "swc.fs.ceph.stripe.unit")),

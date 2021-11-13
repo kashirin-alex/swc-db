@@ -63,9 +63,44 @@ const char* to_string(Type typ) noexcept {
   }
 }
 
+SWC_SHOULD_NOT_INLINE
+ImplOptions::ImplOptions(bool has_all) noexcept
+  : async_exists(has_all), async_remove(has_all), async_length(has_all),
+    async_mkdirs(has_all), async_readdir(has_all), async_rmdir(has_all),
+    async_rename(has_all), async_write(has_all), async_readall(has_all),
+    async_combi_pread(has_all), async_create(has_all), async_open(has_all),
+    async_read(has_all), async_pread(has_all), async_append(has_all),
+    async_seek(has_all), async_flush(has_all), async_sync(has_all),
+    async_close(has_all) {
+}
 
-FileSystem::FileSystem(const Configurables* config, uint32_t impl_opts_async)
-    : impl_options_async(impl_opts_async),
+#define ADD_OPTION(_N) \
+  ImplOptions& ImplOptions::add_##_N() noexcept { _N = 1; return *this; }\
+  bool ImplOptions::has_##_N() const noexcept { return _N; }
+ADD_OPTION(async_exists)
+ADD_OPTION(async_remove)
+ADD_OPTION(async_length)
+ADD_OPTION(async_mkdirs)
+ADD_OPTION(async_readdir)
+ADD_OPTION(async_rmdir)
+ADD_OPTION(async_rename)
+ADD_OPTION(async_write)
+ADD_OPTION(async_readall)
+ADD_OPTION(async_combi_pread)
+ADD_OPTION(async_create)
+ADD_OPTION(async_open)
+ADD_OPTION(async_read)
+ADD_OPTION(async_pread)
+ADD_OPTION(async_append)
+ADD_OPTION(async_seek)
+ADD_OPTION(async_flush)
+ADD_OPTION(async_sync)
+ADD_OPTION(async_close)
+#undef ADD_OPTION
+
+
+FileSystem::FileSystem(const Configurables* config, ImplOptions impl_opts)
+    : impl_options(impl_opts),
       path_root(config->path_root.empty()
         ? "" : normalize_pathname(config->path_root)),
       path_data(
@@ -82,10 +117,6 @@ void FileSystem::stop() {
   if(statistics.fds_count.load())
     SWC_LOGF(LOG_WARN, "FS %s remained with open-fds=" SWC_FMT_LU,
              to_string().c_str(), statistics.fds_count.load());
-}
-
-bool FileSystem::has_option_async(uint32_t opts_async) const noexcept {
-  return impl_options_async & opts_async;
 }
 
 Type FileSystem::get_type() const noexcept {

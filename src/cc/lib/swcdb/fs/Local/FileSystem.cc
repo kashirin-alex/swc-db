@@ -86,9 +86,9 @@ Configurables* apply_local(Configurables* config) {
 FileSystemLocal::FileSystemLocal(Configurables* config)
     : FileSystem(
         apply_local(config),
-        0
+        ImplOptions()
         #if defined(SWC_FS_LOCAL_USE_IO_URING)
-        | OPT_ASYNC_READALL
+        .add_async_readall()
         #endif
       ),
       m_directio(settings->get_bool(
