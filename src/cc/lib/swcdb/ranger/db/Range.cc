@@ -264,8 +264,14 @@ void Range::scan(ReqScan::Ptr&& req) {
   {
     Core::ScopedLock lock(m_mutex);
     if(m_compacting == COMPACT_APPLYING) {
+      if(!m_q_scan.push_and_is_1st(std::move(req))) {
+        auto check(std::move(m_q_scan));
+        while(check.pop(&req)) {
+          if(!req->expired())
+            m_q_scan.push(std::move(req));
+        }
+      }
       m_q_run_scan = true;
-      m_q_scan.push(std::move(req));
       return;
     }
     blocks.processing_increment();
@@ -1109,6 +1115,15 @@ void Range::_run_add_queue() {
     {
       Core::ScopedLock lock(m_mutex);
       if(m_compacting >= COMPACT_PREPARING) {
+        auto check(std::move(m_q_add));
+        for(Callback::RangeQueryUpdate* req; (req = check.next()); ) {
+          if(req->expired()) {
+            delete req;
+          } else {
+            req->_other = nullptr;
+            m_q_add.push(req);
+          }
+        }
         m_q_run_add = true;
         m_adding.fetch_sub(1);
         return;

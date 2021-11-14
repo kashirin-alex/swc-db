@@ -29,9 +29,14 @@ class QueueSafe : private std::queue<ItemT> {
 
   QueueSafe(const QueueSafe&) = delete;
 
-  QueueSafe(const QueueSafe&&) = delete;
+  QueueSafe(QueueSafe&& other) {
+    MutexSptd::scope lock(other.m_mutex);
+    QBase::operator=(std::move(other));
+  }
 
   QueueSafe& operator=(const QueueSafe&) = delete;
+
+  QueueSafe& operator=(QueueSafe&&) = delete;
 
   SWC_CAN_INLINE
   void push(const ItemT& item) {

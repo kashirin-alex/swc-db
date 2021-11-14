@@ -28,9 +28,17 @@ class QueuePointer : private MutexAtomic {
 
   QueuePointer(const QueuePointer&) = delete;
 
-  QueuePointer(const QueuePointer&&) = delete;
+  QueuePointer(QueuePointer&& other) {
+    other.lock();
+    _front = other._front;
+    _back = other._back;
+    other._front = other._back = nullptr;
+    other.unlock();
+  }
 
   QueuePointer& operator=(const QueuePointer&) = delete;
+
+  QueuePointer& operator=(QueuePointer&&) = delete;
 
 
   SWC_CAN_INLINE
