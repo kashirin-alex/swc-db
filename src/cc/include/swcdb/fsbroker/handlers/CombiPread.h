@@ -26,34 +26,11 @@ void combi_pread(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     Params::CombiPreadReq params;
     params.decode(&ptr, &remain);
 
-    int32_t fd = -1;
-    const auto& fs = Env::FsInterface::fs();
-
-    fs->open(err, params.smartfd);
-    if(!params.smartfd->valid()) {
-      if(!err)
-        err = EBADR;
-    }
-    if(err)
-      goto finish;
-
-    fd = Env::FsBroker::fds().add(params.smartfd);
-
-    rbuf.reallocate(params.amount);
-    rbuf.size = fs->pread(
-      err, params.smartfd, params.offset, rbuf.base, params.amount);
-
-    if(rbuf.size != params.amount)
-      err = Error::FS_EOF;
-
-    finish:
-      if(fd != -1 && (params.smartfd = Env::FsBroker::fds().remove(fd))) {
-        int errtmp;
-        do fs->close(errtmp, params.smartfd);
-        while (errtmp == Error::SERVER_NOT_READY);
-        if(!err && errtmp)
-          err = errtmp;
-      }
+    Env::FsInterface::fs()->combi_pread(
+      err, params.smartfd,
+      params.offset, params.amount,
+      &rbuf
+    );
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

@@ -27,34 +27,10 @@ void write(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
 
     auto smartfd = FS::SmartFd::make_ptr(
       std::move(params.fname), params.flags);
-    const auto& fs = Env::FsInterface::fs();
 
-    //Env::FsInterface::fs()->write(
-    //  err, smartfd, params.replication, ev->data_ext
-    //); needs fds state
-
-    fs->create(err, smartfd, params.replication);
-    if(smartfd->valid()) {
-      int32_t fd = Env::FsBroker::fds().add(smartfd);
-
-      if(!err && ev->data_ext.size)
-        fs->append(err, smartfd, ev->data_ext, FS::Flags::FLUSH);
-
-      if((smartfd = Env::FsBroker::fds().remove(fd))) {
-        int errtmp;
-        do fs->close(errtmp, smartfd);
-        while (errtmp == Error::SERVER_NOT_READY);
-        if(!err && errtmp)
-          err = errtmp;
-      }
-
-      if(!err && smartfd->flags() & FS::OpenFlags::WRITE_VALIDATE_LENGTH &&
-         fs->length(err, smartfd->filepath()) != ev->data_ext.size && !err) {
-        err = Error::FS_EOF;
-      }
-    } else if(!err) {
-      err = Error::FS_BAD_FILE_HANDLE;
-    }
+    Env::FsInterface::fs()->write(
+      err, smartfd, params.replication, ev->data_ext
+    );
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

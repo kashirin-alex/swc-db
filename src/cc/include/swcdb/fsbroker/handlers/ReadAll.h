@@ -37,6 +37,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
     params.decode(&ptr, &remain);
 
     const auto& fs = Env::FsInterface::fs();
+
     if(fs->impl_options.has_async_readall()) {
       fs->read(
         [conn=conn, ev=ev](int _err, const StaticBuffer::Ptr& buffer) {
@@ -47,38 +48,7 @@ void read_all(const ConnHandlerPtr& conn, const Event::Ptr& ev) {
       return;
     }
 
-    FS::SmartFd::Ptr smartfd;
-    int32_t fd = -1;
-    size_t len;
-    if(!fs->exists(err, params.name)) {
-      if(!err)
-        err = Error::FS_PATH_NOT_FOUND;
-      goto finish;
-    }
-
-    len = fs->length(err, params.name);
-    if(err)
-      goto finish;
-
-    fs->open(err, smartfd = FS::SmartFd::make_ptr(std::move(params.name), 0));
-    if(!err && !smartfd->valid())
-      err = EBADR;
-    if(err)
-      goto finish;
-    fd = Env::FsBroker::fds().add(smartfd);
-
-    rbuf.free();
-    if(fs->read(err, smartfd, &rbuf, len) != len)
-      err = Error::FS_EOF;
-
-    finish:
-      if(fd != -1 && (smartfd = Env::FsBroker::fds().remove(fd))) {
-        int errtmp;
-        do fs->close(errtmp, smartfd);
-        while (errtmp == Error::SERVER_NOT_READY);
-        if(!err && errtmp)
-          err = errtmp;
-      }
+    fs->read(err, params.name, &rbuf);
 
   } catch(...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");

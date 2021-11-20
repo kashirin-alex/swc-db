@@ -229,19 +229,15 @@ void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
   SWC_FS_WRITE_START(smartfd, replication, buffer.size);
 
   create(err, smartfd, replication);
-  if(!smartfd->valid() || err) {
-    if(!err)
-      err = EBADF;
-    goto finish;
+  if(!err && !smartfd->valid()) {
+    err = EBADR;
   }
-
-  if(buffer.size)
+  if(!err && buffer.size) {
     append(err, smartfd, buffer, Flags::FLUSH);
-
-  finish:
-    int errtmp;
-    if(smartfd->valid())
-      close(err ? errtmp : err, smartfd);
+  }
+  for(int errtmp; smartfd->valid(); ) {
+    close(errtmp=Error::OK, smartfd);
+  }
 
   if(!err && smartfd->flags() & OpenFlags::WRITE_VALIDATE_LENGTH &&
      length(err, smartfd->filepath()) != buffer.size && !err) {
@@ -279,8 +275,9 @@ void FileSystem::default_read(int& err, const std::string& name,
   smartfd = FS::SmartFd::make_ptr(name, 0);
 
   open(err, smartfd);
-  if(!err && !smartfd->valid())
+  if(!err && !smartfd->valid()) {
     err = EBADR;
+  }
   if(!err) {
     buffer->free();
     if(read(err, smartfd, buffer, len) != len) {
@@ -288,9 +285,8 @@ void FileSystem::default_read(int& err, const std::string& name,
       buffer->free();
     }
   }
-  if(smartfd->valid()) {
-    int errtmp;
-    close(err ? errtmp : err, smartfd);
+  for(int errtmp; smartfd->valid(); ) {
+    close(errtmp=Error::OK, smartfd);
   }
 
   finish:
@@ -312,22 +308,19 @@ void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
   SWC_FS_COMBI_PREAD_START(smartfd, offset, amount);
 
   open(err, smartfd);
-  if(!smartfd->valid()) {
-    if(!err)
-      err = EBADR;
+  if(!err && !smartfd->valid()) {
+    err = EBADR;
   }
-  if(err)
-    goto finish;
-
-  buffer->free();
-  if(pread(err, smartfd, offset, buffer, amount) != amount) {
-    err = Error::FS_EOF;
+  if(!err) {
     buffer->free();
+    if(pread(err, smartfd, offset, buffer, amount) != amount) {
+      err = Error::FS_EOF;
+      buffer->free();
+    }
   }
-  finish:
-    int errtmp;
-    if(smartfd->valid())
-      close(err ? errtmp : err, smartfd);
+  for(int errtmp; smartfd->valid(); ) {
+    close(errtmp=Error::OK, smartfd);
+  }
 
   SWC_FS_COMBI_PREAD_FINISH(err, smartfd, amount, tracker);
 }
