@@ -106,8 +106,8 @@ bool Read::load(BlockLoader* loader) {
   auto at(State::NONE);
   {
     Core::MutexSptd::scope lock(m_mutex);
-    if(m_state.compare_exchange_weak(at, State::LOADING) ||
-       at == State::LOADING)
+    m_state.compare_exchange_weak(at, State::LOADING);
+    if(at != State::LOADED)
       m_queue.push(loader);
   }
   switch(at) {
@@ -187,9 +187,9 @@ bool Read::processing() noexcept {
               m_state == State::LOADING ||
               !m_mutex.try_full_lock(support);
   if(!busy) {
-    busy = m_processing ||
-           m_state == State::LOADING ||
-           !m_queue.empty();
+    busy = m_state == State::LOADING ||
+           !m_queue.empty() ||
+           m_processing;
     m_mutex.unlock(support);
   }
   return busy;

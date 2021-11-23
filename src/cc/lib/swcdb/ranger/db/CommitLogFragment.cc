@@ -343,7 +343,6 @@ struct Fragment::TaskLoadRead {
 };
 
 void Fragment::load(Fragment::LoadCallback* cb) {
-  m_processing.fetch_add(1);
   auto at(State::NONE);
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -436,7 +435,7 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
       );
     }
   }
-  processing_decrement();
+  m_processing.fetch_sub(1);
 }
 
 SWC_CAN_INLINE
@@ -475,7 +474,6 @@ void Fragment::split(int&, const DB::Cell::Key& key,
 
 SWC_CAN_INLINE
 void Fragment::processing_increment() noexcept {
-  Core::MutexSptd::scope lock(m_mutex);
   m_processing.fetch_add(1);
 }
 
@@ -489,13 +487,12 @@ size_t Fragment::release() {
   bool support;
   if(!m_processing && !marked_removed() && loaded() &&
       m_mutex.try_full_lock(support)) {
-    if(!m_processing && !marked_removed() && m_queue.empty()) {
-      auto at(State::LOADED);
-      if(m_state.compare_exchange_weak(at, State::NONE)) {
-        released += size_plain;
-        m_buffer.free();
-        m_cells_remain.store(cells_count);
-      }
+    State at = State::LOADED;
+    if(!marked_removed() && m_queue.empty() && !m_processing &&
+       m_state.compare_exchange_weak(at, State::NONE)) {
+      released += size_plain;
+      m_buffer.free();
+      m_cells_remain.store(cells_count);
     }
     m_mutex.unlock(support);
   }
@@ -538,10 +535,10 @@ bool Fragment::processing() noexcept {
               m_state == State::LOADING ||
               !m_mutex.try_full_lock(support);
   if(!busy) {
-    busy = m_processing ||
-           m_state == State::WRITING ||
+    busy = m_state == State::WRITING ||
            m_state == State::LOADING ||
-           !m_queue.empty();
+           !m_queue.empty() ||
+           m_processing;
     m_mutex.unlock(support);
   }
   return busy;

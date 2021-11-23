@@ -39,6 +39,7 @@ void Compact::Group::run(bool initial) {
       break;
     }
     running = m_running.add_rslt(1);
+    read_frags[idx]->processing_increment();
     read_frags[idx]->load(this);
   } while(running < compact->preload);
 
@@ -74,7 +75,6 @@ void Compact::Group::_loaded(const Fragment::Ptr& frag) {
     );
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     frag->load(this);
-    frag->processing_decrement();
     return;
   }
 

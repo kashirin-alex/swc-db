@@ -115,7 +115,6 @@ void BlockLoader::load_log(bool is_final, bool is_more) {
       for(auto it=m_f_selected.cbegin() + offset;
           it != m_f_selected.cend(); ++it) {
         (*it)->load(this);
-        (*it)->processing_decrement();
       }
     }
   }
@@ -181,7 +180,6 @@ void BlockLoader::load_log_cells() {
         frag->print(SWC_LOG_OSTREAM << "Fragment not-loaded, load-again ");
       );
       frag->load(this);
-      frag->processing_decrement();
       continue;
     }
     frag->load_cells(err = Error::OK, block);
@@ -208,18 +206,23 @@ void BlockLoader::completion() {
     if(!m_cs_blocks.empty()) {
       SWC_LOG_OUT(LOG_ERROR,
         SWC_LOG_OSTREAM << "Not Loaded CellStores: " << m_cs_blocks.size();
-        for(; !m_cs_blocks.empty(); m_cs_blocks.pop())
+        for(; !m_cs_blocks.empty(); m_cs_blocks.pop()) {
           m_cs_blocks.front()->print(SWC_LOG_OSTREAM << "\n\t");
+          m_cs_blocks.front()->processing_decrement();
+        }
       );
       error.store(Error::RANGE_CELLSTORES);
-
-    } else if(m_logs || !m_fragments.empty()) {
+    }
+    if(m_logs || !m_fragments.empty()) {
       SWC_LOG_OUT(LOG_ERROR,
         SWC_LOG_OSTREAM << "Not Loaded Log Fragments: " << m_fragments.size();
-        for(; !m_fragments.empty(); m_fragments.pop())
+        for(; !m_fragments.empty(); m_fragments.pop()) {
           m_fragments.front()->print(SWC_LOG_OSTREAM << "\n\t");
+          m_fragments.front()->processing_decrement();
+        }
       );
-      error.store(Error::RANGE_COMMITLOG);
+      if(!error)
+        error.store(Error::RANGE_COMMITLOG);
     }
   }
 

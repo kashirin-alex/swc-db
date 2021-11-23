@@ -59,6 +59,7 @@ class Splitter final : private Fragment::LoadCallback {
         ++moved;
 
       } else {
+        frag->processing_increment();
         m_sem.acquire();
         frag->load(this);
         ++splitted;
@@ -87,7 +88,6 @@ class Splitter final : private Fragment::LoadCallback {
       );
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       frag->load(this);
-      frag->processing_decrement();
 
     } else if(m_splitting.push_and_is_1st(std::move(frag))) {
       struct Task {
