@@ -8,7 +8,23 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    added cfg-files swc_fs_{ceph,hadoop_jvm,local}.dyn.cfg
+    added cfg 'swc.fs.hadoop_jvm.{read,write}.buffer.size'
+    added cfg 'swc.fs.hadoop_jvm.block.size'
+    removed 'bufsz' arg from FS::FileSystem::{open,create}
+    removed 'blksz' arg from FS::FileSystem::{create,write)
+    changed FileSystemHadoopJVM::{open,create} to use cfg_{w,r}_buffer_size
+    changed FileSystemCeph::create to use cfg-values at ceph_open_layout
+    added struct FS::ImplOptions and FS::FileSystem::impl_options
+    added (dev-stage) -DSWC_FS_LOCAL_USE_IO_URING
+    added FileSystemLocal::read(Callback::ReadAllCb_t&&, const std::string&)
+    added async option in FsBroker::Handler::read_all
+    removed FS::Callback::* args SmartFd::Ptr and std::string
+    added move-ctor for Core::{QueuePointer, QueueSafe}
+    fixed Ranger mem-usage of Range::(m_q_scan,m_q_add) clear-expired requests
+    fixed Ranger CompactRange::initialize wait-time + fragments size * 100ms
+    changed FsBrokers handlers to use FileSystem's default available methods
+    added ensure fd-closed in FileSystem::default_{write,read,combi_pread}
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.6...master)
 ******
