@@ -152,7 +152,7 @@ extern LogWriter logger;
 #define SWC_LOG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
 
 #define SWC_PRINT { \
-  ::SWC::Core::MutexSptd::scope lock(::SWC::Core::logger.mutex); \
+  ::SWC::Core::MutexSptd::scope swcdb_logger_lock(::SWC::Core::logger.mutex); \
   SWC_LOG_OSTREAM
 #define SWC_PRINT_CLOSE std::endl; }
 
