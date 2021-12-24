@@ -266,10 +266,12 @@ bool Mutable::split(Mutable& cells, bool loaded) {
     if(!from_set) {
       if(DB::KeySeq::compare(key_seq, cell->key, from_key) == Condition::GT)
         continue;
+      if(_container.front()->key.equal(cell->key)) // sanity-check
+        return false;
       it_start = it;
+      from_set = true;
       if(!loaded)
         break;
-      from_set = true;
     }
     _remove(*cell);
     if(cell->has_expired(ttl))
@@ -277,6 +279,8 @@ bool Mutable::split(Mutable& cells, bool loaded) {
     else
       cells.add_sorted(cell);
   }
+  if(!from_set)
+    return false;
 
   _remove(it_start, _size, !loaded);
   return true;
