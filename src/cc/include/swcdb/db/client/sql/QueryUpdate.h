@@ -35,9 +35,6 @@ class QueryUpdate final : public Reader {
 
   void read_cell(cid_t& cid, DB::Cells::Cell& cell);
 
-  void op_from(const uint8_t** ptr, size_t* remainp,
-               uint8_t& op, int64_t& value);
-
   void read_flag(uint8_t& flag);
 
   Query::Update::Handlers::BaseUnorderedMap::Ptr hdlr;

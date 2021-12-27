@@ -474,6 +474,245 @@ void Reader::read_column(const char* stop,
 }
 
 
+void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
+                               DB::Cells::Cell& cell) {
+  std::string buf;
+  read(buf, ",)");
+  if(err)
+    return;
+  if(!buf.empty()) {
+    if(Condition::str_case_eq(buf.c_str(), "auto", 4)) {
+      cell.timestamp = DB::Cells::TIMESTAMP_AUTO;
+    } else {
+      cell.set_timestamp(Time::parse_ns(err, buf));
+    }
+  }
+  if(err || (require_ts && buf.empty())) {
+    error_msg(Error::SQL_PARSE_ERROR, "bad datetime format");
+    return;
+  }
+  buf.clear();
+
+  seek_space();
+  if(err)
+    return;
+
+  switch(col_type) {
+    case DB::Types::Column::PLAIN: {
+      if(!found_char(','))
+        break;
+      std::string value;
+      read(value, ",)");
+      if(err)
+        return;
+      seek_space();
+      if(err)
+        return;
+      if(found_char(',')) {
+        DB::Types::Encoder enc = read_encoder();
+        if(err)
+          return;
+        cell.set_value(enc, value);
+      } else {
+        cell.set_value(value, true);
+      }
+      break;
+    }
+
+    case DB::Types::Column::SERIAL: {
+      if(!found_char(','))
+        break;
+      bool bracket_square = false;
+      bool was_set;
+      seek_space();
+      expect_token("[", 1, bracket_square);
+      if(err)
+        return;
+
+      DB::Cell::Serial::Value::FieldsWriter wfields;
+      do {
+        uint32_t fid;
+        read_uint32_t(fid, was_set, ":");
+        if(err)
+          return;
+        seek_space();
+        expect_token(":", 1, was_set);
+        if(err)
+          return;
+
+        DB::Cell::Serial::Value::Type typ = read_serial_value_type();
+        if(err)
+          return;
+        switch(typ) {
+
+          case DB::Cell::Serial::Value::Type::INT64: {
+            int64_t v;
+            read_int64_t(v, was_set, ",]");
+            if(err)
+              return;
+            wfields.add(fid, v);
+            break;
+          }
+
+          case DB::Cell::Serial::Value::Type::DOUBLE: {
+            long double v;
+            read_double_t(v, was_set, ",]");
+            if(err)
+              return;
+            wfields.add(fid, v);
+            break;
+          }
+
+          case DB::Cell::Serial::Value::Type::BYTES: {
+            read(buf, ",]");
+            if(err)
+              return;
+            wfields.add(fid, buf);
+            buf.clear();
+            break;
+          }
+
+          case DB::Cell::Serial::Value::Type::KEY: {
+            DB::Cell::Key fkey;
+            read_key(fkey);
+            if(err)
+              return;
+            wfields.add(fid, fkey);
+            break;
+          }
+
+          case DB::Cell::Serial::Value::Type::LIST_INT64: {
+            seek_space();
+            expect_token("[", 1, bracket_square);
+            if(err)
+              return;
+            Core::Vector<int64_t> items;
+            do {
+              seek_space();
+              if(!is_char(",]")) {
+                read_int64_t(items.emplace_back(), was_set, ",]");
+                if(err)
+                  return;
+                seek_space();
+              }
+            } while(found_char(','));
+            expect_token("]", 1, bracket_square);
+            if(err)
+              return;
+            wfields.add(fid, items);
+            break;
+          }
+
+          case DB::Cell::Serial::Value::Type::LIST_BYTES: {
+            seek_space();
+            expect_token("[", 1, bracket_square);
+            if(err)
+              return;
+            Core::Vector<std::string> items;
+            do {
+              seek_space();
+              if(!is_char(",]")) {
+                read(items.emplace_back(), ",]");
+                if(err)
+                  return;
+                seek_space();
+              }
+            } while(found_char(','));
+            expect_token("]", 1, bracket_square);
+            if(err)
+              return;
+            wfields.add(fid, items);
+            break;
+          }
+
+          default: {
+            return error_msg(
+              Error::SQL_PARSE_ERROR, "Not Supported Serial Value Type");
+          }
+        }
+        seek_space();
+      } while(found_char(','));
+
+      expect_token("]", 1, bracket_square);
+
+      while(remain && !err && (found_char(' ') || found_char('\t')));
+      if(err)
+        return;
+
+      if(found_char(',')) {
+        DB::Types::Encoder enc = read_encoder();
+        if(err)
+          return;
+        cell.set_value(enc, wfields.base, wfields.fill());
+      } else {
+        cell.set_value(wfields.base, wfields.fill(), true);
+      }
+      break;
+    }
+
+    case DB::Types::Column::COUNTER_I64:
+    case DB::Types::Column::COUNTER_I32:
+    case DB::Types::Column::COUNTER_I16:
+    case DB::Types::Column::COUNTER_I8: {
+      found_char(',');
+      std::string value;
+      read(value, ",)");
+      if(err)
+        return;
+      const uint8_t* valp = reinterpret_cast<const uint8_t*>(value.c_str());
+      size_t _remain = value.length();
+      uint8_t op;
+      int64_t v;
+      counter_op_from(&valp, &_remain, op, v);
+      if(err) {
+        error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
+        return;
+      }
+      cell.set_counter(
+        op,
+        v,
+        op & DB::Cells::OP_EQUAL
+          ? col_type
+          : DB::Types::Column::COUNTER_I64
+      );
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+void Reader::counter_op_from(const uint8_t** ptrp, size_t* remainp,
+                             uint8_t& op, int64_t& value) {
+  if(!*remainp) {
+    op = DB::Cells::OP_EQUAL;
+    value = 0;
+    return;
+  }
+  if(**ptrp == '=') {
+    op = DB::Cells::OP_EQUAL;
+    ++*ptrp;
+    if(!--*remainp) {
+      value = 0;
+      return;
+    }
+  } else {
+    op = 0;
+  }
+  const char* p = reinterpret_cast<const char*>(*ptrp);
+  char *last = const_cast<char*>(p + (*remainp > 30 ? 30 : *remainp));
+  errno = 0;
+  value = strtoll(p, &last, 0);
+  if(errno) {
+    err = errno;
+  } else if(last > p) {
+    *remainp -= last - p;
+    *ptrp = reinterpret_cast<const uint8_t*>(last);
+  } else {
+    err = EINVAL;
+  }
+}
+
 void Reader::error_msg(int error, const std::string& msg) {
   err = error;
   auto at = sql.length() - remain + 1;

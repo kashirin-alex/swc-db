@@ -7,7 +7,7 @@
 #ifndef swcdb_db_client_sql_Reader_h
 #define swcdb_db_client_sql_Reader_h
 
-#include "swcdb/db/Cells/CellKey.h"
+#include "swcdb/db/Cells/SpecsScan.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/client/Clients.h"
 
@@ -101,6 +101,12 @@ class Reader {
 
   void read_column(const char* stop,
                    std::string& col_name, DB::Schemas::NamePatterns& names);
+
+  void read_ts_and_value(DB::Types::Column col_type, bool require_ts,
+                         DB::Cells::Cell& cell);
+
+  void counter_op_from(const uint8_t** ptr, size_t* remainp,
+                       uint8_t& op, int64_t& value);
 
   void error_msg(int error, const std::string& msg);
 
