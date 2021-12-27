@@ -290,7 +290,7 @@ void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
                           size_t& offset) {
   int64_t ts = e_cell.get_timestamp();
   int64_t rev = e_cell.get_revision();
-  bool chk_rev = rev != AUTO_ASSIGN;
+  bool chk_rev = rev != TIMESTAMP_AUTO;
   Condition::Comp cond;
   int64_t e_ts;
   for(Cell* cell; it; ) {
@@ -314,7 +314,7 @@ void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
 
     if(cell->is_removing(ts) ||
        (chk_rev &&
-        (e_ts = cell->get_revision()) != AUTO_ASSIGN &&
+        (e_ts = cell->get_revision()) != TIMESTAMP_AUTO &&
         e_ts >= rev))
       return;
 
@@ -331,8 +331,8 @@ void Mutable::_add_plain(const Cell& e_cell, Mutable::Iterator& it,
                          size_t& offset) {
   int64_t ts = e_cell.get_timestamp();
   int64_t rev = e_cell.get_revision();
-  bool chk_ts = ts != AUTO_ASSIGN;
-  bool chk_rev = rev != AUTO_ASSIGN;
+  bool chk_ts = ts != TIMESTAMP_AUTO;
+  bool chk_rev = rev != TIMESTAMP_AUTO;
 
   uint32_t revs = 0;
   Condition::Comp cond;
@@ -399,7 +399,7 @@ void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
                            size_t& offset) {
   int64_t ts = e_cell.get_timestamp();
   int64_t rev = e_cell.get_revision();
-  bool chk_rev = rev != AUTO_ASSIGN;
+  bool chk_rev = rev != TIMESTAMP_AUTO;
 
   Condition::Comp cond;
   for(Cell* cell; it; ) {
@@ -416,7 +416,7 @@ void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
       continue;
     }
 
-    if(cond == Condition::LT) //without aggregate|| ts == AUTO_ASSIGN
+    if(cond == Condition::LT) //without aggregate|| ts == TIMESTAMP_AUTO
       goto add_counter;
 
     if(cell->removal()) {

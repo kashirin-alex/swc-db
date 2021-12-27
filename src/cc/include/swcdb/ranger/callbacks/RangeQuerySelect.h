@@ -125,4 +125,4 @@ class RangeQuerySelect : public ReqScan {
 
 
 }}}
-#endif // swcdb_ranger_callbacks_RangeLocateScan_h
+#endif // swcdb_ranger_callbacks_RangeQuerySelect_h

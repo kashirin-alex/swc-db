@@ -43,10 +43,10 @@ uint32_t Readers::get_cell_revs() const {
 }
 
 int64_t Readers::get_ts_earliest() const {
-  int64_t ts = DB::Cells::AUTO_ASSIGN;
+  int64_t ts = DB::Cells::TIMESTAMP_AUTO;
   for(auto cs : *this)
     if(cs->interval.ts_earliest.comp != Condition::NONE &&
-       (ts == DB::Cells::AUTO_ASSIGN || cs->interval.ts_earliest.value < ts))
+       (ts == DB::Cells::TIMESTAMP_AUTO || cs->interval.ts_earliest.value < ts))
       ts = cs->interval.ts_earliest.value;
   return ts;
 }

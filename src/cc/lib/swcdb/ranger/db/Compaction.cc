@@ -178,7 +178,7 @@ void Compaction::compact(const RangePtr& range) {
 
   } else if((do_compaction = cell_ttl &&
              int64_t(value = range->blocks.cellstores.get_ts_earliest())
-                != DB::Cells::AUTO_ASSIGN &&
+                != DB::Cells::TIMESTAMP_AUTO &&
              value < Time::now_ns()-cell_ttl*100)) {
     need.append("CsTTL");
 

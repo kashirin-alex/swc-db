@@ -67,7 +67,7 @@ void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
     value = _value(output.base);
     // or keep as - value = output.base, output.own = false;
   } else {
-    control &= HAVE_ENCODER_MASK;
+    control &= MASK_HAVE_ENCODER;
     vlen = len;
     value = _value(v);
   }

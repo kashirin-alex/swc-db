@@ -73,18 +73,16 @@ constexpr const int64_t TIMESTAMP_MIN  = INT64_MIN;
 constexpr const int64_t TIMESTAMP_MAX  = INT64_MAX;
 constexpr const int64_t TIMESTAMP_NULL = INT64_MIN + 1;
 constexpr const int64_t TIMESTAMP_AUTO = INT64_MIN + 2;
-constexpr const int64_t AUTO_ASSIGN    = TIMESTAMP_AUTO;
 
-constexpr const uint8_t HAVE_REVISION      =  0x80;
-constexpr const uint8_t HAVE_TIMESTAMP     =  0x40;
-constexpr const uint8_t AUTO_TIMESTAMP     =  0x20;
-constexpr const uint8_t REV_IS_TS          =  0x10;
-constexpr const uint8_t HAVE_ENCODER       =  0x2;
-constexpr const uint8_t HAVE_ENCODER_MASK  =  0xff - HAVE_ENCODER;
-constexpr const uint8_t TS_DESC            =  0x1;
+constexpr const uint8_t TS_DESC        =  0x01;
+constexpr const uint8_t HAVE_ENCODER   =  0x02;
+constexpr const uint8_t REV_IS_TS      =  0x04;
+constexpr const uint8_t HAVE_TIMESTAMP =  0x08;
+constexpr const uint8_t HAVE_REVISION  =  0x10;
 
-constexpr const uint8_t OP_EQUAL  = 0x1;
+constexpr const uint8_t OP_EQUAL = 0x01;
 
+constexpr const uint8_t MASK_HAVE_ENCODER  =  0xff - HAVE_ENCODER;
 
 
 class Cell final {
@@ -225,17 +223,17 @@ class Cell final {
   }
 
   constexpr
-  bool is_removing(const int64_t& rev) const noexcept;
+  bool is_removing(const int64_t& ts) const noexcept;
 
   constexpr SWC_CAN_INLINE
   int64_t get_timestamp() const noexcept {
-    return control & HAVE_TIMESTAMP ? timestamp : AUTO_ASSIGN;
+    return control & HAVE_TIMESTAMP ? timestamp : TIMESTAMP_AUTO;
   }
 
   constexpr SWC_CAN_INLINE
   int64_t get_revision() const noexcept {
     return control & HAVE_REVISION ? revision
-          : (control & REV_IS_TS ? timestamp : AUTO_ASSIGN );
+          : (control & REV_IS_TS ? timestamp : TIMESTAMP_AUTO);
   }
 
   SWC_CAN_INLINE
@@ -301,7 +299,7 @@ Cell::Cell(const Cell& other)
 SWC_CAN_INLINE
 Cell::Cell(const Cell& other, bool no_value)
   : key(other.key), own(!no_value && other.vlen), flag(other.flag),
-    control(no_value ? other.control & HAVE_ENCODER_MASK : other.control),
+    control(no_value ? other.control & MASK_HAVE_ENCODER : other.control),
     vlen(own ? other.vlen : 0),
     timestamp(other.timestamp),
     revision(other.revision),
@@ -315,15 +313,13 @@ Cell::Cell(const uint8_t** bufp, size_t* remainp, bool a_own)
   key.decode(bufp, remainp, own);
   control = Serialization::decode_i8(bufp, remainp);
 
-  if(control & HAVE_TIMESTAMP)
-    timestamp = Serialization::decode_i64(bufp, remainp);
-  else if(control & AUTO_TIMESTAMP)
-    timestamp = AUTO_ASSIGN;
+  timestamp = control & HAVE_TIMESTAMP
+    ? Serialization::decode_i64(bufp, remainp)
+    : TIMESTAMP_AUTO;
 
-  if(control & HAVE_REVISION)
-    revision = Serialization::decode_i64(bufp, remainp);
-  else if(control & REV_IS_TS)
-    revision = timestamp;
+  revision = control & HAVE_REVISION
+    ? Serialization::decode_i64(bufp, remainp)
+    : (control & REV_IS_TS ? timestamp : TIMESTAMP_AUTO);
 
   if((vlen = Serialization::decode_vi32(bufp, remainp))) {
     if(*remainp < vlen)
@@ -361,7 +357,7 @@ void Cell::copy(const Cell& other, bool no_value) {
   revision  = other.revision;
 
   if(no_value) {
-    control &= HAVE_ENCODER_MASK;
+    control &= MASK_HAVE_ENCODER;
     free();
   } else {
     set_value(other.value, other.vlen, true);
@@ -456,15 +452,13 @@ void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
   key.decode(bufp, remainp, owner);
   control = Serialization::decode_i8(bufp, remainp);
 
-  if(control & HAVE_TIMESTAMP)
-    timestamp = Serialization::decode_i64(bufp, remainp);
-  else if(control & AUTO_TIMESTAMP)
-    timestamp = AUTO_ASSIGN;
+  timestamp = control & HAVE_TIMESTAMP
+    ? Serialization::decode_i64(bufp, remainp)
+    : TIMESTAMP_AUTO;
 
-  if(control & HAVE_REVISION)
-    revision = Serialization::decode_i64(bufp, remainp);
-  else if(control & REV_IS_TS)
-    revision = timestamp;
+  revision = control & HAVE_REVISION
+    ? Serialization::decode_i64(bufp, remainp)
+    : (control & REV_IS_TS ? timestamp : TIMESTAMP_AUTO);
 
   _free();
   own = owner;
@@ -489,7 +483,7 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
 
   uint8_t ctrl = control;
   if(no_value)
-    ctrl &= HAVE_ENCODER_MASK;
+    ctrl &= MASK_HAVE_ENCODER;
 
   Serialization::encode_i8(&dst_buf.ptr, ctrl);
   if(ctrl & HAVE_TIMESTAMP)
@@ -506,11 +500,11 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
 }
 
 constexpr SWC_CAN_INLINE
-bool Cell::is_removing(const int64_t& rev) const noexcept {
-  return rev != AUTO_ASSIGN && removal() && (
-    (flag == DELETE_LE  && get_timestamp() >= rev )
+bool Cell::is_removing(const int64_t& ts) const noexcept {
+  return ts != TIMESTAMP_AUTO && removal() && (
+    (flag == DELETE_LE && get_timestamp() >= ts )
     ||
-    (flag == DELETE_EQ && get_timestamp() == rev )
+    (flag == DELETE_EQ && get_timestamp() == ts )
     );
 }
 
