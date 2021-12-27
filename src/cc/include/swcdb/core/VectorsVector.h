@@ -6,6 +6,7 @@
 #ifndef swcdb_core_VectorsVector_h
 #define swcdb_core_VectorsVector_h
 
+#include "swcdb/core/Exception.h"
 
 
 namespace SWC { namespace Core {

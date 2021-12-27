@@ -10,6 +10,7 @@
 
 #include "swcdb/core/comm/ResponseCallback.h"
 #include "swcdb/db/Cells/Result.h"
+#include "swcdb/db/Cells/Mutable.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
@@ -87,6 +88,8 @@ class ReqScan : public Comm::ResponseCallback {
   virtual bool reached_limits() = 0;
 
   virtual bool add_cell_and_more(const Cell& cell) = 0;
+
+  virtual void update(DB::Cells::Mutable&) { }
 
   virtual void print(std::ostream& out) const;
 

@@ -8,11 +8,14 @@
 #define swcdb_db_Cells_Mutable_h
 
 
-#include "swcdb/db/Cells/ReqScan.h"
+#include "swcdb/db/Cells/Cell.h"
+#include "swcdb/db/Cells/Interval.h"
 #include "swcdb/core/VectorsVector.h"
 
 
 namespace SWC { namespace DB { namespace Cells {
+
+class ReqScan;
 
 
 class Mutable final {
@@ -658,6 +661,8 @@ class Mutable final {
 
 }}}
 
+
+#include "swcdb/db/Cells/ReqScan.h"
 
 #ifdef SWC_IMPL_SOURCE
 #include "swcdb/db/Cells/Mutable.cc"
