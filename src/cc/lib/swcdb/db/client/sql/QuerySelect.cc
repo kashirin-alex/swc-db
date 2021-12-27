@@ -604,6 +604,21 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
     ptr = base_rptr;
   }
   read_flags(spec.flags);
+
+  if(remain && !err) {
+    seek_space();
+    if(found_token("update", 6)) {
+      seek_space();
+      expect_eq();
+      seek_space();
+      bool bracket_round = false;
+      expect_token("(", 1, bracket_round);
+      if(!err)
+        read_update(spec);
+      seek_space();
+      expect_token(")", 1, bracket_round);
+    }
+  }
 }
 
 
@@ -782,7 +797,7 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
 }
 
 void QuerySelect::read_value(DB::Types::Column col_type,
-                           DB::Specs::Value& value) {
+                             DB::Specs::Value& value) {
   switch(col_type) {
     case DB::Types::Column::SERIAL: {
       found_comparator(value.comp, false);
@@ -1144,6 +1159,24 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
   }
 }
 
+void QuerySelect::read_update(DB::Specs::Interval& intval) {
+  // update = ('TS', 'DATA', ENCODER) || ( ) - empty optional
+
+  DB::Cells::Cell cell;
+  cell.timestamp = DB::Cells::TIMESTAMP_NULL;
+  read_ts_and_value(intval.values.col_type, false, cell);
+
+  if(remain && !err) {
+    intval.updating = DB::Specs::IntervalUpdate::make(
+      cell.value,
+      cell.vlen,
+      cell.timestamp,
+      false
+    );
+    cell.value = nullptr;
+    cell.vlen = 0;
+  }
+}
 
 
 

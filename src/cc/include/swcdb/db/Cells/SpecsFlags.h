@@ -64,6 +64,12 @@ class Flags {
   }
 
   constexpr SWC_CAN_INLINE
+  void clear_only_deletes() noexcept {
+    if(is_only_deletes())
+      options ^= ONLY_DELETES;
+  }
+
+  constexpr SWC_CAN_INLINE
   bool equal(const Flags &other) const noexcept {
     return  limit == other.limit &&
             offset == other.offset  &&

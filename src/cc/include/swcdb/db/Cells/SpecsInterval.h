@@ -17,6 +17,7 @@
 #include "swcdb/db/Cells/SpecsValues.h"
 #include "swcdb/db/Cells/SpecsFlags.h"
 #include "swcdb/db/Cells/Cell.h"
+#include "swcdb/db/Cells/SpecsIntervalUpdate.h"
 
 
 namespace SWC { namespace DB { namespace Specs {
@@ -26,6 +27,8 @@ class Interval {
 
   static constexpr const uint8_t OPT_KEY_EQUAL      = 0x01;
   static constexpr const uint8_t OPT_RANGE_END_REST = 0x02;
+  static constexpr const uint8_t OPT_UPDATING       = 0x04;
+  //static constexpr const uint8_t OPT_DELETING       = 0x08;
 
   typedef std::shared_ptr<Interval> Ptr;
 
@@ -152,6 +155,18 @@ class Interval {
   }
 
   constexpr SWC_CAN_INLINE
+  void set_opt__updating() noexcept {
+    options |= OPT_UPDATING;
+  }
+
+  /*
+  constexpr SWC_CAN_INLINE
+  void set_opt__deleting() noexcept {
+    options |= OPT_DELETING;
+  }
+  */
+
+  constexpr SWC_CAN_INLINE
   bool has_opt__key_equal() const noexcept {
     return options & OPT_KEY_EQUAL;
   }
@@ -159,6 +174,23 @@ class Interval {
   constexpr SWC_CAN_INLINE
   bool has_opt__range_end_rest() const noexcept {
     return options & OPT_RANGE_END_REST;
+  }
+
+  constexpr SWC_CAN_INLINE
+  bool has_opt__updating() const noexcept {
+    return options & OPT_UPDATING;
+  }
+
+  /*
+  constexpr SWC_CAN_INLINE
+  bool has_opt__deleting() const noexcept {
+    return options & OPT_DELETING;
+  }
+  */
+
+  SWC_CAN_INLINE
+  bool is_updating() const noexcept {
+    return updating.get() != nullptr;
   }
 
   SWC_CAN_INLINE
@@ -218,6 +250,8 @@ class Interval {
 
   uint8_t       options;
 
+  IntervalUpdate::Ptr updating;
+
 };
 
 
@@ -227,7 +261,8 @@ size_t Interval::size_of_internal() const noexcept {
   return range_begin.size + range_end.size
         + key_intervals.size_of_internal()
         + values.size_of_internal()
-        + offset_key.size;
+        + offset_key.size
+        + (is_updating() ? updating->vlen: 0);
 }
 
 SWC_CAN_INLINE

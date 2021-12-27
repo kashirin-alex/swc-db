@@ -9,7 +9,6 @@
 
 
 #include "swcdb/db/client/sql/Reader.h"
-#include "swcdb/db/Cells/SpecsScan.h"
 
 namespace SWC { namespace client { namespace SQL {
 
@@ -57,6 +56,8 @@ class QuerySelect final : public Reader {
                       DB::Specs::Timestamp& finish, bool flw);
 
   void read_flags(DB::Specs::Flags& flags);
+
+  void read_update(DB::Specs::Interval& intval);
 
   Clients::Ptr      clients;
   DB::Specs::Scan&  specs;

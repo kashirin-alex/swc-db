@@ -499,9 +499,14 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
   int err = Error::OK;
   uint64_t ts = Time::now_ns();
   try {
-    Core::SharedLock lock(m_mutex);
-    m_cells.scan(req.get());
-
+    if(req->spec.has_opt__updating()) {
+      Core::ScopedLock lock(m_mutex);
+      m_cells.scan(req.get());
+      req->update(m_cells);
+    } else {
+      Core::SharedLock lock(m_mutex);
+      m_cells.scan(req.get());
+    }
   } catch (...) {
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR, SWC_LOG_OSTREAM << e; );

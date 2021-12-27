@@ -36,7 +36,11 @@ Interval::Interval(const Interval& other)
                     flags(other.flags),
                     offset_key(other.offset_key),
                     offset_rev(other.offset_rev),
-                    options(other.options) {
+                    options(other.options),
+                    updating(
+                      other.is_updating()
+                        ? new IntervalUpdate(*other.updating.get())
+                        : nullptr) {
 }
 
 Interval::Interval(Interval&& other) noexcept
@@ -49,7 +53,8 @@ Interval::Interval(Interval&& other) noexcept
                     flags(std::move(other.flags)),
                     offset_key(std::move(other.offset_key)),
                     offset_rev(other.offset_rev),
-                    options(other.options) {
+                    options(other.options),
+                    updating(std::move(other.updating)) {
 }
 
 Interval::~Interval() noexcept { }
@@ -71,6 +76,11 @@ void Interval::copy(const Interval& other) {
   offset_rev = other.offset_rev;
 
   options = other.options;
+
+  if(other.is_updating())
+    updating.reset(new IntervalUpdate(*other.updating.get()));
+  else
+    updating = nullptr;
 }
 
 void Interval::move(Interval& other) noexcept {
@@ -90,6 +100,8 @@ void Interval::move(Interval& other) noexcept {
   offset_rev = other.offset_rev;
 
   options = other.options;
+
+  updating = std::move(other.updating);
 }
 
 void Interval::free() noexcept {
@@ -98,6 +110,7 @@ void Interval::free() noexcept {
   key_intervals.clear();
   values.clear();
   offset_key.free();
+  updating = nullptr;
 }
 
 bool Interval::equal(const Interval& other) const noexcept {
@@ -110,7 +123,9 @@ bool Interval::equal(const Interval& other) const noexcept {
           key_intervals.equal(other.key_intervals) &&
           values.equal(other.values) &&
           offset_key.equal(other.offset_key) &&
-          offset_rev == other.offset_rev ;
+          offset_rev == other.offset_rev &&
+          is_updating() == other.is_updating() &&
+          (!is_updating() || updating->equal(*other.updating.get()));
 }
 
 
@@ -122,7 +137,8 @@ size_t Interval::encoded_length() const noexcept {
         + flags.encoded_length()
         + offset_key.encoded_length()
         + Serialization::encoded_length_vi64(offset_rev)
-        + 1;
+        + 1
+        + (is_updating() ? updating->encoded_length() : 0);
 }
 
 void Interval::encode(uint8_t** bufp) const {
@@ -140,7 +156,15 @@ void Interval::encode(uint8_t** bufp) const {
 
   offset_key.encode(bufp);
   Serialization::encode_vi64(bufp, offset_rev);
-  Serialization::encode_i8(bufp, options);
+
+  bool w_updating = is_updating();
+  uint8_t opts = options;
+  if(w_updating)
+    opts |= OPT_UPDATING;
+  Serialization::encode_i8(bufp, opts);
+
+  if(w_updating)
+    updating->encode(bufp);
 }
 
 void Interval::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
@@ -159,6 +183,13 @@ void Interval::decode(const uint8_t** bufp, size_t* remainp, bool owner) {
   offset_key.decode(bufp, remainp, owner);
   offset_rev = Serialization::decode_vi64(bufp, remainp);
   options = Serialization::decode_i8(bufp, remainp);
+
+  if(has_opt__updating()) {
+    updating.reset(new IntervalUpdate(bufp, remainp));
+    flags.clear_only_deletes();
+  } else {
+    updating = nullptr;
+  }
 }
 
 void Interval::apply_possible_range_begin(DB::Cell::Key& begin) const {
@@ -281,6 +312,9 @@ void Interval::print(std::ostream& out) const {
 
   flags.print(out << ' ');
 
+  if(is_updating())
+    updating->print(out << " Update");
+
   out << " Options("
     << "range-end-rest=" << has_opt__range_end_rest()
     << " key-eq=" << has_opt__key_equal()
@@ -324,6 +358,12 @@ void Interval::display(std::ostream& out, bool pretty,
   out << offset << " Flags(";
   flags.display(out);
   out << ")\n";
+
+  if(is_updating()) {
+    out << offset << " Update(";
+    updating->display(out, pretty);
+    out << ")\n";
+  }
 
   out << offset << " Options("
     << "range-end-rest=" << has_opt__range_end_rest()
