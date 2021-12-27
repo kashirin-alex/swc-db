@@ -52,6 +52,26 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
 
   void add(const DB::Cells::Cell& cell);
 
+  SWC_CAN_INLINE
+  void cells_lock() noexcept {
+    _again: try {
+      m_mutex_cells.lock();
+    } catch(...) {
+      goto _again;
+    }
+  }
+
+  SWC_CAN_INLINE
+  void cells_unlock() noexcept {
+    m_mutex_cells.unlock();
+  }
+
+  SWC_CAN_INLINE
+  void _add(const DB::Cells::Cell& cell,
+            size_t* offset_itp, size_t* offsetp) {
+    m_cells.add_raw(cell, offset_itp, offsetp);
+  }
+
   void commit() noexcept;
 
   size_t commit_release();

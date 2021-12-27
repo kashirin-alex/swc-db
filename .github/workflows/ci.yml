@@ -65,7 +65,6 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        git clone --branch asio-1-20-0 https://github.com/chriskohlhoff/asio.git
         if [[ ${{ matrix.runs-on }} =~ ^ubuntu-* ]]; then
           sudo apt-get update -y
           # sudo apt-get upgrade -y
@@ -95,6 +94,8 @@ jobs:
             libpam-dev
           #
         fi
+
+        git clone --branch asio-1-20-0 https://github.com/chriskohlhoff/asio.git
 
         # SWCDB_CLUSTER-PREREQUISITES
         sudo apt-get install -y \
