@@ -29,6 +29,10 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
 
   virtual ~RangeQuerySelectUpdating() noexcept { }
 
+  bool has_update() const noexcept override {
+    return true;
+  }
+
   void update(DB::Cells::Mutable& blk_cells) override {
     if(cells.empty())
       return;
@@ -48,17 +52,13 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
       updated_cell.value = spec.updating->value;
       updated_cell.vlen = spec.updating->vlen;
 
+      auto ts = Time::now_ns();
       if(spec.updating->timestamp == DB::Cells::TIMESTAMP_AUTO) {
-        updated_cell.set_timestamp(Time::now_ns());
-        updated_cell.control |= DB::Cells::REV_IS_TS;
-        if(updated_cell.control & DB::Cells::HAVE_REVISION)
-          updated_cell.control ^= DB::Cells::HAVE_REVISION;
+        updated_cell.set_timestamp_with_rev_is_ts(ts);
       } else {
         if(spec.updating->timestamp != DB::Cells::TIMESTAMP_NULL)
           updated_cell.set_timestamp(spec.updating->timestamp);
-        updated_cell.set_revision(Time::now_ns());
-        if(updated_cell.control & DB::Cells::REV_IS_TS)
-          updated_cell.control ^= DB::Cells::REV_IS_TS;
+        updated_cell.set_revision(ts);
       }
 
       commitlog._add(updated_cell, &log_offset_it_hint, &log_offset_hint);

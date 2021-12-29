@@ -10,6 +10,26 @@
 namespace SWC { namespace DB { namespace Cells {
 
 
+void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns,
+                        const Types::Column typ) {
+  bool chk_revs = max_revs != revs;
+  bool chk_ttl = ttl != ttl_ns;
+  type = typ;
+  ttl = ttl_ns;
+  max_revs = revs;
+  if(empty() || (!chk_revs && !chk_ttl))
+    return;
+  Cell* cell;
+  for(auto it = get<Iterator>(); it; ) {
+    if((cell = it.item())->has_expired(ttl)) {
+      _remove(it);
+      continue;
+    }
+    ++it;
+    if(chk_revs)
+      _remove_overhead(it, cell->key, 1);
+  }
+}
 
 void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                              Interval& intval, uint32_t threshold,
@@ -30,7 +50,7 @@ void Mutable::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
       continue;
 
     cell->write(cells);
-    intval.expand(cell->timestamp);
+    intval.expand(cell->get_timestamp());
     intval.align(cell->key);
     (first ? last : first) = cell;
     ++cell_count;
@@ -183,7 +203,8 @@ void Mutable::scan_version_multi(ReqScan* req) const {
         continue;
       }
       if(comp == Condition::EQ &&
-         !req->spec.is_matching(cell->timestamp, cell->control & TS_DESC)) {
+         !req->spec.is_matching(
+           cell->get_timestamp(), cell->is_time_order_desc())) {
         if(!--rev)
           chk_align = false;
         last_key = &cell->key;
@@ -288,93 +309,125 @@ bool Mutable::split(Mutable& cells, bool loaded) {
 
 void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
                           size_t& offset) {
-  int64_t ts = e_cell.get_timestamp();
-  int64_t rev = e_cell.get_revision();
-  bool chk_rev = rev != TIMESTAMP_AUTO;
-  Condition::Comp cond;
-  int64_t e_ts;
+  bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
   for(Cell* cell; it; ) {
-
-    if((cell=it.item())->has_expired(ttl)) {
+    if((cell = it.item())->has_expired(ttl)) {
       _remove(it);
       continue;
     }
-
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
-                == Condition::GT) {
-      ++it;
-      ++offset;
-      continue;
+    switch(DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) {
+      case Condition::GT: {
+        ++it;
+        ++offset;
+        break;
+      }
+      case Condition::LT: {
+        _insert(it, e_cell);
+        return;
+      }
+      default: {
+        bool rev_set = cell->get_revision() != TIMESTAMP_AUTO;
+        if(chk_rev && (
+            cell->get_revision() == e_cell.get_revision()
+              ||
+            (cell->removal() &&
+             (!rev_set || cell->get_revision() > e_cell.get_revision()) &&
+             cell->is_removing(e_cell.get_timestamp())) ) ) {
+          return;
+        }
+        if((!chk_rev ||
+            (rev_set && e_cell.get_revision() > cell->get_revision())
+           ) && e_cell.is_removing(cell->get_timestamp()) ) {
+          _remove(it);
+        } else {
+          ++it;
+        }
+        break;
+      }
     }
-
-    if(cond == Condition::LT) {
-      _insert(it, e_cell);
-      return;
-    }
-
-    if(cell->is_removing(ts) ||
-       (chk_rev &&
-        (e_ts = cell->get_revision()) != TIMESTAMP_AUTO &&
-        e_ts >= rev))
-      return;
-
-    if(e_cell.is_removing(cell->get_timestamp()))
-      _remove(it);
-    else
-      ++it;
   }
-
   add_sorted(e_cell);
 }
 
-void Mutable::_add_plain(const Cell& e_cell, Mutable::Iterator& it,
-                         size_t& offset) {
-  int64_t ts = e_cell.get_timestamp();
-  int64_t rev = e_cell.get_revision();
-  bool chk_ts = ts != TIMESTAMP_AUTO;
-  bool chk_rev = rev != TIMESTAMP_AUTO;
-
-  uint32_t revs = 0;
-  Condition::Comp cond;
+void Mutable::_add_plain_version_single(const Cell& e_cell,
+                                        Mutable::Iterator& it,
+                                        size_t& offset) {
   for(Cell* cell; it; ) {
-
-    if((cell=it.item())->has_expired(ttl)) {
+    if((cell = it.item())->has_expired(ttl)) {
       _remove(it);
       continue;
     }
+    switch(DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) {
+      case Condition::GT: {
+        ++it;
+        ++offset;
+        break;;
+      }
+      case Condition::LT: {
+        _insert(it, e_cell);
+        return;
+      }
+      default: {
+        bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
+        if(!(chk_rev && cell->get_revision() == e_cell.get_revision()) &&
+           !(cell->removal() && cell->is_removing(e_cell.get_timestamp())) &&
+           (!chk_rev || e_cell.get_revision() > cell->get_revision())) {
+          _adjust_copy(*cell, e_cell);
+        }
+        return;
+      }
+    }
+  }
+  add_sorted(e_cell);
+}
 
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
-               == Condition::GT) {
-      ++it;
-      ++offset;
+void Mutable::_add_plain_version_multi(const Cell& e_cell,
+                                       Mutable::Iterator& it,
+                                       size_t& offset) {
+  bool chk_ts = e_cell.get_timestamp() != TIMESTAMP_AUTO;
+  bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
+  uint32_t revs = 0;
+
+  for(Cell* cell; it; ) {
+    if((cell = it.item())->has_expired(ttl)) {
+      _remove(it);
       continue;
     }
-
-    if(cond == Condition::LT) {
-      _insert(it, e_cell);
-      return;
+    switch(DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) {
+      case Condition::GT: {
+        ++it;
+        ++offset;
+        continue;
+      }
+      case Condition::LT: {
+        _insert(it, e_cell);
+        return;
+      }
+      default: {
+        break;
+      }
     }
 
-    if(chk_rev && cell->get_revision() == rev)
+    if(chk_rev && cell->get_revision() == e_cell.get_revision())
       return;
 
     if(cell->removal()) {
-      if(chk_ts && cell->is_removing(ts))
+      if(cell->is_removing(e_cell.get_timestamp()))
         return;
       ++it;
       continue;
     }
 
-    if(chk_ts && cell->get_timestamp() == ts) {
-      if(!chk_rev || rev > cell->get_revision())
-        return _adjust_copy(*cell, e_cell);
+    if(chk_ts && cell->get_timestamp() == e_cell.get_timestamp()) {
+      if(!chk_rev || e_cell.get_revision() > cell->get_revision())
+        _adjust_copy(*cell, e_cell);
       return;
     }
 
     ++revs;
-    if(e_cell.control & TS_DESC
-        ? (chk_ts && ts < cell->get_timestamp())
-        : (!chk_ts || ts > cell->get_timestamp()) ) {
+    if(e_cell.is_time_order_desc()
+        ? (chk_ts && e_cell.get_timestamp() < cell->get_timestamp())
+        : (!chk_ts || e_cell.get_timestamp() > cell->get_timestamp()) ) {
       if(max_revs == revs)
         return;
       ++it;
@@ -382,7 +435,7 @@ void Mutable::_add_plain(const Cell& e_cell, Mutable::Iterator& it,
     }
 
     if(max_revs == revs) {
-      if(!chk_rev || rev > cell->get_revision())
+      if(!chk_rev || e_cell.get_revision() > cell->get_revision())
         _adjust_copy(*cell, e_cell);
     } else {
       _insert(it, e_cell);
@@ -395,64 +448,70 @@ void Mutable::_add_plain(const Cell& e_cell, Mutable::Iterator& it,
   add_sorted(e_cell);
 }
 
-void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
+void Mutable::_add_counter(const Cell& e_cell,
+                           Mutable::Iterator& it,
                            size_t& offset) {
-  int64_t ts = e_cell.get_timestamp();
-  int64_t rev = e_cell.get_revision();
-  bool chk_rev = rev != TIMESTAMP_AUTO;
-
-  Condition::Comp cond;
+  bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
   for(Cell* cell; it; ) {
-
-    if((cell=it.item())->has_expired(ttl)) {
+    if((cell = it.item())->has_expired(ttl)) {
       _remove(it);
       continue;
     }
+    switch(DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) {
+      case Condition::GT: {
+        ++it;
+        ++offset;
+        break;
+      }
+      case Condition::LT: {
+        goto add_counter;
+      }
+      default: {
+        if(cell->removal()) {
+          if((chk_rev && cell->get_revision() >= e_cell.get_revision()) ||
+             cell->is_removing(e_cell.get_timestamp()) )
+            return;
+          ++it;
+          continue;
+        }
 
-    if((cond = DB::KeySeq::compare(key_seq, cell->key, e_cell.key))
-                == Condition::GT) {
-      ++it;
-      ++offset;
-      continue;
-    }
+        uint8_t op_1;
+        int64_t eq_rev_1;
+        int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
+        if(op_1 & OP_EQUAL) {
+          if(!(op_1 & HAVE_REVISION))
+            eq_rev_1 = cell->get_timestamp();
+          if(eq_rev_1 > e_cell.get_timestamp())
+            return;
+        }
 
-    if(cond == Condition::LT) //without aggregate|| ts == TIMESTAMP_AUTO
-      goto add_counter;
-
-    if(cell->removal()) {
-      if((chk_rev && cell->get_revision() >= rev) ||
-         cell->is_removing(ts) )
+        int64_t value_2;
+        if(e_cell.get_counter(value_2) & OP_EQUAL) {
+          _adjust_copy(*cell, e_cell);
+        } else {
+          value_1 += value_2;
+          cell->set_counter(op_1, value_1, type, eq_rev_1);
+          cell->control = 0;
+          int64_t ts = cell->get_timestamp() > e_cell.get_timestamp()
+                     ? cell->get_timestamp() : e_cell.get_timestamp();
+          int64_t rev = cell->get_revision() > e_cell.get_revision()
+                      ? cell->get_revision() : e_cell.get_revision();
+          if(ts == rev) {
+            cell->set_timestamp_with_rev_is_ts(ts);
+          } else {
+            cell->set_timestamp(ts);
+            cell->set_revision(rev);
+          }
+        }
         return;
-      ++it;
-      continue;
-    }
-
-    uint8_t op_1;
-    int64_t eq_rev_1;
-    int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
-    if(op_1 & OP_EQUAL) {
-      if(!(op_1 & HAVE_REVISION))
-        eq_rev_1 = cell->get_timestamp();
-      if(eq_rev_1 > ts)
-        return;
-    }
-
-    if(e_cell.get_counter_op() & OP_EQUAL) {
-      _adjust_copy(*cell, e_cell);
-    } else {
-      value_1 += e_cell.get_counter();
-      cell->set_counter(op_1, value_1, type, eq_rev_1);
-      if(cell->timestamp < e_cell.timestamp) {
-        cell->timestamp = e_cell.timestamp;
-        cell->control = e_cell.control;
       }
     }
-    return;
   }
 
-  add_counter:
-    Cell* cell = new Cell(e_cell);
-    if(type != Types::Column::COUNTER_I64) {
+  add_counter: {
+    bool no_value = type != Types::Column::COUNTER_I64;
+    Cell* cell = new Cell(e_cell, no_value);
+    if(no_value) {
       uint8_t op_1;
       int64_t eq_rev_1;
       int64_t value_1 = e_cell.get_counter(op_1, eq_rev_1);
@@ -460,6 +519,7 @@ void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
     }
     _add(*cell);
     it ? it.insert(cell) : _container.push_back(cell);
+  }
 }
 
 

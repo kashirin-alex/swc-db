@@ -499,7 +499,7 @@ Block::ScanState Block::_scan(const ReqScan::Ptr& req, bool synced) {
   int err = Error::OK;
   uint64_t ts = Time::now_ns();
   try {
-    if(req->spec.has_opt__updating()) {
+    if(req->has_update()) {
       Core::ScopedLock lock(m_mutex);
       m_cells.scan(req.get());
       req->update(m_cells);

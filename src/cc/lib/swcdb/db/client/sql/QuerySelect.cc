@@ -1163,14 +1163,14 @@ void QuerySelect::read_update(DB::Specs::Interval& intval) {
   // update = ('TS', 'DATA', ENCODER) || ( ) - empty optional
 
   DB::Cells::Cell cell;
-  cell.timestamp = DB::Cells::TIMESTAMP_NULL;
+  cell.set_timestamp_null();
   read_ts_and_value(intval.values.col_type, false, cell);
 
   if(remain && !err) {
     intval.updating = DB::Specs::IntervalUpdate::make(
       cell.value,
       cell.vlen,
-      cell.timestamp,
+      cell.get_timestamp(),
       false
     );
     cell.value = nullptr;

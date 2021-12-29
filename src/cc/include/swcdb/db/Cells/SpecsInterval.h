@@ -114,11 +114,11 @@ class Interval {
                    const Cells::Cell& cell, bool& stop) const {
     return
       is_matching(
-        key_seq, cell.key, cell.timestamp, cell.control & Cells::TS_DESC)
+        key_seq, cell.key, cell.get_timestamp(), cell.is_time_order_desc())
       &&
-      ts_start.is_matching(cell.timestamp)
+      ts_start.is_matching(cell.get_timestamp())
       &&
-      ts_finish.is_matching(cell.timestamp)
+      ts_finish.is_matching(cell.get_timestamp())
       &&
       is_matching_begin(key_seq, cell.key)
       &&

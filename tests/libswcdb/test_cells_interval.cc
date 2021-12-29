@@ -27,10 +27,10 @@ int main() {
       cell.key.add(std::string("b")+s);
       cell.key.add(std::string("c")+s);
       cell.key.add(std::string("d")+s);
-      cell.timestamp = n;
+      cell.set_timestamp(n);
 
       interval.expand(cell);
-      interval.expand(cell.timestamp);
+      interval.expand(cell.get_timestamp());
       interval.align(cell.key);
 
 

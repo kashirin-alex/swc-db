@@ -96,9 +96,9 @@ void Cell::get_value(StaticBuffer& v, bool owner) const {
 bool Cell::equal(const Cell& other) const noexcept {
   return  flag == other.flag &&
           control == other.control &&
+          vlen == other.vlen &&
           (!(control & HAVE_TIMESTAMP) || timestamp == other.timestamp) &&
           (!(control & HAVE_REVISION) || revision == other.revision) &&
-          vlen == other.vlen &&
           key.equal(other.key) &&
           Condition::mem_eq(value, other.value, vlen);
 }

@@ -60,7 +60,7 @@ void Interval::expand(const Interval& other) {
 void Interval::expand(const Cell& cell) {
   expand_begin(cell);
   expand_end(cell);
-  //expand(cell.timestamp);
+  //expand(cell.get_timestamp());
   was_set = true;
 }
 

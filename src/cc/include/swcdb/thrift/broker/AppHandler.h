@@ -811,7 +811,7 @@ class AppHandler final : virtual public BrokerIf {
             auto& cell = rcells[c++];
             cell.c = schema->col_name;
             dbcell->key.convert_to(cell.k);
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             if(dbcell->vlen)
               Converter::set(*dbcell, cell.v);
           }
@@ -825,7 +825,7 @@ class AppHandler final : virtual public BrokerIf {
             auto& cell = rcells[c++];
             cell.c = schema->col_name;
             dbcell->key.convert_to(cell.k);
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             dbcell->get_value(cell.v);
           }
         }
@@ -857,7 +857,7 @@ class AppHandler final : virtual public BrokerIf {
           for(auto dbcell : cells) {
             auto& cell = rcells[c++];
             dbcell->key.convert_to(cell.k);
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             if(dbcell->vlen)
               Converter::set(*dbcell, cell.v);
           }
@@ -870,7 +870,7 @@ class AppHandler final : virtual public BrokerIf {
           for(auto dbcell : cells) {
             auto& cell = rcells[c++];
             dbcell->key.convert_to(cell.k);
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             dbcell->get_value(cell.v);
           }
         }
@@ -906,7 +906,7 @@ class AppHandler final : virtual public BrokerIf {
 
             auto& cell = it->serial_cells.emplace_back();
             cell.c = schema->col_name;
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             if(dbcell->vlen)
               Converter::set(*dbcell, cell.v);
           }
@@ -925,7 +925,7 @@ class AppHandler final : virtual public BrokerIf {
 
             auto& cell = it->cells.emplace_back();
             cell.c = schema->col_name;
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             dbcell->get_value(cell.v);
           }
         }
@@ -960,7 +960,7 @@ class AppHandler final : virtual public BrokerIf {
               fraction_cells = &fraction_cells->f[f];
             auto& cell = fraction_cells->serial_cells.emplace_back();
             cell.c = schema->col_name;
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             if(dbcell->vlen)
               Converter::set(*dbcell, cell.v);
           }
@@ -976,7 +976,7 @@ class AppHandler final : virtual public BrokerIf {
               fraction_cells = &fraction_cells->f[f];
             auto& cell = fraction_cells->cells.emplace_back();
             cell.c = schema->col_name;
-            cell.ts = dbcell->timestamp;
+            cell.ts = dbcell->get_timestamp();
             dbcell->get_value(cell.v);
           }
         }

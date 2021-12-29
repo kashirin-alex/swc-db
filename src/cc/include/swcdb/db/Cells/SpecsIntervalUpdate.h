@@ -77,14 +77,14 @@ class IntervalUpdate final {
     other.vlen = 0;
   }
 
-  IntervalUpdate(const DB::Cells::Cell& cell) : timestamp(cell.timestamp) {
+  IntervalUpdate(const DB::Cells::Cell& cell) : timestamp(cell.get_timestamp()) {
     StaticBuffer _v;
     cell.get_value(_v);
     value = copy_value(_v.base, _v.size);
     vlen = _v.size;
   }
 
-  IntervalUpdate(DB::Cells::Cell&& cell) : timestamp(cell.timestamp) {
+  IntervalUpdate(DB::Cells::Cell&& cell) : timestamp(cell.get_timestamp()) {
     if(cell.have_encoder()) {
       StaticBuffer _v;
       cell.get_value(_v);
@@ -137,7 +137,7 @@ class IntervalUpdate final {
 
   IntervalUpdate& operator=(const DB::Cells::Cell& cell) {
     _free();
-    timestamp = cell.timestamp;
+    timestamp = cell.get_timestamp();
     StaticBuffer _v;
     cell.get_value(_v);
     value = copy_value(_v.base, _v.size);
@@ -147,7 +147,7 @@ class IntervalUpdate final {
 
   IntervalUpdate& operator=(DB::Cells::Cell&& cell) noexcept {
     _free();
-    timestamp = cell.timestamp;
+    timestamp = cell.get_timestamp();
     if(cell.have_encoder()) {
       StaticBuffer _v;
       cell.get_value(_v);

@@ -143,13 +143,8 @@ class Mutable final {
     }
   }
 
-  constexpr SWC_CAN_INLINE
   void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
-                 const Types::Column typ=Types::Column::PLAIN) noexcept {
-    type = typ;
-    max_revs = revs;
-    ttl = ttl_ns;
-  }
+                 const Types::Column typ=Types::Column::PLAIN);
 
   SWC_CAN_INLINE
   ~Mutable() noexcept {
@@ -477,14 +472,15 @@ class Mutable final {
   void add_raw(const Cell& e_cell, size_t* offsetp) {
     Iterator it = get<Iterator>(e_cell.key, *offsetp);
 
-    if(e_cell.removal())
-      _add_remove(e_cell, it, *offsetp);
-
-    else if(Types::is_counter(type))
-      _add_counter(e_cell, it, *offsetp);
-
-    else
-      _add_plain(e_cell, it, *offsetp);
+    e_cell.removal()
+      ? _add_remove(e_cell, it, *offsetp)
+      : (Types::is_counter(type)
+          ? _add_counter(e_cell, it, *offsetp)
+          : (max_revs == 1
+              ? _add_plain_version_single(e_cell, it, *offsetp)
+              : _add_plain_version_multi(e_cell, it, *offsetp)
+            )
+        );
   }
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
@@ -594,7 +590,11 @@ class Mutable final {
 
   void _add_remove(const Cell& e_cell, Iterator& it, size_t& offset);
 
-  void _add_plain(const Cell& e_cell, Iterator& it, size_t& offset);
+  void _add_plain_version_single(const Cell& e_cell,
+                                 Iterator& it, size_t& offset);
+
+  void _add_plain_version_multi(const Cell& e_cell,
+                                 Iterator& it, size_t& offset);
 
   void _add_counter(const Cell& e_cell, Iterator& it, size_t& offset);
 

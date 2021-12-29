@@ -36,7 +36,7 @@ void Result::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
       continue;
 
     cell->write(cells);
-    intval.expand(cell->timestamp);
+    intval.expand(cell->get_timestamp());
     intval.align(cell->key);
     (first ? last : first) = cell;
     ++cell_count;

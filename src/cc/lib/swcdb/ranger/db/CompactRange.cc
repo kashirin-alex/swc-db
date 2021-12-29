@@ -61,7 +61,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
     size_t remain = cells.ptr - ptr;
     DB::Cells::Cell cell(&ptr, &remain);
     spec.offset_key.copy(cell.key);
-    spec.offset_rev = cell.timestamp;
+    spec.offset_rev = cell.get_timestamp();
   }
 
   SWC_CAN_INLINE
@@ -85,7 +85,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
     while(remain) {
       cell.read(&ptr, &remain);
       header.interval.align(cell.key);
-      header.interval.expand(cell.timestamp);
+      header.interval.expand(cell.get_timestamp());
 
       if(set_begin) {
         header.interval.expand_begin(cell);
@@ -283,7 +283,7 @@ bool CompactRange::with_block() const noexcept {
 bool CompactRange::selector(const DB::Types::KeySeq key_seq,
                             const DB::Cells::Cell& cell, bool&) {
   return spec.is_matching(
-    key_seq, cell.key, cell.timestamp, cell.control & DB::Cells::TS_DESC)
+    key_seq, cell.key, cell.get_timestamp(), cell.is_time_order_desc())
     &&
     spec.key_intervals.is_matching_start(key_seq, cell.key);
 }

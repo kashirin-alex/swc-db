@@ -703,7 +703,7 @@ bool Statistics::show() {
           for(auto& defined : m_definitions) {
             if(defined.property.is_matching_lexic(cell->key)) {
 
-              time_t ts = (cell->timestamp/1000000000);
+              time_t ts = (cell->get_timestamp()/1000000000);
               if(g.agg) {
                 ts /= g.agg;
                 ts *= g.agg;

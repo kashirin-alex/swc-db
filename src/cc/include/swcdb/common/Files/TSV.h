@@ -151,7 +151,7 @@ class FileWriter {
     DynamicBuffer cell_buff(8096);
 
     if(!(output_flags & OutputFlag::NO_TS)) {
-      cell_buff.add(std::to_string(cell.timestamp));
+      cell_buff.add(std::to_string(cell.get_timestamp()));
       cell_buff.add('\t'); //
     }
 
@@ -198,7 +198,7 @@ class FileWriter {
       }
     } else {
 
-      cell_buff.add(cell.control & TS_DESC ? 'D' : 'A');
+      cell_buff.add(cell.is_time_order_desc() ? 'D' : 'A');
       cell_buff.add('\t'); //
 
       if(cell.have_encoder() && output_flags & OutputFlag::NO_ENCODE) {

@@ -1183,12 +1183,10 @@ void Range::_run_add_queue() {
       if(cell.has_expired(ttl))
         continue;
 
-      if(cell.control & DB::Cells::HAVE_TIMESTAMP) {
-        cell.set_revision(Time::now_ns());
-      } else {
-        cell.set_timestamp(Time::now_ns());
-        cell.control |= DB::Cells::REV_IS_TS;
-      }
+      auto ts = Time::now_ns();
+      cell.control & DB::Cells::HAVE_TIMESTAMP
+        ? cell.set_revision(ts)
+        : cell.set_timestamp_with_rev_is_ts(ts);
 
       blocks.add_logged(cell);
 

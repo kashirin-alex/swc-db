@@ -89,6 +89,10 @@ class ReqScan : public Comm::ResponseCallback {
 
   virtual bool add_cell_and_more(const Cell& cell) = 0;
 
+  virtual bool has_update() const noexcept {
+    return false;
+  }
+
   virtual void update(DB::Cells::Mutable&) { }
 
   virtual void print(std::ostream& out) const;

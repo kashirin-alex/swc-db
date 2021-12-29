@@ -89,31 +89,47 @@ class Cell final {
   public:
   typedef std::shared_ptr<Cell> Ptr;
 
-  SWC_CAN_INLINE
-  explicit Cell() noexcept
-                : own(false), flag(Flag::NONE), control(0),
-                  vlen(0), value(nullptr) {
+  constexpr SWC_CAN_INLINE explicit
+  Cell() noexcept
+      : own(false), flag(Flag::NONE), control(0),
+        vlen(0), value(nullptr),
+        timestamp(TIMESTAMP_AUTO), revision(TIMESTAMP_AUTO) {
   }
 
-  explicit Cell(const Cell& other);
-
-  explicit Cell(const Cell& other, bool no_value);
-
-  explicit Cell(const uint8_t** bufp, size_t* remainp, bool own=false);
-
-  constexpr SWC_CAN_INLINE
-  Cell(Cell&& other) noexcept
-      : key(std::move(other.key)),
-        own(other.own),
-        flag(other.flag),
+  SWC_CAN_INLINE explicit
+  Cell(const Cell& other)
+      : key(other.key), own(other.vlen), flag(other.flag),
         control(other.control),
         vlen(other.vlen),
+        value(_value(other.value)),
         timestamp(other.timestamp),
-        revision(other.revision),
-        value(other.value) {
+        revision(other.revision) {
+  }
+
+  SWC_CAN_INLINE explicit
+  Cell(const Cell& other, bool no_value)
+      : key(other.key), own(!no_value && other.vlen), flag(other.flag),
+        control(no_value ? other.control & MASK_HAVE_ENCODER : other.control),
+        vlen(own ? other.vlen : 0),
+        value(_value(other.value)),
+        timestamp(other.timestamp),
+        revision(other.revision) {
+  }
+
+  constexpr SWC_CAN_INLINE explicit
+  Cell(Cell&& other) noexcept
+      : key(std::move(other.key)), own(other.own), flag(other.flag),
+        control(other.control),
+        vlen(other.vlen),
+        value(other.value),
+        timestamp(other.timestamp),
+        revision(other.revision) {
     other.value = nullptr;
     other.vlen = 0;
   }
+
+  explicit
+  Cell(const uint8_t** bufp, size_t* remainp, bool own=false);
 
   Cell& operator=(const Cell&) = delete;
 
@@ -150,7 +166,12 @@ class Cell final {
     if(desc)
       control |= TS_DESC;
     else if(control & TS_DESC)
-      control -= TS_DESC;
+      control ^= TS_DESC;
+  }
+
+  constexpr SWC_CAN_INLINE
+  bool is_time_order_desc() const noexcept {
+    return control & TS_DESC;
   }
 
   constexpr SWC_CAN_INLINE
@@ -160,9 +181,42 @@ class Cell final {
   }
 
   constexpr SWC_CAN_INLINE
+  void set_timestamp_null() noexcept {
+    timestamp = DB::Cells::TIMESTAMP_NULL;
+    if(control & HAVE_TIMESTAMP)
+      control ^= HAVE_TIMESTAMP;
+    if(control & REV_IS_TS) {
+      control ^= REV_IS_TS;
+      revision = DB::Cells::TIMESTAMP_AUTO;
+    }
+  }
+
+  constexpr SWC_CAN_INLINE
+  void set_timestamp_auto() noexcept {
+    timestamp = DB::Cells::TIMESTAMP_AUTO;
+    if(control & HAVE_TIMESTAMP)
+      control ^= HAVE_TIMESTAMP;
+    if(control & REV_IS_TS) {
+      control ^= REV_IS_TS;
+      revision = DB::Cells::TIMESTAMP_AUTO;
+    }
+  }
+
+  constexpr SWC_CAN_INLINE
+  void set_timestamp_with_rev_is_ts(int64_t ts) noexcept {
+    set_timestamp(ts);
+    revision = timestamp;
+    control |= REV_IS_TS;
+    if(control & HAVE_REVISION)
+      control ^= HAVE_REVISION;
+  }
+
+  constexpr SWC_CAN_INLINE
   void set_revision(int64_t ts) noexcept {
     revision = ts;
     control |= HAVE_REVISION;
+    if(control & REV_IS_TS)
+      control ^= REV_IS_TS;
   }
 
   SWC_CAN_INLINE
@@ -202,16 +256,44 @@ class Cell final {
                   Types::Column typ = Types::Column::COUNTER_I64,
                   int64_t rev = TIMESTAMP_NULL);
 
-  uint8_t get_counter_op() const;
+  constexpr SWC_CAN_INLINE
+  int64_t get_counter() const {
+    const uint8_t *ptr = value;
+    return Serialization::decode_vi64(&ptr);
+  }
 
-  int64_t get_counter() const;
+  constexpr SWC_CAN_INLINE
+  uint8_t get_counter(int64_t& count) const {
+    const uint8_t* ptr = value;
+    count = Serialization::decode_vi64(&ptr);
+    return *ptr;
+  }
 
-  int64_t get_counter(uint8_t& op, int64_t& rev) const;
+  constexpr SWC_CAN_INLINE
+  int64_t get_counter(uint8_t& op, int64_t& rev) const {
+    const uint8_t *ptr = value;
+    int64_t v = Serialization::decode_vi64(&ptr);
+    rev = ((op = *ptr) & HAVE_REVISION)
+            ? Serialization::decode_vi64(&++ptr)
+            : TIMESTAMP_NULL;
+    return v;
+  }
 
   void read(const uint8_t** bufp, size_t* remainp, bool owner=false);
 
-  constexpr
-  size_t encoded_length(bool no_value=false) const noexcept;
+  constexpr SWC_CAN_INLINE
+  size_t encoded_length(bool no_value=false) const noexcept {
+    size_t len = key.encoded_length();
+    len += 2;
+    if(control & HAVE_TIMESTAMP)
+      len += 8;
+    if(control & HAVE_REVISION)
+      len += 8;
+    if(no_value)
+      return ++len;
+    len += Serialization::encoded_length_vi32(vlen);
+    return len += vlen;
+  }
 
   void write(DynamicBuffer &dst_buf, bool no_value=false) const;
 
@@ -222,18 +304,23 @@ class Cell final {
     return flag != Flag::INSERT;
   }
 
-  constexpr
-  bool is_removing(const int64_t& ts) const noexcept;
+  constexpr SWC_CAN_INLINE
+  bool is_removing(const int64_t& ts) const noexcept {
+    return ts != TIMESTAMP_AUTO && (
+            (flag == DELETE_LE && timestamp >= ts)
+            ||
+            (flag == DELETE_EQ && timestamp == ts)
+          );
+  }
 
   constexpr SWC_CAN_INLINE
   int64_t get_timestamp() const noexcept {
-    return control & HAVE_TIMESTAMP ? timestamp : TIMESTAMP_AUTO;
+    return timestamp;
   }
 
   constexpr SWC_CAN_INLINE
   int64_t get_revision() const noexcept {
-    return control & HAVE_REVISION ? revision
-          : (control & REV_IS_TS ? timestamp : TIMESTAMP_AUTO);
+    return revision;
   }
 
   SWC_CAN_INLINE
@@ -269,8 +356,6 @@ class Cell final {
   uint8_t         flag;
   uint8_t         control;
   uint32_t        vlen;
-  int64_t         timestamp;
-  int64_t         revision;
   uint8_t*        value;
 
   private:
@@ -282,29 +367,12 @@ class Cell final {
       : nullptr;
   }
 
+  int64_t         timestamp;
+  int64_t         revision;
+
 };
 
 
-
-SWC_CAN_INLINE
-Cell::Cell(const Cell& other)
-  : key(other.key), own(other.vlen), flag(other.flag),
-    control(other.control),
-    vlen(other.vlen),
-    timestamp(other.timestamp),
-    revision(other.revision),
-    value(_value(other.value)) {
-}
-
-SWC_CAN_INLINE
-Cell::Cell(const Cell& other, bool no_value)
-  : key(other.key), own(!no_value && other.vlen), flag(other.flag),
-    control(no_value ? other.control & MASK_HAVE_ENCODER : other.control),
-    vlen(own ? other.vlen : 0),
-    timestamp(other.timestamp),
-    revision(other.revision),
-    value(_value(other.value)) {
-}
 
 SWC_CAN_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool a_own)
@@ -409,43 +477,6 @@ void Cell::set_counter(uint8_t op, int64_t v, Types::Column typ, int64_t rev) {
 }
 
 SWC_CAN_INLINE
-uint8_t Cell::get_counter_op() const {
-  const uint8_t* ptr = value;
-  Serialization::decode_vi64(&ptr);
-  return *ptr;
-}
-
-SWC_CAN_INLINE
-int64_t Cell::get_counter() const {
-  const uint8_t *ptr = value;
-  return Serialization::decode_vi64(&ptr);
-}
-
-SWC_CAN_INLINE
-int64_t Cell::get_counter(uint8_t& op, int64_t& rev) const {
-  const uint8_t *ptr = value;
-  int64_t v = Serialization::decode_vi64(&ptr);
-  rev = ((op = *ptr) & HAVE_REVISION)
-        ? Serialization::decode_vi64(&++ptr)
-        : TIMESTAMP_NULL;
-  return v;
-}
-
-constexpr SWC_CAN_INLINE
-size_t Cell::encoded_length(bool no_value) const noexcept {
-  size_t len = key.encoded_length();
-  len += 2;
-  if(control & HAVE_TIMESTAMP)
-    len += 8;
-  if(control & HAVE_REVISION)
-    len += 8;
-  if(no_value)
-    return ++len;
-  len += Serialization::encoded_length_vi32(vlen);
-  return len += vlen;
-}
-
-SWC_CAN_INLINE
 void Cell::read(const uint8_t** bufp, size_t* remainp, bool owner) {
 
   flag = Serialization::decode_i8(bufp, remainp);
@@ -497,15 +528,6 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
     Serialization::encode_vi32(&dst_buf.ptr, vlen);
     dst_buf.add_unchecked(value, vlen);
   }
-}
-
-constexpr SWC_CAN_INLINE
-bool Cell::is_removing(const int64_t& ts) const noexcept {
-  return ts != TIMESTAMP_AUTO && removal() && (
-    (flag == DELETE_LE && get_timestamp() >= ts )
-    ||
-    (flag == DELETE_EQ && get_timestamp() == ts )
-    );
 }
 
 

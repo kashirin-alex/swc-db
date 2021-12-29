@@ -482,7 +482,7 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
     return;
   if(!buf.empty()) {
     if(Condition::str_case_eq(buf.c_str(), "auto", 4)) {
-      cell.timestamp = DB::Cells::TIMESTAMP_AUTO;
+      cell.set_timestamp_auto();
     } else {
       cell.set_timestamp(Time::parse_ns(err, buf));
     }
