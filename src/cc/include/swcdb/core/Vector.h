@@ -169,7 +169,7 @@ class Vector {
     return !_size;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool operator==(const Vector& other) const noexcept {
     if(_size != other.size())
       return false;
@@ -180,7 +180,7 @@ class Vector {
     return true;
   }
 
-  SWC_CAN_INLINE
+  constexpr SWC_CAN_INLINE
   bool operator!=(const Vector& other) const noexcept {
     return !(*this == other);
   }

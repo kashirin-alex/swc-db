@@ -26,7 +26,40 @@ class VectorsVector : public VectorsT {
   constexpr SWC_CAN_INLINE
   VectorsVector() noexcept { }
 
+  SWC_CAN_INLINE
+  VectorsVector(const VectorsVector& other)
+                : VectorsT(other) {
+  }
+
+  constexpr SWC_CAN_INLINE
+  VectorsVector(VectorsVector&& other) noexcept
+                : VectorsT(std::move(other)) {
+  }
+
   ~VectorsVector() noexcept { }
+
+  SWC_CAN_INLINE
+  VectorsVector& operator=(const VectorsVector& other) {
+    VectorsT::operator=(other);
+    return *this;
+  }
+
+  SWC_CAN_INLINE
+  VectorsVector& operator=(VectorsVector&& other) noexcept {
+    VectorsT::operator=(std::move(other));
+    return *this;
+  }
+
+  constexpr SWC_CAN_INLINE
+  bool operator==(const VectorsVector& other) const noexcept {
+    return VectorsT::operator==(other);
+  }
+
+  constexpr SWC_CAN_INLINE
+  bool operator!=(const VectorsVector& other) const noexcept {
+    return !(*this == other);
+  }
+
 
   constexpr SWC_CAN_INLINE
   static size_t need_reserve(VectorT& vec) {
@@ -330,6 +363,11 @@ class VectorsVector : public VectorsT {
     }
 
     constexpr SWC_CAN_INLINE
+    bool operator==(const ConstIterator& other) const noexcept {
+      return _vector == other._vector && _item == other._item;
+    }
+
+    constexpr SWC_CAN_INLINE
     const value_type& item() const noexcept {
       return *_item;
     }
@@ -397,6 +435,11 @@ class VectorsVector : public VectorsT {
     void operator++() noexcept {
       if(++_item == _vector->cend() && ++_vector != _vectors.cend())
         _item = _vector->begin();
+    }
+
+    constexpr SWC_CAN_INLINE
+    bool operator==(const Iterator& other) const noexcept {
+      return _vector == other._vector && _item == other._item;
     }
 
     constexpr SWC_CAN_INLINE
