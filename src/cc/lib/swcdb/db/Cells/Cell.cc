@@ -189,6 +189,11 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
       << " enc=" << have_encoder()
       << " value=(len=" << vlen;
 
+  if(flag != Flag::INSERT || !vlen) {
+    out << ')' << ')';
+    return;
+  }
+
   if(Types::is_counter(typ)) {
     out << " count=";
     uint8_t op;
