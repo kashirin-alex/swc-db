@@ -117,6 +117,7 @@ class Mutable final {
 
   SWC_CAN_INLINE
   Mutable& operator=(Mutable&& other) noexcept {
+    free();
     _container = std::move(other._container);
     _bytes = other._bytes;
     _size = other._size;
