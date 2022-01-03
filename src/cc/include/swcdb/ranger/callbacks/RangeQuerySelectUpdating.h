@@ -37,6 +37,9 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
     if(cells.empty())
       return;
 
+    const bool auto_ts(spec.updating->timestamp == DB::Cells::TIMESTAMP_AUTO);
+    const bool set_ts(spec.updating->timestamp != DB::Cells::TIMESTAMP_NULL);
+
     const uint8_t* ptr = cells.base;
     size_t remain = cells.fill();
 
@@ -53,10 +56,10 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
       updated_cell.vlen = spec.updating->vlen;
 
       auto ts = Time::now_ns();
-      if(spec.updating->timestamp == DB::Cells::TIMESTAMP_AUTO) {
+      if(auto_ts) {
         updated_cell.set_timestamp_with_rev_is_ts(ts);
       } else {
-        if(spec.updating->timestamp != DB::Cells::TIMESTAMP_NULL)
+        if(set_ts)
           updated_cell.set_timestamp(spec.updating->timestamp);
         updated_cell.set_revision(ts);
       }
@@ -66,6 +69,8 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
     }
 
     commitlog.cells_unlock();
+
+    commitlog.commit();
   }
 
 };
