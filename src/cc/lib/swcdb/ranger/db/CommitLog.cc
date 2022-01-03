@@ -633,11 +633,11 @@ size_t Fragments::_need_compact(CompactGroups& groups,
     auto const& last = *groups.back().back();
     if(!( (cond = DB::KeySeq::compare(m_cells.key_seq, last.interval.key_end,
                         (curt = *it)->interval.key_begin)) == Condition::LT ||
-        (cond == Condition::EQ && ( range->cfg->cell_versions() == 1 || (
-          curt->cells_count < range->cfg->block_cells() &&
-          curt->size_bytes() < range->cfg->block_size() &&
-          last.cells_count < range->cfg->block_cells() &&
-          last.size_bytes() < range->cfg->block_size() ) )) ) ) {
+        (cond == Condition::EQ &&
+         curt->cells_count < range->cfg->block_cells() &&
+         curt->size_bytes() < range->cfg->block_size() &&
+         last.cells_count < range->cfg->block_cells() &&
+         last.size_bytes() < range->cfg->block_size() ) ) ) {
       if(groups.back().size() < vol) {
         need -= groups.back().size();
         groups.back().clear();
