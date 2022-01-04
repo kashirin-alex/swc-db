@@ -24,6 +24,9 @@ class Flags {
   constexpr static const uint8_t ONLY_KEYS          = 0x08;
   constexpr static const uint8_t ONLY_DELETES       = 0x10;
 
+  constexpr static const uint8_t MASK_ONLY_DELETES  = 0xff - ONLY_DELETES;
+
+
   constexpr SWC_CAN_INLINE
   explicit Flags() noexcept
                 : limit(0), offset(0),
@@ -65,8 +68,7 @@ class Flags {
 
   constexpr SWC_CAN_INLINE
   void clear_only_deletes() noexcept {
-    if(is_only_deletes())
-      options ^= ONLY_DELETES;
+    options &= MASK_ONLY_DELETES;
   }
 
   constexpr SWC_CAN_INLINE

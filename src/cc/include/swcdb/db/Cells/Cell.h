@@ -82,7 +82,11 @@ constexpr const uint8_t HAVE_REVISION  =  0x10;
 
 constexpr const uint8_t OP_EQUAL = 0x01;
 
-constexpr const uint8_t MASK_HAVE_ENCODER  =  0xff - HAVE_ENCODER;
+constexpr const uint8_t MASK_TS_DESC        =  0xff - TS_DESC;
+constexpr const uint8_t MASK_HAVE_ENCODER   =  0xff - HAVE_ENCODER;
+constexpr const uint8_t MASK_REV_IS_TS      =  0xff - REV_IS_TS;
+constexpr const uint8_t MASK_HAVE_TIMESTAMP =  0xff - HAVE_TIMESTAMP;
+constexpr const uint8_t MASK_HAVE_REVISION  =  0xff - HAVE_REVISION;
 
 
 class Cell final {
@@ -165,8 +169,8 @@ class Cell final {
   void set_time_order_desc(bool desc) noexcept {
     if(desc)
       control |= TS_DESC;
-    else if(control & TS_DESC)
-      control ^= TS_DESC;
+    else
+      control &= MASK_TS_DESC;
   }
 
   constexpr SWC_CAN_INLINE
@@ -183,10 +187,9 @@ class Cell final {
   constexpr SWC_CAN_INLINE
   void set_timestamp_null() noexcept {
     timestamp = DB::Cells::TIMESTAMP_NULL;
-    if(control & HAVE_TIMESTAMP)
-      control ^= HAVE_TIMESTAMP;
+    control &= MASK_HAVE_TIMESTAMP;
     if(control & REV_IS_TS) {
-      control ^= REV_IS_TS;
+      control &= MASK_REV_IS_TS;
       revision = DB::Cells::TIMESTAMP_AUTO;
     }
   }
@@ -194,10 +197,9 @@ class Cell final {
   constexpr SWC_CAN_INLINE
   void set_timestamp_auto() noexcept {
     timestamp = DB::Cells::TIMESTAMP_AUTO;
-    if(control & HAVE_TIMESTAMP)
-      control ^= HAVE_TIMESTAMP;
+    control &= MASK_HAVE_TIMESTAMP;
     if(control & REV_IS_TS) {
-      control ^= REV_IS_TS;
+      control &= MASK_REV_IS_TS;
       revision = DB::Cells::TIMESTAMP_AUTO;
     }
   }
@@ -206,17 +208,15 @@ class Cell final {
   void set_timestamp_with_rev_is_ts(int64_t ts) noexcept {
     set_timestamp(ts);
     revision = timestamp;
+    control &= MASK_HAVE_REVISION;
     control |= REV_IS_TS;
-    if(control & HAVE_REVISION)
-      control ^= HAVE_REVISION;
   }
 
   constexpr SWC_CAN_INLINE
   void set_revision(int64_t ts) noexcept {
     revision = ts;
+    control &= MASK_REV_IS_TS;
     control |= HAVE_REVISION;
-    if(control & REV_IS_TS)
-      control ^= REV_IS_TS;
   }
 
   SWC_CAN_INLINE
