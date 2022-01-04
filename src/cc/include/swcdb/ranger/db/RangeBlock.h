@@ -98,7 +98,7 @@ class Block final {
                     uint32_t revs, size_t avail,
                     bool& was_splitted, bool synced=false);
 
-  bool splitter();
+  bool splitter(bool loaded);
 
   ScanState scan(const ReqScan::Ptr& req);
 

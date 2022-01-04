@@ -273,40 +273,6 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
 }
 
 
-bool Mutable::split(Mutable& cells, bool loaded) {
-  auto it_chk = get<ConstIterator>(_size / 2);
-  if(!it_chk)
-    return false;
-  const DB::Cell::Key& from_key = it_chk.item()->key;
-  bool from_set = false;
-  Iterator it_start = get<Iterator>();
-  Cell* cell;
-  for(auto it = get<Iterator>(from_key); it; ++it) {
-    cell = it.item();
-
-    if(!from_set) {
-      if(DB::KeySeq::compare(key_seq, cell->key, from_key) == Condition::GT)
-        continue;
-      if(_container.front()->key.equal(cell->key)) // sanity-check
-        return false;
-      it_start = it;
-      from_set = true;
-      if(!loaded)
-        break;
-    }
-    _remove(*cell);
-    if(cell->has_expired(ttl))
-      delete cell;
-    else
-      cells.add_sorted(cell);
-  }
-  if(!from_set)
-    return false;
-
-  _remove(it_start, _size, !loaded);
-  return true;
-}
-
 void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
                           size_t& offset) {
   bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;

@@ -50,22 +50,30 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
     commitlog.cells_lock();
 
     for(DB::Cells::Cell updated_cell; remain; ) {
-      updated_cell.read(&ptr, &remain);
+      try {
+        updated_cell.read(&ptr, &remain);
 
-      updated_cell.value = spec.updating->value;
-      updated_cell.vlen = spec.updating->vlen;
+        updated_cell.value = spec.updating->value;
+        updated_cell.vlen = spec.updating->vlen;
 
-      auto ts = Time::now_ns();
-      if(auto_ts) {
-        updated_cell.set_timestamp_with_rev_is_ts(ts);
-      } else {
-        if(set_ts)
-          updated_cell.set_timestamp(spec.updating->timestamp);
-        updated_cell.set_revision(ts);
+        auto ts = Time::now_ns();
+        if(auto_ts) {
+          updated_cell.set_timestamp_with_rev_is_ts(ts);
+        } else {
+          if(set_ts)
+            updated_cell.set_timestamp(spec.updating->timestamp);
+          updated_cell.set_revision(ts);
+        }
+
+        commitlog._add(updated_cell, &log_offset_it_hint, &log_offset_hint);
+        blk_cells.add_raw(updated_cell, &blk_offset_hint);
+
+      } catch(...) {
+        const Error::Exception& e = SWC_CURRENT_EXCEPTION("Bad Select with Update");
+        commitlog.cells_unlock();
+        commitlog.commit();
+        throw e;
       }
-
-      commitlog._add(updated_cell, &log_offset_it_hint, &log_offset_hint);
-      blk_cells.add_raw(updated_cell, &blk_offset_hint);
     }
 
     commitlog.cells_unlock();

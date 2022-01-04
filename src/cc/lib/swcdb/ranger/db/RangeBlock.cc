@@ -173,8 +173,10 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
     Core::ScopedLock lock(m_mutex);
     if(rev != m_split_rev && !_is_in_end(cell.key))
       return false; // split-could-happen (blk is now next)
-    m_cells.add_raw(cell);
-    splitter();
+    if(loaded()) {
+      m_cells.add_raw(cell);
+      splitter(true);
+    }
   }
   return true;
 }
@@ -186,7 +188,7 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
     for(auto cells : vec_cells) {
       if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
          break;
-      splitter();
+      splitter(false);
     }
     if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
       ssize_t sz = m_cells.size_of_internal();
@@ -236,7 +238,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
       ? m_cells.add_sorted(cell)
       : m_cells.add_raw(cell, &offset_hint);
 
-    if(!(++added % 1000) && splitter()) {
+    if(!(++added % 1000) && splitter(false)) {
       was_splitted = true;
       offset_hint = 0;
     }
@@ -259,8 +261,8 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
 }
 
 SWC_CAN_INLINE
-bool Block::splitter() {
-  return _need_split() && blocks->_split(ptr(), false);
+bool Block::splitter(bool loaded) {
+  return _need_split() && blocks->_split(ptr(), loaded);
 }
 
 Block::ScanState Block::scan(const ReqScan::Ptr& req) {
@@ -349,7 +351,10 @@ Block::Ptr Block::_split(bool loaded) {
     blocks,
     loaded ? State::LOADED : State::NONE
   );
-  if(!m_cells.split(blk->m_cells, loaded)) {
+  if(!m_cells.split(blk->m_cells,
+                    blocks->range->cfg->block_cells(),
+                    blocks->range->cfg->block_size(),
+                    loaded)) {
     delete blk;
     return nullptr;
   }

@@ -545,25 +545,67 @@ class Mutable final {
 
 
   SWC_CAN_INLINE
-  bool can_split() const noexcept {
-    return _container.size() > 1;
-  }
+  bool split(Mutable& cells, size_t count, size_t bytes, bool loaded) {
+    if(_size < 2 || (count > _size && bytes > _bytes))
+      return false;
 
-  bool split(Mutable& cells, bool loaded);
-
-
-  SWC_CAN_INLINE
-  void split(Mutable& cells) {
-    size_t split_at = _container.size() / 2;
-    if(!split_at)
-      return;
-    cells.free();
-    _container.split(split_at, cells._container);
-    for(auto it = cells.get<ConstIterator>(); it; ++it) {
-      cells._add(*it.item());
+    if(_container.size() > 1) { // try container split
+      size_t split_at = _container.size() / 2;
+      for(auto it = _container.cbegin() + split_at - 1; ; ++it) {
+        auto it_nxt = it + 1;
+        if(!it->back()->key.equal(it_nxt->front()->key)) {
+          _container.split(split_at, cells._container);
+          for(auto it_cell = cells.get<ConstIterator>(); it_cell; ++it_cell) {
+            cells._add(*it_cell.item());
+          }
+          _size -= cells._size;
+          _bytes -= cells._bytes;
+          if(!loaded)
+            cells.free();
+          return true;
+        }
+        if(++split_at == _container.size())
+          break;
+      }
     }
-    _size -= cells._size;
-    _bytes -= cells._bytes;
+
+    if(!count)
+      count = _size / 2;
+    if(!bytes)
+      bytes = _bytes / 2;
+    size_t chk_size = 0;
+    size_t chk_bytes = 0;
+    bool found_at = false;
+    auto it = get<Iterator>();
+    Iterator it_at = get<Iterator>();
+    for(Cell* cell; it; ) {
+      cell = it.item();
+      ++it;
+      if(!it)
+        break;
+      ++chk_size;
+      chk_bytes += cell->encoded_length();
+      if((chk_size >= count || chk_bytes >= bytes) &&
+         !cell->key.equal(it.item()->key)) {
+        it_at = it;
+        found_at = true;
+        break;
+      }
+    }
+    if(!found_at)
+      return false;
+
+    for(; it; ++it) {
+      if(!loaded || it.item()->has_expired(ttl)) {
+        delete it.item();
+      } else {
+        cells.add_sorted(it.item());
+      }
+    }
+    it_at.remove(_size - chk_size);
+    _size = chk_size;
+    _bytes = chk_bytes;
+    return true;
   }
 
 

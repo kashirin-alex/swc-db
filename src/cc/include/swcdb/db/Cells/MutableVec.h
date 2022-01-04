@@ -118,9 +118,12 @@ void MutableVec::free() noexcept {
 
 SWC_CAN_INLINE
 bool MutableVec::split(Mutable& cells, MutableVec::const_iterator it) {
-  if(cells.size() >= split_size && cells.can_split()) {
-    cells.split(**insert(it, new Mutable(key_seq, max_revs, ttl, type)));
-    return true;
+  if(cells.size() >= split_size && !cells.has_one_key()) {
+    Mutable next_cells(key_seq, max_revs, ttl, type);
+    if(cells.split(next_cells, split_size, 0, true)) {
+      insert(it, new Mutable(std::move(next_cells)));
+      return true;
+    }
   }
   return false;
 }

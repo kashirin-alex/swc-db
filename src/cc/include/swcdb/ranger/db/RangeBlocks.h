@@ -68,7 +68,7 @@ class Blocks final {
 
   void scan(ReqScan::Ptr req, Block::Ptr blk_ptr = nullptr);
 
-  bool _split(Block::Ptr blk, bool loaded=true);
+  bool _split(Block::Ptr blk, bool loaded);
 
   size_t cells_count();
 
