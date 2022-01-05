@@ -53,17 +53,8 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
   void add(const DB::Cells::Cell& cell);
 
   SWC_CAN_INLINE
-  void cells_lock() noexcept {
-    _again: try {
-      m_mutex_cells.lock();
-    } catch(...) {
-      goto _again;
-    }
-  }
-
-  SWC_CAN_INLINE
-  void cells_unlock() noexcept {
-    m_mutex_cells.unlock();
+  std::shared_mutex& cells_mutex() noexcept {
+    return m_mutex_cells;
   }
 
   SWC_CAN_INLINE

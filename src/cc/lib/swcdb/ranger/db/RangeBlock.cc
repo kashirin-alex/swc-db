@@ -183,23 +183,20 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
 
 SWC_CAN_INLINE
 void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
-  if(!vec_cells.empty()) {
-    Core::ScopedLock lock(m_mutex);
-    for(auto cells : vec_cells) {
-      if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
-         break;
-      splitter(false);
-    }
-    if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
-      ssize_t sz = m_cells.size_of_internal();
-      Env::Rgr::res().adj_mem_releasable(sz - m_releasable_bytes.exchange(sz));
-    }
-    Core::MutexSptd::scope lock_state(m_mutex_state);
-    m_state.store(State::LOADED);
-  } else {
-    Core::MutexSptd::scope lock_state(m_mutex_state);
-    m_state.store(State::LOADED);
+  Core::ScopedLock lock(m_mutex);
+  for(auto cells : vec_cells) {
+    if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
+       break;
+    splitter(false);
   }
+  splitter(true);
+
+  if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
+    ssize_t sz = m_cells.size_of_internal();
+    Env::Rgr::res().adj_mem_releasable(sz - m_releasable_bytes.exchange(sz));
+  }
+  Core::MutexSptd::scope lock_state(m_mutex_state);
+  m_state.store(State::LOADED);
 }
 
 SWC_SHOULD_NOT_INLINE
@@ -346,6 +343,8 @@ Block::Ptr Block::split(bool loaded) {
 }
 
 Block::Ptr Block::_split(bool loaded) {
+  if(loaded && Env::Rgr::res().need_ram(m_cells.size_of_internal()/2))
+    loaded = false;
   Block::Ptr blk = Block::make(
     DB::Cells::Interval(m_cells.key_seq),
     blocks,

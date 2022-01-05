@@ -36,7 +36,7 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
   void update(DB::Cells::Mutable& blk_cells) override {
     if(cells.empty())
       return;
-
+      
     const bool auto_ts(spec.updating->timestamp == DB::Cells::TIMESTAMP_AUTO);
     const bool set_ts(spec.updating->timestamp != DB::Cells::TIMESTAMP_NULL);
 
@@ -46,11 +46,15 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
     size_t log_offset_it_hint = 0;
     size_t log_offset_hint = 0;
     size_t blk_offset_hint = 0;
-    auto& commitlog = range->blocks.commitlog;
-    commitlog.cells_lock();
 
-    for(DB::Cells::Cell updated_cell; remain; ) {
-      try {
+    auto& commitlog = range->blocks.commitlog;
+    {
+      Core::ScopedLock commitlog_lock(commitlog.cells_mutex());
+
+      if(expired(remain/100000))
+        throw Error::Exception(Error::REQUEST_TIMEOUT, "");
+
+      for(DB::Cells::Cell updated_cell; remain; ) {
         updated_cell.read(&ptr, &remain);
 
         updated_cell.value = spec.updating->value;
@@ -67,18 +71,10 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
 
         commitlog._add(updated_cell, &log_offset_it_hint, &log_offset_hint);
         blk_cells.add_raw(updated_cell, &blk_offset_hint);
-
-      } catch(...) {
-        const Error::Exception& e = SWC_CURRENT_EXCEPTION("Bad Select with Update");
-        commitlog.cells_unlock();
-        commitlog.commit();
-        throw e;
       }
     }
-
-    commitlog.cells_unlock();
-
     commitlog.commit();
+
   }
 
 };
