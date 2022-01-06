@@ -81,7 +81,8 @@ class Readers final : private Core::Vector<Read::Ptr> {
 
   void get_key_end(DB::Cell::Key& key) const;
 
-  bool SWC_PURE_FUNC need_compaction(size_t cs_sz, size_t blk_size) const;
+  bool SWC_PURE_FUNC need_compaction(size_t cs_max, size_t cs_sz,
+                                     size_t blk_size) const;
 
   uint32_t SWC_PURE_FUNC encoded_length() const;
 

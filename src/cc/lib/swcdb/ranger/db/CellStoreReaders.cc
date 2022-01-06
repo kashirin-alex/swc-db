@@ -128,7 +128,16 @@ void Readers::get_key_end(DB::Cell::Key& key) const {
   return key.copy(back()->key_end);
 }
 
-bool Readers::need_compaction(size_t cs_sz, size_t blk_size) const {
+bool Readers::need_compaction(size_t cs_max, size_t cs_sz,
+                              size_t blk_size) const {
+  if(cs_max > 1 && size() > cs_max) {
+    if(get_cell_revs() == 1)
+      return true;
+    for(auto it = cbegin() + 1; it < cend(); ++it) {
+      if(!(*it)->prev_key_end.equal((*it)->interval.key_begin))
+        return true;
+    }
+  }
   size_t  sz;
   size_t  sz_enc;
   for(auto cs : *this) {
