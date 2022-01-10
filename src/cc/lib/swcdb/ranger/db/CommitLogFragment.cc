@@ -418,7 +418,7 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
         cell.read(&buf, &remain);
         synced
           ? cells.add_sorted(cell)
-          : cells.add_raw(cell, &offset_it_hint, &offset_hint);
+          : cells.add_raw(cell, &offset_it_hint, &offset_hint, false);
 
       } } catch(...) {
         SWC_LOG_OUT(LOG_ERROR,

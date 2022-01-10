@@ -16,7 +16,7 @@ namespace Cells = SWC::DB::Cells;
 void op(Cells::Mutable::Ptr cells_mutable,
         int& truclations, int64_t& ts_total,
         std::shared_ptr<SWC::Common::Stats::Stat> latency_mutable,
-        int num_revs, bool reverse, int num_cells,
+        int num_revs, bool finalized, bool reverse, int num_cells,
         bool gen_historic, Cells::Flag flag,
         SWC::DB::Types::Column typ, bool time_order_desc) {
 
@@ -57,7 +57,7 @@ void op(Cells::Mutable::Ptr cells_mutable,
       took = SWC::Time::now_ns();
 
       //cells_mutable->insert(0, cell);
-      cells_mutable->add_raw(cell);
+      cells_mutable->add_raw(cell, finalized);
       //cells_mutable->push_back(cell);
 
       took = SWC::Time::now_ns()-took;
@@ -71,18 +71,28 @@ void op(Cells::Mutable::Ptr cells_mutable,
       }
   }
   }
+  if(!finalized) {
+    std::cout << " finalize_raw:start" << std::flush;
+    took = SWC::Time::now_ns();
+    cells_mutable->finalize_raw();
+    took = SWC::Time::now_ns() - took;
+    ts_total += took;
+    std::cout << " finalize_raw:took=" << took << std::endl;
+  }
 }
 
 
 
 void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
            size_t num_cells = 1, int num_revs = 1, int max_versions = 1,
+           bool finalized = true,
            bool reverse=false, bool time_order_desc=false,
            bool gen_historic=false) {
   std::cout << "\nchecking with seq=" << SWC::DB::Types::to_string(key_seq)
                            << " type=" << SWC::DB::Types::to_string(typ)
                            << " cells=" << num_cells
                            << " revs=" << num_revs
+                           << " finalized=" << finalized
                            << " reverse=" << reverse
                            << " max_versions=" << max_versions
                            << " time_order_desc=" << time_order_desc
@@ -99,7 +109,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
       max_versions, 0, typ));
 
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic,
+     num_revs, finalized, reverse, num_cells, gen_historic,
      Cells::INSERT, typ, time_order_desc);
   ///
 
@@ -190,11 +200,11 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
   ts_total = 0;
   truclations = 0;
   op(cells_mutable, truclations, ts_total, latency_mutable,
-     num_revs, reverse, num_cells, gen_historic,
+     num_revs, finalized, reverse, num_cells, gen_historic,
      Cells::DELETE_LE, typ, time_order_desc);
   ///
 
-  if(cells_mutable->size() != num_cells) {
+  if(cells_mutable->size() != (SWC::DB::Types::is_counter(typ) && !finalized ? 0 : num_cells)) {
     cells_mutable->print(std::cerr << "\n", true);
     std::cerr << "\nDELETE SIZE NOT AS EXPECTED, "
               << "expected(" << num_cells
@@ -274,6 +284,11 @@ int main() {
     SWC::DB::Types::KeySeq::FC_VOLUME
   };
 
+  std::vector<bool> finalization = {
+    true,
+    false
+  };
+
 
   SWC::Time::Measure_ns tracker_all;
 
@@ -286,17 +301,23 @@ int main() {
           else if(version < max_version)
             continue;
           for(auto seq : sequences) {
-            SWC::Time::Measure_ns tracker;
+            for(auto finalized : finalization) {
+              if(!SWC::DB::Types::is_counter(column_type) && !finalized)
+                continue;
 
-            check(seq, column_type, cell_number, version, max_version);
+              SWC::Time::Measure_ns tracker;
 
-            std::cout << "\n # check with seq=" << SWC::DB::Types::to_string(seq)
-                      << " type=" << SWC::DB::Types::to_string(column_type)
-                      << " cells=" << cell_number
-                      << " revs=" << version
-                      << " max_version=" << max_version
-                      << " took=" << tracker.elapsed()
-                      << "\n";
+              check(seq, column_type, cell_number, version, max_version, finalized);
+
+              std::cout << "\n # check with seq=" << SWC::DB::Types::to_string(seq)
+                        << " type=" << SWC::DB::Types::to_string(column_type)
+                        << " cells=" << cell_number
+                        << " revs=" << version
+                        << " max_version=" << max_version
+                        << " finalized=" << finalized
+                        << " took=" << tracker.elapsed()
+                        << "\n";
+            }
           }
         }
       }

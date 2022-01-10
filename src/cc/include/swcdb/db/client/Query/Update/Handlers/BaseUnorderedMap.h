@@ -64,7 +64,8 @@ class BaseUnorderedMap
 
   bool exists(const cid_t cid) noexcept;
 
-  void add(const cid_t cid, const DB::Cells::Cell& cell);
+  void add(const cid_t cid, const DB::Cells::Cell& cell,
+           bool finalized=false);
 
   ColumnMutable::Ptr get(const cid_t cid) noexcept;
 

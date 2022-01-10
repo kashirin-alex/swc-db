@@ -51,8 +51,8 @@ class MutableVec final : private Core::Vector<Mutable*> {
   void free() noexcept;
 
   void configure(uint32_t split,
-                 const uint32_t revs=1, const uint64_t ttl_ns=0,
-                 const Types::Column typ=Types::Column::PLAIN) noexcept;
+                 const uint32_t revs, const uint64_t ttl_ns,
+                 const Types::Column typ, bool finalized) noexcept;
 
   SWC_CAN_INLINE
   bool empty() const noexcept {
@@ -87,9 +87,10 @@ class MutableVec final : private Core::Vector<Mutable*> {
 
   void add_sorted(const Cell& cell);
 
-  void add_raw(const Cell& cell);
+  void add_raw(const Cell& cell, bool finalized);
 
-  void add_raw(const Cell& cell, size_t* offset_itp, size_t* offsetp);
+  void add_raw(const Cell& cell,
+               size_t* offset_itp, size_t* offsetp, bool finalized);
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
                       Interval& intval, uint32_t threshold,

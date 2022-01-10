@@ -39,7 +39,8 @@ void Fragments::schema_update() {
     range->cfg->block_cells() * 2,
     range->cfg->cell_versions(),
     range->cfg->cell_ttl(),
-    range->cfg->column_type()
+    range->cfg->column_type(),
+    false
   );
 }
 
@@ -47,7 +48,7 @@ void Fragments::schema_update() {
 SWC_CAN_INLINE
 void Fragments::add(const DB::Cells::Cell& cell) {
   Core::ScopedLock lock(m_mutex_cells);
-  m_cells.add_raw(cell);
+  m_cells.add_raw(cell, false);
 }
 
 void Fragments::commit() noexcept {

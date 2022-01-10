@@ -36,7 +36,7 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
   void update(DB::Cells::Mutable& blk_cells) override {
     if(cells.empty())
       return;
-      
+
     const bool auto_ts(spec.updating->timestamp == DB::Cells::TIMESTAMP_AUTO);
     const bool set_ts(spec.updating->timestamp != DB::Cells::TIMESTAMP_NULL);
 
@@ -70,7 +70,7 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
         }
 
         commitlog._add(updated_cell, &log_offset_it_hint, &log_offset_hint);
-        blk_cells.add_raw(updated_cell, &blk_offset_hint);
+        blk_cells.add_raw(updated_cell, &blk_offset_hint, true);
       }
     }
     commitlog.commit();

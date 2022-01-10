@@ -58,7 +58,8 @@ void Block::schema_update() noexcept {
   m_cells.configure(
     blocks->range->cfg->cell_versions(),
     blocks->range->cfg->cell_ttl(),
-    blocks->range->cfg->column_type()
+    blocks->range->cfg->column_type(),
+    loaded()
   );
 }
 
@@ -174,7 +175,7 @@ bool Block::add_logged(const DB::Cells::Cell& cell) {
     if(rev != m_split_rev && !_is_in_end(cell.key))
       return false; // split-could-happen (blk is now next)
     if(loaded()) {
-      m_cells.add_raw(cell);
+      m_cells.add_raw(cell, true);
       splitter(true);
     }
   }
@@ -185,10 +186,11 @@ SWC_CAN_INLINE
 void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
   Core::ScopedLock lock(m_mutex);
   for(auto cells : vec_cells) {
-    if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells))
+    if(!cells->scan_after(m_prev_key_end, m_key_end, m_cells, false))
        break;
     splitter(false);
   }
+  m_cells.finalize_raw();
   splitter(true);
 
   if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid)) {
@@ -233,7 +235,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
 
     synced
       ? m_cells.add_sorted(cell)
-      : m_cells.add_raw(cell, &offset_hint);
+      : m_cells.add_raw(cell, &offset_hint, false);
 
     if(!(++added % 1000) && splitter(false)) {
       was_splitted = true;

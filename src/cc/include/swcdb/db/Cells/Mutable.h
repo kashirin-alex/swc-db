@@ -144,8 +144,8 @@ class Mutable final {
     }
   }
 
-  void configure(const uint32_t revs=1, const uint64_t ttl_ns=0,
-                 const Types::Column typ=Types::Column::PLAIN);
+  void configure(const uint32_t revs, const uint64_t ttl_ns,
+                 const Types::Column typ, bool finalized);
 
   SWC_CAN_INLINE
   ~Mutable() noexcept {
@@ -167,7 +167,7 @@ class Mutable final {
   void reset(const uint32_t revs=1, const uint64_t ttl_ns=0,
              const Types::Column typ=Types::Column::PLAIN) {
     free();
-    configure(revs, ttl_ns, typ);
+    configure(revs, ttl_ns, typ, false);
   }
 
 
@@ -433,20 +433,21 @@ class Mutable final {
   }
 
   SWC_CAN_INLINE
-  void add_raw(const DynamicBuffer& cells) {
+  void add_raw(const DynamicBuffer& cells, bool finalized) {
     size_t offset_hint = 0;
     const uint8_t* ptr = cells.base;
     size_t remain = cells.fill();
     for(Cell cell; remain; ) {
       cell.read(&ptr, &remain);
-      add_raw(cell, &offset_hint);
+      add_raw(cell, &offset_hint, finalized);
     }
   }
 
   SWC_CAN_INLINE
   void add_raw(const DynamicBuffer& cells, const DB::Cell::Key& upto_key,
                                            const DB::Cell::Key& from_key,
-                                           uint32_t skip, bool malformed) {
+                                           uint32_t skip, bool malformed,
+                                           bool finalized) {
     size_t offset_hint = 0;
     const uint8_t* ptr = cells.base;
     size_t remain = cells.fill();
@@ -456,7 +457,7 @@ class Mutable final {
          (!upto_key.empty() &&
           DB::KeySeq::compare(key_seq, upto_key, cell.key)!=Condition::GT) ||
          DB::KeySeq::compare(key_seq, from_key, cell.key)==Condition::GT) ) {
-        add_raw(cell, &offset_hint);
+        add_raw(cell, &offset_hint, finalized);
       } else {
         --skip;
       }
@@ -464,24 +465,40 @@ class Mutable final {
   }
 
   SWC_CAN_INLINE
-  void add_raw(const Cell& e_cell) {
+  void add_raw(const Cell& e_cell, bool finalized) {
     size_t offset = 0;
-    add_raw(e_cell, &offset);
+    add_raw(e_cell, &offset, finalized);
   }
 
   SWC_CAN_INLINE
-  void add_raw(const Cell& e_cell, size_t* offsetp) {
+  void add_raw(const Cell& e_cell, size_t* offsetp, bool finalized) {
     Iterator it = get<Iterator>(e_cell.key, *offsetp);
+    add_raw(e_cell, offsetp, it, finalized);
+  }
 
+  SWC_CAN_INLINE
+  void add_raw(const Cell& e_cell, size_t* offsetp, Iterator& it,
+               bool finalized) {
     e_cell.removal()
       ? _add_remove(e_cell, it, *offsetp)
       : (Types::is_counter(type)
-          ? _add_counter(e_cell, it, *offsetp)
+          ? (finalized
+              ? _add_counter(e_cell, it, *offsetp)
+              : _add_unfinalized(e_cell, it, *offsetp))
           : (max_revs == 1
               ? _add_plain_version_single(e_cell, it, *offsetp)
               : _add_plain_version_multi(e_cell, it, *offsetp)
             )
         );
+  }
+
+  SWC_CAN_INLINE
+  void finalize_raw() {
+    if(size() > 1) {
+      if(Types::is_counter(type)) {
+        _finalize_counter();
+      }
+    }
   }
 
   void write_and_free(DynamicBuffer& cells, uint32_t& cell_count,
@@ -523,7 +540,7 @@ class Mutable final {
 
   SWC_CAN_INLINE
   bool scan_after(const DB::Cell::Key& after, const DB::Cell::Key& to,
-                  Mutable& cells) const {
+                  Mutable& cells, bool finalized) const {
     if(!_size)
       return false;
 
@@ -538,7 +555,7 @@ class Mutable final {
           DB::KeySeq::compare(key_seq, after, cell->key) != Condition::GT))
         continue;
 
-      cells.add_raw(*cell);
+      cells.add_raw(*cell, finalized);
     }
     return true;
   }
@@ -633,13 +650,17 @@ class Mutable final {
 
   void _add_remove(const Cell& e_cell, Iterator& it, size_t& offset);
 
+  void _add_unfinalized(const Cell& e_cell, Iterator& it, size_t& offset);
+
   void _add_plain_version_single(const Cell& e_cell,
                                  Iterator& it, size_t& offset);
 
   void _add_plain_version_multi(const Cell& e_cell,
-                                 Iterator& it, size_t& offset);
+                                Iterator& it, size_t& offset);
 
   void _add_counter(const Cell& e_cell, Iterator& it, size_t& offset);
+
+  void _finalize_counter();
 
   constexpr SWC_CAN_INLINE
   void _add(const Cell& cell) noexcept {

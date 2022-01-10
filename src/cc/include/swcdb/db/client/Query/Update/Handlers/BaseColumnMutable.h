@@ -77,9 +77,11 @@ class ColumnMutable : public Base::Column {
                      const DB::Cell::Key& from_key,
                      uint32_t skip, bool malformed) override;
 
-  virtual size_t add(const DynamicBuffer& cells) override;
+  virtual size_t add(const DynamicBuffer& cells,
+                     bool finalized=false) override;
 
-  virtual void add(const DB::Cells::Cell& cell) override;
+  virtual void add(const DB::Cells::Cell& cell,
+                   bool finalized=false) override;
 
   virtual bool get_buff(const DB::Cell::Key& key_start,
                         const DB::Cell::Key& key_end,

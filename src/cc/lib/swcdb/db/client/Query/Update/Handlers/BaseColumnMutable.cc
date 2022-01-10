@@ -64,20 +64,20 @@ size_t ColumnMutable::add(const DynamicBuffer& cells,
                           bool malformed) {
   Core::MutexSptd::scope lock(m_mutex);
   auto sz = m_cells.size();
-  m_cells.add_raw(cells, upto_key, from_key, skip, malformed);
+  m_cells.add_raw(cells, upto_key, from_key, skip, malformed, false);
   return m_cells.size() - sz;
 }
 
-size_t ColumnMutable::add(const DynamicBuffer& cells) {
+size_t ColumnMutable::add(const DynamicBuffer& cells, bool finalized) {
   Core::MutexSptd::scope lock(m_mutex);
   auto sz = m_cells.size();
-  m_cells.add_raw(cells);
+  m_cells.add_raw(cells, finalized);
   return m_cells.size() - sz;
 }
 
-void ColumnMutable::add(const DB::Cells::Cell& cell) {
+void ColumnMutable::add(const DB::Cells::Cell& cell, bool finalized) {
   Core::MutexSptd::scope lock(m_mutex);
-  m_cells.add_raw(cell);
+  m_cells.add_raw(cell, finalized);
 }
 
 bool ColumnMutable::get_buff(const DB::Cell::Key& key_start,

@@ -60,7 +60,7 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
   SWC_CAN_INLINE
   void _add(const DB::Cells::Cell& cell,
             size_t* offset_itp, size_t* offsetp) {
-    m_cells.add_raw(cell, offset_itp, offsetp);
+    m_cells.add_raw(cell, offset_itp, offsetp, false);
   }
 
   void commit() noexcept;

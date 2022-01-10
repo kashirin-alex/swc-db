@@ -56,9 +56,9 @@ class Base : public std::enable_shared_from_this<Base> {
                        const DB::Cell::Key& from_key,
                        uint32_t skip, bool malformed) = 0;
 
-    virtual size_t add(const DynamicBuffer& cells) = 0;
+    virtual size_t add(const DynamicBuffer& cells, bool finalized=false) = 0;
 
-    virtual void add(const DB::Cells::Cell& cell) = 0;
+    virtual void add(const DB::Cells::Cell& cell, bool finalized=false) = 0;
 
     virtual bool get_buff(const DB::Cell::Key& key_start,
                           const DB::Cell::Key& key_end,

@@ -11,8 +11,8 @@ namespace SWC { namespace DB { namespace Cells {
 
 
 void Mutable::configure(const uint32_t revs, const uint64_t ttl_ns,
-                        const Types::Column typ) {
-  bool chk_revs = max_revs != revs;
+                        const Types::Column typ, bool finalized) {
+  bool chk_revs = max_revs != revs && (!Types::is_counter(type) || finalized);
   bool chk_ttl = ttl != ttl_ns;
   type = typ;
   ttl = ttl_ns;
@@ -275,7 +275,6 @@ void Mutable::scan_test_use(const Specs::Interval& specs,
 
 void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
                           size_t& offset) {
-  bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
   for(Cell* cell; it; ) {
     if((cell = it.item())->has_expired(ttl)) {
       _remove(it);
@@ -292,6 +291,7 @@ void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
         return;
       }
       default: {
+        bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
         bool rev_set = cell->get_revision() != TIMESTAMP_AUTO;
         if(chk_rev && (
             cell->get_revision() == e_cell.get_revision()
@@ -315,6 +315,51 @@ void Mutable::_add_remove(const Cell& e_cell, Mutable::Iterator& it,
   add_sorted(e_cell);
 }
 
+void Mutable::_add_unfinalized(const Cell& e_cell,
+                               Mutable::Iterator& it,
+                               size_t& offset) {
+  for(Cell* cell; it; ) {
+    if((cell = it.item())->has_expired(ttl)) {
+      _remove(it);
+      continue;
+    }
+    switch(DB::KeySeq::compare(key_seq, cell->key, e_cell.key)) {
+      case Condition::GT: {
+        ++it;
+        ++offset;
+        break;
+      }
+      case Condition::LT: {
+        _insert(it, e_cell);
+        return;
+      }
+      default: {
+        if(e_cell.get_revision() == TIMESTAMP_AUTO) {
+          ++it;
+          break;
+        }
+        if(cell->get_revision() != TIMESTAMP_AUTO) {
+          if(cell->get_revision() == e_cell.get_revision()) {
+            return;
+          }
+          if(e_cell.get_revision() > cell->get_revision()) {
+            ++it;
+            break;
+          }
+          if(cell->removal() && cell->is_removing(e_cell.get_timestamp())) {
+            return;
+          }
+        }
+        _insert(it, e_cell);
+        return;
+      }
+    }
+  }
+
+  add_sorted(e_cell);
+}
+
+
 void Mutable::_add_plain_version_single(const Cell& e_cell,
                                         Mutable::Iterator& it,
                                         size_t& offset) {
@@ -335,9 +380,15 @@ void Mutable::_add_plain_version_single(const Cell& e_cell,
       }
       default: {
         bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
-        if(!(chk_rev && cell->get_revision() == e_cell.get_revision()) &&
-           !(cell->removal() && cell->is_removing(e_cell.get_timestamp())) &&
-           (!chk_rev || e_cell.get_revision() > cell->get_revision())) {
+        if(cell->removal()) {
+          if(chk_rev &&
+             cell->get_revision() > e_cell.get_revision() &&
+             cell->is_removing(e_cell.get_timestamp()) )
+            return;
+          ++it;
+          break;
+        }
+        if(!chk_rev || e_cell.get_revision() > cell->get_revision()) {
           _adjust_copy(*cell, e_cell);
         }
         return;
@@ -378,7 +429,9 @@ void Mutable::_add_plain_version_multi(const Cell& e_cell,
       return;
 
     if(cell->removal()) {
-      if(cell->is_removing(e_cell.get_timestamp()))
+      if(chk_rev &&
+         cell->get_revision() > e_cell.get_revision() &&
+         cell->is_removing(e_cell.get_timestamp()) )
         return;
       ++it;
       continue;
@@ -414,10 +467,8 @@ void Mutable::_add_plain_version_multi(const Cell& e_cell,
   add_sorted(e_cell);
 }
 
-void Mutable::_add_counter(const Cell& e_cell,
-                           Mutable::Iterator& it,
+void Mutable::_add_counter(const Cell& e_cell, Mutable::Iterator& it,
                            size_t& offset) {
-  bool chk_rev = e_cell.get_revision() != TIMESTAMP_AUTO;
   for(Cell* cell; it; ) {
     if((cell = it.item())->has_expired(ttl)) {
       _remove(it);
@@ -434,20 +485,23 @@ void Mutable::_add_counter(const Cell& e_cell,
       }
       default: {
         if(cell->removal()) {
-          if((chk_rev && cell->get_revision() >= e_cell.get_revision()) ||
+          if(e_cell.get_revision() != TIMESTAMP_AUTO &&
+             cell->get_revision() > e_cell.get_revision() &&
              cell->is_removing(e_cell.get_timestamp()) )
             return;
           ++it;
-          continue;
+          break;
         }
 
-        uint8_t op_1;
-        int64_t eq_rev_1;
-        int64_t value_1 = cell->get_counter(op_1, eq_rev_1);
-        if(op_1 & OP_EQUAL) {
-          if(!(op_1 & HAVE_REVISION))
-            eq_rev_1 = cell->get_timestamp();
-          if(eq_rev_1 > e_cell.get_timestamp())
+        uint8_t op;
+        int64_t eq_rev;
+        int64_t value = cell->get_counter(op, eq_rev);
+        if(op & OP_EQUAL) {
+          if(eq_rev == TIMESTAMP_NULL &&
+             cell->get_timestamp() != TIMESTAMP_AUTO) {
+            eq_rev = cell->get_timestamp();
+          }
+          if(eq_rev > e_cell.get_timestamp())
             return;
         }
 
@@ -455,19 +509,26 @@ void Mutable::_add_counter(const Cell& e_cell,
         if(e_cell.get_counter(value_2) & OP_EQUAL) {
           _adjust_copy(*cell, e_cell);
         } else {
-          value_1 += value_2;
-          cell->set_counter(op_1, value_1, type, eq_rev_1);
-          cell->control = 0;
-          int64_t ts = cell->get_timestamp() > e_cell.get_timestamp()
-                     ? cell->get_timestamp() : e_cell.get_timestamp();
-          int64_t rev = cell->get_revision() > e_cell.get_revision()
-                      ? cell->get_revision() : e_cell.get_revision();
-          if(ts == rev) {
+          _bytes -= cell->encoded_length();
+          value += value_2;
+          cell->set_counter(op, value, type, eq_rev);
+          int64_t ts = (e_cell.get_timestamp() == TIMESTAMP_AUTO ||
+                        e_cell.get_timestamp() > cell->get_timestamp())
+                      ? e_cell.get_timestamp() : cell->get_timestamp();
+          int64_t rev =(e_cell.get_revision() == TIMESTAMP_AUTO ||
+                        e_cell.get_revision() > cell->get_revision())
+                      ? e_cell.get_revision() : cell->get_revision();
+          if(ts == TIMESTAMP_AUTO) {
+            cell->set_timestamp_auto();
+            if(rev != TIMESTAMP_AUTO)
+              cell->set_revision(rev);
+          } else if(ts == rev) {
             cell->set_timestamp_with_rev_is_ts(ts);
           } else {
             cell->set_timestamp(ts);
             cell->set_revision(rev);
           }
+          _bytes += cell->encoded_length();
         }
         return;
       }
@@ -478,10 +539,10 @@ void Mutable::_add_counter(const Cell& e_cell,
     bool no_value = type != Types::Column::COUNTER_I64;
     Cell* cell = new Cell(e_cell, no_value);
     if(no_value) {
-      uint8_t op_1;
-      int64_t eq_rev_1;
-      int64_t value_1 = e_cell.get_counter(op_1, eq_rev_1);
-      cell->set_counter(op_1, value_1, type, eq_rev_1);
+      uint8_t op;
+      int64_t eq_rev;
+      int64_t value = e_cell.get_counter(op, eq_rev);
+      cell->set_counter(op, value, type, eq_rev);
     }
     _add(*cell);
     it ? it.insert(cell) : _container.push_back(cell);
@@ -489,6 +550,153 @@ void Mutable::_add_counter(const Cell& e_cell,
 }
 
 
+void Mutable::_finalize_counter() {
+  Mutable  finalized_cells(key_seq, max_revs, ttl, type);
+  Iterator it = get<Iterator>();
+  Iterator agg_it(it);
+  Cell*    agg = nullptr;
+  bool     agg_state = false;
+  int64_t  agg_rev = 0;
+  int64_t  agg_ts = 0;
+  uint8_t  agg_op = 0;
+  int64_t  agg_eq_rev = 0;
+  int64_t  agg_value = 0;
+  for(Cell* cell; ;) {
+
+    if(!agg || agg_it == it) {
+      for(; agg_it &&
+            ((agg = agg_it.item())->has_expired(ttl) || agg->removal());
+          ++agg_it);
+      if(!agg_it)
+        break;
+      agg_state = false;
+      ++(it = agg_it);
+    }
+
+    if(!it || !agg->key.equal((cell = it.item())->key)) {
+      Cell* agged = new Cell(*agg, agg_state);
+      if(agg_state) {
+        if(agg_ts == agg_rev) {
+          agged->set_timestamp_with_rev_is_ts(agg_ts);
+        } else {
+          agged->set_timestamp(agg_ts);
+          agged->set_revision(agg_rev);
+        }
+        agged->set_counter(OP_EQUAL, agg_value, type, TIMESTAMP_NULL);
+      }
+      finalized_cells.add_sorted(agged);
+
+      if(!it)
+        break;
+      agg_it = it;
+      continue;
+    }
+
+    if(!cell->has_expired(ttl) && !cell->removal()) {
+      if(!agg_state) {
+        agg_rev = agg->get_revision();
+        agg_ts = agg->get_timestamp();
+        agg_value = agg->get_counter(agg_op, agg_eq_rev);
+        if(agg_eq_rev == TIMESTAMP_NULL)
+          agg_eq_rev = agg_ts;
+        agg_state = true;
+      }
+      uint8_t op;
+      int64_t eq_rev;
+      int64_t value = cell->get_counter(op, eq_rev);
+      if(eq_rev == TIMESTAMP_NULL)
+        eq_rev = cell->get_timestamp();
+
+      if(!(agg_op & OP_EQUAL) || eq_rev > agg_eq_rev) {
+        if(op & OP_EQUAL) {
+          agg_op = op;
+          agg_value = value;
+          agg_eq_rev = eq_rev;
+        } else {
+          agg_value += value;
+        }
+        if(agg_ts < cell->get_timestamp())
+          agg_ts = cell->get_timestamp();
+        agg_rev = cell->get_revision();
+      }
+    }
+    ++it;
+  }
+
+  *this = std::move(finalized_cells);
+}
+
+
+/* without temp "finalized_cells", remove from and keep the _container
+void Mutable::_finalize_counter() {
+  Iterator it = get<Iterator>();
+  Iterator agg_it(it);
+  Cell* agg = nullptr;
+  int64_t agg_rev;
+  int64_t agg_ts;
+  uint8_t agg_op;
+  int64_t agg_eq_rev;
+  int64_t agg_value;
+  Cell* cell;
+  for(size_t revs = 1; ;) {
+
+    if(!agg || agg_it == it) {
+      while((agg = agg_it.item())->has_expired(ttl) || agg->removal()) {
+        _remove(agg_it);
+        if(!agg_it)
+          return;
+      }
+      agg_rev = agg->get_revision();
+      agg_ts = agg->get_timestamp();
+      agg_value = agg->get_counter(agg_op, agg_eq_rev);
+      if(agg_eq_rev == TIMESTAMP_NULL)
+        agg_eq_rev = agg_ts;
+      ++(it = agg_it);
+    }
+
+    if(!it || !agg->key.equal((cell = it.item())->key)) {
+      ++agg_it;
+      if(revs > 1) {
+        if(agg_ts == agg_rev) {
+          agg->set_timestamp_with_rev_is_ts(agg_ts);
+        } else {
+          agged->set_timestamp(agg_ts);
+          agged->set_revision(agg_rev);
+        }
+        _remove(agg_it, --revs);
+        revs = 1;
+      }
+      agged->set_counter(OP_EQUAL, agg_value, type, TIMESTAMP_NULL);
+      if(!agg_it)
+        return;
+      it = agg_it;
+      continue;
+    }
+
+    if(!cell->has_expired(ttl) && !cell->removal()) {
+      uint8_t op;
+      int64_t eq_rev;
+      int64_t value = cell->get_counter(op, eq_rev);
+      if(eq_rev == TIMESTAMP_NULL)
+        eq_rev = cell->get_timestamp();
+
+      if(!(agg_op & OP_EQUAL) || eq_rev > agg_eq_rev) {
+        if(op & OP_EQUAL) {
+          agg_op = op;
+          agg_value = value;
+          agg_eq_rev = eq_rev;
+        } else {
+          agg_value += value;
+        }
+        agg_ts = cell->get_timestamp();
+        agg_rev = cell->get_revision();
+      }
+    }
+    ++revs;
+    ++it;
+  }
+}
+*/
 
 
 

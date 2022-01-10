@@ -85,7 +85,8 @@ bool BaseUnorderedMap::exists(const cid_t cid) noexcept{
   return find(cid) != cend();
 }
 
-void BaseUnorderedMap::add(const cid_t cid, const DB::Cells::Cell& cell) {
+void BaseUnorderedMap::add(const cid_t cid, const DB::Cells::Cell& cell,
+                           bool finalized) {
   ColumnMutable::Ptr col;
   {
     Core::MutexSptd::scope lock(m_mutex);
@@ -95,7 +96,7 @@ void BaseUnorderedMap::add(const cid_t cid, const DB::Cells::Cell& cell) {
                           cid);
     col = it->second;
   }
-  col->add(cell);
+  col->add(cell, finalized);
 }
 
 ColumnMutable::Ptr BaseUnorderedMap::get(cid_t cid) noexcept {

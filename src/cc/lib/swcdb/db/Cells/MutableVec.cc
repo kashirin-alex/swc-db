@@ -16,13 +16,13 @@ namespace SWC { namespace DB { namespace Cells {
 SWC_SHOULD_INLINE
 void MutableVec::configure(uint32_t split,
                            const uint32_t revs, const uint64_t ttl_ns,
-                           const Types::Column typ) noexcept {
+                           const Types::Column typ, bool finalized) noexcept {
   split_size = split;
   max_revs = revs;
   ttl = ttl_ns;
   type = typ;
   for(auto cells : *this)
-    cells->configure(max_revs, ttl, type);
+    cells->configure(max_revs, ttl, type, finalized);
 }
 
 void MutableVec::add_sorted(const Cell& cell) {
@@ -32,13 +32,13 @@ void MutableVec::add_sorted(const Cell& cell) {
   split(*back(), cend());
 }
 
-void MutableVec::add_raw(const Cell& cell) {
+void MutableVec::add_raw(const Cell& cell, bool finalized) {
   for(auto it = cbegin(); it != cend();) {
     Mutable* cells = *it;
     if(++it == cend() ||
        DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
-      cells->add_raw(cell);
+      cells->add_raw(cell, finalized);
       split(*cells, it);
       return;
     }
@@ -47,7 +47,8 @@ void MutableVec::add_raw(const Cell& cell) {
 }
 
 void MutableVec::add_raw(const Cell& cell,
-                         size_t* offset_itp, size_t* offsetp) {
+                         size_t* offset_itp, size_t* offsetp,
+                         bool finalized) {
   if(*offset_itp >= Vec::size())
     *offset_itp = 0;
 
@@ -56,7 +57,7 @@ void MutableVec::add_raw(const Cell& cell,
     if(++it == cend() ||
        DB::KeySeq::compare(key_seq, cell.key, (*it)->front().key)
                                                   == Condition::GT) {
-      cells->add_raw(cell, offsetp);
+      cells->add_raw(cell, offsetp, finalized);
       if(split(*cells, it))
         *offsetp = 0;
       return;
