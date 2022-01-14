@@ -63,6 +63,12 @@ class Fragments final : private Core::Vector<Fragment::Ptr> {
     m_cells.add_raw(cell, offset_itp, offsetp, false);
   }
 
+  SWC_CAN_INLINE
+  void check_sequence(const char* msg, bool w_assert=true) {
+    Core::ScopedLock lock(m_mutex_cells);
+    m_cells.check_sequence(msg, w_assert);
+  }
+
   void commit() noexcept;
 
   size_t commit_release();

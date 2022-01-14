@@ -307,14 +307,14 @@ class VectorsVector : public VectorsT {
     public:
 
     constexpr SWC_CAN_INLINE
-    ConstIterator(const VectorsT& a_vectors) noexcept
+    explicit ConstIterator(const VectorsT& a_vectors) noexcept
         : _vectors(a_vectors), _vector(_vectors.cbegin()),
           _item(_vector == _vectors.cend()
                   ? typename VectorT::const_iterator() : _vector->cbegin()) {
     }
 
     constexpr SWC_CAN_INLINE
-    ConstIterator(const VectorsT& a_vectors, size_t offset) noexcept
+    explicit ConstIterator(const VectorsT& a_vectors, size_t offset) noexcept
         : _vectors(a_vectors), _vector(_vectors.cbegin()) {
       for(auto vec_end = _vectors.cend(); _vector != vec_end; ++_vector) {
         if(!offset || offset < _vector->size()) {
@@ -363,6 +363,13 @@ class VectorsVector : public VectorsT {
     }
 
     constexpr SWC_CAN_INLINE
+    bool next() noexcept {
+      return ++_item != _vector->cend() ||
+             (++_vector != _vectors.cend() &&
+              (_item = _vector->cbegin()) != _vector->cend());
+    }
+
+    constexpr SWC_CAN_INLINE
     bool operator==(const ConstIterator& other) const noexcept {
       return _vector == other._vector && _item == other._item;
     }
@@ -382,14 +389,14 @@ class VectorsVector : public VectorsT {
     public:
 
     constexpr SWC_CAN_INLINE
-    Iterator(VectorsT& a_vectors) noexcept
+    explicit Iterator(VectorsT& a_vectors) noexcept
         : _vectors(a_vectors), _vector(_vectors.begin()),
           _item(_vector == _vectors.cend()
                   ? typename VectorT::iterator() : _vector->begin()) {
     }
 
     constexpr SWC_CAN_INLINE
-    Iterator(VectorsT& a_vectors, size_t offset) noexcept
+    explicit Iterator(VectorsT& a_vectors, size_t offset) noexcept
         : _vectors(a_vectors), _vector(_vectors.begin()) {
       for(auto vec_end = _vectors.cend(); _vector != vec_end; ++_vector) {
         if(!offset || offset < _vector->size()) {
@@ -435,6 +442,13 @@ class VectorsVector : public VectorsT {
     void operator++() noexcept {
       if(++_item == _vector->cend() && ++_vector != _vectors.cend())
         _item = _vector->begin();
+    }
+
+    constexpr SWC_CAN_INLINE
+    bool next() noexcept {
+      return ++_item != _vector->cend() ||
+             (++_vector != _vectors.cend() &&
+              (_item = _vector->begin()) != _vector->cend());
     }
 
     constexpr SWC_CAN_INLINE

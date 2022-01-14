@@ -521,6 +521,24 @@ class Mutable final {
     }
   }
 
+  SWC_CAN_INLINE
+  void check_sequence(const char* msg, bool w_assert=true) const {
+    auto it = get<ConstIterator>();
+    for(Cell* cell; it; ) {
+      cell = it.item();
+      if(!it.next())
+        break;
+      if(DB::KeySeq::compare(key_seq, it.item()->key, cell->key) == Condition::GT) {
+        SWC_LOG_OUT(
+          LOG_ERROR,
+          SWC_LOG_OSTREAM << "BAD cells-sequence at " << msg;
+          cell->key.print(SWC_LOG_OSTREAM << "\n current-");
+          it.item()->key.print(SWC_LOG_OSTREAM << "\n next-");
+        );
+        SWC_ASSERT(!w_assert);
+      }
+    }
+  }
 
   SWC_CAN_INLINE
   void scan(ReqScan* req) const {
@@ -597,8 +615,7 @@ class Mutable final {
     Iterator it_at = get<Iterator>();
     for(Cell* cell; it; ) {
       cell = it.item();
-      ++it;
-      if(!it)
+      if(!it.next())
         break;
       ++chk_size;
       chk_bytes += cell->encoded_length();

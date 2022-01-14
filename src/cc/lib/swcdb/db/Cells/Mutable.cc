@@ -196,22 +196,25 @@ void Mutable::scan_version_multi(ReqScan* req) const {
     }
 
     if(chk_align) {
-      Condition::Comp comp = DB::KeySeq::compare(
-        key_seq, req->spec.offset_key, cell->key);
-      if(comp == Condition::LT) {
-        req->profile.skip_cell();
-        continue;
-      }
-      if(comp == Condition::EQ &&
-         !req->spec.is_matching(
-           cell->get_timestamp(), cell->is_time_order_desc())) {
-        if(!--rev)
+      switch(DB::KeySeq::compare(key_seq, req->spec.offset_key, cell->key)) {
+        case Condition::LT: {
+          req->profile.skip_cell();
+          continue;
+        }
+        case Condition::EQ: {
+          if(!req->spec.is_matching(
+                cell->get_timestamp(), cell->is_time_order_desc())) {
+            if(!--rev)
+              chk_align = false;
+            last_key = &cell->key;
+            req->profile.skip_cell();
+            continue;
+          }
+          [[fallthrough]];
+        }
+        default:
           chk_align = false;
-        last_key = &cell->key;
-        req->profile.skip_cell();
-        continue;
       }
-      chk_align = false;
     }
 
     if(!req->selector(key_seq, *cell, stop)) {

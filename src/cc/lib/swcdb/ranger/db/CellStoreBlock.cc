@@ -112,7 +112,7 @@ bool Read::load(BlockLoader* loader) {
   }
   switch(at) {
     case State::NONE: {
-      //Env::Rgr::res().more_mem_future(header.size_plain);
+      Env::Rgr::res().more_mem_future(header.size_plain);
       Env::Rgr::res().more_mem_releasable(header.size_plain);
       return true;
     }
@@ -307,7 +307,7 @@ void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
 }
 
 void Read::load_finish(int err) {
-  //Env::Rgr::res().less_mem_future(header.size_plain);
+  Env::Rgr::res().less_mem_future(header.size_plain);
   if(err) {
     SWC_LOG_OUT(LOG_ERROR,
       Error::print(SWC_LOG_OSTREAM << "CellStore::Block load ", err);

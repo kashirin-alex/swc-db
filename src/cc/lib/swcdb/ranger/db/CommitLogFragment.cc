@@ -411,14 +411,14 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
       size_t count = 0;
       bool synced = cells.empty();
       size_t offset_hint = 0;
-      size_t offset_it_hint = 0;
+      size_t offset_it = 0;
       const uint8_t* buf = m_buffer.base;
       size_t remain = m_buffer.size;
       try { for(DB::Cells::Cell cell; remain; ++count) {
         cell.read(&buf, &remain);
         synced
           ? cells.add_sorted(cell)
-          : cells.add_raw(cell, &offset_it_hint, &offset_hint, false);
+          : cells.add_raw(cell, &offset_it, &offset_hint, false);
 
       } } catch(...) {
         SWC_LOG_OUT(LOG_ERROR,

@@ -43,7 +43,7 @@ void MutableVec::add_raw(const Cell& cell, bool finalized) {
       return;
     }
   }
-  return add_sorted(cell);
+  add_sorted(cell);
 }
 
 void MutableVec::add_raw(const Cell& cell,
@@ -63,7 +63,9 @@ void MutableVec::add_raw(const Cell& cell,
       return;
     }
   }
-  return add_sorted(cell);
+  add_sorted(cell);
+  *offset_itp = Vec::size() - 1;
+  *offsetp = back()->size() - 1;
 }
 
 void MutableVec::write_and_free(DynamicBuffer& cells, uint32_t& cell_count,

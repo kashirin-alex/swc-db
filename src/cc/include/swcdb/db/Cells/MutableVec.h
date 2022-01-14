@@ -46,9 +46,17 @@ class MutableVec final : private Core::Vector<Mutable*> {
 
   MutableVec& operator=(const MutableVec&) = delete;
 
-  ~MutableVec() noexcept;
+  ~MutableVec() noexcept {
+    for(auto cells : *this)
+      delete cells;
+  }
 
-  void free() noexcept;
+  SWC_CAN_INLINE
+  void free() noexcept {
+    for(auto cells : *this)
+      delete cells;
+    clear();
+  }
 
   void configure(uint32_t split,
                  const uint32_t revs, const uint64_t ttl_ns,
@@ -96,39 +104,38 @@ class MutableVec final : private Core::Vector<Mutable*> {
                       Interval& intval, uint32_t threshold,
                       uint32_t max_cells);
 
-  private:
-
-  bool split(Mutable& cells, const_iterator it);
-
-};
-
-
-
-SWC_CAN_INLINE
-MutableVec::~MutableVec() noexcept {
-  for(auto cells : *this)
-    delete cells;
-}
-
-SWC_CAN_INLINE
-void MutableVec::free() noexcept {
-  for(auto cells : *this)
-    delete cells;
-  clear();
-}
-
-SWC_CAN_INLINE
-bool MutableVec::split(Mutable& cells, MutableVec::const_iterator it) {
-  if(cells.size() >= split_size && !cells.has_one_key()) {
-    Mutable next_cells(key_seq, max_revs, ttl, type);
-    if(cells.split(next_cells, split_size, 0, true)) {
-      insert(it, new Mutable(std::move(next_cells)));
-      return true;
+  SWC_CAN_INLINE
+  void check_sequence(const char* msg, bool w_assert=true) const {
+    for(auto it = cbegin(); it != cend();) {
+      Mutable* cells = *it;
+      if(++it != cend() && DB::KeySeq::compare(key_seq, (*it)->front().key, cells->back().key) == Condition::GT) {
+        SWC_LOG_OUT(
+          LOG_ERROR,
+          SWC_LOG_OSTREAM << "BAD cells-sequence at " << msg;
+          cells->back().key.print(SWC_LOG_OSTREAM << "\n current-");
+          (*it)->front().key.print(SWC_LOG_OSTREAM << "\n next-");
+        );
+        SWC_ASSERT(!w_assert);
+      }
+      cells->check_sequence(msg, w_assert);
     }
   }
-  return false;
-}
 
+  private:
+
+  SWC_CAN_INLINE
+  bool split(Mutable& cells, const const_iterator& it) {
+    if(cells.size() >= split_size && !cells.has_one_key()) {
+      Mutable next_cells(key_seq, max_revs, ttl, type);
+      if(cells.split(next_cells, split_size, 0, true)) {
+        insert(it, new Mutable(std::move(next_cells)));
+        return true;
+      }
+    }
+    return false;
+  }
+
+};
 
 
 }}}
