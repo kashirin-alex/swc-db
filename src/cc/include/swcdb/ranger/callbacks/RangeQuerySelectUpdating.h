@@ -34,16 +34,16 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
   }
 
   void update(DB::Cells::Mutable& blk_cells) override {
-    if(cells.empty())
+    if(cells.ptr == cells.mark)
       return;
 
     const bool auto_ts(spec.updating->timestamp == DB::Cells::TIMESTAMP_AUTO);
     const bool set_ts(spec.updating->timestamp != DB::Cells::TIMESTAMP_NULL);
 
-    const uint8_t* ptr = cells.base;
-    size_t remain = cells.fill();
+    const uint8_t* ptr = cells.mark;
+    size_t remain = cells.fill() - (cells.mark - cells.base);
 
-    size_t log_offset_it_hint = 0;
+    size_t log_offset_it = 0;
     size_t log_offset_hint = 0;
     size_t blk_offset_hint = 0;
 
@@ -69,12 +69,13 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
           updated_cell.set_revision(ts);
         }
 
-        commitlog._add(updated_cell, &log_offset_it_hint, &log_offset_hint);
+        commitlog._add(updated_cell, &log_offset_it, &log_offset_hint);
         blk_cells.add_raw(updated_cell, &blk_offset_hint, true);
       }
     }
     commitlog.commit();
 
+    cells.set_mark();
   }
 
 };
