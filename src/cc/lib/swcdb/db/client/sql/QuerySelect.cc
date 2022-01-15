@@ -54,6 +54,9 @@ namespace {
   static const char     TOKEN_ONLY_KEYS[] = "only_keys";
   static const uint8_t  LEN_ONLY_KEYS = 9;
 
+  static const char     TOKEN_DELETE_MATCHING[] = "delete_matching";
+  static const uint8_t  LEN_DELETE_MATCHING = 15;
+
 }
 
 QuerySelect::QuerySelect(const Clients::Ptr& a_clients,
@@ -617,6 +620,8 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
         read_update(spec);
       seek_space();
       expect_token(")", 1, bracket_round);
+    } else if(found_token(TOKEN_DELETE_MATCHING, LEN_DELETE_MATCHING)) {
+      spec.set_opt__deleting();
     }
   }
 }

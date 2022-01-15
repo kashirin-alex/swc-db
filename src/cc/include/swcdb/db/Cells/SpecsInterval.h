@@ -28,7 +28,7 @@ class Interval {
   static constexpr const uint8_t OPT_KEY_EQUAL      = 0x01;
   static constexpr const uint8_t OPT_RANGE_END_REST = 0x02;
   static constexpr const uint8_t OPT_UPDATING       = 0x04;
-  //static constexpr const uint8_t OPT_DELETING       = 0x08;
+  static constexpr const uint8_t OPT_DELETING       = 0x08;
 
   typedef std::shared_ptr<Interval> Ptr;
 
@@ -159,12 +159,10 @@ class Interval {
     options |= OPT_UPDATING;
   }
 
-  /*
   constexpr SWC_CAN_INLINE
   void set_opt__deleting() noexcept {
     options |= OPT_DELETING;
   }
-  */
 
   constexpr SWC_CAN_INLINE
   bool has_opt__key_equal() const noexcept {
@@ -181,12 +179,10 @@ class Interval {
     return options & OPT_UPDATING;
   }
 
-  /*
   constexpr SWC_CAN_INLINE
   bool has_opt__deleting() const noexcept {
     return options & OPT_DELETING;
   }
-  */
 
   SWC_CAN_INLINE
   bool is_updating() const noexcept {

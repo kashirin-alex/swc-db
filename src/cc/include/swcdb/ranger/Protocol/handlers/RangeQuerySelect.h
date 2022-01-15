@@ -10,7 +10,7 @@
 #include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelect.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelectUpdating.h"
-//#include "swcdb/ranger/callbacks/RangeQuerySelectDeleting.h"
+#include "swcdb/ranger/callbacks/RangeQuerySelectDeleting.h"
 
 
 namespace SWC { namespace Comm { namespace Protocol {
@@ -67,18 +67,19 @@ struct RangeQuerySelect {
     if(err) {
       Params::RangeQuerySelectRsp rsp(err);
       conn->send_response(Buffers::make(ev, rsp));
+
     } else if(params.interval.has_opt__updating()) {
       range->scan(Ranger::Callback::RangeQuerySelectUpdating::Ptr(
         new Ranger::Callback::RangeQuerySelectUpdating(
           conn, ev, std::move(params.interval), range)
       ));
-    /*
+
     } else if(params.interval.has_opt__deleting()) {
       range->scan(Ranger::Callback::RangeQuerySelectDeleting::Ptr(
         new Ranger::Callback::RangeQuerySelectDeleting(
           conn, ev, std::move(params.interval), range)
       ));
-    */
+
     } else {
       range->scan(Ranger::Callback::RangeQuerySelect::Ptr(
         new Ranger::Callback::RangeQuerySelect(
