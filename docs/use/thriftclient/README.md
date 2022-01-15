@@ -7,7 +7,7 @@ sort: 3
 # The SWC-DB Thrift Protocol & Supported Languages
 
 
-## _The Supported Languages by SWC-DB Thrift_ 
+## _The Supported Languages by SWC-DB Thrift_
 
  _**Available SWC-DB Thrift Client Service libraries**_:
 
@@ -26,8 +26,12 @@ sort: 3
 > Languages Support can be extended upto [supported languages by Apache-Thrift ](https://github.com/apache/thrift/blob/master/LANGUAGES.md)
 
 
+_**Some of use cases can be found at**_:
+  * [Examples](https://github.com/kashirin-alex/swc-db/tree/master/examples)
+  * [Tests](https://github.com/kashirin-alex/swc-db/tree/master/tests/integration/thrift)
 
-*** 
+
+***
 
 
 
