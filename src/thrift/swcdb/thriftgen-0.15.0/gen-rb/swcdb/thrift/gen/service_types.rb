@@ -131,6 +131,15 @@ module Swcdb
         VALID_VALUES = Set.new([NONE, LIMIT_BY_KEYS, OFFSET_BY_KEYS, ONLY_KEYS, ONLY_DELETES]).freeze
       end
 
+      module SpecIntervalOptions
+        # Update Bit Option
+        UPDATING = 4
+        # Delete Bit Option
+        DELETING = 8
+        VALUE_MAP = {4 => "UPDATING", 8 => "DELETING"}
+        VALID_VALUES = Set.new([UPDATING, DELETING]).freeze
+      end
+
       module Flag
         # Unknown/Undefined
         NONE = 0
@@ -178,6 +187,10 @@ module Swcdb
       class SpecKeyInterval; end
 
       class SpecValue; end
+
+      class SpecIntervalUpdate; end
+
+      class SpecIntervalUpdateSerial; end
 
       class SpecInterval; end
 
@@ -557,6 +570,60 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
+      # The Value specs for an Updating Interval of 'updating' in SpecInterval
+      class SpecIntervalUpdate
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        V = 1
+        TS = 2
+        ENCODER = 3
+
+        FIELDS = {
+          # The value for the updated cell
+          V => {:type => ::Thrift::Types::STRING, :name => 'v', :binary => true},
+          # The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts', :optional => true},
+          # Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+          ENCODER => {:type => ::Thrift::Types::I32, :name => 'encoder', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::EncodingType}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @encoder.nil? || ::Swcdb::Thrift::Gen::EncodingType::VALID_VALUES.include?(@encoder)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field encoder!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial
+      class SpecIntervalUpdateSerial
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        TS = 1
+        V = 2
+        ENCODER = 3
+
+        FIELDS = {
+          # The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts'},
+          # The value for the updated cell
+          V => {:type => ::Thrift::Types::LIST, :name => 'v', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellValueSerial}},
+          # Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+          ENCODER => {:type => ::Thrift::Types::I32, :name => 'encoder', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::EncodingType}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @encoder.nil? || ::Swcdb::Thrift::Gen::EncodingType::VALID_VALUES.include?(@encoder)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field encoder!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
       # The Cells Interval Specifications with interval-scope Flags
       class SpecInterval
         include ::Thrift::Struct, ::Thrift::Struct_Union
@@ -569,6 +636,8 @@ module Swcdb
         TS_START = 7
         TS_FINISH = 8
         FLAGS = 9
+        OPTIONS = 10
+        UPDATING = 11
 
         FIELDS = {
           # Begin of Ranges evaluation with this Key inclusive
@@ -588,12 +657,19 @@ module Swcdb
           # The Timestamp Finish Spec, the finish of cells-interval timestamp match
           TS_FINISH => {:type => ::Thrift::Types::STRUCT, :name => 'ts_finish', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
           # The Interval Flags Specification
-          FLAGS => {:type => ::Thrift::Types::STRUCT, :name => 'flags', :class => ::Swcdb::Thrift::Gen::SpecFlags, :optional => true}
+          FLAGS => {:type => ::Thrift::Types::STRUCT, :name => 'flags', :class => ::Swcdb::Thrift::Gen::SpecFlags, :optional => true},
+          # The Interval Options Specification
+          OPTIONS => {:type => ::Thrift::Types::I32, :name => 'options', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::SpecIntervalOptions},
+          # The Value spec of an Updating Interval
+          UPDATING => {:type => ::Thrift::Types::STRUCT, :name => 'updating', :class => ::Swcdb::Thrift::Gen::SpecIntervalUpdate, :optional => true}
         }
 
         def struct_fields; FIELDS; end
 
         def validate
+          unless @options.nil? || ::Swcdb::Thrift::Gen::SpecIntervalOptions::VALID_VALUES.include?(@options)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field options!')
+          end
         end
 
         ::Thrift::Struct.generate_accessors self
@@ -835,6 +911,8 @@ module Swcdb
         TS_START = 7
         TS_FINISH = 8
         FLAGS = 9
+        OPTIONS = 10
+        UPDATING = 11
 
         FIELDS = {
           # Begin of Ranges evaluation with this Key inclusive
@@ -854,12 +932,19 @@ module Swcdb
           # The Timestamp Finish Spec, the finish of cells-interval timestamp match
           TS_FINISH => {:type => ::Thrift::Types::STRUCT, :name => 'ts_finish', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
           # The Interval Flags Specification
-          FLAGS => {:type => ::Thrift::Types::STRUCT, :name => 'flags', :class => ::Swcdb::Thrift::Gen::SpecFlags, :optional => true}
+          FLAGS => {:type => ::Thrift::Types::STRUCT, :name => 'flags', :class => ::Swcdb::Thrift::Gen::SpecFlags, :optional => true},
+          # The Interval Options Specification
+          OPTIONS => {:type => ::Thrift::Types::I32, :name => 'options', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::SpecIntervalOptions},
+          # The Serial-Value spec of an Updating Interval
+          UPDATING => {:type => ::Thrift::Types::STRUCT, :name => 'updating', :class => ::Swcdb::Thrift::Gen::SpecIntervalUpdateSerial, :optional => true}
         }
 
         def struct_fields; FIELDS; end
 
         def validate
+          unless @options.nil? || ::Swcdb::Thrift::Gen::SpecIntervalOptions::VALID_VALUES.include?(@options)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field options!')
+          end
         end
 
         ::Thrift::Struct.generate_accessors self

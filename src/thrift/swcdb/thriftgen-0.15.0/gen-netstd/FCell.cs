@@ -102,23 +102,23 @@ public partial class FCell : TBase
 
   public FCell DeepCopy()
   {
-    var tmp360 = new FCell();
+    var tmp374 = new FCell();
     if((C != null) && __isset.c)
     {
-      tmp360.C = this.C;
+      tmp374.C = this.C;
     }
-    tmp360.__isset.c = this.__isset.c;
+    tmp374.__isset.c = this.__isset.c;
     if(__isset.ts)
     {
-      tmp360.Ts = this.Ts;
+      tmp374.Ts = this.Ts;
     }
-    tmp360.__isset.ts = this.__isset.ts;
+    tmp374.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp360.V = this.V.ToArray();
+      tmp374.V = this.V.ToArray();
     }
-    tmp360.__isset.v = this.__isset.v;
-    return tmp360;
+    tmp374.__isset.v = this.__isset.v;
+    return tmp374;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -189,33 +189,33 @@ public partial class FCell : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp361 = new TStruct("FCell");
-      await oprot.WriteStructBeginAsync(tmp361, cancellationToken);
-      var tmp362 = new TField();
+      var tmp375 = new TStruct("FCell");
+      await oprot.WriteStructBeginAsync(tmp375, cancellationToken);
+      var tmp376 = new TField();
       if((C != null) && __isset.c)
       {
-        tmp362.Name = "c";
-        tmp362.Type = TType.String;
-        tmp362.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp362, cancellationToken);
+        tmp376.Name = "c";
+        tmp376.Type = TType.String;
+        tmp376.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp376, cancellationToken);
         await oprot.WriteStringAsync(C, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp362.Name = "ts";
-        tmp362.Type = TType.I64;
-        tmp362.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp362, cancellationToken);
+        tmp376.Name = "ts";
+        tmp376.Type = TType.I64;
+        tmp376.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp376, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp362.Name = "v";
-        tmp362.Type = TType.String;
-        tmp362.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp362, cancellationToken);
+        tmp376.Name = "v";
+        tmp376.Type = TType.String;
+        tmp376.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp376, cancellationToken);
         await oprot.WriteBinaryAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -258,28 +258,28 @@ public partial class FCell : TBase
 
   public override string ToString()
   {
-    var tmp363 = new StringBuilder("FCell(");
-    int tmp364 = 0;
+    var tmp377 = new StringBuilder("FCell(");
+    int tmp378 = 0;
     if((C != null) && __isset.c)
     {
-      if(0 < tmp364++) { tmp363.Append(", "); }
-      tmp363.Append("C: ");
-      C.ToString(tmp363);
+      if(0 < tmp378++) { tmp377.Append(", "); }
+      tmp377.Append("C: ");
+      C.ToString(tmp377);
     }
     if(__isset.ts)
     {
-      if(0 < tmp364++) { tmp363.Append(", "); }
-      tmp363.Append("Ts: ");
-      Ts.ToString(tmp363);
+      if(0 < tmp378++) { tmp377.Append(", "); }
+      tmp377.Append("Ts: ");
+      Ts.ToString(tmp377);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp364++) { tmp363.Append(", "); }
-      tmp363.Append("V: ");
-      V.ToString(tmp363);
+      if(0 < tmp378++) { tmp377.Append(", "); }
+      tmp377.Append("V: ");
+      V.ToString(tmp377);
     }
-    tmp363.Append(')');
-    return tmp363.ToString();
+    tmp377.Append(')');
+    return tmp377.ToString();
   }
 }
 

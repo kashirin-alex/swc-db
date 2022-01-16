@@ -8,45 +8,49 @@ package org.swcdb.thrift.gen;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 /**
- * The Key Serial Cell for results on Key of scan
+ * The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial
  */
-public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSerial._Fields>, java.io.Serializable, Cloneable, Comparable<KCellSerial> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("KCellSerial");
+public class SpecIntervalUpdateSerial implements org.apache.thrift.TBase<SpecIntervalUpdateSerial, SpecIntervalUpdateSerial._Fields>, java.io.Serializable, Cloneable, Comparable<SpecIntervalUpdateSerial> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecIntervalUpdateSerial");
 
-  private static final org.apache.thrift.protocol.TField C_FIELD_DESC = new org.apache.thrift.protocol.TField("c", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField ENCODER_FIELD_DESC = new org.apache.thrift.protocol.TField("encoder", org.apache.thrift.protocol.TType.I32, (short)3);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new KCellSerialStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new KCellSerialTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecIntervalUpdateSerialStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecIntervalUpdateSerialTupleSchemeFactory();
 
   /**
-   * The Column Name
-   */
-  public @org.apache.thrift.annotation.Nullable java.lang.String c; // required
-  /**
-   * The Cell Timestamp
+   * The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
    */
   public long ts; // required
   /**
-   * The Cell Serial Value
+   * The value for the updated cell
    */
   public @org.apache.thrift.annotation.Nullable java.util.List<CellValueSerial> v; // required
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  public @org.apache.thrift.annotation.Nullable EncodingType encoder; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * The Column Name
+     * The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
      */
-    C((short)1, "c"),
+    TS((short)1, "ts"),
     /**
-     * The Cell Timestamp
+     * The value for the updated cell
      */
-    TS((short)2, "ts"),
+    V((short)2, "v"),
     /**
-     * The Cell Serial Value
+     * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+     * 
+     * @see EncodingType
      */
-    V((short)3, "v");
+    ENCODER((short)3, "encoder");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -62,12 +66,12 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // C
-          return C;
-        case 2: // TS
+        case 1: // TS
           return TS;
-        case 3: // V
+        case 2: // V
           return V;
+        case 3: // ENCODER
+          return ENCODER;
         default:
           return null;
       }
@@ -111,29 +115,28 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
   // isset id assignments
   private static final int __TS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.ENCODER};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.C, new org.apache.thrift.meta_data.FieldMetaData("c", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TS, new org.apache.thrift.meta_data.FieldMetaData("ts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "CellValuesSerial")));
+    tmpMap.put(_Fields.ENCODER, new org.apache.thrift.meta_data.FieldMetaData("encoder", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, EncodingType.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(KCellSerial.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecIntervalUpdateSerial.class, metaDataMap);
   }
 
-  public KCellSerial() {
+  public SpecIntervalUpdateSerial() {
   }
 
-  public KCellSerial(
-    java.lang.String c,
+  public SpecIntervalUpdateSerial(
     long ts,
     java.util.List<CellValueSerial> v)
   {
     this();
-    this.c = c;
     this.ts = ts;
     setTsIsSet(true);
     this.v = v;
@@ -142,11 +145,8 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public KCellSerial(KCellSerial other) {
+  public SpecIntervalUpdateSerial(SpecIntervalUpdateSerial other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetC()) {
-      this.c = other.c;
-    }
     this.ts = other.ts;
     if (other.isSetV()) {
       java.util.List<CellValueSerial> __this__v = new java.util.ArrayList<CellValueSerial>(other.v.size());
@@ -155,62 +155,34 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
       }
       this.v = __this__v;
     }
+    if (other.isSetEncoder()) {
+      this.encoder = other.encoder;
+    }
   }
 
-  public KCellSerial deepCopy() {
-    return new KCellSerial(this);
+  public SpecIntervalUpdateSerial deepCopy() {
+    return new SpecIntervalUpdateSerial(this);
   }
 
   @Override
   public void clear() {
-    this.c = null;
     setTsIsSet(false);
     this.ts = 0;
     this.v = null;
+    this.encoder = null;
   }
 
   /**
-   * The Column Name
-   */
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getC() {
-    return this.c;
-  }
-
-  /**
-   * The Column Name
-   */
-  public KCellSerial setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
-    this.c = c;
-    return this;
-  }
-
-  public void unsetC() {
-    this.c = null;
-  }
-
-  /** Returns true if field c is set (has been assigned a value) and false otherwise */
-  public boolean isSetC() {
-    return this.c != null;
-  }
-
-  public void setCIsSet(boolean value) {
-    if (!value) {
-      this.c = null;
-    }
-  }
-
-  /**
-   * The Cell Timestamp
+   * The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
    */
   public long getTs() {
     return this.ts;
   }
 
   /**
-   * The Cell Timestamp
+   * The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
    */
-  public KCellSerial setTs(long ts) {
+  public SpecIntervalUpdateSerial setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
     return this;
@@ -246,7 +218,7 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
   }
 
   /**
-   * The Cell Serial Value
+   * The value for the updated cell
    */
   @org.apache.thrift.annotation.Nullable
   public java.util.List<CellValueSerial> getV() {
@@ -254,9 +226,9 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
   }
 
   /**
-   * The Cell Serial Value
+   * The value for the updated cell
    */
-  public KCellSerial setV(@org.apache.thrift.annotation.Nullable java.util.List<CellValueSerial> v) {
+  public SpecIntervalUpdateSerial setV(@org.apache.thrift.annotation.Nullable java.util.List<CellValueSerial> v) {
     this.v = v;
     return this;
   }
@@ -276,16 +248,43 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
     }
   }
 
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  @org.apache.thrift.annotation.Nullable
+  public EncodingType getEncoder() {
+    return this.encoder;
+  }
+
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  public SpecIntervalUpdateSerial setEncoder(@org.apache.thrift.annotation.Nullable EncodingType encoder) {
+    this.encoder = encoder;
+    return this;
+  }
+
+  public void unsetEncoder() {
+    this.encoder = null;
+  }
+
+  /** Returns true if field encoder is set (has been assigned a value) and false otherwise */
+  public boolean isSetEncoder() {
+    return this.encoder != null;
+  }
+
+  public void setEncoderIsSet(boolean value) {
+    if (!value) {
+      this.encoder = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case C:
-      if (value == null) {
-        unsetC();
-      } else {
-        setC((java.lang.String)value);
-      }
-      break;
-
     case TS:
       if (value == null) {
         unsetTs();
@@ -302,20 +301,28 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
       }
       break;
 
+    case ENCODER:
+      if (value == null) {
+        unsetEncoder();
+      } else {
+        setEncoder((EncodingType)value);
+      }
+      break;
+
     }
   }
 
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case C:
-      return getC();
-
     case TS:
       return getTs();
 
     case V:
       return getV();
+
+    case ENCODER:
+      return getEncoder();
 
     }
     throw new java.lang.IllegalStateException();
@@ -328,37 +335,28 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
     }
 
     switch (field) {
-    case C:
-      return isSetC();
     case TS:
       return isSetTs();
     case V:
       return isSetV();
+    case ENCODER:
+      return isSetEncoder();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof KCellSerial)
-      return this.equals((KCellSerial)that);
+    if (that instanceof SpecIntervalUpdateSerial)
+      return this.equals((SpecIntervalUpdateSerial)that);
     return false;
   }
 
-  public boolean equals(KCellSerial that) {
+  public boolean equals(SpecIntervalUpdateSerial that) {
     if (that == null)
       return false;
     if (this == that)
       return true;
-
-    boolean this_present_c = true && this.isSetC();
-    boolean that_present_c = true && that.isSetC();
-    if (this_present_c || that_present_c) {
-      if (!(this_present_c && that_present_c))
-        return false;
-      if (!this.c.equals(that.c))
-        return false;
-    }
 
     boolean this_present_ts = true;
     boolean that_present_ts = true;
@@ -378,6 +376,15 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
         return false;
     }
 
+    boolean this_present_encoder = true && this.isSetEncoder();
+    boolean that_present_encoder = true && that.isSetEncoder();
+    if (this_present_encoder || that_present_encoder) {
+      if (!(this_present_encoder && that_present_encoder))
+        return false;
+      if (!this.encoder.equals(that.encoder))
+        return false;
+    }
+
     return true;
   }
 
@@ -385,37 +392,27 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetC()) ? 131071 : 524287);
-    if (isSetC())
-      hashCode = hashCode * 8191 + c.hashCode();
-
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(ts);
 
     hashCode = hashCode * 8191 + ((isSetV()) ? 131071 : 524287);
     if (isSetV())
       hashCode = hashCode * 8191 + v.hashCode();
 
+    hashCode = hashCode * 8191 + ((isSetEncoder()) ? 131071 : 524287);
+    if (isSetEncoder())
+      hashCode = hashCode * 8191 + encoder.getValue();
+
     return hashCode;
   }
 
   @Override
-  public int compareTo(KCellSerial other) {
+  public int compareTo(SpecIntervalUpdateSerial other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetC(), other.isSetC());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetC()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.c, other.c);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = java.lang.Boolean.compare(isSetTs(), other.isSetTs());
     if (lastComparison != 0) {
       return lastComparison;
@@ -432,6 +429,16 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
     }
     if (isSetV()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.v, other.v);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetEncoder(), other.isSetEncoder());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEncoder()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.encoder, other.encoder);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -454,17 +461,9 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("KCellSerial(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecIntervalUpdateSerial(");
     boolean first = true;
 
-    sb.append("c:");
-    if (this.c == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.c);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("ts:");
     sb.append(this.ts);
     first = false;
@@ -476,6 +475,16 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
       sb.append(this.v);
     }
     first = false;
+    if (isSetEncoder()) {
+      if (!first) sb.append(", ");
+      sb.append("encoder:");
+      if (this.encoder == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.encoder);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -503,15 +512,15 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
     }
   }
 
-  private static class KCellSerialStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-    public KCellSerialStandardScheme getScheme() {
-      return new KCellSerialStandardScheme();
+  private static class SpecIntervalUpdateSerialStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+    public SpecIntervalUpdateSerialStandardScheme getScheme() {
+      return new SpecIntervalUpdateSerialStandardScheme();
     }
   }
 
-  private static class KCellSerialStandardScheme extends org.apache.thrift.scheme.StandardScheme<KCellSerial> {
+  private static class SpecIntervalUpdateSerialStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecIntervalUpdateSerial> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, KCellSerial struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecIntervalUpdateSerial struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -521,15 +530,7 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
           break;
         }
         switch (schemeField.id) {
-          case 1: // C
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.c = iprot.readString();
-              struct.setCIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // TS
+          case 1: // TS
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.ts = iprot.readI64();
               struct.setTsIsSet(true);
@@ -537,21 +538,29 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // V
+          case 2: // V
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list336 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<CellValueSerial>(_list336.size);
-                @org.apache.thrift.annotation.Nullable CellValueSerial _elem337;
-                for (int _i338 = 0; _i338 < _list336.size; ++_i338)
+                org.apache.thrift.protocol.TList _list56 = iprot.readListBegin();
+                struct.v = new java.util.ArrayList<CellValueSerial>(_list56.size);
+                @org.apache.thrift.annotation.Nullable CellValueSerial _elem57;
+                for (int _i58 = 0; _i58 < _list56.size; ++_i58)
                 {
-                  _elem337 = new CellValueSerial();
-                  _elem337.read(iprot);
-                  struct.v.add(_elem337);
+                  _elem57 = new CellValueSerial();
+                  _elem57.read(iprot);
+                  struct.v.add(_elem57);
                 }
                 iprot.readListEnd();
               }
               struct.setVIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // ENCODER
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.encoder = org.swcdb.thrift.gen.EncodingType.findByValue(iprot.readI32());
+              struct.setEncoderIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -567,15 +576,10 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, KCellSerial struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecIntervalUpdateSerial struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.c != null) {
-        oprot.writeFieldBegin(C_FIELD_DESC);
-        oprot.writeString(struct.c);
-        oprot.writeFieldEnd();
-      }
       oprot.writeFieldBegin(TS_FIELD_DESC);
       oprot.writeI64(struct.ts);
       oprot.writeFieldEnd();
@@ -583,13 +587,20 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
         oprot.writeFieldBegin(V_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (CellValueSerial _iter339 : struct.v)
+          for (CellValueSerial _iter59 : struct.v)
           {
-            _iter339.write(oprot);
+            _iter59.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
+      }
+      if (struct.encoder != null) {
+        if (struct.isSetEncoder()) {
+          oprot.writeFieldBegin(ENCODER_FIELD_DESC);
+          oprot.writeI32(struct.encoder.getValue());
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -597,70 +608,70 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
 
   }
 
-  private static class KCellSerialTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
-    public KCellSerialTupleScheme getScheme() {
-      return new KCellSerialTupleScheme();
+  private static class SpecIntervalUpdateSerialTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+    public SpecIntervalUpdateSerialTupleScheme getScheme() {
+      return new SpecIntervalUpdateSerialTupleScheme();
     }
   }
 
-  private static class KCellSerialTupleScheme extends org.apache.thrift.scheme.TupleScheme<KCellSerial> {
+  private static class SpecIntervalUpdateSerialTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecIntervalUpdateSerial> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, KCellSerial struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, SpecIntervalUpdateSerial struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetC()) {
+      if (struct.isSetTs()) {
         optionals.set(0);
       }
-      if (struct.isSetTs()) {
+      if (struct.isSetV()) {
         optionals.set(1);
       }
-      if (struct.isSetV()) {
+      if (struct.isSetEncoder()) {
         optionals.set(2);
       }
       oprot.writeBitSet(optionals, 3);
-      if (struct.isSetC()) {
-        oprot.writeString(struct.c);
-      }
       if (struct.isSetTs()) {
         oprot.writeI64(struct.ts);
       }
       if (struct.isSetV()) {
         {
           oprot.writeI32(struct.v.size());
-          for (CellValueSerial _iter340 : struct.v)
+          for (CellValueSerial _iter60 : struct.v)
           {
-            _iter340.write(oprot);
+            _iter60.write(oprot);
           }
         }
+      }
+      if (struct.isSetEncoder()) {
+        oprot.writeI32(struct.encoder.getValue());
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, KCellSerial struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, SpecIntervalUpdateSerial struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
-        struct.c = iprot.readString();
-        struct.setCIsSet(true);
-      }
-      if (incoming.get(1)) {
         struct.ts = iprot.readI64();
         struct.setTsIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list341 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<CellValueSerial>(_list341.size);
-          @org.apache.thrift.annotation.Nullable CellValueSerial _elem342;
-          for (int _i343 = 0; _i343 < _list341.size; ++_i343)
+          org.apache.thrift.protocol.TList _list61 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.v = new java.util.ArrayList<CellValueSerial>(_list61.size);
+          @org.apache.thrift.annotation.Nullable CellValueSerial _elem62;
+          for (int _i63 = 0; _i63 < _list61.size; ++_i63)
           {
-            _elem342 = new CellValueSerial();
-            _elem342.read(iprot);
-            struct.v.add(_elem342);
+            _elem62 = new CellValueSerial();
+            _elem62.read(iprot);
+            struct.v.add(_elem62);
           }
         }
         struct.setVIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.encoder = org.swcdb.thrift.gen.EncodingType.findByValue(iprot.readI32());
+        struct.setEncoderIsSet(true);
       }
     }
   }

@@ -84,18 +84,18 @@ public partial class ColCells : TBase
 
   public ColCells DeepCopy()
   {
-    var tmp316 = new ColCells();
+    var tmp330 = new ColCells();
     if((Cells != null) && __isset.cells)
     {
-      tmp316.Cells = this.Cells.DeepCopy();
+      tmp330.Cells = this.Cells.DeepCopy();
     }
-    tmp316.__isset.cells = this.__isset.cells;
+    tmp330.__isset.cells = this.__isset.cells;
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      tmp316.Serial_cells = this.Serial_cells.DeepCopy();
+      tmp330.Serial_cells = this.Serial_cells.DeepCopy();
     }
-    tmp316.__isset.serial_cells = this.__isset.serial_cells;
-    return tmp316;
+    tmp330.__isset.serial_cells = this.__isset.serial_cells;
+    return tmp330;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -119,14 +119,14 @@ public partial class ColCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list317 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<CCell>(_list317.Count);
-                for(int _i318 = 0; _i318 < _list317.Count; ++_i318)
+                TList _list331 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<CCell>(_list331.Count);
+                for(int _i332 = 0; _i332 < _list331.Count; ++_i332)
                 {
-                  CCell _elem319;
-                  _elem319 = new CCell();
-                  await _elem319.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem319);
+                  CCell _elem333;
+                  _elem333 = new CCell();
+                  await _elem333.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem333);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -140,14 +140,14 @@ public partial class ColCells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list320 = await iprot.ReadListBeginAsync(cancellationToken);
-                Serial_cells = new List<CCellSerial>(_list320.Count);
-                for(int _i321 = 0; _i321 < _list320.Count; ++_i321)
+                TList _list334 = await iprot.ReadListBeginAsync(cancellationToken);
+                Serial_cells = new List<CCellSerial>(_list334.Count);
+                for(int _i335 = 0; _i335 < _list334.Count; ++_i335)
                 {
-                  CCellSerial _elem322;
-                  _elem322 = new CCellSerial();
-                  await _elem322.ReadAsync(iprot, cancellationToken);
-                  Serial_cells.Add(_elem322);
+                  CCellSerial _elem336;
+                  _elem336 = new CCellSerial();
+                  await _elem336.ReadAsync(iprot, cancellationToken);
+                  Serial_cells.Add(_elem336);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -178,20 +178,20 @@ public partial class ColCells : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp323 = new TStruct("ColCells");
-      await oprot.WriteStructBeginAsync(tmp323, cancellationToken);
-      var tmp324 = new TField();
+      var tmp337 = new TStruct("ColCells");
+      await oprot.WriteStructBeginAsync(tmp337, cancellationToken);
+      var tmp338 = new TField();
       if((Cells != null) && __isset.cells)
       {
-        tmp324.Name = "cells";
-        tmp324.Type = TType.List;
-        tmp324.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp324, cancellationToken);
+        tmp338.Name = "cells";
+        tmp338.Type = TType.List;
+        tmp338.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp338, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-          foreach (CCell _iter325 in Cells)
+          foreach (CCell _iter339 in Cells)
           {
-            await _iter325.WriteAsync(oprot, cancellationToken);
+            await _iter339.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -199,15 +199,15 @@ public partial class ColCells : TBase
       }
       if((Serial_cells != null) && __isset.serial_cells)
       {
-        tmp324.Name = "serial_cells";
-        tmp324.Type = TType.List;
-        tmp324.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp324, cancellationToken);
+        tmp338.Name = "serial_cells";
+        tmp338.Type = TType.List;
+        tmp338.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp338, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Serial_cells.Count), cancellationToken);
-          foreach (CCellSerial _iter326 in Serial_cells)
+          foreach (CCellSerial _iter340 in Serial_cells)
           {
-            await _iter326.WriteAsync(oprot, cancellationToken);
+            await _iter340.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -247,22 +247,22 @@ public partial class ColCells : TBase
 
   public override string ToString()
   {
-    var tmp327 = new StringBuilder("ColCells(");
-    int tmp328 = 0;
+    var tmp341 = new StringBuilder("ColCells(");
+    int tmp342 = 0;
     if((Cells != null) && __isset.cells)
     {
-      if(0 < tmp328++) { tmp327.Append(", "); }
-      tmp327.Append("Cells: ");
-      Cells.ToString(tmp327);
+      if(0 < tmp342++) { tmp341.Append(", "); }
+      tmp341.Append("Cells: ");
+      Cells.ToString(tmp341);
     }
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      if(0 < tmp328++) { tmp327.Append(", "); }
-      tmp327.Append("Serial_cells: ");
-      Serial_cells.ToString(tmp327);
+      if(0 < tmp342++) { tmp341.Append(", "); }
+      tmp341.Append("Serial_cells: ");
+      Serial_cells.ToString(tmp341);
     }
-    tmp327.Append(')');
-    return tmp327.ToString();
+    tmp341.Append(')');
+    return tmp341.ToString();
   }
 }
 

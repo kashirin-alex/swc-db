@@ -290,6 +290,28 @@ std::ostream& operator<<(std::ostream& out, const SpecFlagsOpt::type& val);
 std::string to_string(const SpecFlagsOpt::type& val);
 
 /**
+ * The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit
+ */
+struct SpecIntervalOptions {
+  enum type {
+    /**
+     * Update Bit Option
+     */
+    UPDATING = 4,
+    /**
+     * Delete Bit Option
+     */
+    DELETING = 8
+  };
+};
+
+extern const std::map<int, const char*> _SpecIntervalOptions_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalOptions::type& val);
+
+std::string to_string(const SpecIntervalOptions::type& val);
+
+/**
  * The Cell Flag
  */
 struct Flag {
@@ -445,6 +467,10 @@ class SpecTimestamp;
 class SpecKeyInterval;
 
 class SpecValue;
+
+class SpecIntervalUpdate;
+
+class SpecIntervalUpdateSerial;
 
 class SpecInterval;
 
@@ -1433,8 +1459,159 @@ void swap(SpecValue &a, SpecValue &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecValue& obj);
 
+typedef struct _SpecIntervalUpdate__isset {
+  _SpecIntervalUpdate__isset() : v(false), ts(false), encoder(false) {}
+  bool v :1;
+  bool ts :1;
+  bool encoder :1;
+} _SpecIntervalUpdate__isset;
+
+/**
+ * The Value specs for an Updating Interval of 'updating' in SpecInterval
+ */
+class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecIntervalUpdate(const SpecIntervalUpdate&);
+  SpecIntervalUpdate(SpecIntervalUpdate&&) noexcept;
+  SpecIntervalUpdate& operator=(const SpecIntervalUpdate&);
+  SpecIntervalUpdate& operator=(SpecIntervalUpdate&&) noexcept;
+  SpecIntervalUpdate() noexcept
+                     : v(),
+                       ts(0),
+                       encoder(static_cast<EncodingType::type>(0)) {
+  }
+
+  virtual ~SpecIntervalUpdate() noexcept;
+  /**
+   * The value for the updated cell
+   */
+  std::string v;
+  /**
+   * The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
+   */
+  int64_t ts;
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  EncodingType::type encoder;
+
+  _SpecIntervalUpdate__isset __isset;
+
+  void __set_v(const std::string& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_encoder(const EncodingType::type val);
+
+  bool operator == (const SpecIntervalUpdate & rhs) const
+  {
+    if (!(v == rhs.v))
+      return false;
+    if (__isset.ts != rhs.__isset.ts)
+      return false;
+    else if (__isset.ts && !(ts == rhs.ts))
+      return false;
+    if (__isset.encoder != rhs.__isset.encoder)
+      return false;
+    else if (__isset.encoder && !(encoder == rhs.encoder))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecIntervalUpdate &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecIntervalUpdate & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecIntervalUpdate &a, SpecIntervalUpdate &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdate& obj);
+
+typedef struct _SpecIntervalUpdateSerial__isset {
+  _SpecIntervalUpdateSerial__isset() : ts(false), v(false), encoder(false) {}
+  bool ts :1;
+  bool v :1;
+  bool encoder :1;
+} _SpecIntervalUpdateSerial__isset;
+
+/**
+ * The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial
+ */
+class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecIntervalUpdateSerial(const SpecIntervalUpdateSerial&);
+  SpecIntervalUpdateSerial(SpecIntervalUpdateSerial&&) noexcept;
+  SpecIntervalUpdateSerial& operator=(const SpecIntervalUpdateSerial&);
+  SpecIntervalUpdateSerial& operator=(SpecIntervalUpdateSerial&&) noexcept;
+  SpecIntervalUpdateSerial() noexcept
+                           : ts(0),
+                             encoder(static_cast<EncodingType::type>(0)) {
+  }
+
+  virtual ~SpecIntervalUpdateSerial() noexcept;
+  /**
+   * The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
+   */
+  int64_t ts;
+  /**
+   * The value for the updated cell
+   */
+  CellValuesSerial v;
+  /**
+   * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+   * 
+   * @see EncodingType
+   */
+  EncodingType::type encoder;
+
+  _SpecIntervalUpdateSerial__isset __isset;
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const CellValuesSerial& val);
+
+  void __set_encoder(const EncodingType::type val);
+
+  bool operator == (const SpecIntervalUpdateSerial & rhs) const
+  {
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    if (__isset.encoder != rhs.__isset.encoder)
+      return false;
+    else if (__isset.encoder && !(encoder == rhs.encoder))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecIntervalUpdateSerial &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecIntervalUpdateSerial & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecIntervalUpdateSerial &a, SpecIntervalUpdateSerial &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdateSerial& obj);
+
 typedef struct _SpecInterval__isset {
-  _SpecInterval__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
+  _SpecInterval__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false), options(false), updating(false) {}
   bool range_begin :1;
   bool range_end :1;
   bool offset_key :1;
@@ -1444,6 +1621,8 @@ typedef struct _SpecInterval__isset {
   bool ts_start :1;
   bool ts_finish :1;
   bool flags :1;
+  bool options :1;
+  bool updating :1;
 } _SpecInterval__isset;
 
 /**
@@ -1457,7 +1636,8 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
   SpecInterval& operator=(const SpecInterval&);
   SpecInterval& operator=(SpecInterval&&) noexcept;
   SpecInterval() noexcept
-               : offset_rev(0) {
+               : offset_rev(0),
+                 options(static_cast<SpecIntervalOptions::type>(0)) {
   }
 
   virtual ~SpecInterval() noexcept;
@@ -1497,6 +1677,16 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
    * The Interval Flags Specification
    */
   SpecFlags flags;
+  /**
+   * The Interval Options Specification
+   * 
+   * @see SpecIntervalOptions
+   */
+  SpecIntervalOptions::type options;
+  /**
+   * The Value spec of an Updating Interval
+   */
+  SpecIntervalUpdate updating;
 
   _SpecInterval__isset __isset;
 
@@ -1517,6 +1707,10 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
   void __set_ts_finish(const SpecTimestamp& val);
 
   void __set_flags(const SpecFlags& val);
+
+  void __set_options(const SpecIntervalOptions::type val);
+
+  void __set_updating(const SpecIntervalUpdate& val);
 
   bool operator == (const SpecInterval & rhs) const
   {
@@ -1545,6 +1739,14 @@ class SpecInterval : public virtual ::apache::thrift::TBase {
     if (__isset.flags != rhs.__isset.flags)
       return false;
     else if (__isset.flags && !(flags == rhs.flags))
+      return false;
+    if (__isset.options != rhs.__isset.options)
+      return false;
+    else if (__isset.options && !(options == rhs.options))
+      return false;
+    if (__isset.updating != rhs.__isset.updating)
+      return false;
+    else if (__isset.updating && !(updating == rhs.updating))
       return false;
     return true;
   }
@@ -2168,7 +2370,7 @@ void swap(SpecValueSerial &a, SpecValueSerial &b);
 std::ostream& operator<<(std::ostream& out, const SpecValueSerial& obj);
 
 typedef struct _SpecIntervalSerial__isset {
-  _SpecIntervalSerial__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false) {}
+  _SpecIntervalSerial__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false), options(false), updating(false) {}
   bool range_begin :1;
   bool range_end :1;
   bool offset_key :1;
@@ -2178,6 +2380,8 @@ typedef struct _SpecIntervalSerial__isset {
   bool ts_start :1;
   bool ts_finish :1;
   bool flags :1;
+  bool options :1;
+  bool updating :1;
 } _SpecIntervalSerial__isset;
 
 /**
@@ -2191,7 +2395,8 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
   SpecIntervalSerial& operator=(const SpecIntervalSerial&);
   SpecIntervalSerial& operator=(SpecIntervalSerial&&) noexcept;
   SpecIntervalSerial() noexcept
-                     : offset_rev(0) {
+                     : offset_rev(0),
+                       options(static_cast<SpecIntervalOptions::type>(0)) {
   }
 
   virtual ~SpecIntervalSerial() noexcept;
@@ -2231,6 +2436,16 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
    * The Interval Flags Specification
    */
   SpecFlags flags;
+  /**
+   * The Interval Options Specification
+   * 
+   * @see SpecIntervalOptions
+   */
+  SpecIntervalOptions::type options;
+  /**
+   * The Serial-Value spec of an Updating Interval
+   */
+  SpecIntervalUpdateSerial updating;
 
   _SpecIntervalSerial__isset __isset;
 
@@ -2251,6 +2466,10 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
   void __set_ts_finish(const SpecTimestamp& val);
 
   void __set_flags(const SpecFlags& val);
+
+  void __set_options(const SpecIntervalOptions::type val);
+
+  void __set_updating(const SpecIntervalUpdateSerial& val);
 
   bool operator == (const SpecIntervalSerial & rhs) const
   {
@@ -2279,6 +2498,14 @@ class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
     if (__isset.flags != rhs.__isset.flags)
       return false;
     else if (__isset.flags && !(flags == rhs.flags))
+      return false;
+    if (__isset.options != rhs.__isset.options)
+      return false;
+    else if (__isset.options && !(options == rhs.options))
+      return false;
+    if (__isset.updating != rhs.__isset.updating)
+      return false;
+    else if (__isset.updating && !(updating == rhs.updating))
       return false;
     return true;
   }

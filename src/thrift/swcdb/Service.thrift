@@ -350,6 +350,14 @@ struct SpecFlags {
 }
 
 
+/** The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit */
+enum SpecIntervalOptions {
+  /** Update Bit Option */
+  UPDATING      = 4,
+
+  /** Delete Bit Option */
+  DELETING      = 8,
+}
 
 /** The Fraction Specifications */
 struct SpecFraction {
@@ -402,34 +410,66 @@ struct SpecValue {
 typedef list<SpecValue> SpecValues
 
 
+/** The Value specs for an Updating Interval of 'updating' in SpecInterval */
+struct SpecIntervalUpdate {
+
+  /** The value for the updated cell */
+  1: binary                 v
+
+  /** The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set) */
+  2: optional i64           ts
+
+  /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
+  3: optional EncodingType  encoder
+}
+
+/** The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial */
+struct SpecIntervalUpdateSerial {
+  /** The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1 */
+  1: i64                    ts
+
+  /** The value for the updated cell */
+  2: CellValuesSerial       v
+
+  /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
+  3: optional EncodingType  encoder
+}
+
+
 /** The Cells Interval Specifications with interval-scope Flags */
 struct SpecInterval {
   /** Begin of Ranges evaluation with this Key inclusive */
-  1: Key                        range_begin
+  1: Key                            range_begin
 
   /** End of Ranges evaluation with this Key inclusive */
-  2: Key                        range_end
+  2: Key                            range_end
 
   /** Offset Cell Key of a Scan, select cells from this key inclusive */
-  3: Key                        offset_key
+  3: Key                            offset_key
 
   /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
-  4: optional i64               offset_rev
+  4: optional i64                   offset_rev
 
   /** The Key Intervals */
-  5: SpecKeyIntervals           key_intervals
+  5: SpecKeyIntervals               key_intervals
 
   /** The Cell Value Specifications, cell-value match */
-  6: SpecValues                 values;
+  6: SpecValues                     values;
 
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
-  7: optional SpecTimestamp     ts_start
+  7: optional SpecTimestamp         ts_start
 
   /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
-  8: optional SpecTimestamp     ts_finish
+  8: optional SpecTimestamp         ts_finish
 
   /** The Interval Flags Specification */
-  9: optional SpecFlags        flags
+  9: optional SpecFlags             flags
+
+  /** The Interval Options Specification */
+  10: optional SpecIntervalOptions  options
+
+  /** The Value spec of an Updating Interval */
+  11: optional SpecIntervalUpdate   updating
 }
 
 
@@ -536,31 +576,37 @@ typedef list<SpecValueSerial> SpecValuesSerial
 /** The Serial Value Cells Interval Specifications with interval-scope Flags */
 struct SpecIntervalSerial {
   /** Begin of Ranges evaluation with this Key inclusive */
-  1: Key                        range_begin
+  1: Key                                  range_begin
 
   /** End of Ranges evaluation with this Key inclusive */
-  2: Key                        range_end
+  2: Key                                  range_end
 
   /** Offset Cell Key of a Scan, select cells from this key inclusive */
-  3: Key                        offset_key
+  3: Key                                  offset_key
 
   /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
-  4: optional i64               offset_rev
+  4: optional i64                         offset_rev
 
   /** The Key Intervals */
-  5: SpecKeyIntervals           key_intervals
+  5: SpecKeyIntervals                     key_intervals
 
   /** The Serial Cell Value Specifications, cell-value fields match */
-  6: SpecValuesSerial           values;
+  6: SpecValuesSerial                     values;
 
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
-  7: optional SpecTimestamp     ts_start
+  7: optional SpecTimestamp               ts_start
 
   /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
-  8: optional SpecTimestamp     ts_finish
+  8: optional SpecTimestamp               ts_finish
 
   /** The Interval Flags Specification */
-  9: optional SpecFlags        flags
+  9: optional SpecFlags                   flags
+
+  /** The Interval Options Specification */
+  10: optional SpecIntervalOptions        options
+
+  /** The Serial-Value spec of an Updating Interval */
+  11: optional SpecIntervalUpdateSerial   updating
 }
 
 

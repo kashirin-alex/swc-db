@@ -31,32 +31,32 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Key Cell for results on Key of scan
+/// The Value specs for an Updating Interval of 'updating' in SpecInterval
 /// </summary>
-public partial class KCell : TBase
+public partial class SpecIntervalUpdate : TBase
 {
-  private string _c;
-  private long _ts;
   private byte[] _v;
+  private long _ts;
+  private EncodingType _encoder;
 
   /// <summary>
-  /// The Column Name
+  /// The value for the updated cell
   /// </summary>
-  public string C
+  public byte[] V
   {
     get
     {
-      return _c;
+      return _v;
     }
     set
     {
-      __isset.c = true;
-      this._c = value;
+      __isset.v = true;
+      this._v = value;
     }
   }
 
   /// <summary>
-  /// The Cell Timestamp
+  /// The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
   /// </summary>
   public long Ts
   {
@@ -72,18 +72,20 @@ public partial class KCell : TBase
   }
 
   /// <summary>
-  /// The Cell Value
+  /// Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+  /// 
+  /// <seealso cref="global::.EncodingType"/>
   /// </summary>
-  public byte[] V
+  public EncodingType Encoder
   {
     get
     {
-      return _v;
+      return _encoder;
     }
     set
     {
-      __isset.v = true;
-      this._v = value;
+      __isset.encoder = true;
+      this._encoder = value;
     }
   }
 
@@ -91,34 +93,34 @@ public partial class KCell : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool c;
-    public bool ts;
     public bool v;
+    public bool ts;
+    public bool encoder;
   }
 
-  public KCell()
+  public SpecIntervalUpdate()
   {
   }
 
-  public KCell DeepCopy()
+  public SpecIntervalUpdate DeepCopy()
   {
-    var tmp343 = new KCell();
-    if((C != null) && __isset.c)
-    {
-      tmp343.C = this.C;
-    }
-    tmp343.__isset.c = this.__isset.c;
-    if(__isset.ts)
-    {
-      tmp343.Ts = this.Ts;
-    }
-    tmp343.__isset.ts = this.__isset.ts;
+    var tmp83 = new SpecIntervalUpdate();
     if((V != null) && __isset.v)
     {
-      tmp343.V = this.V.ToArray();
+      tmp83.V = this.V.ToArray();
     }
-    tmp343.__isset.v = this.__isset.v;
-    return tmp343;
+    tmp83.__isset.v = this.__isset.v;
+    if(__isset.ts)
+    {
+      tmp83.Ts = this.Ts;
+    }
+    tmp83.__isset.ts = this.__isset.ts;
+    if(__isset.encoder)
+    {
+      tmp83.Encoder = this.Encoder;
+    }
+    tmp83.__isset.encoder = this.__isset.encoder;
+    return tmp83;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -141,7 +143,7 @@ public partial class KCell : TBase
           case 1:
             if (field.Type == TType.String)
             {
-              C = await iprot.ReadStringAsync(cancellationToken);
+              V = await iprot.ReadBinaryAsync(cancellationToken);
             }
             else
             {
@@ -159,9 +161,9 @@ public partial class KCell : TBase
             }
             break;
           case 3:
-            if (field.Type == TType.String)
+            if (field.Type == TType.I32)
             {
-              V = await iprot.ReadBinaryAsync(cancellationToken);
+              Encoder = (EncodingType)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -189,34 +191,34 @@ public partial class KCell : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp344 = new TStruct("KCell");
-      await oprot.WriteStructBeginAsync(tmp344, cancellationToken);
-      var tmp345 = new TField();
-      if((C != null) && __isset.c)
+      var tmp84 = new TStruct("SpecIntervalUpdate");
+      await oprot.WriteStructBeginAsync(tmp84, cancellationToken);
+      var tmp85 = new TField();
+      if((V != null) && __isset.v)
       {
-        tmp345.Name = "c";
-        tmp345.Type = TType.String;
-        tmp345.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp345, cancellationToken);
-        await oprot.WriteStringAsync(C, cancellationToken);
+        tmp85.Name = "v";
+        tmp85.Type = TType.String;
+        tmp85.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp85, cancellationToken);
+        await oprot.WriteBinaryAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp345.Name = "ts";
-        tmp345.Type = TType.I64;
-        tmp345.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp345, cancellationToken);
+        tmp85.Name = "ts";
+        tmp85.Type = TType.I64;
+        tmp85.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp85, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if((V != null) && __isset.v)
+      if(__isset.encoder)
       {
-        tmp345.Name = "v";
-        tmp345.Type = TType.String;
-        tmp345.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp345, cancellationToken);
-        await oprot.WriteBinaryAsync(V, cancellationToken);
+        tmp85.Name = "encoder";
+        tmp85.Type = TType.I32;
+        tmp85.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp85, cancellationToken);
+        await oprot.WriteI32Async((int)Encoder, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       await oprot.WriteFieldStopAsync(cancellationToken);
@@ -230,27 +232,27 @@ public partial class KCell : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is KCell other)) return false;
+    if (!(that is SpecIntervalUpdate other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.c == other.__isset.c) && ((!__isset.c) || (System.Object.Equals(C, other.C))))
+    return ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))))
       && ((__isset.ts == other.__isset.ts) && ((!__isset.ts) || (System.Object.Equals(Ts, other.Ts))))
-      && ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))));
+      && ((__isset.encoder == other.__isset.encoder) && ((!__isset.encoder) || (System.Object.Equals(Encoder, other.Encoder))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if((C != null) && __isset.c)
+      if((V != null) && __isset.v)
       {
-        hashcode = (hashcode * 397) + C.GetHashCode();
+        hashcode = (hashcode * 397) + V.GetHashCode();
       }
       if(__isset.ts)
       {
         hashcode = (hashcode * 397) + Ts.GetHashCode();
       }
-      if((V != null) && __isset.v)
+      if(__isset.encoder)
       {
-        hashcode = (hashcode * 397) + V.GetHashCode();
+        hashcode = (hashcode * 397) + Encoder.GetHashCode();
       }
     }
     return hashcode;
@@ -258,28 +260,28 @@ public partial class KCell : TBase
 
   public override string ToString()
   {
-    var tmp346 = new StringBuilder("KCell(");
-    int tmp347 = 0;
-    if((C != null) && __isset.c)
+    var tmp86 = new StringBuilder("SpecIntervalUpdate(");
+    int tmp87 = 0;
+    if((V != null) && __isset.v)
     {
-      if(0 < tmp347++) { tmp346.Append(", "); }
-      tmp346.Append("C: ");
-      C.ToString(tmp346);
+      if(0 < tmp87++) { tmp86.Append(", "); }
+      tmp86.Append("V: ");
+      V.ToString(tmp86);
     }
     if(__isset.ts)
     {
-      if(0 < tmp347++) { tmp346.Append(", "); }
-      tmp346.Append("Ts: ");
-      Ts.ToString(tmp346);
+      if(0 < tmp87++) { tmp86.Append(", "); }
+      tmp86.Append("Ts: ");
+      Ts.ToString(tmp86);
     }
-    if((V != null) && __isset.v)
+    if(__isset.encoder)
     {
-      if(0 < tmp347++) { tmp346.Append(", "); }
-      tmp346.Append("V: ");
-      V.ToString(tmp346);
+      if(0 < tmp87++) { tmp86.Append(", "); }
+      tmp86.Append("Encoder: ");
+      Encoder.ToString(tmp86);
     }
-    tmp346.Append(')');
-    return tmp346.ToString();
+    tmp86.Append(')');
+    return tmp86.ToString();
   }
 }
 

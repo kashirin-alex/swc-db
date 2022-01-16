@@ -86,18 +86,18 @@ public partial class SpecValueSerial_DOUBLE : TBase
 
   public SpecValueSerial_DOUBLE DeepCopy()
   {
-    var tmp122 = new SpecValueSerial_DOUBLE();
+    var tmp136 = new SpecValueSerial_DOUBLE();
     if(__isset.comp)
     {
-      tmp122.Comp = this.Comp;
+      tmp136.Comp = this.Comp;
     }
-    tmp122.__isset.comp = this.__isset.comp;
+    tmp136.__isset.comp = this.__isset.comp;
     if(__isset.v)
     {
-      tmp122.V = this.V;
+      tmp136.V = this.V;
     }
-    tmp122.__isset.v = this.__isset.v;
-    return tmp122;
+    tmp136.__isset.v = this.__isset.v;
+    return tmp136;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -158,24 +158,24 @@ public partial class SpecValueSerial_DOUBLE : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp123 = new TStruct("SpecValueSerial_DOUBLE");
-      await oprot.WriteStructBeginAsync(tmp123, cancellationToken);
-      var tmp124 = new TField();
+      var tmp137 = new TStruct("SpecValueSerial_DOUBLE");
+      await oprot.WriteStructBeginAsync(tmp137, cancellationToken);
+      var tmp138 = new TField();
       if(__isset.comp)
       {
-        tmp124.Name = "comp";
-        tmp124.Type = TType.I32;
-        tmp124.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp124, cancellationToken);
+        tmp138.Name = "comp";
+        tmp138.Type = TType.I32;
+        tmp138.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp138, cancellationToken);
         await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.v)
       {
-        tmp124.Name = "v";
-        tmp124.Type = TType.Double;
-        tmp124.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp124, cancellationToken);
+        tmp138.Name = "v";
+        tmp138.Type = TType.Double;
+        tmp138.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp138, cancellationToken);
         await oprot.WriteDoubleAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -213,22 +213,22 @@ public partial class SpecValueSerial_DOUBLE : TBase
 
   public override string ToString()
   {
-    var tmp125 = new StringBuilder("SpecValueSerial_DOUBLE(");
-    int tmp126 = 0;
+    var tmp139 = new StringBuilder("SpecValueSerial_DOUBLE(");
+    int tmp140 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp126++) { tmp125.Append(", "); }
-      tmp125.Append("Comp: ");
-      Comp.ToString(tmp125);
+      if(0 < tmp140++) { tmp139.Append(", "); }
+      tmp139.Append("Comp: ");
+      Comp.ToString(tmp139);
     }
     if(__isset.v)
     {
-      if(0 < tmp126++) { tmp125.Append(", "); }
-      tmp125.Append("V: ");
-      V.ToString(tmp125);
+      if(0 < tmp140++) { tmp139.Append(", "); }
+      tmp139.Append("V: ");
+      V.ToString(tmp139);
     }
-    tmp125.Append(')');
-    return tmp125.ToString();
+    tmp139.Append(')');
+    return tmp139.ToString();
   }
 }
 

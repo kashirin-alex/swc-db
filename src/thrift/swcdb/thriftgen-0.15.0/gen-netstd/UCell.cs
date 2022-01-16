@@ -160,38 +160,38 @@ public partial class UCell : TBase
 
   public UCell DeepCopy()
   {
-    var tmp220 = new UCell();
+    var tmp234 = new UCell();
     if(__isset.f)
     {
-      tmp220.F = this.F;
+      tmp234.F = this.F;
     }
-    tmp220.__isset.f = this.__isset.f;
+    tmp234.__isset.f = this.__isset.f;
     if((K != null) && __isset.k)
     {
-      tmp220.K = this.K.DeepCopy();
+      tmp234.K = this.K.DeepCopy();
     }
-    tmp220.__isset.k = this.__isset.k;
+    tmp234.__isset.k = this.__isset.k;
     if(__isset.ts)
     {
-      tmp220.Ts = this.Ts;
+      tmp234.Ts = this.Ts;
     }
-    tmp220.__isset.ts = this.__isset.ts;
+    tmp234.__isset.ts = this.__isset.ts;
     if(__isset.ts_desc)
     {
-      tmp220.Ts_desc = this.Ts_desc;
+      tmp234.Ts_desc = this.Ts_desc;
     }
-    tmp220.__isset.ts_desc = this.__isset.ts_desc;
+    tmp234.__isset.ts_desc = this.__isset.ts_desc;
     if((V != null) && __isset.v)
     {
-      tmp220.V = this.V.ToArray();
+      tmp234.V = this.V.ToArray();
     }
-    tmp220.__isset.v = this.__isset.v;
+    tmp234.__isset.v = this.__isset.v;
     if(__isset.encoder)
     {
-      tmp220.Encoder = this.Encoder;
+      tmp234.Encoder = this.Encoder;
     }
-    tmp220.__isset.encoder = this.__isset.encoder;
-    return tmp220;
+    tmp234.__isset.encoder = this.__isset.encoder;
+    return tmp234;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -225,13 +225,13 @@ public partial class UCell : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list221 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list221.Count);
-                for(int _i222 = 0; _i222 < _list221.Count; ++_i222)
+                TList _list235 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list235.Count);
+                for(int _i236 = 0; _i236 < _list235.Count; ++_i236)
                 {
-                  byte[] _elem223;
-                  _elem223 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem223);
+                  byte[] _elem237;
+                  _elem237 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem237);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -302,29 +302,29 @@ public partial class UCell : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp224 = new TStruct("UCell");
-      await oprot.WriteStructBeginAsync(tmp224, cancellationToken);
-      var tmp225 = new TField();
+      var tmp238 = new TStruct("UCell");
+      await oprot.WriteStructBeginAsync(tmp238, cancellationToken);
+      var tmp239 = new TField();
       if(__isset.f)
       {
-        tmp225.Name = "f";
-        tmp225.Type = TType.I32;
-        tmp225.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp225, cancellationToken);
+        tmp239.Name = "f";
+        tmp239.Type = TType.I32;
+        tmp239.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp239, cancellationToken);
         await oprot.WriteI32Async((int)F, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((K != null) && __isset.k)
       {
-        tmp225.Name = "k";
-        tmp225.Type = TType.List;
-        tmp225.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp225, cancellationToken);
+        tmp239.Name = "k";
+        tmp239.Type = TType.List;
+        tmp239.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp239, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter226 in K)
+          foreach (byte[] _iter240 in K)
           {
-            await oprot.WriteBinaryAsync(_iter226, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter240, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -332,37 +332,37 @@ public partial class UCell : TBase
       }
       if(__isset.ts)
       {
-        tmp225.Name = "ts";
-        tmp225.Type = TType.I64;
-        tmp225.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp225, cancellationToken);
+        tmp239.Name = "ts";
+        tmp239.Type = TType.I64;
+        tmp239.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp239, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts_desc)
       {
-        tmp225.Name = "ts_desc";
-        tmp225.Type = TType.Bool;
-        tmp225.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp225, cancellationToken);
+        tmp239.Name = "ts_desc";
+        tmp239.Type = TType.Bool;
+        tmp239.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp239, cancellationToken);
         await oprot.WriteBoolAsync(Ts_desc, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp225.Name = "v";
-        tmp225.Type = TType.String;
-        tmp225.ID = 5;
-        await oprot.WriteFieldBeginAsync(tmp225, cancellationToken);
+        tmp239.Name = "v";
+        tmp239.Type = TType.String;
+        tmp239.ID = 5;
+        await oprot.WriteFieldBeginAsync(tmp239, cancellationToken);
         await oprot.WriteBinaryAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.encoder)
       {
-        tmp225.Name = "encoder";
-        tmp225.Type = TType.I32;
-        tmp225.ID = 6;
-        await oprot.WriteFieldBeginAsync(tmp225, cancellationToken);
+        tmp239.Name = "encoder";
+        tmp239.Type = TType.I32;
+        tmp239.ID = 6;
+        await oprot.WriteFieldBeginAsync(tmp239, cancellationToken);
         await oprot.WriteI32Async((int)Encoder, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -420,46 +420,46 @@ public partial class UCell : TBase
 
   public override string ToString()
   {
-    var tmp227 = new StringBuilder("UCell(");
-    int tmp228 = 0;
+    var tmp241 = new StringBuilder("UCell(");
+    int tmp242 = 0;
     if(__isset.f)
     {
-      if(0 < tmp228++) { tmp227.Append(", "); }
-      tmp227.Append("F: ");
-      F.ToString(tmp227);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("F: ");
+      F.ToString(tmp241);
     }
     if((K != null) && __isset.k)
     {
-      if(0 < tmp228++) { tmp227.Append(", "); }
-      tmp227.Append("K: ");
-      K.ToString(tmp227);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("K: ");
+      K.ToString(tmp241);
     }
     if(__isset.ts)
     {
-      if(0 < tmp228++) { tmp227.Append(", "); }
-      tmp227.Append("Ts: ");
-      Ts.ToString(tmp227);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("Ts: ");
+      Ts.ToString(tmp241);
     }
     if(__isset.ts_desc)
     {
-      if(0 < tmp228++) { tmp227.Append(", "); }
-      tmp227.Append("Ts_desc: ");
-      Ts_desc.ToString(tmp227);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("Ts_desc: ");
+      Ts_desc.ToString(tmp241);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp228++) { tmp227.Append(", "); }
-      tmp227.Append("V: ");
-      V.ToString(tmp227);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("V: ");
+      V.ToString(tmp241);
     }
     if(__isset.encoder)
     {
-      if(0 < tmp228++) { tmp227.Append(", "); }
-      tmp227.Append("Encoder: ");
-      Encoder.ToString(tmp227);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("Encoder: ");
+      Encoder.ToString(tmp241);
     }
-    tmp227.Append(')');
-    return tmp227.ToString();
+    tmp241.Append(')');
+    return tmp241.ToString();
   }
 }
 
