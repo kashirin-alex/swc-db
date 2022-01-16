@@ -351,6 +351,9 @@ class Cell final {
 
   void print(std::ostream& out, Types::Column typ) const;
 
+  static int counter_from_str(const uint8_t** ptrp, size_t* remainp,
+                              uint8_t& op, int64_t& value) noexcept;
+
   DB::Cell::Key   key;
   bool            own;
   uint8_t         flag;
@@ -528,6 +531,40 @@ void Cell::write(DynamicBuffer &dst_buf, bool no_value) const {
     Serialization::encode_vi32(&dst_buf.ptr, vlen);
     dst_buf.add_unchecked(value, vlen);
   }
+}
+
+
+
+SWC_CAN_INLINE
+int Cell::counter_from_str(const uint8_t** ptrp, size_t* remainp,
+                           uint8_t& op, int64_t& value) noexcept {
+  if(!*remainp) {
+    op = OP_EQUAL;
+    value = 0;
+    return Error::OK;
+  }
+  if(**ptrp == '=') {
+    op = OP_EQUAL;
+    ++*ptrp;
+    if(!--*remainp) {
+      value = 0;
+      return Error::OK;
+    }
+  } else {
+    op = 0;
+  }
+  const char* p = reinterpret_cast<const char*>(*ptrp);
+  char *last = const_cast<char*>(p + (*remainp > 30 ? 30 : *remainp));
+  errno = 0;
+  value = strtoll(p, &last, 0);
+  if(errno) {
+    return errno;
+  } else if(last > p) {
+    *remainp -= last - p;
+    *ptrp = reinterpret_cast<const uint8_t*>(last);
+    return Error::OK;
+  }
+  return EINVAL;
 }
 
 

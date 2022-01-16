@@ -105,9 +105,6 @@ class Reader {
   void read_ts_and_value(DB::Types::Column col_type, bool require_ts,
                          DB::Cells::Cell& cell);
 
-  void counter_op_from(const uint8_t** ptr, size_t* remainp,
-                       uint8_t& op, int64_t& value);
-
   void error_msg(int error, const std::string& msg);
 
   const std::string&  sql;

@@ -663,7 +663,7 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
       size_t _remain = value.length();
       uint8_t op;
       int64_t v;
-      counter_op_from(&valp, &_remain, op, v);
+      err = DB::Cells::Cell::counter_from_str(&valp, &_remain, op, v);
       if(err) {
         error_msg(Error::SQL_PARSE_ERROR, Error::get_text(err));
         return;
@@ -679,37 +679,6 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
     }
     default:
       break;
-  }
-}
-
-void Reader::counter_op_from(const uint8_t** ptrp, size_t* remainp,
-                             uint8_t& op, int64_t& value) {
-  if(!*remainp) {
-    op = DB::Cells::OP_EQUAL;
-    value = 0;
-    return;
-  }
-  if(**ptrp == '=') {
-    op = DB::Cells::OP_EQUAL;
-    ++*ptrp;
-    if(!--*remainp) {
-      value = 0;
-      return;
-    }
-  } else {
-    op = 0;
-  }
-  const char* p = reinterpret_cast<const char*>(*ptrp);
-  char *last = const_cast<char*>(p + (*remainp > 30 ? 30 : *remainp));
-  errno = 0;
-  value = strtoll(p, &last, 0);
-  if(errno) {
-    err = errno;
-  } else if(last > p) {
-    *remainp -= last - p;
-    *ptrp = reinterpret_cast<const uint8_t*>(last);
-  } else {
-    err = EINVAL;
   }
 }
 
