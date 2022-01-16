@@ -539,44 +539,7 @@ class AppHandler final : virtual public BrokerIf {
           dbcell.set_time_order_desc(cell.ts_desc);
 
         DB::Cell::Serial::Value::FieldsWriter wfields;
-        size_t len = 0;
-        for(auto& fields : cell.v) {
-          if(fields.__isset.v_int64)
-            len += 16;
-          if(fields.__isset.v_double)
-            len += 24;
-          if(!fields.v_bytes.empty())
-            len += fields.v_bytes.size() + 8;
-          if(!fields.v_key.empty())
-            len += fields.v_key.size() + 8;
-          if(!fields.v_li.empty())
-            len += fields.v_li.size() * 16;
-          for(auto& v : fields.v_lb)
-            len += v.size() + 8;
-        }
-        wfields.ensure(len);
-        for(auto& fields : cell.v) {
-          if(fields.__isset.v_int64)
-            wfields.add(fields.field_id, fields.v_int64);
-          if(fields.__isset.v_double) {
-            long double v(fields.v_double);
-            wfields.add(fields.field_id, v);
-          }
-          if(!fields.v_bytes.empty())
-            wfields.add(fields.field_id, fields.v_bytes);
-          if(!fields.v_key.empty()) {
-            DB::Cell::Serial::Value::Field_KEY field;
-            field.fid = fields.field_id;
-            Converter::set(fields.v_key, field.key);
-            //
-            wfields.add(&field);
-          }
-          if(!fields.v_li.empty())
-            wfields.add(fields.field_id, fields.v_li);
-          if(!fields.v_lb.empty())
-            wfields.add(fields.field_id, fields.v_lb);
-        }
-
+        Converter::set(cell.v, wfields);
         cell.__isset.encoder
           ? dbcell.set_value(DB::Types::Encoder(uint8_t(cell.encoder)),
                              wfields.base, wfields.fill())
