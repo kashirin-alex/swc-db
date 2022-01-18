@@ -610,7 +610,7 @@ void Mutable::_finalize_counter() {
       if(eq_rev == TIMESTAMP_NULL)
         eq_rev = cell->get_timestamp();
 
-      if(!(agg_op & OP_EQUAL) || eq_rev > agg_eq_rev) {
+      if(!(agg_op & OP_EQUAL) || eq_rev >= agg_eq_rev) {
         if(op & OP_EQUAL) {
           agg_op = op;
           agg_value = value;

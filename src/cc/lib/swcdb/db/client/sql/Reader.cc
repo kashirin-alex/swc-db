@@ -251,15 +251,16 @@ void Reader::read_uint32_t(uint32_t& value, bool& was_set, const char* stop) {
 void Reader::read_int64_t(int64_t& value, bool& was_set, const char* stop) {
   std::string buf;
   read(buf, stop ? stop : "),]");
-  if(err)
-    return;
-  try {
-    value = std::stoll(buf);
-    was_set = true;
-  } catch(...) {
-    error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
-    was_set = false;
+  if(!err) {
+    try {
+      value = std::stoll(buf);
+      was_set = true;
+      return;
+    } catch(...) {
+      error_msg(Error::SQL_PARSE_ERROR, " signed 64-bit integer out of range");
+    }
   }
+  was_set = false;
 }
 
 void Reader::read_uint64_t(uint64_t& value, bool& was_set, const char* stop) {

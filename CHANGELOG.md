@@ -23,8 +23,36 @@
     added move-ctor for Core::{QueuePointer, QueueSafe}
     fixed Ranger mem-usage of Range::(m_q_scan,m_q_add) clear-expired requests
     fixed Ranger CompactRange::initialize wait-time + fragments size * 100ms
+    removed Ranger Fragments grouping of one-version without filling-check
+    fixed Ranger CellStores need-compact of multi-versions over cellstores
     changed FsBrokers handlers to use FileSystem's default available methods
     added ensure fd-closed in FileSystem::default_{write,read,combi_pread}
+    fixed Manager hint of a last-cid-used
+    changed SWC_PRINT logger Macro to use unique var-name for mutex-lock
+    removed Cells::{AUTO_TIMESTAMP,AUTO_ASSIGN}, incompatible to old-releases
+    changed Cell::{timestamp,revision} to private ctx & added set/get support
+    fixed Cell::print of COUNTER type with flag DELETE
+    added DB::Cells::Cell 'control' MASK bits
+    fixed missing VectorsVector<>:: ctor & assign for copy & move
+    added bool VectorsVector<>::Const/Iterator::next()
+    changed ctors of VectorsVector<>::Const/Iterator(VectorsT&) to explicit
+    added ensure free() before DB::Cells::Mutable move
+    added Cells::Mutable::_add_plain_version_{single,multi}(..)
+    changed Mutable::split to split(Mutable&, size_t, size_t, bool)
+    fixed cells split of the same key in Cells::MutableVec
+    fixed offset-state at 'add_sorted' in Cells::MutableVec::add_raw
+    added support of unfinalized Cells::Mutable
+    fixed and extended revisions-control of Counter Column types
+    added {Mutable/Vec,Fragments}::check_sequence(const char*, bool w_assert)
+    added a Python Example for load_generator sequence-check
+    added void SQL::Reader::read_ts_and_value(..) with opt. TS-TOKEN "auto"
+    moved SQL::Reader::counter_op_from to static int Cell::counter_from_str(.)
+    added Thrift::Converter::set(const CellValuesSerial&,Value::FieldsWriter&)
+    added virtual void DB::Cells::ReqScan::update(Mutable& cells)
+    added virtual bool DB::Cells::ReqScan::has_update()
+    added Query support for an Update and a Delete cell/s on Scan Specs match
+    added DELETE_MATCHING and UPDATE=(TS,DATA,ENC) Cells-Interval SQL support
+    added Thrift Service support for Specs-Interval-Update (update & delete)
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.6...master)
 ******

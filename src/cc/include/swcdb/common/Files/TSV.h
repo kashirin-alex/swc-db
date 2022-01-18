@@ -385,7 +385,7 @@ class FileReader {
     } else {
       instream.reset(new Core::BufferStreamIn());
     }
-    err = instream->error;
+    err = instream ? instream->error : Error::BAD_MEMORY_ALLOCATION;
     if(err)
       return;
 
