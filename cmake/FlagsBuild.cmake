@@ -158,5 +158,13 @@ else()
 
 endif ()
 
+
+# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
+# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-ms-compat")
+
+# -fimplicit-constexpr
+# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstrong-eval-order")
+# SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcheck-new ")  # ?with DSWC_MALLOC_NOT_INSISTENT=OFF
+
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpack-struct=1 -fshort-enums")
 # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsplit-stack ")
