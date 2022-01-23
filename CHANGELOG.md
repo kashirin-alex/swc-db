@@ -6,8 +6,20 @@
 ***
 
 
+
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.7...master)
+******
+
+
+
+
+### [SWC-DB v0.5.7](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.7) (2022-01-23)
+
+    updated for OpenSSL 3 version
     added cfg-files swc_fs_{ceph,hadoop_jvm,local}.dyn.cfg
     added cfg 'swc.fs.hadoop_jvm.{read,write}.buffer.size'
     added cfg 'swc.fs.hadoop_jvm.block.size'
@@ -53,8 +65,9 @@
     added Query support for an Update and a Delete cell/s on Scan Specs match
     added DELETE_MATCHING and UPDATE=(TS,DATA,ENC) Cells-Interval SQL support
     added Thrift Service support for Specs-Interval-Update (update & delete)
+    changed Comm::ConnHandler::{Sender,Receiver}_*::operator()(..) to noexcept
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.6...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.6...v0.5.7)
 ******
 
 
