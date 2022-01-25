@@ -125,7 +125,7 @@ void Statistics::ReadGroup::print(std::ostream& out,
     out << "since=" << since << "s ";
   if(agg)
     out << "agg=" << agg << "s ";
-  for(size_t i=0; i < ptr->m_stat_names.size(); ++i) {
+  for(size_t i=0; i < key.size(); ++i) {
     if(!key[i].empty())
       key[i].print(out << ' ' << ptr->m_stat_names[i]);
   }
@@ -281,7 +281,7 @@ bool Statistics::read(std::string& cmd, bool extended) {
       }
       it->comp = Condition::GE;
     }
-    if(it_set == g.key.cbegin()) {
+    if(it == g.key.cbegin()) {
       g.key.clear();
     } else if(it_set != g.key.cend() &&
               ++it_set != g.key.cend() &&
@@ -773,61 +773,30 @@ bool Statistics::show() {
     for(auto& g : m_read_groups)
       g.print(SWC_LOG_OSTREAM << "\n\t", this);
   );
-  if(err)
-    return error(m_message);
-  return true;
+  return err ? error(m_message) : true;
 }
 
 
 
 // TRUNCATE
 bool Statistics::truncate() {
-  Core::Atomic<int> state_error(Error::OK);
-
-  auto updater = client::Query::Update::Handlers::Common::make(
-    clients,
-    [state_errorp=&state_error]
-    (const client::Query::Update::Handlers::Common::Ptr& _hdlr) noexcept {
-      if(_hdlr->error())
-        state_errorp->store(_hdlr->error());
-    },
-    nullptr,
-    with_broker
-      ? client::Clients::BROKER
-      : client::Clients::DEFAULT
-  );
-  auto& col_updated = updater->create(
-    DB::Types::SystemColumn::SYS_CID_STATS,
-    DB::Types::KeySeq::LEXIC, 1, 0, DB::Types::Column::SERIAL
-  );
-
   Core::Atomic<size_t> deleted_count(0);
+
   auto hdlr = client::Query::Select::Handlers::Common::make(
-    updater->clients,
-    [updater, col_updated,
-     state_errorp=&state_error, countp=&deleted_count]
+    clients,
+    [countp=&deleted_count]
     (const client::Query::Select::Handlers::Common::Ptr& _hdlr) {
-      if(_hdlr->state_error && !state_errorp->load())
-        state_errorp->store(_hdlr->state_error);
-
-      DB::Cells::Result cells;
-      if(!state_errorp->load()) {
-        auto col = _hdlr->get_columnn(DB::Types::SystemColumn::SYS_CID_STATS);
-        if(col->error() && !state_errorp->load())
-          state_errorp->store(col->error());
-        if(!state_errorp->load() && !col->empty())
-          col->get_cells(cells);
-      }
-      if(state_errorp->load()) {
+      if(_hdlr->state_error) {
         _hdlr->valid_state.store(false);
-        return;
-      }
-
-      for(auto cell : cells) {
-        cell->flag = DB::Cells::DELETE_LE;
-        col_updated->add(*cell);
-        updater->commit_or_wait(col_updated.get());
-        countp->fetch_add(1);
+      } else {
+        auto col = _hdlr->get_columnn(DB::Types::SystemColumn::SYS_CID_STATS);
+        if(col->error()) {
+          _hdlr->valid_state.store(false);
+        } else if(!col->empty()) {
+          DB::Cells::Result cells;
+          col->get_cells(cells);
+          countp->fetch_add(cells.size());
+        }
       }
     },
     true,
@@ -842,6 +811,7 @@ bool Statistics::truncate() {
     DB::Types::SystemColumn::SYS_CID_STATS, m_read_groups.size());
   for(auto& g : m_read_groups) {
     auto& intval = col.add(DB::Types::Column::SERIAL);
+    intval->set_opt__deleting();
     intval->flags.set_only_keys();
     auto& key_intval = intval->key_intervals.add();
 
@@ -875,23 +845,12 @@ bool Statistics::truncate() {
   );
 
   hdlr->scan(err, std::move(specs));
-  state_error.store(err);
-  if(!state_error) {
+  if(!err) {
     hdlr->wait();
-    if(!state_error) {
-      updater->commit_if_need();
-      updater->wait();
-    }
+    err = hdlr->state_error.load();
   }
-
-  if(state_error)
-    err = state_error;
-
   SWC_PRINT << " Deleted Cells: " << deleted_count << SWC_PRINT_CLOSE;
-
-  if(err)
-    return error(m_message);
-  return true;
+  return err ? error(m_message) : true;
 }
 
 
