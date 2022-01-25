@@ -315,11 +315,13 @@ void Interval::print(std::ostream& out) const {
   if(is_updating())
     updating->print(out << " Update");
 
-  out << " Options("
-    << "range-end-rest=" << has_opt__range_end_rest()
-    << " key-eq=" << has_opt__key_equal()
-    << ')';
-  out << ')';
+  out << " Options(range-end-rest=" << has_opt__range_end_rest()
+      << " key-eq=" << has_opt__key_equal();
+  if(has_opt__updating())
+    out << " UPDATING";
+  if(has_opt__deleting())
+    out << " DELETING";
+  out << "))";
 }
 
 void Interval::display(std::ostream& out, bool pretty,
@@ -367,8 +369,12 @@ void Interval::display(std::ostream& out, bool pretty,
 
   out << offset << " Options("
     << "range-end-rest=" << has_opt__range_end_rest()
-    << " key-eq=" << has_opt__key_equal()
-    << ")\n";
+    << " key-eq=" << has_opt__key_equal();
+  if(has_opt__updating())
+    out << " UPDATING";
+  if(has_opt__deleting())
+    out << " DELETING";
+  out << ")\n";
 
   out << offset << ")\n";
 }
