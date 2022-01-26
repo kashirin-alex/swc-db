@@ -36,6 +36,7 @@ sort: 2
     * [The Condition-Offset-Key syntax](#the-condition-offset-key-syntax)
     * [The Condition-Offset-Revision syntax](#the-condition-offset-revision-syntax)
     * [The Flags syntax](#the-flags-syntax)
+    * [The Update Options syntax](#the-update-options-syntax)
   * [Update Query](#update-query)
     * [The Update Query syntax](#the-update-query-syntax)
     * [The Cell for Update syntax](#the-cell-for-update-syntax)
@@ -283,7 +284,7 @@ The Cells-Intervals is a grouping of Cells-Interval with the TOKEN ``` AND ```, 
 
 * ##### The Cells-Interval syntax
 The Cells-Interval is a group of conditions, joined by the TOKEN ``` AND ``` plus Flags, for matching cells against it. \
-All the Conditions and Flags are optional, without a LIMIT and any Conditions the condition is equal to select all cells in the column/s . \
+All the Conditions, Flags and Options are optional, without a LIMIT and any Conditions the condition is equal to select all cells in the column/s . \
 ***```cells=(```
 [ [```Condition-Range```](#the-condition-range-syntax) ]
 [``` AND ```]
@@ -296,7 +297,8 @@ All the Conditions and Flags are optional, without a LIMIT and any Conditions th
 [ [```Condition-Offset-Key```](#the-condition-offset-key-syntax) ]
 [``` AND ```]
 [ [```Condition-Offset-Revision```](#the-condition-offset-revision-syntax) ]
-[ [```Flags```(cells-interval-scope)](#the-flags-syntax)] 
+[ [```Flags```(cells-interval-scope)](#the-flags-syntax)]
+[ [```Options```](#the-update-options-syntax)]
 ```)```***
 
 
@@ -380,10 +382,18 @@ The Condition of the Offset Revision is the Cell Timestamp with one Comparator o
 * ##### The Flags syntax
 The following flags, ```token``` and ```key=value```, are available: \
 ```LIMIT=I64``` ```OFFSET=I64``` ```MAX_VERSIONS=I64``` ```MAX_BUFFER=I64``` ```ONLY_KEYS```   ```ONLY_DELETES```.
-* On global-scope the flags applied to all Cells-Interval without a Cells-Interval-scope flags.
-* On Cells-Interval-scope the flags applied only to the Cells-Interval scope.
+  * On global-scope the flags applied to all Cells-Interval without a Cells-Interval-scope flags.
+  * On Cells-Interval-scope the flags applied only to the Cells-Interval scope.
 
 
+* ##### The Update Options syntax
+The Select Query can be applied with these options for updating a cells-interval:
+  * ```DELETE_MATCHING```
+  * ```UPDATE=(TIMESTAMP, VALUE, ENC)```
+> The cells of the response are the fetched cells before update has been applied.\
+These options let the use of a column in a synchronized manner with the possibilities of:
+> * auto-increment value for purpose such as an unique ID
+> * the data to be considered and processed as a Queue, whether to delete or to update the value with a corresponding queue track data.
 
 
 
