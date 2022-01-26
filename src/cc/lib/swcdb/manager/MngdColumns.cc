@@ -440,93 +440,35 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
         if(!col->error() && !col->empty())
           col->get_cells(cells_rgrdata);
       }
-      if(err && cells_meta.empty()) {
+      if(err) {
         SWC_LOGF(LOG_WARN,
         "Column(cid=" SWC_FMT_LU " meta_cid=" SWC_FMT_LU ") "
         "Range MetaData might remained, result-err=%d(%s)",
         schema->cid, meta_cid, err, Error::get_text(err));
       }
-
-      if(err || (cells_meta.empty() && cells_rgrdata.empty()))
-        return update(
-          ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
-
-      if(!cells_meta.empty()) {
+      if(!cells_meta.empty() || !cells_rgrdata.empty()) {
         SWC_LOG_OUT(LOG_INFO,
-          SWC_LOG_OSTREAM << "Column(cid=" << schema->cid
-            << " meta_cid=" << meta_cid << ')'
-            << " deleting Range MetaData, remained(" << cells_meta.size() << ')'
-            << " cells=[";
+          SWC_LOG_OSTREAM << "Column(cid=" << schema->cid << ')'
+            << " deleted Ranges MetaData:\n meta_cid=" << meta_cid
+            << " remained(" << cells_meta.size() << ") cells=[";
           for(auto cell : cells_meta)
             cell->key.print(SWC_LOG_OSTREAM << "\n\t");
-          SWC_LOG_OSTREAM << "\n]";
+          SWC_LOG_OSTREAM << "\n ]\n SYS_RGR_DATA"
+            << " remained(" << cells_rgrdata.size() << ") cells=[";
+          for(auto cell : cells_rgrdata)
+            cell->key.print(SWC_LOG_OSTREAM << "\n\t");
+          SWC_LOG_OSTREAM << "\n ]";
         );
       }
-
-      auto updater = client::Query::Update::Handlers::Common::make(
-        Env::Clients::get(),
-        [this, req_id, schema]
-        (const client::Query::Update::Handlers::Common::Ptr& u_hdlr) {
-          cid_t u_meta_cid = DB::Types::SystemColumn::get_sys_cid(
-            schema->col_seq,
-            DB::Types::SystemColumn::get_range_type(schema->cid)
-          );
-          int u_err = u_hdlr->error();
-          auto u_col = u_hdlr->get(u_meta_cid);
-          if(u_col && (u_err || u_col->error())) {
-            SWC_LOGF(LOG_WARN,
-              "Column(cid=" SWC_FMT_LU " meta_cid=" SWC_FMT_LU ") "
-              "Range MetaData might remained, "
-              "updater-err=%d(%s) colm-err=%d(%s)",
-              schema->cid, u_meta_cid,
-              u_err, Error::get_text(u_err),
-              u_col->error(), Error::get_text(u_col->error())
-            );
-          }
-          u_col = u_hdlr->get(DB::Types::SystemColumn::SYS_RGR_DATA);
-          if(u_col && (u_err || u_col->error())) {
-            SWC_LOGF(LOG_WARN,
-              "Column(cid=" SWC_FMT_LU " rgrdata_cid=" SWC_FMT_LU ") "
-              "Range RgrData might remained, "
-              "updater-err=%d(%s) colm-err=%d(%s)",
-              schema->cid, DB::Types::SystemColumn::SYS_RGR_DATA,
-              u_err, Error::get_text(u_err),
-              u_col->error(), Error::get_text(u_col->error())
-            );
-          }
-          return update(
-            ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
-        },
-        Env::Mngr::io()
-      );
-
-      updater->completion.increment();
-      if(!cells_meta.empty()) {
-        auto& u_col = updater->create(
-          meta_cid, schema->col_seq, 1, 0, DB::Types::Column::SERIAL);
-        for(auto cell : cells_meta) {
-          cell->flag = DB::Cells::DELETE_LE;
-          u_col->add(*cell);
-          updater->commit_or_wait(u_col.get(), 1);
-        }
-      }
-      if(!cells_rgrdata.empty()) {
-        auto& u_col = updater->create(
-          DB::Types::SystemColumn::SYS_RGR_DATA,
-          DB::Types::KeySeq::VOLUME, 1, 0, DB::Types::Column::PLAIN);
-        for(auto cell : cells_rgrdata) {
-          cell->flag = DB::Cells::DELETE_LE;
-          u_col->add(*cell);
-          updater->commit_or_wait(u_col.get(), 1);
-        }
-      }
-      updater->response(Error::OK);
+      return update(
+        ColumnMngFunc::INTERNAL_ACK_DELETE, schema, Error::OK, req_id);
     },
     false,
     Env::Mngr::io()
   );
 
   DB::Specs::Interval spec(DB::Types::Column::SERIAL);
+  spec.set_opt__deleting();
   spec.flags.set_only_keys();
   auto& key_intval = spec.key_intervals.add();
   key_intval.start.reserve(2);
