@@ -387,13 +387,12 @@ The following flags, ```token``` and ```key=value```, are available: \
 
 
 * ##### The Update Options syntax
-The Select Query can be applied with these options for updating a cells-interval:
-  * ```DELETE_MATCHING```
-  * ```UPDATE=(TIMESTAMP, VALUE, ENC)```
-> The cells of the response are the fetched cells before update has been applied.\
-These options let the use of a column in a synchronized manner with the possibilities of:
-> * auto-increment value for purpose such as an unique ID
-> * the data to be considered and processed as a Queue, whether to delete or to update the value with a corresponding queue track data.
+The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE=(TIMESTAMP, VALUE, ENC)``` options for updating a cells-interval.
+> The cells of the response are the fetched cells before update has been applied.
+
+These options let the use of a column in a synchronized manner that open usage possibilities to cases such as:
+  * auto-increment value for purpose such as an unique ID.
+  * the data to be considered and processed as a Queue, whether to delete or to update the value with a corresponding queue track data.
 
 
 
