@@ -25,7 +25,7 @@
 #endif
 
 
-const static int hist_size = 4000;
+int el_hist_size = 4000;
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -111,7 +111,7 @@ CLI Interface::run() {
   #if defined(USE_REPLXX)
     replxx::Replxx rx;
     rx.install_window_change_handler();
-	  rx.set_max_history_size(hist_size);
+	  rx.set_max_history_size(el_hist_size);
 	  rx.set_max_hint_rows(3);
 	  rx.set_indent_multiline(true);
 	  rx.set_prompt(prompt);
