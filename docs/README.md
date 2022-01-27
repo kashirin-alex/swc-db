@@ -32,7 +32,7 @@ _The proven test with SWC-DB v0.4.9, on one machine(CPU Intel E3-1246V3 RAM 32GB
 | **a Wide Column Database DB**                         | **```✔```**  |          |
 | **a NOSQL (Not Only Structual Query Language) DB**    | **```✔```**  |          |
 | **a [SQL]({{ site.baseurl }}/use/sql/) (Structual Query Language) DB**  | **```✔```**  | no joins |
-| **a DB with ACID(concept) for a single data-entry**   | **```✔```**  | write with acknowledgment on base of one data-entry(cell) |
+| **a DB with ACID(concept) for a single data-entry**   | **```✔```**  | write with acknowledgment on base of one data-entry(cell) or with update of matching Cells-Interval Scan-Specifications |
 | **a DB with ACID(concept) for a many data-entries**   | **```✗```**  | write with acknowledgment many data-entries(cells) with one request, problem - one entry can exist while other yet to exist |
 | **a Relational DB**                                   | **```✗```**  | achievable by the client-side |
 | **a Time Series DB**                                  | **```✔```**  | without relational propotions |
@@ -54,6 +54,7 @@ _The proven test with SWC-DB v0.4.9, on one machine(CPU Intel E3-1246V3 RAM 32GB
 | **a Document/Files stores DB**                        | **```✔```**  | user defined Meta/Header & Key-Fractions(file-path) structure whereas anomaly of use is at file-size above Range-Block-size cfg |
 | **a Super Wide Column DB**                            | **```✔```**  | supporting 16777216(2^24,uint24) number of Fractions, max 2^24 bytes a Fraction and total size of a key upto 2^32 bytes |
 | **a DB with Communications over Secure Layer(SSL)**   | **```✔```**  | The total security of transactions require the underlying configured FileSystem and Clients to have & support a Secure Layer |
+| **a Queue**                                           | **```✔```**  | No events triggers; Query-results, determine the next record, selected by SQL or Scan-Specifications with [cells-interval]({{ site.baseurl }}/use/sql/#the-update-options-syntax) set with an updating option |
 
 
 #### The Differences of SWC-DB with Wide Column Databases
