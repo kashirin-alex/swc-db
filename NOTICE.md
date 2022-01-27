@@ -7,8 +7,8 @@ _SWC-DB implement third-party sources and binaries in dynamic or static form. Th
 ##  The Third-Party License notices:
 ******
 
-### Free Software Foundation, Inc. 
-    
+### Free Software Foundation, Inc.
+
     libstdc++, libgcc_s               : https://gcc.gnu.org
 
 ```
@@ -92,10 +92,10 @@ requirements of the license of GCC.
 
 
 
-****** 
+******
 
 ### Christopher M. Kohlhoff
-    
+
     asio headers                      : https://github.com/chriskohlhoff/asio/
 
 ```
@@ -108,9 +108,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
 
-****** 
+******
 
-### Google Inc. 
+### Google Inc.
 
     libtcmalloc, libtcmalloc_minimal  : https://github.com/gperftools/gperftools
     libre2                            : https://github.com/google/re2
@@ -158,10 +158,10 @@ support library is itself covered by the above license.
 
 
 
-****** 
+******
 
 ### Facebook, Inc.
-    
+
     libzstd                           : https://github.com/facebook/zstd
 
 ```
@@ -210,10 +210,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-****** 
+******
 
 ### Jean-loup Gailly and Mark Adler
-    
+
     libz                              : https://www.zlib.net
 
 ```zlib.h -- interface of the 'zlib' general purpose compression library
@@ -244,10 +244,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-****** 
+******
 
 ### OpenSSL Software Foundation
-    
+
     libcrypto, libssl                 : https://www.openssl.org/
 
 ```
@@ -379,13 +379,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-****** 
+******
 
 ### Simmule Turner and Rich Salz
-    
+
     libeditline                       : https://github.com/troglobit/editline
 
-``` 
+```
 Copyright 1992,1993 Simmule Turner and Rich Salz
  All rights reserved.
 
@@ -409,13 +409,53 @@ Copyright 1992,1993 Simmule Turner and Rich Salz
 
 
 
-****** 
+******
+
+### Libreplxx Contributors
+
+    libreplxx                         : https://github.com/AmokHuginnsson/replxx
+
+```
+Copyright (c) 2017-2018, Marcin Konarski (amok at codestation.org)
+Copyright (c) 2010, Salvatore Sanfilippo (antirez at gmail dot com)
+Copyright (c) 2010, Pieter Noordhuis (pcnoordhuis at gmail dot com)
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+Neither the name of Redis nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+wcwidth.cpp
+Markus Kuhn -- 2007-05-26 (Unicode 5.0)
+
+Permission to use, copy, modify, and distribute this software for any purpose and without fee is hereby granted. The author disclaims all warranties with regard to this software.
+
+ConvertUTF.cpp
+Copyright 2001-2004 Unicode, Inc.
+
+Disclaimer
+
+This source code is provided as is by Unicode, Inc. No claims are made as to fitness for any particular purpose. No warranties of any kind are expressed or implied. The recipient agrees to determine applicability of information provided. If this file has been purchased on magnetic or optical media from Unicode, Inc., the sole remedy for any claim will be exchange of defective media within 90 days of receipt.
+
+Limitations on Rights to Redistribute This Code
+
+Unicode, Inc. hereby grants the right to freely use the information supplied in this file in the creation of products supporting the Unicode Standard, and to make copies of this file in any form for internal or external distribution as long as this notice remains attached.
+```
+
+
+
+
+******
 
 ### Libevent Contributors
-    
+
     libevent                          : https://libevent.org/
 
-``` 
+```
 Libevent is available for use under the following license, commonly known
 as the 3-clause (or "modified") BSD license:
 
@@ -572,21 +612,21 @@ This file is part of mbed TLS (https://tls.mbed.org)
 
 
 
-****** 
+******
 
 ### The Apache Software Foundation
-    
-    libthrift, libthriftz, 
+
+    libthrift, libthriftz,
     libthriftnb, libthrift_c_glib     : https://thrift.apache.org/
     (excl. java) libhdfs, libhdfscpp  : https://hadoop.apache.org/
 
-``` 
+```
 Apache Thrift
 Copyright (C) 2006 - 2019, The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
-``` 
+```
 ```
 Apache Hadoop
 Copyright 2006 and onwards The Apache Software Foundation.
@@ -598,13 +638,13 @@ The Apache Software Foundation (http://www.apache.org/).
 
 
 
-****** 
+******
 
 ### Microsoft Corporation
-    
+
     libmimalloc                       : https://github.com/microsoft/mimalloc
 
-``` 
+```
 MIT License
 
 Copyright (c) 2019 Microsoft Corporation, Daan Leijen

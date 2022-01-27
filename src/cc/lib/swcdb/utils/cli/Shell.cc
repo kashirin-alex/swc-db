@@ -14,14 +14,18 @@
 #include <queue>
 
 
-#if defined(USE_GNU_READLINE)
-#include <readline/readline.h>
-#include <readline/history.h>
+#if defined(USE_REPLXX)
+  #include <fstream>
+  #include "replxx.hxx"
+#elif defined(USE_GNU_READLINE)
+  #include <readline/readline.h>
+  #include <readline/history.h>
 #else
-#include <editline.h> // github.com/troglobit/editline
+  #include <editline.h> // github.com/troglobit/editline
 #endif
 
-int el_hist_size = 4000;
+
+const static int hist_size = 4000;
 
 
 namespace SWC { namespace Utils { namespace shell {
@@ -104,11 +108,25 @@ Interface::~Interface() {
 }
 
 CLI Interface::run() {
+  #if defined(USE_REPLXX)
+    replxx::Replxx rx;
+    rx.install_window_change_handler();
+	  rx.set_max_history_size(hist_size);
+	  rx.set_max_hint_rows(3);
+	  rx.set_indent_multiline(true);
+	  rx.set_prompt(prompt);
+    {
+	  	std::ifstream history_file(history.c_str());
+		  rx.history_load(history_file);
+	  }
+    const char* line;
+    const char* ptr;
+  #else
+    char* line;
+    char* ptr;
+  #endif
 
-  read_history(history.c_str());
-  char* line;
-  char* ptr;
-  const char* prompt_state = prompt.c_str();
+  bool prompt_state = true;
   char c;
 
   bool stop = false;
@@ -122,9 +140,14 @@ CLI Interface::run() {
   std::string cmd;
   std::queue<std::string> queue;
 
-  while(!stop && (ptr = line = readline(prompt_state))) {
+  #if defined(USE_REPLXX)
+  while(!stop && ((ptr = line = rx.input(prompt_state ? prompt : std::string())) ||
+                  errno == EAGAIN )) {
+  #else
+  while(!stop && (ptr = line = readline(prompt_state ? prompt.c_str() : ""))) {
+  #endif
 
-    prompt_state = ""; // "-> ";
+    prompt_state = false;
     do {
       c = *ptr;
       ++ptr;
@@ -134,19 +157,24 @@ CLI Interface::run() {
       if(c == '\n' && cmd_end) {
         while(!queue.empty()) {
           auto& run_cmd = queue.front();
-          add_history(run_cmd.c_str());
-          write_history(history.c_str());
+          #if defined(USE_REPLXX)
+            rx.history_add(run_cmd);
+	          rx.history_sync(history);
+          #else
+            add_history(run_cmd.c_str());
+            write_history(history.c_str());
+          #endif
           run_cmd.pop_back();
           if((stop = !cmd_option(run_cmd)))
             break;
           queue.pop();
         }
         cmd_end = false;
-        prompt_state = prompt.c_str();
+        prompt_state = true;
         break;
 
       } else if(!comment && c == '\n' && cmd.empty()) {
-        prompt_state = prompt.c_str();
+        prompt_state = true;
         break;
 
       } else if(c == ' ' && cmd.empty()) {
@@ -185,7 +213,9 @@ CLI Interface::run() {
 
     } while(!next_line);
 
-    free(line);
+    #if !defined(USE_REPLXX)
+      free(line);
+    #endif
   }
 
   return _state;

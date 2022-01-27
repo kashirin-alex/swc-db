@@ -75,7 +75,21 @@ endif()
 
 
 if(NOT SWC_BUILD_PKG OR SWC_BUILD_PKG STREQUAL "utils")
-if(NOT USE_GNU_READLINE)
+
+SET_DEPS(
+  NAME      "EDITLINE"
+  REQUIRED  ${USE_REPLXX}
+  LIB_PATHS "" INC_PATHS ""
+  STATIC    libreplxx.a
+  SHARED    replxx
+  INCLUDE   replxx.hxx
+  INSTALL   TRUE
+)
+if(EDITLINE_FOUND)
+  set(USE_REPLXX ON)
+endif()
+
+if(NOT EDITLINE_FOUND AND NOT USE_GNU_READLINE)
   SET_DEPS(
     NAME      "EDITLINE"
     REQUIRED  FALSE
@@ -86,6 +100,7 @@ if(NOT USE_GNU_READLINE)
     INSTALL   TRUE
   )
 endif()
+
 if(NOT EDITLINE_FOUND)
   SET_DEPS(
     NAME      "EDITLINE"
@@ -98,6 +113,7 @@ if(NOT EDITLINE_FOUND)
   )
   set(USE_GNU_READLINE ON)
 endif()
+
 endif()
 
 
