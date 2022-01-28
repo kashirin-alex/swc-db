@@ -43,6 +43,9 @@ enum LogPriority : uint8_t {
 
 
 
+#define SWC_LOG_OSTREAM std::cout
+
+
 namespace Core {
 
 
@@ -93,8 +96,6 @@ class LogWriter final {
 
   void print_suffix(bool support);
 
-  uint32_t _seconds();
-
   void log(uint8_t priority, const char* fmt, ...)
       __attribute__((format(printf, 3, 4)));
 
@@ -104,24 +105,26 @@ class LogWriter final {
 
   template<typename T>
   SWC_SHOULD_NOT_INLINE
-  void msg(uint8_t priority, const T& message) {
+  void msg(uint8_t priority, const T& msg) {
     MutexSptd::scope lock(mutex);
-    std::cout << _seconds() << ' ' << get_name(priority) << ": "
-              << message << std::endl;
+    _time_and_level(priority);
+    SWC_LOG_OSTREAM << msg << std::endl;
   }
 
   template<typename T>
   SWC_SHOULD_NOT_INLINE
   void msg(uint8_t priority, const char* filen, int fline, const T& message) {
     bool support(print_prefix(priority, filen, fline));
-    std::cout << message;
+    SWC_LOG_OSTREAM << message;
     print_suffix(support);
   }
 
 
   private:
 
-  void renew_files();
+  void _time_and_level(uint8_t priority);
+
+  void _renew_files(time_t secs);
 
   std::string           m_name;
   std::string           m_logs_path;
@@ -130,7 +133,7 @@ class LogWriter final {
   Core::Atomic<uint8_t> m_priority;
   bool                  m_show_line_numbers;
   bool                  m_daemon;
-  time_t                m_last_time;
+  time_t                m_next_time;
 };
 
 
@@ -146,8 +149,6 @@ extern LogWriter logger;
  *  @{
  */
 
-
-#define SWC_LOG_OSTREAM std::cout
 
 #define SWC_LOG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
 

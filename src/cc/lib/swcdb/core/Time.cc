@@ -8,7 +8,6 @@
 #include "swcdb/core/Time.h"
 
 #include <ratio>
-#include <iomanip>
 #include <ctime>
 
 extern "C" {
@@ -119,15 +118,6 @@ std::string fmt_ns(int64_t ns) {
   if(nanos.size() < 9)
     nanos.insert(nanos.cbegin(), 9-nanos.size(), '0');
   return std::string(res) + "." + nanos;
-}
-
-std::ostream &hires_now_ns(std::ostream &out) {
-  auto now = std::chrono::system_clock::now();
-  return out << std::chrono::duration_cast<std::chrono::seconds>(
-                  now.time_since_epoch()).count()
-             <<'.'<< std::setw(9) << std::setfill('0')
-             << (std::chrono::duration_cast<std::chrono::nanoseconds>(
-                now.time_since_epoch()).count() % 1000000000LL);
 }
 
 }}

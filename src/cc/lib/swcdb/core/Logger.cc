@@ -61,15 +61,12 @@ LogWriter::LogWriter(const std::string& name, const std::string& logs_path)
                     : m_name(name), m_logs_path(logs_path),
                       m_file_out(stdout), //m_file_err(stderr),
                       m_priority(LOG_INFO), m_show_line_numbers(true),
-                      m_daemon(false), m_last_time(0) {
-  //std::cout << " LogWriter()=" << size_t(this) << "\n";
+                      m_daemon(false), m_next_time(0) {
 }
 LogWriter::~LogWriter() noexcept { }
 
 SWC_SHOULD_NOT_INLINE
 void LogWriter::initialize(const std::string& name) {
-  //std::cout << " LogWriter::initialize name=" << name
-  //          << " ptr=" << size_t(this) << "\n";
   Core::MutexSptd::scope lock(mutex);
   m_name.clear();
   m_name.append(name);
@@ -77,8 +74,6 @@ void LogWriter::initialize(const std::string& name) {
 
 SWC_SHOULD_NOT_INLINE
 void LogWriter::daemon(const std::string& logs_path) {
-  //std::cout << " LogWriter::daemon logs_path=" << logs_path
-  //          << " ptr=" << size_t(this) << "\n";
   errno = 0;
 
   Core::MutexSptd::scope lock(mutex);
@@ -87,7 +82,7 @@ void LogWriter::daemon(const std::string& logs_path) {
     m_logs_path.append("/");
   m_daemon = true;
 
-  renew_files();
+  _renew_files(::time(nullptr));
 
   if(errno)
     throw std::runtime_error(
@@ -99,12 +94,12 @@ void LogWriter::daemon(const std::string& logs_path) {
 
 
 SWC_SHOULD_NOT_INLINE
-uint32_t LogWriter::_seconds() {
+void LogWriter::_time_and_level(uint8_t priority) {
   auto t = ::time(nullptr);
-  if(m_daemon && m_last_time < t-86400)
-    renew_files();
-  return t-86400*(t/86400);
-  // seconds since start of a day
+  if(m_daemon && m_next_time < t)
+    _renew_files(t);
+  t -= (t/86400) * 86400; // time since start of a day
+  SWC_LOG_OSTREAM << t << ' ' << get_name(priority) << ':' << ' ';
 }
 
 
@@ -115,10 +110,11 @@ uint32_t LogWriter::_seconds() {
 #endif
 
 
-void LogWriter::renew_files() {
+void LogWriter::_renew_files(time_t secs) {
   errno = 0;
-  m_last_time = (::time(nullptr)/86400)*86400;
-  auto ltm = localtime(&m_last_time);
+  m_next_time = (secs/86400)*86400;;
+  auto ltm = localtime(&m_next_time);
+  m_next_time += 86400;
 
   std::string filepath;
   filepath.reserve(m_logs_path.size() + m_name.size() + 16);
@@ -140,11 +136,11 @@ void LogWriter::renew_files() {
   filepath.append(".log");
 
   if(!errno) {
-    std::cout << "Changing Standard Output File to="
-              << filepath << std::endl;
+    SWC_LOG_OSTREAM << "Changing Standard Output File to="
+                    << filepath << std::endl;
     m_file_out = std::freopen(filepath.c_str(), "w", m_file_out);
 
-    std::cerr.rdbuf(std::cout.rdbuf());
+    std::cerr.rdbuf(SWC_LOG_OSTREAM.rdbuf());
     //std::string filepath_err(filepath+".err");
     //std::cerr << "Changing Error Output File to=" << filepath_err << "\n";
     //m_file_err = std::freopen(filepath_err.c_str(), "w", m_file_err);
@@ -164,9 +160,9 @@ void LogWriter::log(uint8_t priority, const char* fmt, ...) {
   va_start(ap, fmt);
   {
     Core::MutexSptd::scope lock(mutex);
-    std::cout << _seconds() << ' ' << get_name(priority) << ": ";
+    _time_and_level(priority);
     vprintf(fmt, ap);
-    std::cout << std::endl;
+    SWC_LOG_OSTREAM << std::endl;
   }
   va_end(ap);
 }
@@ -187,15 +183,15 @@ void LogWriter::log(uint8_t priority, const char* filen, int fline,
 SWC_SHOULD_NOT_INLINE
 bool LogWriter::print_prefix(uint8_t priority, const char* filen, int fline) {
   bool support = mutex.lock();
-  std::cout << _seconds() << ' ' << get_name(priority) << ": ";
+  _time_and_level(priority);
   if(show_line_numbers())
-    std::cout << "(" << filen << ':' << fline << ") ";
+    SWC_LOG_OSTREAM << "(" << filen << ':' << fline << ") ";
   return support;
 }
 
 SWC_SHOULD_NOT_INLINE
 void LogWriter::print_suffix(bool support) {
-  std::cout << std::endl;
+  SWC_LOG_OSTREAM << std::endl;
   mutex.unlock(support);
 }
 

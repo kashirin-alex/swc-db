@@ -49,8 +49,6 @@ int64_t parse_ns(int& err, const std::string& buf);
 
 std::string fmt_ns(int64_t ns);
 
-std::ostream &hires_now_ns(std::ostream &out);
-
 
 
 template<typename ClockT, typename DurationT>
