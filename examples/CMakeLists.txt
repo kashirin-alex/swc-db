@@ -32,3 +32,11 @@ ADD_TEST_EXEC(
   SRCS    Criteo-1TB_Click_Logs_dataset.cc
   TARGETS swcdb
 )
+
+
+# example - queue-example
+ADD_TEST_EXEC(
+  NAME    queue-example
+  SRCS    queue-example.cc
+  TARGETS swcdb
+)
