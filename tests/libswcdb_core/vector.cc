@@ -123,10 +123,10 @@ void test_vector(const typename VecT::size_type _sz) {
   // insert range at it
   {
   VecT vec1(sz);
+  SWC_ASSERT(sz == vec1.size());
   auto it = vec1.begin();
   for(T n=sz; n; --n, ++it)
     *it = n;
-  SWC_ASSERT(sz == vec1.size());
 
   Time::Measure_ns track;
   {
@@ -139,6 +139,7 @@ void test_vector(const typename VecT::size_type _sz) {
   {
   std::cout << typeid(VecT).name() << " range insert it(end()+1) " << std::endl;
   VecT vec(sz-1);
+  SWC_ASSERT(sz-1 == vec.size());
   auto it2 = vec.begin();
   T end(1);
   for(T n=sz; n > end; --n, ++it2)
@@ -151,6 +152,8 @@ void test_vector(const typename VecT::size_type _sz) {
   {
   std::cout << typeid(VecT).name() << " range insert it(offset=1) " << std::endl;
   VecT vec(1);
+  vec.resize(1);
+  SWC_ASSERT(1 == vec.size());
   *vec.begin() = sz;
   vec.insert(vec.begin() + 1, vec1.cbegin() + 1, vec1.cend());
   SWC_ASSERT(sz == vec.size());
@@ -158,7 +161,9 @@ void test_vector(const typename VecT::size_type _sz) {
   }
   {
   std::cout << typeid(VecT).name() << " range insert it(offset=1,end()-1) " << std::endl;
-  VecT vec(2);
+  VecT vec;
+  vec.resize(2);
+  SWC_ASSERT(2 == vec.size());
   *vec.begin() = sz;
   *(vec.begin() + 1) = 1;
   vec.insert(vec.begin() + 1, vec1.cbegin() + 1, vec1.cend() - 1);
@@ -190,6 +195,7 @@ void test_vector(const typename VecT::size_type _sz) {
   {
   Time::Measure_ns track;
   VecT vec(sz);
+  SWC_ASSERT(sz == vec.size());
   auto it = vec.begin();
   for(T n=sz; n; --n, ++it)
     *it = n;
@@ -203,6 +209,7 @@ void test_vector(const typename VecT::size_type _sz) {
   // assign
   {
   VecT vec1(sz);
+  SWC_ASSERT(sz == vec1.size());
   auto it = vec1.begin();
   for(T n=sz; n; --n, ++it)
     *it = n;
@@ -221,6 +228,7 @@ void test_vector(const typename VecT::size_type _sz) {
   // erase it
   {
   VecT vec(sz);
+  SWC_ASSERT(sz == vec.size());
   auto it = vec.begin();
   for(T n=0; n < sz; ++n, ++it)
     *it = n;
@@ -249,6 +257,7 @@ void test_vector(const typename VecT::size_type _sz) {
   // erase range
   {
   VecT vec(sz);
+  SWC_ASSERT(sz == vec.size());
   auto it = vec.begin();
   for(T n=0; n < sz; ++n, ++it)
     *it = n;

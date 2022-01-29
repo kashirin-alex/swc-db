@@ -140,7 +140,7 @@ void LogWriter::_renew_files(time_t secs) {
                     << filepath << std::endl;
     m_file_out = std::freopen(filepath.c_str(), "w", m_file_out);
 
-    std::cerr.rdbuf(SWC_LOG_OSTREAM.rdbuf());
+    std::cerr.rdbuf(std::cout.rdbuf());
     //std::string filepath_err(filepath+".err");
     //std::cerr << "Changing Error Output File to=" << filepath_err << "\n";
     //m_file_err = std::freopen(filepath_err.c_str(), "w", m_file_err);
@@ -155,44 +155,43 @@ void LogWriter::_renew_files(time_t secs) {
 #undef SWC_MKDIR
 
 SWC_SHOULD_NOT_INLINE
-void LogWriter::log(uint8_t priority, const char* fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  {
-    Core::MutexSptd::scope lock(mutex);
-    _time_and_level(priority);
-    vprintf(fmt, ap);
-    SWC_LOG_OSTREAM << std::endl;
-  }
-  va_end(ap);
+void LogWriter::log(uint8_t priority, const char* fmt, ...) noexcept {
+  try {
+    va_list ap;
+    va_start(ap, fmt);
+    try {
+      Core::MutexSptd::scope lock(mutex);
+      _time_and_level(priority);
+      vprintf(fmt, ap);
+      SWC_LOG_OSTREAM << std::endl;
+    } catch(...) { }
+    va_end(ap);
+  } catch(...) { }
 }
 
 SWC_SHOULD_NOT_INLINE
 void LogWriter::log(uint8_t priority, const char* filen, int fline,
-                    const char* fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-
-  bool support(print_prefix(priority, filen, fline));
-  vprintf(fmt, ap);
-  print_suffix(support);
-
-  va_end(ap);
+                    const char* fmt, ...) noexcept {
+  try {
+    va_list ap;
+    va_start(ap, fmt);
+    try {
+      Core::MutexSptd::scope lock(mutex);
+      _time_and_level(priority);
+      if(show_line_numbers())
+        SWC_LOG_OSTREAM << '(' << filen << ':' << fline << ')' << '"';
+      vprintf(fmt, ap);
+      SWC_LOG_OSTREAM << std::endl;
+    } catch(...) { }
+    va_end(ap);
+  } catch(...) { }
 }
 
 SWC_SHOULD_NOT_INLINE
-bool LogWriter::print_prefix(uint8_t priority, const char* filen, int fline) {
-  bool support = mutex.lock();
+void LogWriter::_print_prefix(uint8_t priority, const char* filen, int fline) {
   _time_and_level(priority);
   if(show_line_numbers())
     SWC_LOG_OSTREAM << "(" << filen << ':' << fline << ") ";
-  return support;
-}
-
-SWC_SHOULD_NOT_INLINE
-void LogWriter::print_suffix(bool support) {
-  SWC_LOG_OSTREAM << std::endl;
-  mutex.unlock(support);
 }
 
 }}

@@ -92,32 +92,35 @@ class LogWriter final {
     return m_show_line_numbers;
   }
 
-  bool print_prefix(uint8_t priority, const char* filen, int fline);
-
-  void print_suffix(bool support);
-
   void log(uint8_t priority, const char* fmt, ...)
-      __attribute__((format(printf, 3, 4)));
+      noexcept __attribute__((format(printf, 3, 4)));
 
   void log(uint8_t priority, const char* filen, int fline,
            const char* fmt, ...)
-      __attribute__((format(printf, 5, 6)));
+      noexcept __attribute__((format(printf, 5, 6)));
 
   template<typename T>
   SWC_SHOULD_NOT_INLINE
-  void msg(uint8_t priority, const T& msg) {
-    MutexSptd::scope lock(mutex);
-    _time_and_level(priority);
-    SWC_LOG_OSTREAM << msg << std::endl;
+  void msg(uint8_t priority, const T& msg) noexcept {
+    try {
+      MutexSptd::scope lock(mutex);
+      _time_and_level(priority);
+      SWC_LOG_OSTREAM << msg << std::endl;
+    } catch(...) { }
   }
 
   template<typename T>
   SWC_SHOULD_NOT_INLINE
-  void msg(uint8_t priority, const char* filen, int fline, const T& message) {
-    bool support(print_prefix(priority, filen, fline));
-    SWC_LOG_OSTREAM << message;
-    print_suffix(support);
+  void msg(uint8_t priority, const char* filen, int fline,
+           const T& msg) noexcept {
+    try {
+      MutexSptd::scope lock(mutex);
+      _print_prefix(priority, filen, fline);
+      SWC_LOG_OSTREAM << msg << std::endl;
+    } catch(...) { }
   }
+
+  void _print_prefix(uint8_t priority, const char* filen, int fline);
 
 
   private:
@@ -152,10 +155,11 @@ extern LogWriter logger;
 
 #define SWC_LOG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
 
-#define SWC_PRINT { \
-  ::SWC::Core::MutexSptd::scope swcdb_logger_lock(::SWC::Core::logger.mutex); \
+#define SWC_PRINT { try { \
+  ::SWC::Core::MutexSptd::scope \
+    swcdb_logger_lock(::SWC::Core::logger.mutex); \
   SWC_LOG_OSTREAM
-#define SWC_PRINT_CLOSE std::endl; }
+#define SWC_PRINT_CLOSE std::endl; } catch(...) { } }
 
 
 #ifndef SWC_DISABLE_LOG_ALL
@@ -164,12 +168,13 @@ extern LogWriter logger;
 // stream interface, SWC_LOG_OUT(LOG_ERROR, code{SWC_LOG_OSTREAM << "msg";});
 #define SWC_LOG_OUT(pr, _code_) { \
   uint8_t _log_pr = pr; \
-  if(::SWC::Core::logger.is_enabled(_log_pr)) { \
-    bool _support( \
-      ::SWC::Core::logger.print_prefix(_log_pr, __FILE__, __LINE__)); \
+  if(::SWC::Core::logger.is_enabled(_log_pr)) { try { \
+    ::SWC::Core::MutexSptd::scope \
+      swcdb_logger_lock(::SWC::Core::logger.mutex); \
+    ::SWC::Core::logger._print_prefix(_log_pr, __FILE__, __LINE__); \
     {_code_}; \
-    ::SWC::Core::logger.print_suffix(_support); \
-  } }
+    SWC_LOG_OSTREAM << std::endl; \
+  } catch(...) { } } }
 
 #define SWC_LOGF(priority, fmt, ...) \
   SWC_LOG_OUT(priority, SWC_LOG_PRINTF(fmt, __VA_ARGS__); )

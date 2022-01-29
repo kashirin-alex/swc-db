@@ -26,7 +26,7 @@ namespace SWC { namespace Error {
 SWC_SHOULD_NOT_INLINE
 const Exception Exception::make(const std::exception_ptr& eptr,
                                 const std::string& msg,
-                                const Exception* prev) {
+                                const Exception* prev) noexcept {
   try {
     std::rethrow_exception(eptr);
 
@@ -114,43 +114,80 @@ const Exception Exception::make(const std::exception_ptr& eptr,
 
 Exception::Exception(int code, const std::string& msg,
                      int line, const char* func, const char* file,
-                     const std::string& inner_msg)
-                    : _code(code), _msg(msg),
-                    _line(line), _func(func), _file(file),
-                    _inner_msg(inner_msg),
-                    _prev(nullptr) {
+                     const std::string& inner_msg) noexcept
+                    : _code(code),
+                      _line(line), _func(func), _file(file),
+                      _prev(nullptr) {
+  try {
+    _msg = msg;
+    _inner_msg = inner_msg;
+  } catch(...) {
+    _code = Error::BAD_MEMORY_ALLOCATION;
+  }
 }
 
 Exception::Exception(int code, const std::string& msg, const Exception* prev,
-                     const std::string& inner_msg)
-                    : _code(code), _msg(msg),
-                      _line(0), _func(nullptr), _file(nullptr),
-                      _inner_msg(inner_msg),
-                      _prev(prev ? new Exception(*prev) : prev) {
+                     const std::string& inner_msg) noexcept
+                    : _code(code),
+                      _line(0), _func(nullptr), _file(nullptr) {
+  try {
+    _msg = msg;
+    _inner_msg = inner_msg;
+    _prev = prev ? new Exception(*prev) : prev;
+  } catch(...) {
+    _code = Error::BAD_MEMORY_ALLOCATION;
+    _prev = nullptr;
+  }
 }
 
 Exception::Exception(int code, const std::string& msg, const Exception* prev,
                      int line , const char* func, const char* file,
-                     const std::string& inner_msg)
-                    : _code(code), _msg(msg),
-                      _line(line), _func(func), _file(file),
-                      _inner_msg(inner_msg),
-                      _prev(prev ? new Exception(*prev) : prev) {
+                     const std::string& inner_msg) noexcept
+                    : _code(code),
+                      _line(line), _func(func), _file(file) {
+  try {
+    _msg = msg;
+    _inner_msg = inner_msg;
+    _prev = prev ? new Exception(*prev) : prev;
+  } catch(...) {
+    _code = Error::BAD_MEMORY_ALLOCATION;
+    _prev = nullptr;
+  }
 }
 
 Exception::Exception(int code, const std::string& msg, const Exception& prev,
                      int line, const char* func, const char* file,
-                     const std::string& inner_msg)
-                    : _code(code), _msg(msg),
-                      _line(line), _func(func), _file(file),
-                      _inner_msg(inner_msg),
-                      _prev(new Exception(prev)) {
+                     const std::string& inner_msg) noexcept
+                    : _code(code),
+                      _line(line), _func(func), _file(file) {
+  try {
+    _msg = msg;
+    _inner_msg = inner_msg;
+    _prev = new Exception(prev);
+  } catch(...) {
+    _code = Error::BAD_MEMORY_ALLOCATION;
+    _prev = nullptr;
+  }
 }
 
-Exception::Exception(const Exception& other)
-                    : _code(other._code), _msg(other._msg),
+Exception::Exception(const Exception& other) noexcept
+                    : _code(other._code),
                       _line(other._line), _func(other._func), _file(other._file),
-                      _inner_msg(other._inner_msg),
+                      _prev(other._prev) {
+  try {
+    _msg = other._msg;
+    _inner_msg = other._inner_msg;
+    other._prev = nullptr;
+  } catch(...) {
+    _code = Error::BAD_MEMORY_ALLOCATION;
+    _prev = nullptr;
+  }
+}
+
+Exception::Exception(Exception&& other) noexcept
+                    : _code(other._code), _msg(std::move(other._msg)),
+                      _line(other._line), _func(other._func), _file(other._file),
+                      _inner_msg(std::move(other._inner_msg)),
                       _prev(other._prev) {
   other._prev = nullptr;
 }

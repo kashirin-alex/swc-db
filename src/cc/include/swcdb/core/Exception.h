@@ -23,27 +23,29 @@ class Exception final : public std::exception {
 
   static const Exception make(const std::exception_ptr& eptr,
                               const std::string& msg,
-                              const Exception* prev = nullptr);
+                              const Exception* prev = nullptr) noexcept;
 
   Exception(int code, const std::string& msg,
             int line = 0, const char* func = nullptr,
             const char* file = nullptr,
-            const std::string& inner_msg = "");
+            const std::string& inner_msg = "") noexcept;
 
   Exception(int code, const std::string& msg, const Exception* prev,
-            const std::string& inner_msg);
+            const std::string& inner_msg) noexcept;
 
   Exception(int code, const std::string& msg, const Exception* prev,
             int line = 0, const char* func = nullptr,
             const char* file = nullptr,
-            const std::string& inner_msg = "");
+            const std::string& inner_msg = "") noexcept;
 
   Exception(int code, const std::string& msg, const Exception& prev,
             int line = 0, const char* func = nullptr,
             const char* file = nullptr,
-            const std::string& inner_msg = "");
+            const std::string& inner_msg = "") noexcept;
 
-  Exception(const Exception& other);
+  Exception(const Exception& other) noexcept;
+
+  Exception(Exception&& other) noexcept;
 
   const Exception& operator=(const Exception& ) = delete;
 
@@ -92,12 +94,12 @@ class Exception final : public std::exception {
 
   private:
 
-  const int           _code;
-  const std::string   _msg;
-  const int           _line;
-  const char*         _func;
-  const char*         _file;
-  const std::string   _inner_msg;
+  int           _code;
+  std::string   _msg;
+  const int     _line;
+  const char*   _func;
+  const char*   _file;
+  std::string   _inner_msg;
   mutable const  Exception*  _prev;
 
 };
