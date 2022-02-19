@@ -158,7 +158,7 @@ In worst case of outdated data being used with a request the Ranger return an er
   * [CLI Client]({{ site.baseurl }}/use/cli/)
   * [Load Generator]({{ site.baseurl }}/use/load_generator/)
 * RUNNING
-  * [Psedomode]({{ site.baseurl }}/run/psedomode/)
+  * [Pseudomode]({{ site.baseurl }}/run/pseudomode/)
   * [Distributed]({{ site.baseurl }}/run/distributed/)
 * CONFIGURING
   * [The Config Files]({{ site.baseurl }}/configure/the_config_files/)

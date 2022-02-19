@@ -1,10 +1,10 @@
 ---
-title: Psedumode
+title: Pseudomode
 sort: 1
 ---
 
 
-# Running SWC-DB in a Psedumode
+# Running SWC-DB in a Pseudomode
 
 _Edit the necessary configuration in etc/swcdb/*.cfg [as by instructions]({{ site.baseurl }}/configure/)_
 
