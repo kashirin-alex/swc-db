@@ -11,7 +11,23 @@
 
 
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.7...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.8...master)
+******
+
+
+
+
+### [SWC-DB v0.5.8](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.8) (2022-02-26)
+
+    added options representations in Specs::Interval::{print,display}
+    changed Manager::MngdColumns::remove to use DELETE_MATCHING in Intval-spec
+    changed Utils::shell::Statistics::truncate with Intval-spec DELETE_MATCHING
+    added support for 'replxx' (if FOUND, the library defaults)
+    changed LogWriter::_seconds() to _time_and_level(..)
+    changed Logger's log functions & make Exception(..) scopes to 'noexcept'
+    added example of queue for C++ Client/API
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.7...v0.5.8)
 ******
 
 
