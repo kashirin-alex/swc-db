@@ -31,5 +31,5 @@ Gem::Specification.new do |s|
   s.required_ruby_version     = ">= 2.5.0"
   s.required_rubygems_version = ">= 2.7.0"
 
-  s.add_runtime_dependency("thrift",  "~> 0.15.0")
+  s.add_runtime_dependency("thrift",  "~> 0.16.0")
 end

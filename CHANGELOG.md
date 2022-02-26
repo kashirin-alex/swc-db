@@ -26,6 +26,7 @@
     changed LogWriter::_seconds() to _time_and_level(..)
     changed Logger's log functions & make Exception(..) scopes to 'noexcept'
     added example of queue for C++ Client/API
+    updated for Apache-Thrift v0.16.0
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.7...v0.5.8)
 ******
