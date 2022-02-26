@@ -122,6 +122,7 @@ CLI Interface::run() {
     const char* line;
     const char* ptr;
   #else
+    read_history(history.c_str());
     char* line;
     char* ptr;
   #endif
