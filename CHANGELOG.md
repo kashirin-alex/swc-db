@@ -7,9 +7,11 @@
 
 
 
-### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
+### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-v0.5.9)
 
-
+    fixed missing read_history at non-replxx in Utils::shell::Interface
+    added python module 'serialization' with methods decode_{vi64,counter}(..)
+    updated for ASIO 1.22.1 requirement & OPENSSL_NO_DEPRECATED=ON by default
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.8...master)
 ******
