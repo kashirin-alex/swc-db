@@ -1,1 +1,1 @@
-__all__ = ['thrift']
+__all__ = ['thrift', 'serialization']
