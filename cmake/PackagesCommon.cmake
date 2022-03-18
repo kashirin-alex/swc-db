@@ -51,7 +51,7 @@ if(NOT SWC_BUILD_PKG OR
       INCLUDE   openssl/ssl.h openssl/crypto.h
       INSTALL   TRUE
     )
-    # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENSSL_NO_DEPRECATED")
+    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENSSL_NO_DEPRECATED")
   else()
 
     if(USE_LIBSSL STREQUAL "wolf")
