@@ -409,6 +409,26 @@ struct SpecValue {
 /** The Cell Value Specifications defined as SpecValue items in a list-container */
 typedef list<SpecValue> SpecValues
 
+enum UpdateOP {
+  /** The operation to Replace */
+  REPLACE     = 0x00,
+  /** The operation to Append */
+  APPEND      = 0x01,
+  /** The operation to Prepend */
+  PREPEND     = 0x02,
+  /** The operation to Insert */
+  INSERT      = 0x04,
+  /** The operation is by inner Serial fields defintions */
+  SERIAL      = 0x08,
+}
+
+struct SpecUpdateOP {
+  /** The Operation */
+  1: UpdateOP       op
+
+  /** The position of INSERT operation */
+  2: optional i32   pos
+}
 
 /** The Value specs for an Updating Interval of 'updating' in SpecInterval */
 struct SpecIntervalUpdate {
@@ -421,6 +441,9 @@ struct SpecIntervalUpdate {
 
   /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
   3: optional EncodingType  encoder
+
+  /** Optionally the operaton of value update */
+  4: optional SpecUpdateOP  update_op
 }
 
 /** The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial */
@@ -433,6 +456,9 @@ struct SpecIntervalUpdateSerial {
 
   /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
   3: optional EncodingType  encoder
+
+  /** Optionally the operaton of value update */
+  4: optional SpecUpdateOP  update_op
 }
 
 

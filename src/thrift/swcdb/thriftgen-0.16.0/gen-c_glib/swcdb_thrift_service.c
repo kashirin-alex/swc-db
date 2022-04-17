@@ -553,19 +553,19 @@ gboolean swcdb_thrift_service_client_recv_sql_list_columns (swcdb_thriftServiceI
               /* iterate through list elements */
               for (i = 0; i < size; i++)
               {
-                swcdb_thriftSchema * _elem170 = NULL;
-                if ( _elem170 != NULL)
+                swcdb_thriftSchema * _elem171 = NULL;
+                if ( _elem171 != NULL)
                 {
-                  g_object_unref (_elem170);
+                  g_object_unref (_elem171);
                 }
-                _elem170 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem170), protocol, error)) < 0)
+                _elem171 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem171), protocol, error)) < 0)
                 {
-                  g_object_unref (_elem170);
+                  g_object_unref (_elem171);
                   return 0;
                 }
                 xfer += ret;
-                g_ptr_array_add (*_return, _elem170);
+                g_ptr_array_add (*_return, _elem171);
               }
               if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
                 return 0;
@@ -783,19 +783,19 @@ gboolean swcdb_thrift_service_client_recv_sql_compact_columns (swcdb_thriftServi
               /* iterate through list elements */
               for (i = 0; i < size; i++)
               {
-                swcdb_thriftCompactResult * _elem171 = NULL;
-                if ( _elem171 != NULL)
+                swcdb_thriftCompactResult * _elem172 = NULL;
+                if ( _elem172 != NULL)
                 {
-                  g_object_unref (_elem171);
+                  g_object_unref (_elem172);
                 }
-                _elem171 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem171), protocol, error)) < 0)
+                _elem172 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem172), protocol, error)) < 0)
                 {
-                  g_object_unref (_elem171);
+                  g_object_unref (_elem172);
                   return 0;
                 }
                 xfer += ret;
-                g_ptr_array_add (*_return, _elem171);
+                g_ptr_array_add (*_return, _elem172);
               }
               if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
                 return 0;
@@ -1220,30 +1220,30 @@ gboolean swcdb_thrift_service_client_recv_sql_select_rslt_on_column (swcdb_thrif
               /* iterate through each of the map's fields */
               for (i = 0; i < size; i++)
               {
-                gchar * key172 = NULL;
-                swcdb_thriftColCells * val173 = NULL;
-                if (key172 != NULL)
+                gchar * key173 = NULL;
+                swcdb_thriftColCells * val174 = NULL;
+                if (key173 != NULL)
                 {
-                  g_free(key172);
-                  key172 = NULL;
+                  g_free(key173);
+                  key173 = NULL;
                 }
 
-                if ((ret = thrift_protocol_read_string (protocol, &key172, error)) < 0)
+                if ((ret = thrift_protocol_read_string (protocol, &key173, error)) < 0)
                   return 0;
                 xfer += ret;
-                if ( val173 != NULL)
+                if ( val174 != NULL)
                 {
-                  g_object_unref (val173);
+                  g_object_unref (val174);
                 }
-                val173 = g_object_new (SWCDB_THRIFT_TYPE_COL_CELLS, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (val173), protocol, error)) < 0)
+                val174 = g_object_new (SWCDB_THRIFT_TYPE_COL_CELLS, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (val174), protocol, error)) < 0)
                 {
-                  g_object_unref (val173);
+                  g_object_unref (val174);
                   return 0;
                 }
                 xfer += ret;
-                if (*_return && key172)
-                  g_hash_table_insert ((GHashTable *)*_return, (gpointer) key172, (gpointer) val173);
+                if (*_return && key173)
+                  g_hash_table_insert ((GHashTable *)*_return, (gpointer) key173, (gpointer) val174);
               }
 
               /* read the map end marker */
@@ -1463,19 +1463,19 @@ gboolean swcdb_thrift_service_client_recv_sql_select_rslt_on_key (swcdb_thriftSe
               /* iterate through list elements */
               for (i = 0; i < size; i++)
               {
-                swcdb_thriftkCells * _elem174 = NULL;
-                if ( _elem174 != NULL)
+                swcdb_thriftkCells * _elem175 = NULL;
+                if ( _elem175 != NULL)
                 {
-                  g_object_unref (_elem174);
+                  g_object_unref (_elem175);
                 }
-                _elem174 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem174), protocol, error)) < 0)
+                _elem175 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem175), protocol, error)) < 0)
                 {
-                  g_object_unref (_elem174);
+                  g_object_unref (_elem175);
                   return 0;
                 }
                 xfer += ret;
-                g_ptr_array_add (*_return, _elem174);
+                g_ptr_array_add (*_return, _elem175);
               }
               if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
                 return 0;
@@ -2789,8 +2789,8 @@ gboolean swcdb_thrift_service_client_send_update (swcdb_thriftServiceIf * iface,
       return 0;
     xfer += ret;
     {
-      gint64* key175 = NULL;
-      swcdb_thriftUCells * val176 = NULL;
+      gint64* key176 = NULL;
+      swcdb_thriftUCells * val177 = NULL;
       GList *key_list = NULL, *iter = NULL;
       gint64** keys;
       int i = 0, key_count;
@@ -2808,22 +2808,22 @@ gboolean swcdb_thrift_service_client_send_update (swcdb_thriftServiceIf * iface,
 
       for (i = 0; i < key_count; ++i)
       {
-        key175 = keys[i];
-        val176 = (swcdb_thriftUCells *) g_hash_table_lookup (((GHashTable *) cells), (gpointer) key175);
+        key176 = keys[i];
+        val177 = (swcdb_thriftUCells *) g_hash_table_lookup (((GHashTable *) cells), (gpointer) key176);
 
-        if ((ret = thrift_protocol_write_i64 (protocol, * key175, error)) < 0)
+        if ((ret = thrift_protocol_write_i64 (protocol, * key176, error)) < 0)
           return 0;
         xfer += ret;
 
         {
-          guint i177;
+          guint i178;
 
-          if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val176 ?  val176->len : 0), error)) < 0)
+          if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val177 ?  val177->len : 0), error)) < 0)
             return 0;
           xfer += ret;
-          for (i177 = 0; i177 < ( val176 ?  val176->len : 0); i177++)
+          for (i178 = 0; i178 < ( val177 ?  val177->len : 0); i178++)
           {
-            if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val176, i177))), protocol, error)) < 0)
+            if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val177, i178))), protocol, error)) < 0)
               return 0;
             xfer += ret;
 
@@ -3035,8 +3035,8 @@ gboolean swcdb_thrift_service_client_send_update_serial (swcdb_thriftServiceIf *
       return 0;
     xfer += ret;
     {
-      gint64* key178 = NULL;
-      swcdb_thriftUCellsSerial * val179 = NULL;
+      gint64* key179 = NULL;
+      swcdb_thriftUCellsSerial * val180 = NULL;
       GList *key_list = NULL, *iter = NULL;
       gint64** keys;
       int i = 0, key_count;
@@ -3054,22 +3054,22 @@ gboolean swcdb_thrift_service_client_send_update_serial (swcdb_thriftServiceIf *
 
       for (i = 0; i < key_count; ++i)
       {
-        key178 = keys[i];
-        val179 = (swcdb_thriftUCellsSerial *) g_hash_table_lookup (((GHashTable *) cells), (gpointer) key178);
+        key179 = keys[i];
+        val180 = (swcdb_thriftUCellsSerial *) g_hash_table_lookup (((GHashTable *) cells), (gpointer) key179);
 
-        if ((ret = thrift_protocol_write_i64 (protocol, * key178, error)) < 0)
+        if ((ret = thrift_protocol_write_i64 (protocol, * key179, error)) < 0)
           return 0;
         xfer += ret;
 
         {
-          guint i180;
+          guint i181;
 
-          if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val179 ?  val179->len : 0), error)) < 0)
+          if ((ret = thrift_protocol_write_list_begin (protocol, T_STRUCT, (gint32) ( val180 ?  val180->len : 0), error)) < 0)
             return 0;
           xfer += ret;
-          for (i180 = 0; i180 < ( val179 ?  val179->len : 0); i180++)
+          for (i181 = 0; i181 < ( val180 ?  val180->len : 0); i181++)
           {
-            if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val179, i180))), protocol, error)) < 0)
+            if ((ret = thrift_struct_write (THRIFT_STRUCT ((g_ptr_array_index ((GPtrArray *)  val180, i181))), protocol, error)) < 0)
               return 0;
             xfer += ret;
 
@@ -3606,19 +3606,19 @@ gboolean swcdb_thrift_service_client_recv_list_columns (swcdb_thriftServiceIf * 
               /* iterate through list elements */
               for (i = 0; i < size; i++)
               {
-                swcdb_thriftSchema * _elem181 = NULL;
-                if ( _elem181 != NULL)
+                swcdb_thriftSchema * _elem182 = NULL;
+                if ( _elem182 != NULL)
                 {
-                  g_object_unref (_elem181);
+                  g_object_unref (_elem182);
                 }
-                _elem181 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem181), protocol, error)) < 0)
+                _elem182 = g_object_new (SWCDB_THRIFT_TYPE_SCHEMA, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem182), protocol, error)) < 0)
                 {
-                  g_object_unref (_elem181);
+                  g_object_unref (_elem182);
                   return 0;
                 }
                 xfer += ret;
-                g_ptr_array_add (*_return, _elem181);
+                g_ptr_array_add (*_return, _elem182);
               }
               if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
                 return 0;
@@ -3836,19 +3836,19 @@ gboolean swcdb_thrift_service_client_recv_compact_columns (swcdb_thriftServiceIf
               /* iterate through list elements */
               for (i = 0; i < size; i++)
               {
-                swcdb_thriftCompactResult * _elem182 = NULL;
-                if ( _elem182 != NULL)
+                swcdb_thriftCompactResult * _elem183 = NULL;
+                if ( _elem183 != NULL)
                 {
-                  g_object_unref (_elem182);
+                  g_object_unref (_elem183);
                 }
-                _elem182 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem182), protocol, error)) < 0)
+                _elem183 = g_object_new (SWCDB_THRIFT_TYPE_COMPACT_RESULT, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem183), protocol, error)) < 0)
                 {
-                  g_object_unref (_elem182);
+                  g_object_unref (_elem183);
                   return 0;
                 }
                 xfer += ret;
-                g_ptr_array_add (*_return, _elem182);
+                g_ptr_array_add (*_return, _elem183);
               }
               if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
                 return 0;
@@ -4273,30 +4273,30 @@ gboolean swcdb_thrift_service_client_recv_scan_rslt_on_column (swcdb_thriftServi
               /* iterate through each of the map's fields */
               for (i = 0; i < size; i++)
               {
-                gchar * key183 = NULL;
-                swcdb_thriftColCells * val184 = NULL;
-                if (key183 != NULL)
+                gchar * key184 = NULL;
+                swcdb_thriftColCells * val185 = NULL;
+                if (key184 != NULL)
                 {
-                  g_free(key183);
-                  key183 = NULL;
+                  g_free(key184);
+                  key184 = NULL;
                 }
 
-                if ((ret = thrift_protocol_read_string (protocol, &key183, error)) < 0)
+                if ((ret = thrift_protocol_read_string (protocol, &key184, error)) < 0)
                   return 0;
                 xfer += ret;
-                if ( val184 != NULL)
+                if ( val185 != NULL)
                 {
-                  g_object_unref (val184);
+                  g_object_unref (val185);
                 }
-                val184 = g_object_new (SWCDB_THRIFT_TYPE_COL_CELLS, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (val184), protocol, error)) < 0)
+                val185 = g_object_new (SWCDB_THRIFT_TYPE_COL_CELLS, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (val185), protocol, error)) < 0)
                 {
-                  g_object_unref (val184);
+                  g_object_unref (val185);
                   return 0;
                 }
                 xfer += ret;
-                if (*_return && key183)
-                  g_hash_table_insert ((GHashTable *)*_return, (gpointer) key183, (gpointer) val184);
+                if (*_return && key184)
+                  g_hash_table_insert ((GHashTable *)*_return, (gpointer) key184, (gpointer) val185);
               }
 
               /* read the map end marker */
@@ -4516,19 +4516,19 @@ gboolean swcdb_thrift_service_client_recv_scan_rslt_on_key (swcdb_thriftServiceI
               /* iterate through list elements */
               for (i = 0; i < size; i++)
               {
-                swcdb_thriftkCells * _elem185 = NULL;
-                if ( _elem185 != NULL)
+                swcdb_thriftkCells * _elem186 = NULL;
+                if ( _elem186 != NULL)
                 {
-                  g_object_unref (_elem185);
+                  g_object_unref (_elem186);
                 }
-                _elem185 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
-                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem185), protocol, error)) < 0)
+                _elem186 = g_object_new (SWCDB_THRIFT_TYPE_K_CELLS, NULL);
+                if ((ret = thrift_struct_read (THRIFT_STRUCT (_elem186), protocol, error)) < 0)
                 {
-                  g_object_unref (_elem185);
+                  g_object_unref (_elem186);
                   return 0;
                 }
                 xfer += ret;
-                g_ptr_array_add (*_return, _elem185);
+                g_ptr_array_add (*_return, _elem186);
               }
               if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)
                 return 0;

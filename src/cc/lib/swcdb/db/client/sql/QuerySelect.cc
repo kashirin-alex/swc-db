@@ -611,15 +611,7 @@ void QuerySelect::read_cells_interval(DB::Specs::Interval& spec,
   if(remain && !err) {
     seek_space();
     if(found_token("update", 6)) {
-      seek_space();
-      expect_eq();
-      seek_space();
-      bool bracket_round = false;
-      expect_token("(", 1, bracket_round);
-      if(!err)
-        read_update(spec);
-      seek_space();
-      expect_token(")", 1, bracket_round);
+      read_update(spec);
     } else if(found_token(TOKEN_DELETE_MATCHING, LEN_DELETE_MATCHING)) {
       spec.set_opt__deleting();
     }
@@ -1165,8 +1157,23 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
 }
 
 void QuerySelect::read_update(DB::Specs::Interval& intval) {
-  // update = ('TS', 'DATA', ENCODER) || ( ) - empty optional
+  // update = ('TS', +=|=+|~=|=:#|='DATA', ENCODER) || ( ) - empty optional
 
+  seek_space();
+  DB::Specs::UpdateOP op;
+  read_operation(intval.values.col_type, op);
+  if(err)
+    return;
+  if(op.get_op() == DB::Specs::UpdateOP::REPLACE) {
+    expect_eq();
+    if(err)
+      return;
+  }
+  seek_space();
+  bool bracket_round = false;
+  expect_token("(", 1, bracket_round);
+  if(err)
+    return;
   DB::Cells::Cell cell;
   cell.set_timestamp_null();
   read_ts_and_value(intval.values.col_type, false, cell);
@@ -1176,11 +1183,14 @@ void QuerySelect::read_update(DB::Specs::Interval& intval) {
       cell.value,
       cell.vlen,
       cell.get_timestamp(),
+      op,
       false
     );
     cell.value = nullptr;
     cell.vlen = 0;
   }
+  seek_space();
+  expect_token(")", 1, bracket_round);
 }
 
 

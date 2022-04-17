@@ -31,45 +31,42 @@ using Thrift.Processor;
 #pragma warning disable IDE0083  // pattern matching "that is not SomeType" requires net5.0 but we still support earlier versions
 
 
-/// <summary>
-/// The Specifications of KEY Serial Value Field
-/// </summary>
-public partial class SpecValueSerial_KEY : TBase
+public partial class SpecUpdateOP : TBase
 {
-  private KeySeq _seq;
-  private List<SpecFraction> _v;
+  private UpdateOP _op;
+  private int _pos;
 
   /// <summary>
-  /// The Key Sequence to use
+  /// The Operation
   /// 
-  /// <seealso cref="global::.KeySeq"/>
+  /// <seealso cref="global::.UpdateOP"/>
   /// </summary>
-  public KeySeq Seq
+  public UpdateOP Op
   {
     get
     {
-      return _seq;
+      return _op;
     }
     set
     {
-      __isset.seq = true;
-      this._seq = value;
+      __isset.op = true;
+      this._op = value;
     }
   }
 
   /// <summary>
-  /// The Specification of the Key to match against the value field
+  /// The position of INSERT operation
   /// </summary>
-  public List<SpecFraction> V
+  public int Pos
   {
     get
     {
-      return _v;
+      return _pos;
     }
     set
     {
-      __isset.v = true;
-      this._v = value;
+      __isset.pos = true;
+      this._pos = value;
     }
   }
 
@@ -77,28 +74,28 @@ public partial class SpecValueSerial_KEY : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool seq;
-    public bool v;
+    public bool op;
+    public bool pos;
   }
 
-  public SpecValueSerial_KEY()
+  public SpecUpdateOP()
   {
   }
 
-  public SpecValueSerial_KEY DeepCopy()
+  public SpecUpdateOP DeepCopy()
   {
-    var tmp151 = new SpecValueSerial_KEY();
-    if(__isset.seq)
+    var tmp83 = new SpecUpdateOP();
+    if(__isset.op)
     {
-      tmp151.Seq = this.Seq;
+      tmp83.Op = this.Op;
     }
-    tmp151.__isset.seq = this.__isset.seq;
-    if((V != null) && __isset.v)
+    tmp83.__isset.op = this.__isset.op;
+    if(__isset.pos)
     {
-      tmp151.V = this.V.DeepCopy();
+      tmp83.Pos = this.Pos;
     }
-    tmp151.__isset.v = this.__isset.v;
-    return tmp151;
+    tmp83.__isset.pos = this.__isset.pos;
+    return tmp83;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -121,7 +118,7 @@ public partial class SpecValueSerial_KEY : TBase
           case 1:
             if (field.Type == TType.I32)
             {
-              Seq = (KeySeq)await iprot.ReadI32Async(cancellationToken);
+              Op = (UpdateOP)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -129,20 +126,9 @@ public partial class SpecValueSerial_KEY : TBase
             }
             break;
           case 2:
-            if (field.Type == TType.List)
+            if (field.Type == TType.I32)
             {
-              {
-                TList _list152 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<SpecFraction>(_list152.Count);
-                for(int _i153 = 0; _i153 < _list152.Count; ++_i153)
-                {
-                  SpecFraction _elem154;
-                  _elem154 = new SpecFraction();
-                  await _elem154.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem154);
-                }
-                await iprot.ReadListEndAsync(cancellationToken);
-              }
+              Pos = await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -170,32 +156,25 @@ public partial class SpecValueSerial_KEY : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp155 = new TStruct("SpecValueSerial_KEY");
-      await oprot.WriteStructBeginAsync(tmp155, cancellationToken);
-      var tmp156 = new TField();
-      if(__isset.seq)
+      var tmp84 = new TStruct("SpecUpdateOP");
+      await oprot.WriteStructBeginAsync(tmp84, cancellationToken);
+      var tmp85 = new TField();
+      if(__isset.op)
       {
-        tmp156.Name = "seq";
-        tmp156.Type = TType.I32;
-        tmp156.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp156, cancellationToken);
-        await oprot.WriteI32Async((int)Seq, cancellationToken);
+        tmp85.Name = "op";
+        tmp85.Type = TType.I32;
+        tmp85.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp85, cancellationToken);
+        await oprot.WriteI32Async((int)Op, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if((V != null) && __isset.v)
+      if(__isset.pos)
       {
-        tmp156.Name = "v";
-        tmp156.Type = TType.List;
-        tmp156.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp156, cancellationToken);
-        {
-          await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-          foreach (SpecFraction _iter157 in V)
-          {
-            await _iter157.WriteAsync(oprot, cancellationToken);
-          }
-          await oprot.WriteListEndAsync(cancellationToken);
-        }
+        tmp85.Name = "pos";
+        tmp85.Type = TType.I32;
+        tmp85.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp85, cancellationToken);
+        await oprot.WriteI32Async(Pos, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       await oprot.WriteFieldStopAsync(cancellationToken);
@@ -209,22 +188,22 @@ public partial class SpecValueSerial_KEY : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is SpecValueSerial_KEY other)) return false;
+    if (!(that is SpecUpdateOP other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.seq == other.__isset.seq) && ((!__isset.seq) || (global::System.Object.Equals(Seq, other.Seq))))
-      && ((__isset.v == other.__isset.v) && ((!__isset.v) || (global::System.Object.Equals(V, other.V))));
+    return ((__isset.op == other.__isset.op) && ((!__isset.op) || (global::System.Object.Equals(Op, other.Op))))
+      && ((__isset.pos == other.__isset.pos) && ((!__isset.pos) || (global::System.Object.Equals(Pos, other.Pos))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if(__isset.seq)
+      if(__isset.op)
       {
-        hashcode = (hashcode * 397) + Seq.GetHashCode();
+        hashcode = (hashcode * 397) + Op.GetHashCode();
       }
-      if((V != null) && __isset.v)
+      if(__isset.pos)
       {
-        hashcode = (hashcode * 397) + V.GetHashCode();
+        hashcode = (hashcode * 397) + Pos.GetHashCode();
       }
     }
     return hashcode;
@@ -232,22 +211,22 @@ public partial class SpecValueSerial_KEY : TBase
 
   public override string ToString()
   {
-    var tmp158 = new StringBuilder("SpecValueSerial_KEY(");
-    int tmp159 = 0;
-    if(__isset.seq)
+    var tmp86 = new StringBuilder("SpecUpdateOP(");
+    int tmp87 = 0;
+    if(__isset.op)
     {
-      if(0 < tmp159++) { tmp158.Append(", "); }
-      tmp158.Append("Seq: ");
-      Seq.ToString(tmp158);
+      if(0 < tmp87++) { tmp86.Append(", "); }
+      tmp86.Append("Op: ");
+      Op.ToString(tmp86);
     }
-    if((V != null) && __isset.v)
+    if(__isset.pos)
     {
-      if(0 < tmp159++) { tmp158.Append(", "); }
-      tmp158.Append("V: ");
-      V.ToString(tmp158);
+      if(0 < tmp87++) { tmp86.Append(", "); }
+      tmp86.Append("Pos: ");
+      Pos.ToString(tmp86);
     }
-    tmp158.Append(')');
-    return tmp158.ToString();
+    tmp86.Append(')');
+    return tmp86.ToString();
   }
 }
 

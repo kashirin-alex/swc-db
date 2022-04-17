@@ -85,18 +85,18 @@ public partial class Cells : TBase
 
   public Cells DeepCopy()
   {
-    var tmp295 = new Cells();
+    var tmp300 = new Cells();
     if((Cells_ != null) && __isset.cells)
     {
-      tmp295.Cells_ = this.Cells_.DeepCopy();
+      tmp300.Cells_ = this.Cells_.DeepCopy();
     }
-    tmp295.__isset.cells = this.__isset.cells;
+    tmp300.__isset.cells = this.__isset.cells;
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      tmp295.Serial_cells = this.Serial_cells.DeepCopy();
+      tmp300.Serial_cells = this.Serial_cells.DeepCopy();
     }
-    tmp295.__isset.serial_cells = this.__isset.serial_cells;
-    return tmp295;
+    tmp300.__isset.serial_cells = this.__isset.serial_cells;
+    return tmp300;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -120,14 +120,14 @@ public partial class Cells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list296 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells_ = new List<Cell>(_list296.Count);
-                for(int _i297 = 0; _i297 < _list296.Count; ++_i297)
+                TList _list301 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells_ = new List<Cell>(_list301.Count);
+                for(int _i302 = 0; _i302 < _list301.Count; ++_i302)
                 {
-                  Cell _elem298;
-                  _elem298 = new Cell();
-                  await _elem298.ReadAsync(iprot, cancellationToken);
-                  Cells_.Add(_elem298);
+                  Cell _elem303;
+                  _elem303 = new Cell();
+                  await _elem303.ReadAsync(iprot, cancellationToken);
+                  Cells_.Add(_elem303);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -141,14 +141,14 @@ public partial class Cells : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list299 = await iprot.ReadListBeginAsync(cancellationToken);
-                Serial_cells = new List<CellSerial>(_list299.Count);
-                for(int _i300 = 0; _i300 < _list299.Count; ++_i300)
+                TList _list304 = await iprot.ReadListBeginAsync(cancellationToken);
+                Serial_cells = new List<CellSerial>(_list304.Count);
+                for(int _i305 = 0; _i305 < _list304.Count; ++_i305)
                 {
-                  CellSerial _elem301;
-                  _elem301 = new CellSerial();
-                  await _elem301.ReadAsync(iprot, cancellationToken);
-                  Serial_cells.Add(_elem301);
+                  CellSerial _elem306;
+                  _elem306 = new CellSerial();
+                  await _elem306.ReadAsync(iprot, cancellationToken);
+                  Serial_cells.Add(_elem306);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -179,20 +179,20 @@ public partial class Cells : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp302 = new TStruct("Cells");
-      await oprot.WriteStructBeginAsync(tmp302, cancellationToken);
-      var tmp303 = new TField();
+      var tmp307 = new TStruct("Cells");
+      await oprot.WriteStructBeginAsync(tmp307, cancellationToken);
+      var tmp308 = new TField();
       if((Cells_ != null) && __isset.cells)
       {
-        tmp303.Name = "cells";
-        tmp303.Type = TType.List;
-        tmp303.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp303, cancellationToken);
+        tmp308.Name = "cells";
+        tmp308.Type = TType.List;
+        tmp308.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp308, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells_.Count), cancellationToken);
-          foreach (Cell _iter304 in Cells_)
+          foreach (Cell _iter309 in Cells_)
           {
-            await _iter304.WriteAsync(oprot, cancellationToken);
+            await _iter309.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -200,15 +200,15 @@ public partial class Cells : TBase
       }
       if((Serial_cells != null) && __isset.serial_cells)
       {
-        tmp303.Name = "serial_cells";
-        tmp303.Type = TType.List;
-        tmp303.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp303, cancellationToken);
+        tmp308.Name = "serial_cells";
+        tmp308.Type = TType.List;
+        tmp308.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp308, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Serial_cells.Count), cancellationToken);
-          foreach (CellSerial _iter305 in Serial_cells)
+          foreach (CellSerial _iter310 in Serial_cells)
           {
-            await _iter305.WriteAsync(oprot, cancellationToken);
+            await _iter310.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -248,22 +248,22 @@ public partial class Cells : TBase
 
   public override string ToString()
   {
-    var tmp306 = new StringBuilder("Cells(");
-    int tmp307 = 0;
+    var tmp311 = new StringBuilder("Cells(");
+    int tmp312 = 0;
     if((Cells_ != null) && __isset.cells)
     {
-      if(0 < tmp307++) { tmp306.Append(", "); }
-      tmp306.Append("Cells_: ");
-      Cells_.ToString(tmp306);
+      if(0 < tmp312++) { tmp311.Append(", "); }
+      tmp311.Append("Cells_: ");
+      Cells_.ToString(tmp311);
     }
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      if(0 < tmp307++) { tmp306.Append(", "); }
-      tmp306.Append("Serial_cells: ");
-      Serial_cells.ToString(tmp306);
+      if(0 < tmp312++) { tmp311.Append(", "); }
+      tmp311.Append("Serial_cells: ");
+      Serial_cells.ToString(tmp311);
     }
-    tmp306.Append(')');
-    return tmp306.ToString();
+    tmp311.Append(')');
+    return tmp311.ToString();
   }
 }
 

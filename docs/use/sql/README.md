@@ -138,7 +138,7 @@ As example, the Selector `nameOne, 2, =^'test', tags%>[2,v>"5",=1]` result will 
 
 * Data Commands:
   * [**Select [where_clause]**](#select-query) - A Query command to scan and select cells.
-  
+
   * [**Update [cell]**](#update-query) - A Query command to update (insert/delete) cells.
 
 
@@ -169,8 +169,8 @@ _the minimal required definitons_:
 #### _a ```create column``` example:_
 ```
 create column(
-  name="anExampleColumnName" 
-  seq=FC_VOLUME 
+  name="anExampleColumnName"
+  seq=FC_VOLUME
   type=PLAIN
 )
 ```
@@ -179,21 +179,21 @@ create column(
 ```
 modify schema(
   cid=A-CID
-  name="anExampleColumnName" 
-  seq=VOLUME 
-  type=PLAIN 
-  revision=input/auto-assigned 
-  compact=0 
-  cell_versions=1 
-  cell_ttl=0 
+  name="anExampleColumnName"
+  seq=VOLUME
+  type=PLAIN
+  revision=input/auto-assigned
+  compact=0
+  cell_versions=1
+  cell_ttl=0
   blk_encoding=ZSTD
-  blk_size=0 
-  blk_cells=0 
-  cs_replication=0 
-  cs_size=0 
-  cs_max=0 
+  blk_size=0
+  blk_cells=0
+  cs_replication=0
+  cs_size=0
+  cs_max=0
   log_rollout=0
-  log_compact=0 
+  log_compact=0
   log_preload=0
 )
 ```
@@ -252,7 +252,7 @@ The Select Query command perform scans and select cells by the applied query.
 select where
   col(ColNameA1) = (
     cells = (
-      range >= ['1-'] AND [>='1-'] <= key = [<='1-1-', ="1" ] AND  value = "Value-Data-1" 
+      range >= ['1-'] AND [>='1-'] <= key = [<='1-1-', ="1" ] AND  value = "Value-Data-1"
       AND timestamp > “2010/05/29" AND offset_key = ["1-0"] AND offset_rev = 000111222
       limit=10 max_versions=2
     )
@@ -308,9 +308,9 @@ The Condition of Range is an interval of from Key to Key, optionally to apply on
 
 
 * ##### The Key-Intervals syntax
-The Key-Intervals are several or single ```Condition-Key-Interval```, joined by the TOKEN ``` AND ```. 
-Whereas the given order is the matching order which let further matching of a cell-key, 
-such as 1st(```Condition-Key-Interval```) is based on a sequential Comparators 
+The Key-Intervals are several or single ```Condition-Key-Interval```, joined by the TOKEN ``` AND ```.
+Whereas the given order is the matching order which let further matching of a cell-key,
+such as 1st(```Condition-Key-Interval```) is based on a sequential Comparators
 while the 2nd and followed(```Condition-Key-Interval```) include/involve non-sequential Comparators such as Regexp. \
 The 1st ```Condition-Key-Interval``` is the main(after ```Condition-Range```) Interval used by/for locators of Range & Range-Blocks. \
 ***[ [```Condition-Key-Interval```](#the-condition-key-interval-syntax) ]
@@ -325,8 +325,8 @@ The 1st ```Condition-Key-Interval``` is the main(after ```Condition-Range```) In
 * ##### The Condition-Key-Interval syntax
 The Condition of Key Interval is an interval of from Condition-Key to Condition-Key, optionally to apply only one side with Condition-Key on the right side. It can be defined only by the Comparators EQ, GE and LE. \
 The Exact Cell Key match condition is when Comparator is EQ and Condition-Key is set with EQ on all the Fractions. \
-***[ [```Condition-Key```](#the-condition-key-syntax)] 
-[``` <= ```] ``` key ``` [``` <= ```] 
+***[ [```Condition-Key```](#the-condition-key-syntax)]
+[``` <= ```] ``` key ``` [``` <= ```]
 [ [```Condition-Key```](#the-condition-key-syntax)]***
 
 
@@ -346,7 +346,7 @@ The Condition of Value, a single or several Value Conditions joined by an ```AND
 
 
 * ##### The Condition-Value-Expression syntax
-The Expression of Value Condition dependable on the [Schema's column value type](#the-schema-syntax). 
+The Expression of Value Condition dependable on the [Schema's column value type](#the-schema-syntax).
   * **_PLAIN_**: \
   ``` COMP "VALUE" ``` - applicable with Extended Comparators
 
@@ -387,7 +387,17 @@ The following flags, ```token``` and ```key=value```, are available: \
 
 
 * ##### The Update Options syntax
-The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE=(TIMESTAMP, VALUE, ENC)``` options for updating a cells-interval.
+The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE [OP] (TIMESTAMP, VALUE, ENC)``` options for updating a cells-interval.
+  * The supported UPDATE operations(`OP`)  :
+
+    | syntax | name    | supported column-types | description                                             |
+    |  ---   |   ---   |       ---              |     ---                                                 |
+    |  `=`   | REPLACE | PLAIN, SERIAL, COUNTER | replace with the update value (_default_)               |
+    |  `+=`  | APPEND  | PLAIN, SERIAL          | appends the update value to the cell's current value    |
+    |  `=+`  | PREPEND | PLAIN, SERIAL          | prepends the update value to the cell's current value   |
+    |  `=:#` | INSERT  | PLAIN, SERIAL(infield) | insert the update value at position in current value    |
+    |  `~=`  | SERIAL  | SERIAL                 | update is done by the inner serial-fields defintions    |
+
 The cells of the response are the fetched cells before update has been applied. \
 These options let the use of a column in a synchronized manner that open usage possibilities to cases such as:
   * auto-increment value for purpose such as an unique ID.
@@ -416,16 +426,16 @@ UPDATE
 
 
 * #### The Cell for Update syntax
-The Syntax depends on the Flags and available definitions. 
+The Syntax depends on the Flags and available definitions.
 
 * ##### A **DELETE_LE** Flag:
-  ```cell(``` ``` DELETE_LE ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```) ``` 
+  ```cell(``` ``` DELETE_LE ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```) ```
 
 * ##### A **DELETE_EQ** Flag:
-  ```cell(``` ``` DELETE_EQ ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIMESTAMP ``` ```) ``` 
+  ```cell(``` ``` DELETE_EQ ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIMESTAMP ``` ```) ```
 
 * ##### An **INSERT** Flag with auto-timestamp:
-  ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` "" ``` ```,``` ``` VALUE-DATA ``` ```) ``` 
+  ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` "" ``` ```,``` ``` VALUE-DATA ``` ```) ```
 
 * ##### An **INSERT** Flag with version-timestamp config:
   ```cell(``` ``` INSERT ``` ```,``` ``` Column ID|NAME ``` ```,``` ``` Key ``` ```,``` ``` TIME_ORDER ``` ```,``` ``` TIMESTAMP ``` ```,``` ``` VALUE-DATA ``` ```) ```

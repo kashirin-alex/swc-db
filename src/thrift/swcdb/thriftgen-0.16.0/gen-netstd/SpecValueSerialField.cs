@@ -172,43 +172,43 @@ public partial class SpecValueSerialField : TBase
 
   public SpecValueSerialField DeepCopy()
   {
-    var tmp173 = new SpecValueSerialField();
+    var tmp178 = new SpecValueSerialField();
     if(__isset.field_id)
     {
-      tmp173.Field_id = this.Field_id;
+      tmp178.Field_id = this.Field_id;
     }
-    tmp173.__isset.field_id = this.__isset.field_id;
+    tmp178.__isset.field_id = this.__isset.field_id;
     if((Spec_int64 != null) && __isset.spec_int64)
     {
-      tmp173.Spec_int64 = (SpecValueSerial_INT64)this.Spec_int64.DeepCopy();
+      tmp178.Spec_int64 = (SpecValueSerial_INT64)this.Spec_int64.DeepCopy();
     }
-    tmp173.__isset.spec_int64 = this.__isset.spec_int64;
+    tmp178.__isset.spec_int64 = this.__isset.spec_int64;
     if((Spec_double != null) && __isset.spec_double)
     {
-      tmp173.Spec_double = (SpecValueSerial_DOUBLE)this.Spec_double.DeepCopy();
+      tmp178.Spec_double = (SpecValueSerial_DOUBLE)this.Spec_double.DeepCopy();
     }
-    tmp173.__isset.spec_double = this.__isset.spec_double;
+    tmp178.__isset.spec_double = this.__isset.spec_double;
     if((Spec_bytes != null) && __isset.spec_bytes)
     {
-      tmp173.Spec_bytes = (SpecValueSerial_BYTES)this.Spec_bytes.DeepCopy();
+      tmp178.Spec_bytes = (SpecValueSerial_BYTES)this.Spec_bytes.DeepCopy();
     }
-    tmp173.__isset.spec_bytes = this.__isset.spec_bytes;
+    tmp178.__isset.spec_bytes = this.__isset.spec_bytes;
     if((Spec_key != null) && __isset.spec_key)
     {
-      tmp173.Spec_key = (SpecValueSerial_KEY)this.Spec_key.DeepCopy();
+      tmp178.Spec_key = (SpecValueSerial_KEY)this.Spec_key.DeepCopy();
     }
-    tmp173.__isset.spec_key = this.__isset.spec_key;
+    tmp178.__isset.spec_key = this.__isset.spec_key;
     if((Spec_li != null) && __isset.spec_li)
     {
-      tmp173.Spec_li = (SpecValueSerial_LI)this.Spec_li.DeepCopy();
+      tmp178.Spec_li = (SpecValueSerial_LI)this.Spec_li.DeepCopy();
     }
-    tmp173.__isset.spec_li = this.__isset.spec_li;
+    tmp178.__isset.spec_li = this.__isset.spec_li;
     if((Spec_lb != null) && __isset.spec_lb)
     {
-      tmp173.Spec_lb = (SpecValueSerial_LB)this.Spec_lb.DeepCopy();
+      tmp178.Spec_lb = (SpecValueSerial_LB)this.Spec_lb.DeepCopy();
     }
-    tmp173.__isset.spec_lb = this.__isset.spec_lb;
-    return tmp173;
+    tmp178.__isset.spec_lb = this.__isset.spec_lb;
+    return tmp178;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -325,69 +325,69 @@ public partial class SpecValueSerialField : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp174 = new TStruct("SpecValueSerialField");
-      await oprot.WriteStructBeginAsync(tmp174, cancellationToken);
-      var tmp175 = new TField();
+      var tmp179 = new TStruct("SpecValueSerialField");
+      await oprot.WriteStructBeginAsync(tmp179, cancellationToken);
+      var tmp180 = new TField();
       if(__isset.field_id)
       {
-        tmp175.Name = "field_id";
-        tmp175.Type = TType.I32;
-        tmp175.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp175, cancellationToken);
+        tmp180.Name = "field_id";
+        tmp180.Type = TType.I32;
+        tmp180.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp180, cancellationToken);
         await oprot.WriteI32Async(Field_id, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Spec_int64 != null) && __isset.spec_int64)
       {
-        tmp175.Name = "spec_int64";
-        tmp175.Type = TType.Struct;
-        tmp175.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp175, cancellationToken);
+        tmp180.Name = "spec_int64";
+        tmp180.Type = TType.Struct;
+        tmp180.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp180, cancellationToken);
         await Spec_int64.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Spec_double != null) && __isset.spec_double)
       {
-        tmp175.Name = "spec_double";
-        tmp175.Type = TType.Struct;
-        tmp175.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp175, cancellationToken);
+        tmp180.Name = "spec_double";
+        tmp180.Type = TType.Struct;
+        tmp180.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp180, cancellationToken);
         await Spec_double.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Spec_bytes != null) && __isset.spec_bytes)
       {
-        tmp175.Name = "spec_bytes";
-        tmp175.Type = TType.Struct;
-        tmp175.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp175, cancellationToken);
+        tmp180.Name = "spec_bytes";
+        tmp180.Type = TType.Struct;
+        tmp180.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp180, cancellationToken);
         await Spec_bytes.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Spec_key != null) && __isset.spec_key)
       {
-        tmp175.Name = "spec_key";
-        tmp175.Type = TType.Struct;
-        tmp175.ID = 5;
-        await oprot.WriteFieldBeginAsync(tmp175, cancellationToken);
+        tmp180.Name = "spec_key";
+        tmp180.Type = TType.Struct;
+        tmp180.ID = 5;
+        await oprot.WriteFieldBeginAsync(tmp180, cancellationToken);
         await Spec_key.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Spec_li != null) && __isset.spec_li)
       {
-        tmp175.Name = "spec_li";
-        tmp175.Type = TType.Struct;
-        tmp175.ID = 6;
-        await oprot.WriteFieldBeginAsync(tmp175, cancellationToken);
+        tmp180.Name = "spec_li";
+        tmp180.Type = TType.Struct;
+        tmp180.ID = 6;
+        await oprot.WriteFieldBeginAsync(tmp180, cancellationToken);
         await Spec_li.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Spec_lb != null) && __isset.spec_lb)
       {
-        tmp175.Name = "spec_lb";
-        tmp175.Type = TType.Struct;
-        tmp175.ID = 7;
-        await oprot.WriteFieldBeginAsync(tmp175, cancellationToken);
+        tmp180.Name = "spec_lb";
+        tmp180.Type = TType.Struct;
+        tmp180.ID = 7;
+        await oprot.WriteFieldBeginAsync(tmp180, cancellationToken);
         await Spec_lb.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -450,52 +450,52 @@ public partial class SpecValueSerialField : TBase
 
   public override string ToString()
   {
-    var tmp176 = new StringBuilder("SpecValueSerialField(");
-    int tmp177 = 0;
+    var tmp181 = new StringBuilder("SpecValueSerialField(");
+    int tmp182 = 0;
     if(__isset.field_id)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Field_id: ");
-      Field_id.ToString(tmp176);
+      if(0 < tmp182++) { tmp181.Append(", "); }
+      tmp181.Append("Field_id: ");
+      Field_id.ToString(tmp181);
     }
     if((Spec_int64 != null) && __isset.spec_int64)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Spec_int64: ");
-      Spec_int64.ToString(tmp176);
+      if(0 < tmp182++) { tmp181.Append(", "); }
+      tmp181.Append("Spec_int64: ");
+      Spec_int64.ToString(tmp181);
     }
     if((Spec_double != null) && __isset.spec_double)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Spec_double: ");
-      Spec_double.ToString(tmp176);
+      if(0 < tmp182++) { tmp181.Append(", "); }
+      tmp181.Append("Spec_double: ");
+      Spec_double.ToString(tmp181);
     }
     if((Spec_bytes != null) && __isset.spec_bytes)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Spec_bytes: ");
-      Spec_bytes.ToString(tmp176);
+      if(0 < tmp182++) { tmp181.Append(", "); }
+      tmp181.Append("Spec_bytes: ");
+      Spec_bytes.ToString(tmp181);
     }
     if((Spec_key != null) && __isset.spec_key)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Spec_key: ");
-      Spec_key.ToString(tmp176);
+      if(0 < tmp182++) { tmp181.Append(", "); }
+      tmp181.Append("Spec_key: ");
+      Spec_key.ToString(tmp181);
     }
     if((Spec_li != null) && __isset.spec_li)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Spec_li: ");
-      Spec_li.ToString(tmp176);
+      if(0 < tmp182++) { tmp181.Append(", "); }
+      tmp181.Append("Spec_li: ");
+      Spec_li.ToString(tmp181);
     }
     if((Spec_lb != null) && __isset.spec_lb)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Spec_lb: ");
-      Spec_lb.ToString(tmp176);
+      if(0 < tmp182++) { tmp181.Append(", "); }
+      tmp181.Append("Spec_lb: ");
+      Spec_lb.ToString(tmp181);
     }
-    tmp176.Append(')');
-    return tmp176.ToString();
+    tmp181.Append(')');
+    return tmp181.ToString();
   }
 }
 

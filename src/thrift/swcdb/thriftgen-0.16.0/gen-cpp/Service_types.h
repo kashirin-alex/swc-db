@@ -311,6 +311,37 @@ std::ostream& operator<<(std::ostream& out, const SpecIntervalOptions::type& val
 
 std::string to_string(const SpecIntervalOptions::type& val);
 
+struct UpdateOP {
+  enum type {
+    /**
+     * The operation to Replace
+     */
+    REPLACE = 0,
+    /**
+     * The operation to Append
+     */
+    APPEND = 1,
+    /**
+     * The operation to Prepend
+     */
+    PREPEND = 2,
+    /**
+     * The operation to Insert
+     */
+    INSERT = 4,
+    /**
+     * The operation is by inner Serial fields defintions
+     */
+    SERIAL = 8
+  };
+};
+
+extern const std::map<int, const char*> _UpdateOP_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const UpdateOP::type& val);
+
+std::string to_string(const UpdateOP::type& val);
+
 /**
  * The Cell Flag
  */
@@ -467,6 +498,8 @@ class SpecTimestamp;
 class SpecKeyInterval;
 
 class SpecValue;
+
+class SpecUpdateOP;
 
 class SpecIntervalUpdate;
 
@@ -1459,11 +1492,74 @@ void swap(SpecValue &a, SpecValue &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecValue& obj);
 
+typedef struct _SpecUpdateOP__isset {
+  _SpecUpdateOP__isset() : op(false), pos(false) {}
+  bool op :1;
+  bool pos :1;
+} _SpecUpdateOP__isset;
+
+class SpecUpdateOP : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecUpdateOP(const SpecUpdateOP&) noexcept;
+  SpecUpdateOP(SpecUpdateOP&&) noexcept;
+  SpecUpdateOP& operator=(const SpecUpdateOP&) noexcept;
+  SpecUpdateOP& operator=(SpecUpdateOP&&) noexcept;
+  SpecUpdateOP() noexcept
+               : op(static_cast<UpdateOP::type>(0)),
+                 pos(0) {
+  }
+
+  virtual ~SpecUpdateOP() noexcept;
+  /**
+   * The Operation
+   * 
+   * @see UpdateOP
+   */
+  UpdateOP::type op;
+  /**
+   * The position of INSERT operation
+   */
+  int32_t pos;
+
+  _SpecUpdateOP__isset __isset;
+
+  void __set_op(const UpdateOP::type val);
+
+  void __set_pos(const int32_t val);
+
+  bool operator == (const SpecUpdateOP & rhs) const
+  {
+    if (!(op == rhs.op))
+      return false;
+    if (__isset.pos != rhs.__isset.pos)
+      return false;
+    else if (__isset.pos && !(pos == rhs.pos))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecUpdateOP &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecUpdateOP & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecUpdateOP &a, SpecUpdateOP &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecUpdateOP& obj);
+
 typedef struct _SpecIntervalUpdate__isset {
-  _SpecIntervalUpdate__isset() : v(false), ts(false), encoder(false) {}
+  _SpecIntervalUpdate__isset() : v(false), ts(false), encoder(false), update_op(false) {}
   bool v :1;
   bool ts :1;
   bool encoder :1;
+  bool update_op :1;
 } _SpecIntervalUpdate__isset;
 
 /**
@@ -1497,6 +1593,10 @@ class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
    * @see EncodingType
    */
   EncodingType::type encoder;
+  /**
+   * Optionally the operaton of value update
+   */
+  SpecUpdateOP update_op;
 
   _SpecIntervalUpdate__isset __isset;
 
@@ -1505,6 +1605,8 @@ class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
   void __set_ts(const int64_t val);
 
   void __set_encoder(const EncodingType::type val);
+
+  void __set_update_op(const SpecUpdateOP& val);
 
   bool operator == (const SpecIntervalUpdate & rhs) const
   {
@@ -1517,6 +1619,10 @@ class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
     if (__isset.encoder != rhs.__isset.encoder)
       return false;
     else if (__isset.encoder && !(encoder == rhs.encoder))
+      return false;
+    if (__isset.update_op != rhs.__isset.update_op)
+      return false;
+    else if (__isset.update_op && !(update_op == rhs.update_op))
       return false;
     return true;
   }
@@ -1537,10 +1643,11 @@ void swap(SpecIntervalUpdate &a, SpecIntervalUpdate &b);
 std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdate& obj);
 
 typedef struct _SpecIntervalUpdateSerial__isset {
-  _SpecIntervalUpdateSerial__isset() : ts(false), v(false), encoder(false) {}
+  _SpecIntervalUpdateSerial__isset() : ts(false), v(false), encoder(false), update_op(false) {}
   bool ts :1;
   bool v :1;
   bool encoder :1;
+  bool update_op :1;
 } _SpecIntervalUpdateSerial__isset;
 
 /**
@@ -1573,6 +1680,10 @@ class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
    * @see EncodingType
    */
   EncodingType::type encoder;
+  /**
+   * Optionally the operaton of value update
+   */
+  SpecUpdateOP update_op;
 
   _SpecIntervalUpdateSerial__isset __isset;
 
@@ -1581,6 +1692,8 @@ class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
   void __set_v(const CellValuesSerial& val);
 
   void __set_encoder(const EncodingType::type val);
+
+  void __set_update_op(const SpecUpdateOP& val);
 
   bool operator == (const SpecIntervalUpdateSerial & rhs) const
   {
@@ -1591,6 +1704,10 @@ class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
     if (__isset.encoder != rhs.__isset.encoder)
       return false;
     else if (__isset.encoder && !(encoder == rhs.encoder))
+      return false;
+    if (__isset.update_op != rhs.__isset.update_op)
+      return false;
+    else if (__isset.update_op && !(update_op == rhs.update_op))
       return false;
     return true;
   }

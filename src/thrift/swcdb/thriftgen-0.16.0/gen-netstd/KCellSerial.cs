@@ -103,23 +103,23 @@ public partial class KCellSerial : TBase
 
   public KCellSerial DeepCopy()
   {
-    var tmp348 = new KCellSerial();
+    var tmp353 = new KCellSerial();
     if((C != null) && __isset.c)
     {
-      tmp348.C = this.C;
+      tmp353.C = this.C;
     }
-    tmp348.__isset.c = this.__isset.c;
+    tmp353.__isset.c = this.__isset.c;
     if(__isset.ts)
     {
-      tmp348.Ts = this.Ts;
+      tmp353.Ts = this.Ts;
     }
-    tmp348.__isset.ts = this.__isset.ts;
+    tmp353.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp348.V = this.V.DeepCopy();
+      tmp353.V = this.V.DeepCopy();
     }
-    tmp348.__isset.v = this.__isset.v;
-    return tmp348;
+    tmp353.__isset.v = this.__isset.v;
+    return tmp353;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -163,14 +163,14 @@ public partial class KCellSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list349 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<CellValueSerial>(_list349.Count);
-                for(int _i350 = 0; _i350 < _list349.Count; ++_i350)
+                TList _list354 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<CellValueSerial>(_list354.Count);
+                for(int _i355 = 0; _i355 < _list354.Count; ++_i355)
                 {
-                  CellValueSerial _elem351;
-                  _elem351 = new CellValueSerial();
-                  await _elem351.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem351);
+                  CellValueSerial _elem356;
+                  _elem356 = new CellValueSerial();
+                  await _elem356.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem356);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -201,38 +201,38 @@ public partial class KCellSerial : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp352 = new TStruct("KCellSerial");
-      await oprot.WriteStructBeginAsync(tmp352, cancellationToken);
-      var tmp353 = new TField();
+      var tmp357 = new TStruct("KCellSerial");
+      await oprot.WriteStructBeginAsync(tmp357, cancellationToken);
+      var tmp358 = new TField();
       if((C != null) && __isset.c)
       {
-        tmp353.Name = "c";
-        tmp353.Type = TType.String;
-        tmp353.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp353, cancellationToken);
+        tmp358.Name = "c";
+        tmp358.Type = TType.String;
+        tmp358.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp358, cancellationToken);
         await oprot.WriteStringAsync(C, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp353.Name = "ts";
-        tmp353.Type = TType.I64;
-        tmp353.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp353, cancellationToken);
+        tmp358.Name = "ts";
+        tmp358.Type = TType.I64;
+        tmp358.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp358, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp353.Name = "v";
-        tmp353.Type = TType.List;
-        tmp353.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp353, cancellationToken);
+        tmp358.Name = "v";
+        tmp358.Type = TType.List;
+        tmp358.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp358, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-          foreach (CellValueSerial _iter354 in V)
+          foreach (CellValueSerial _iter359 in V)
           {
-            await _iter354.WriteAsync(oprot, cancellationToken);
+            await _iter359.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -277,28 +277,28 @@ public partial class KCellSerial : TBase
 
   public override string ToString()
   {
-    var tmp355 = new StringBuilder("KCellSerial(");
-    int tmp356 = 0;
+    var tmp360 = new StringBuilder("KCellSerial(");
+    int tmp361 = 0;
     if((C != null) && __isset.c)
     {
-      if(0 < tmp356++) { tmp355.Append(", "); }
-      tmp355.Append("C: ");
-      C.ToString(tmp355);
+      if(0 < tmp361++) { tmp360.Append(", "); }
+      tmp360.Append("C: ");
+      C.ToString(tmp360);
     }
     if(__isset.ts)
     {
-      if(0 < tmp356++) { tmp355.Append(", "); }
-      tmp355.Append("Ts: ");
-      Ts.ToString(tmp355);
+      if(0 < tmp361++) { tmp360.Append(", "); }
+      tmp360.Append("Ts: ");
+      Ts.ToString(tmp360);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp356++) { tmp355.Append(", "); }
-      tmp355.Append("V: ");
-      V.ToString(tmp355);
+      if(0 < tmp361++) { tmp360.Append(", "); }
+      tmp360.Append("V: ");
+      V.ToString(tmp360);
     }
-    tmp355.Append(')');
-    return tmp355.ToString();
+    tmp360.Append(')');
+    return tmp360.ToString();
   }
 }
 

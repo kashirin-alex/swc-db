@@ -48,7 +48,10 @@ void set(const Key& key, DB::Cell::Key& dbkey) {
   dbkey.read(key);
 }
 
-void set(const CellValuesSerial& value, DB::Cell::Serial::Value::FieldsWriter& wfields) {
+void set(const CellValuesSerial& value,
+         DB::Cell::Serial::Value::FieldsWriter& wfields,
+         uint8_t op=DB::Specs::UpdateOP::REPLACE) {
+  (void)op; // TODO: OP is applied only as REPLACE
   size_t len = 0;
   for(auto& fields : value) {
     if(fields.__isset.v_int64)
@@ -108,6 +111,14 @@ void set(const SpecTimestamp& spec, DB::Specs::Timestamp& dbspec) {
 
 void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
   dbspec.set(spec.v, Condition::Comp(spec.comp));
+}
+
+void set(const SpecUpdateOP& spec, DB::Specs::UpdateOP& dbspec) {
+  dbspec.set_op(uint8_t(spec.op));
+  if(spec.__isset.pos &&
+     dbspec.get_op() == DB::Specs::UpdateOP::INSERT) {
+    dbspec.set_pos(spec.pos);
+  }
 }
 
 void set(const SpecValues& spec, DB::Specs::Values& dbspec) {
@@ -177,12 +188,16 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
           break;
         }
       }
+      DB::Specs::UpdateOP update_op;
+      if(intval.updating.__isset.update_op)
+        set(intval.updating.update_op, update_op);
       dbintval.updating.reset(new DB::Specs::IntervalUpdate(
         dbcell.value,
         dbcell.vlen,
         intval.updating.__isset.ts
           ? intval.updating.ts
           : DB::Cells::TIMESTAMP_AUTO,
+        update_op,
         false
       ));
       dbcell.value = nullptr;
@@ -300,8 +315,13 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
   if(intval.options & SpecIntervalOptions::type::UPDATING) {
     if(intval.__isset.updating) {
       dbintval.set_opt__updating();
+
+      DB::Specs::UpdateOP update_op;
+      if(intval.updating.__isset.update_op)
+        set(intval.updating.update_op, update_op);
+
       DB::Cell::Serial::Value::FieldsWriter wfields;
-      set(intval.updating.v, wfields);
+      set(intval.updating.v, wfields, update_op.get_op());
       DB::Cells::Cell dbcell;
       intval.updating.__isset.encoder
         ? dbcell.set_value(DB::Types::Encoder(uint8_t(intval.updating.encoder)),
@@ -313,6 +333,7 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
         intval.updating.__isset.ts
           ? intval.updating.ts
           : DB::Cells::TIMESTAMP_AUTO,
+        update_op,
         false
       ));
       dbcell.value = nullptr;

@@ -140,6 +140,21 @@ module Swcdb
         VALID_VALUES = Set.new([UPDATING, DELETING]).freeze
       end
 
+      module UpdateOP
+        # The operation to Replace
+        REPLACE = 0
+        # The operation to Append
+        APPEND = 1
+        # The operation to Prepend
+        PREPEND = 2
+        # The operation to Insert
+        INSERT = 4
+        # The operation is by inner Serial fields defintions
+        SERIAL = 8
+        VALUE_MAP = {0 => "REPLACE", 1 => "APPEND", 2 => "PREPEND", 4 => "INSERT", 8 => "SERIAL"}
+        VALID_VALUES = Set.new([REPLACE, APPEND, PREPEND, INSERT, SERIAL]).freeze
+      end
+
       module Flag
         # Unknown/Undefined
         NONE = 0
@@ -187,6 +202,8 @@ module Swcdb
       class SpecKeyInterval; end
 
       class SpecValue; end
+
+      class SpecUpdateOP; end
 
       class SpecIntervalUpdate; end
 
@@ -570,12 +587,36 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
+      class SpecUpdateOP
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        OP = 1
+        POS = 2
+
+        FIELDS = {
+          # The Operation
+          OP => {:type => ::Thrift::Types::I32, :name => 'op', :enum_class => ::Swcdb::Thrift::Gen::UpdateOP},
+          # The position of INSERT operation
+          POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @op.nil? || ::Swcdb::Thrift::Gen::UpdateOP::VALID_VALUES.include?(@op)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field op!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
       # The Value specs for an Updating Interval of 'updating' in SpecInterval
       class SpecIntervalUpdate
         include ::Thrift::Struct, ::Thrift::Struct_Union
         V = 1
         TS = 2
         ENCODER = 3
+        UPDATE_OP = 4
 
         FIELDS = {
           # The value for the updated cell
@@ -583,7 +624,9 @@ module Swcdb
           # The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
           TS => {:type => ::Thrift::Types::I64, :name => 'ts', :optional => true},
           # Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
-          ENCODER => {:type => ::Thrift::Types::I32, :name => 'encoder', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::EncodingType}
+          ENCODER => {:type => ::Thrift::Types::I32, :name => 'encoder', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::EncodingType},
+          # Optionally the operaton of value update
+          UPDATE_OP => {:type => ::Thrift::Types::STRUCT, :name => 'update_op', :class => ::Swcdb::Thrift::Gen::SpecUpdateOP, :optional => true}
         }
 
         def struct_fields; FIELDS; end
@@ -603,6 +646,7 @@ module Swcdb
         TS = 1
         V = 2
         ENCODER = 3
+        UPDATE_OP = 4
 
         FIELDS = {
           # The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
@@ -610,7 +654,9 @@ module Swcdb
           # The value for the updated cell
           V => {:type => ::Thrift::Types::LIST, :name => 'v', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellValueSerial}},
           # Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
-          ENCODER => {:type => ::Thrift::Types::I32, :name => 'encoder', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::EncodingType}
+          ENCODER => {:type => ::Thrift::Types::I32, :name => 'encoder', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::EncodingType},
+          # Optionally the operaton of value update
+          UPDATE_OP => {:type => ::Thrift::Types::STRUCT, :name => 'update_op', :class => ::Swcdb::Thrift::Gen::SpecUpdateOP, :optional => true}
         }
 
         def struct_fields; FIELDS; end

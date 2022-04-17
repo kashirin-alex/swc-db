@@ -57,8 +57,7 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
       for(DB::Cells::Cell updated_cell; remain; ) {
         updated_cell.read(&ptr, &remain);
 
-        updated_cell.value = spec.updating->value;
-        updated_cell.vlen = spec.updating->vlen;
+        update_cell_value(updated_cell);
 
         auto ts = Time::now_ns();
         if(auto_ts) {
@@ -76,6 +75,11 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
     commitlog.commit();
 
     cells.set_mark();
+  }
+
+  virtual void update_cell_value(DB::Cells::Cell& cell) {
+    cell.value = spec.updating->value;
+    cell.vlen = spec.updating->vlen;
   }
 
 };

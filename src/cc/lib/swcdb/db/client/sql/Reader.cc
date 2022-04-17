@@ -238,6 +238,14 @@ void Reader::read_uint16_t(uint16_t& value, bool& was_set) {
     value = v;
 }
 
+void Reader::read_uint24_t(uint24_t& value, bool& was_set, const char* stop) {
+  int64_t v;
+  read_int64_t(v, was_set, stop);
+  if (!was_set || v > UINT24_MAX || v < INT24_MIN)
+    error_msg(Error::SQL_PARSE_ERROR, " unsigned 24-bit integer out of range");
+  else
+    value = v;
+}
 
 void Reader::read_uint32_t(uint32_t& value, bool& was_set, const char* stop) {
   int64_t v;
@@ -474,6 +482,37 @@ void Reader::read_column(const char* stop,
   }
 }
 
+void Reader::read_operation(const DB::Types::Column col_type,
+                            DB::Specs::UpdateOP& operation) {
+  if(DB::Types::is_counter(col_type))
+    return operation.set_op(DB::Specs::UpdateOP::REPLACE);
+
+  if(found_token("+=", 2))
+    return operation.set_op(DB::Specs::UpdateOP::APPEND);
+
+  if(found_token("=+", 2))
+    return operation.set_op(DB::Specs::UpdateOP::PREPEND);
+
+  if(col_type == DB::Types::Column::SERIAL)
+    return operation.set_op(
+      found_token("~=", 2)
+        ? DB::Specs::UpdateOP::SERIAL
+        : DB::Specs::UpdateOP::REPLACE
+    );
+
+  if(found_token("=:", 2)) {
+    uint24_t pos = 0;
+    bool was_set;
+    read_uint24_t(pos, was_set, " (");
+    if(!err) {
+      operation.set_op(DB::Specs::UpdateOP::INSERT);
+      operation.set_pos(pos);
+    }
+    return;
+  }
+
+  return operation.set_op(DB::Specs::UpdateOP::REPLACE);
+}
 
 void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
                                DB::Cells::Cell& cell) {
@@ -529,9 +568,10 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
       expect_token("[", 1, bracket_square);
       if(err)
         return;
+      seek_space();
 
       DB::Cell::Serial::Value::FieldsWriter wfields;
-      do {
+      if(!is_char("]")) do {
         uint32_t fid;
         read_uint32_t(fid, was_set, ":");
         if(err)

@@ -448,6 +448,107 @@ struct Fields {
 
 
 
+//
+class FieldsReaderMap final
+    : private std::array<std::map<uint32_t, Field*>*, 7> {
+  public:
+
+  uint24_t count;
+
+  SWC_CAN_INLINE
+  FieldsReaderMap() noexcept : count(0) {
+    fill(nullptr);
+  }
+
+  SWC_CAN_INLINE
+  FieldsReaderMap(const uint8_t* ptr, size_t remain, bool take_ownership)
+                  : count(0) {
+    fill(nullptr);
+    read(ptr, remain, take_ownership);
+  }
+
+  SWC_CAN_INLINE
+  ~FieldsReaderMap() noexcept {
+    for(auto it_t = cbegin() + 1; it_t != cend(); ++it_t) {
+      if(*it_t) {
+        for(auto it_f = (*it_t)->cbegin(); it_f != (*it_t)->cend(); ++it_f) {
+          delete it_f->second;
+        }
+        delete *it_t;
+      }
+    }
+  }
+
+  void read(const uint8_t* ptr, size_t remain, bool take_ownership) {
+    for(Field* field; remain; ) {
+      switch(read_type(&ptr, &remain)) {
+        case Type::INT64: {
+          field = new Field_INT64(&ptr, &remain);
+          break;
+        }
+        case Type::DOUBLE: {
+          field = new Field_DOUBLE(&ptr, &remain);
+          break;
+        }
+        case Type::BYTES: {
+          field = new Field_BYTES(&ptr, &remain, take_ownership);
+          break;
+        }
+        case Type::KEY: {
+          field = new Field_KEY(&ptr, &remain, take_ownership);
+          break;
+        }
+        case Type::LIST_INT64: {
+          field = new Field_LIST_INT64(&ptr, &remain, take_ownership);
+          break;
+        }
+        case Type::LIST_BYTES: {
+          field = new Field_LIST_BYTES(&ptr, &remain, take_ownership);
+          break;
+        }
+        default:
+          continue;
+      }
+      auto& field_id_values = (*this)[field->type()];
+      if(!field_id_values)
+        field_id_values = new std::map<uint32_t, Field*>();
+      (*field_id_values)[uint32_t(field->fid)] = field;
+      ++count;
+    }
+  }
+
+  template<typename T>
+  T find_matching_type_and_id(T infield) {
+    auto& field_id_values = (*this)[infield->type()];
+    if(field_id_values) {
+      const auto it = field_id_values->find(infield->fid);
+      if(it != field_id_values->cend()) {
+        return reinterpret_cast<T>(it->second);
+      }
+    }
+    return nullptr;
+  }
+
+  template<typename T>
+  T get_not_in(T fields) {
+    T not_in;
+    for(auto it_t = cbegin() + 1; it_t != cend(); ++it_t) {
+      if(*it_t) {
+        for(auto it_f = (*it_t)->cbegin(); it_f != (*it_t)->cend(); ++it_f) {
+          auto found = std::find(fields.cbegin(), fields.cend(), it_f->second);
+          if(found == fields.cend())
+            not_in.push_back(it_f->second);
+        }
+      }
+    }
+    return not_in;
+  }
+
+};
+//
+
+
+
 }}}}}
 
 #ifdef SWC_IMPL_SOURCE

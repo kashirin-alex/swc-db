@@ -16,6 +16,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField ENCODER_FIELD_DESC = new org.apache.thrift.protocol.TField("encoder", org.apache.thrift.protocol.TType.I32, (short)3);
+  private static final org.apache.thrift.protocol.TField UPDATE_OP_FIELD_DESC = new org.apache.thrift.protocol.TField("update_op", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecIntervalUpdateStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecIntervalUpdateTupleSchemeFactory();
@@ -34,6 +35,10 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
    * @see EncodingType
    */
   public @org.apache.thrift.annotation.Nullable EncodingType encoder; // optional
+  /**
+   * Optionally the operaton of value update
+   */
+  public @org.apache.thrift.annotation.Nullable SpecUpdateOP update_op; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -50,7 +55,11 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
      * 
      * @see EncodingType
      */
-    ENCODER((short)3, "encoder");
+    ENCODER((short)3, "encoder"),
+    /**
+     * Optionally the operaton of value update
+     */
+    UPDATE_OP((short)4, "update_op");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -72,6 +81,8 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
           return TS;
         case 3: // ENCODER
           return ENCODER;
+        case 4: // UPDATE_OP
+          return UPDATE_OP;
         default:
           return null;
       }
@@ -115,7 +126,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   // isset id assignments
   private static final int __TS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TS,_Fields.ENCODER};
+  private static final _Fields optionals[] = {_Fields.TS,_Fields.ENCODER,_Fields.UPDATE_OP};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -125,6 +136,8 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.ENCODER, new org.apache.thrift.meta_data.FieldMetaData("encoder", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, EncodingType.class)));
+    tmpMap.put(_Fields.UPDATE_OP, new org.apache.thrift.meta_data.FieldMetaData("update_op", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SpecUpdateOP.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecIntervalUpdate.class, metaDataMap);
   }
@@ -151,6 +164,9 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     if (other.isSetEncoder()) {
       this.encoder = other.encoder;
     }
+    if (other.isSetUpdate_op()) {
+      this.update_op = new SpecUpdateOP(other.update_op);
+    }
   }
 
   public SpecIntervalUpdate deepCopy() {
@@ -163,6 +179,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     setTsIsSet(false);
     this.ts = 0;
     this.encoder = null;
+    this.update_op = null;
   }
 
   /**
@@ -269,6 +286,37 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     }
   }
 
+  /**
+   * Optionally the operaton of value update
+   */
+  @org.apache.thrift.annotation.Nullable
+  public SpecUpdateOP getUpdate_op() {
+    return this.update_op;
+  }
+
+  /**
+   * Optionally the operaton of value update
+   */
+  public SpecIntervalUpdate setUpdate_op(@org.apache.thrift.annotation.Nullable SpecUpdateOP update_op) {
+    this.update_op = update_op;
+    return this;
+  }
+
+  public void unsetUpdate_op() {
+    this.update_op = null;
+  }
+
+  /** Returns true if field update_op is set (has been assigned a value) and false otherwise */
+  public boolean isSetUpdate_op() {
+    return this.update_op != null;
+  }
+
+  public void setUpdate_opIsSet(boolean value) {
+    if (!value) {
+      this.update_op = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case V:
@@ -299,6 +347,14 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
       }
       break;
 
+    case UPDATE_OP:
+      if (value == null) {
+        unsetUpdate_op();
+      } else {
+        setUpdate_op((SpecUpdateOP)value);
+      }
+      break;
+
     }
   }
 
@@ -313,6 +369,9 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
 
     case ENCODER:
       return getEncoder();
+
+    case UPDATE_OP:
+      return getUpdate_op();
 
     }
     throw new java.lang.IllegalStateException();
@@ -331,6 +390,8 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
       return isSetTs();
     case ENCODER:
       return isSetEncoder();
+    case UPDATE_OP:
+      return isSetUpdate_op();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -375,6 +436,15 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
         return false;
     }
 
+    boolean this_present_update_op = true && this.isSetUpdate_op();
+    boolean that_present_update_op = true && that.isSetUpdate_op();
+    if (this_present_update_op || that_present_update_op) {
+      if (!(this_present_update_op && that_present_update_op))
+        return false;
+      if (!this.update_op.equals(that.update_op))
+        return false;
+    }
+
     return true;
   }
 
@@ -393,6 +463,10 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     hashCode = hashCode * 8191 + ((isSetEncoder()) ? 131071 : 524287);
     if (isSetEncoder())
       hashCode = hashCode * 8191 + encoder.getValue();
+
+    hashCode = hashCode * 8191 + ((isSetUpdate_op()) ? 131071 : 524287);
+    if (isSetUpdate_op())
+      hashCode = hashCode * 8191 + update_op.hashCode();
 
     return hashCode;
   }
@@ -431,6 +505,16 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     }
     if (isSetEncoder()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.encoder, other.encoder);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetUpdate_op(), other.isSetUpdate_op());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUpdate_op()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.update_op, other.update_op);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -479,6 +563,16 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
       }
       first = false;
     }
+    if (isSetUpdate_op()) {
+      if (!first) sb.append(", ");
+      sb.append("update_op:");
+      if (this.update_op == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.update_op);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -486,6 +580,9 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
+    if (update_op != null) {
+      update_op.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -548,6 +645,15 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // UPDATE_OP
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.update_op = new SpecUpdateOP();
+              struct.update_op.read(iprot);
+              struct.setUpdate_opIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -580,6 +686,13 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
           oprot.writeFieldEnd();
         }
       }
+      if (struct.update_op != null) {
+        if (struct.isSetUpdate_op()) {
+          oprot.writeFieldBegin(UPDATE_OP_FIELD_DESC);
+          struct.update_op.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -607,7 +720,10 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
       if (struct.isSetEncoder()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetUpdate_op()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetV()) {
         oprot.writeBinary(struct.v);
       }
@@ -617,12 +733,15 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
       if (struct.isSetEncoder()) {
         oprot.writeI32(struct.encoder.getValue());
       }
+      if (struct.isSetUpdate_op()) {
+        struct.update_op.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, SpecIntervalUpdate struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.v = iprot.readBinary();
         struct.setVIsSet(true);
@@ -634,6 +753,11 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
       if (incoming.get(2)) {
         struct.encoder = org.swcdb.thrift.gen.EncodingType.findByValue(iprot.readI32());
         struct.setEncoderIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.update_op = new SpecUpdateOP();
+        struct.update_op.read(iprot);
+        struct.setUpdate_opIsSet(true);
       }
     }
   }

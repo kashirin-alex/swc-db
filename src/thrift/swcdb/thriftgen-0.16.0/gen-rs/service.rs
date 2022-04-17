@@ -518,6 +518,68 @@ impl From<&SpecIntervalOptions> for i32 {
   }
 }
 
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct UpdateOP(pub i32);
+
+impl UpdateOP {
+  /// The operation to Replace
+  pub const REPLACE: UpdateOP = UpdateOP(0);
+  /// The operation to Append
+  pub const APPEND: UpdateOP = UpdateOP(1);
+  /// The operation to Prepend
+  pub const PREPEND: UpdateOP = UpdateOP(2);
+  /// The operation to Insert
+  pub const INSERT: UpdateOP = UpdateOP(4);
+  /// The operation is by inner Serial fields defintions
+  pub const SERIAL: UpdateOP = UpdateOP(8);
+  pub const ENUM_VALUES: &'static [Self] = &[
+    Self::REPLACE,
+    Self::APPEND,
+    Self::PREPEND,
+    Self::INSERT,
+    Self::SERIAL,
+  ];
+  #[allow(clippy::trivially_copy_pass_by_ref)]
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    o_prot.write_i32(self.0)
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<UpdateOP> {
+    let enum_value = i_prot.read_i32()?;
+    Ok(UpdateOP::from(enum_value))
+  }
+}
+
+impl From<i32> for UpdateOP {
+  fn from(i: i32) -> Self {
+    match i {
+      0 => UpdateOP::REPLACE,
+      1 => UpdateOP::APPEND,
+      2 => UpdateOP::PREPEND,
+      4 => UpdateOP::INSERT,
+      8 => UpdateOP::SERIAL,
+      _ => UpdateOP(i)
+    }
+  }
+}
+
+impl From<&i32> for UpdateOP {
+  fn from(i: &i32) -> Self {
+    UpdateOP::from(*i)
+  }
+}
+
+impl From<UpdateOP> for i32 {
+  fn from(e: UpdateOP) -> i32 {
+    e.0
+  }
+}
+
+impl From<&UpdateOP> for i32 {
+  fn from(e: &UpdateOP) -> i32 {
+    e.0
+  }
+}
+
 /// The Cell Flag
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Flag(pub i32);
@@ -1921,6 +1983,84 @@ impl Default for SpecValue {
 }
 
 //
+// SpecUpdateOP
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecUpdateOP {
+  /// The Operation
+  pub op: Option<UpdateOP>,
+  /// The position of INSERT operation
+  pub pos: Option<i32>,
+}
+
+impl SpecUpdateOP {
+  pub fn new<F1, F2>(op: F1, pos: F2) -> SpecUpdateOP where F1: Into<Option<UpdateOP>>, F2: Into<Option<i32>> {
+    SpecUpdateOP {
+      op: op.into(),
+      pos: pos.into(),
+    }
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecUpdateOP> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<UpdateOP> = None;
+    let mut f_2: Option<i32> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = UpdateOP::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_i32()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecUpdateOP {
+      op: f_1,
+      pos: f_2,
+    };
+    Ok(ret)
+  }
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecUpdateOP");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I32, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.pos {
+      o_prot.write_field_begin(&TFieldIdentifier::new("pos", TType::I32, 2))?;
+      o_prot.write_i32(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecUpdateOP {
+  fn default() -> Self {
+    SpecUpdateOP{
+      op: None,
+      pos: Some(0),
+    }
+  }
+}
+
+//
 // SpecIntervalUpdate
 //
 
@@ -1933,14 +2073,17 @@ pub struct SpecIntervalUpdate {
   pub ts: Option<i64>,
   /// Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
   pub encoder: Option<EncodingType>,
+  /// Optionally the operaton of value update
+  pub update_op: Option<SpecUpdateOP>,
 }
 
 impl SpecIntervalUpdate {
-  pub fn new<F1, F2, F3>(v: F1, ts: F2, encoder: F3) -> SpecIntervalUpdate where F1: Into<Option<Vec<u8>>>, F2: Into<Option<i64>>, F3: Into<Option<EncodingType>> {
+  pub fn new<F1, F2, F3, F4>(v: F1, ts: F2, encoder: F3, update_op: F4) -> SpecIntervalUpdate where F1: Into<Option<Vec<u8>>>, F2: Into<Option<i64>>, F3: Into<Option<EncodingType>>, F4: Into<Option<SpecUpdateOP>> {
     SpecIntervalUpdate {
       v: v.into(),
       ts: ts.into(),
       encoder: encoder.into(),
+      update_op: update_op.into(),
     }
   }
   pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalUpdate> {
@@ -1948,6 +2091,7 @@ impl SpecIntervalUpdate {
     let mut f_1: Option<Vec<u8>> = Some(Vec::new());
     let mut f_2: Option<i64> = None;
     let mut f_3: Option<EncodingType> = None;
+    let mut f_4: Option<SpecUpdateOP> = None;
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -1967,6 +2111,10 @@ impl SpecIntervalUpdate {
           let val = EncodingType::read_from_in_protocol(i_prot)?;
           f_3 = Some(val);
         },
+        4 => {
+          let val = SpecUpdateOP::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
+        },
         _ => {
           i_prot.skip(field_ident.field_type)?;
         },
@@ -1978,6 +2126,7 @@ impl SpecIntervalUpdate {
       v: f_1,
       ts: f_2,
       encoder: f_3,
+      update_op: f_4,
     };
     Ok(ret)
   }
@@ -1999,6 +2148,11 @@ impl SpecIntervalUpdate {
       fld_var.write_to_out_protocol(o_prot)?;
       o_prot.write_field_end()?
     }
+    if let Some(ref fld_var) = self.update_op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("update_op", TType::Struct, 4))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
     o_prot.write_field_stop()?;
     o_prot.write_struct_end()
   }
@@ -2010,6 +2164,7 @@ impl Default for SpecIntervalUpdate {
       v: Some(Vec::new()),
       ts: Some(0),
       encoder: None,
+      update_op: None,
     }
   }
 }
@@ -2027,14 +2182,17 @@ pub struct SpecIntervalUpdateSerial {
   pub v: Option<Box<CellValuesSerial>>,
   /// Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
   pub encoder: Option<EncodingType>,
+  /// Optionally the operaton of value update
+  pub update_op: Option<SpecUpdateOP>,
 }
 
 impl SpecIntervalUpdateSerial {
-  pub fn new<F1, F2, F3>(ts: F1, v: F2, encoder: F3) -> SpecIntervalUpdateSerial where F1: Into<Option<i64>>, F2: Into<Option<Box<CellValuesSerial>>>, F3: Into<Option<EncodingType>> {
+  pub fn new<F1, F2, F3, F4>(ts: F1, v: F2, encoder: F3, update_op: F4) -> SpecIntervalUpdateSerial where F1: Into<Option<i64>>, F2: Into<Option<Box<CellValuesSerial>>>, F3: Into<Option<EncodingType>>, F4: Into<Option<SpecUpdateOP>> {
     SpecIntervalUpdateSerial {
       ts: ts.into(),
       v: v.into(),
       encoder: encoder.into(),
+      update_op: update_op.into(),
     }
   }
   pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalUpdateSerial> {
@@ -2042,6 +2200,7 @@ impl SpecIntervalUpdateSerial {
     let mut f_1: Option<i64> = Some(0);
     let mut f_2: Option<Box<CellValuesSerial>> = Some(Vec::new());
     let mut f_3: Option<EncodingType> = None;
+    let mut f_4: Option<SpecUpdateOP> = None;
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -2067,6 +2226,10 @@ impl SpecIntervalUpdateSerial {
           let val = EncodingType::read_from_in_protocol(i_prot)?;
           f_3 = Some(val);
         },
+        4 => {
+          let val = SpecUpdateOP::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
+        },
         _ => {
           i_prot.skip(field_ident.field_type)?;
         },
@@ -2078,6 +2241,7 @@ impl SpecIntervalUpdateSerial {
       ts: f_1,
       v: f_2,
       encoder: f_3,
+      update_op: f_4,
     };
     Ok(ret)
   }
@@ -2103,6 +2267,11 @@ impl SpecIntervalUpdateSerial {
       fld_var.write_to_out_protocol(o_prot)?;
       o_prot.write_field_end()?
     }
+    if let Some(ref fld_var) = self.update_op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("update_op", TType::Struct, 4))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
     o_prot.write_field_stop()?;
     o_prot.write_struct_end()
   }
@@ -2114,6 +2283,7 @@ impl Default for SpecIntervalUpdateSerial {
       ts: Some(0),
       v: Some(Vec::new()),
       encoder: None,
+      update_op: None,
     }
   }
 }

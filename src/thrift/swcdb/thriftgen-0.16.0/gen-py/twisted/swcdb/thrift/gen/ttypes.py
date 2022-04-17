@@ -250,6 +250,30 @@ class SpecIntervalOptions(object):
     }
 
 
+class UpdateOP(object):
+    REPLACE = 0
+    APPEND = 1
+    PREPEND = 2
+    INSERT = 4
+    SERIAL = 8
+
+    _VALUES_TO_NAMES = {
+        0: "REPLACE",
+        1: "APPEND",
+        2: "PREPEND",
+        4: "INSERT",
+        8: "SERIAL",
+    }
+
+    _NAMES_TO_VALUES = {
+        "REPLACE": 0,
+        "APPEND": 1,
+        "PREPEND": 2,
+        "INSERT": 4,
+        "SERIAL": 8,
+    }
+
+
 class Flag(object):
     """
     The Cell Flag
@@ -1523,6 +1547,86 @@ class SpecValue(object):
         return not (self == other)
 
 
+class SpecUpdateOP(object):
+    """
+    Attributes:
+     - op: The Operation
+     - pos: The position of INSERT operation
+
+    """
+
+    __slots__ = (
+        'op',
+        'pos',
+    )
+
+
+    def __init__(self, op=None, pos=None,):
+        self.op = op
+        self.pos = pos
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.op = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I32:
+                    self.pos = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('SpecUpdateOP')
+        if self.op is not None:
+            oprot.writeFieldBegin('op', TType.I32, 1)
+            oprot.writeI32(self.op)
+            oprot.writeFieldEnd()
+        if self.pos is not None:
+            oprot.writeFieldBegin('pos', TType.I32, 2)
+            oprot.writeI32(self.pos)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class SpecIntervalUpdate(object):
     """
     The Value specs for an Updating Interval of 'updating' in SpecInterval
@@ -1531,6 +1635,7 @@ class SpecIntervalUpdate(object):
      - v: The value for the updated cell
      - ts: The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
      - encoder: Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+     - update_op: Optionally the operaton of value update
 
     """
 
@@ -1538,13 +1643,15 @@ class SpecIntervalUpdate(object):
         'v',
         'ts',
         'encoder',
+        'update_op',
     )
 
 
-    def __init__(self, v=None, ts=None, encoder=None,):
+    def __init__(self, v=None, ts=None, encoder=None, update_op=None,):
         self.v = v
         self.ts = ts
         self.encoder = encoder
+        self.update_op = update_op
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -1570,6 +1677,12 @@ class SpecIntervalUpdate(object):
                     self.encoder = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRUCT:
+                    self.update_op = SpecUpdateOP()
+                    self.update_op.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -1591,6 +1704,10 @@ class SpecIntervalUpdate(object):
         if self.encoder is not None:
             oprot.writeFieldBegin('encoder', TType.I32, 3)
             oprot.writeI32(self.encoder)
+            oprot.writeFieldEnd()
+        if self.update_op is not None:
+            oprot.writeFieldBegin('update_op', TType.STRUCT, 4)
+            self.update_op.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -1625,6 +1742,7 @@ class SpecIntervalUpdateSerial(object):
      - ts: The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
      - v: The value for the updated cell
      - encoder: Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
+     - update_op: Optionally the operaton of value update
 
     """
 
@@ -1632,13 +1750,15 @@ class SpecIntervalUpdateSerial(object):
         'ts',
         'v',
         'encoder',
+        'update_op',
     )
 
 
-    def __init__(self, ts=None, v=None, encoder=None,):
+    def __init__(self, ts=None, v=None, encoder=None, update_op=None,):
         self.ts = ts
         self.v = v
         self.encoder = encoder
+        self.update_op = update_op
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -1670,6 +1790,12 @@ class SpecIntervalUpdateSerial(object):
                     self.encoder = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRUCT:
+                    self.update_op = SpecUpdateOP()
+                    self.update_op.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -1694,6 +1820,10 @@ class SpecIntervalUpdateSerial(object):
         if self.encoder is not None:
             oprot.writeFieldBegin('encoder', TType.I32, 3)
             oprot.writeI32(self.encoder)
+            oprot.writeFieldEnd()
+        if self.update_op is not None:
+            oprot.writeFieldBegin('update_op', TType.STRUCT, 4)
+            self.update_op.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -5388,12 +5518,19 @@ SpecValue.thrift_spec = (
     (1, TType.I32, 'comp', None, None, ),  # 1
     (2, TType.STRING, 'v', 'BINARY', None, ),  # 2
 )
+all_structs.append(SpecUpdateOP)
+SpecUpdateOP.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'op', None, None, ),  # 1
+    (2, TType.I32, 'pos', None, None, ),  # 2
+)
 all_structs.append(SpecIntervalUpdate)
 SpecIntervalUpdate.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'v', 'BINARY', None, ),  # 1
     (2, TType.I64, 'ts', None, None, ),  # 2
     (3, TType.I32, 'encoder', None, None, ),  # 3
+    (4, TType.STRUCT, 'update_op', [SpecUpdateOP, None], None, ),  # 4
 )
 all_structs.append(SpecIntervalUpdateSerial)
 SpecIntervalUpdateSerial.thrift_spec = (
@@ -5401,6 +5538,7 @@ SpecIntervalUpdateSerial.thrift_spec = (
     (1, TType.I64, 'ts', None, None, ),  # 1
     (2, TType.LIST, 'v', (TType.STRUCT, [CellValueSerial, None], False), None, ),  # 2
     (3, TType.I32, 'encoder', None, None, ),  # 3
+    (4, TType.STRUCT, 'update_op', [SpecUpdateOP, None], None, ),  # 4
 )
 all_structs.append(SpecInterval)
 SpecInterval.thrift_spec = (

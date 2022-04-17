@@ -119,6 +119,19 @@ typedef enum _swcdb_thriftSpecIntervalOptions swcdb_thriftSpecIntervalOptions;
 const char *
 toString_SpecIntervalOptions(int value); 
 
+enum _swcdb_thriftUpdateOP {
+  SWCDB_THRIFT_UPDATE_O_P_REPLACE = 0,
+  SWCDB_THRIFT_UPDATE_O_P_APPEND = 1,
+  SWCDB_THRIFT_UPDATE_O_P_PREPEND = 2,
+  SWCDB_THRIFT_UPDATE_O_P_INSERT = 4,
+  SWCDB_THRIFT_UPDATE_O_P_SERIAL = 8
+};
+typedef enum _swcdb_thriftUpdateOP swcdb_thriftUpdateOP;
+
+/* return the name of the constant */
+const char *
+toString_UpdateOP(int value); 
+
 enum _swcdb_thriftFlag {
   SWCDB_THRIFT_FLAG_NONE = 0,
   SWCDB_THRIFT_FLAG_INSERT = 1,
@@ -519,6 +532,33 @@ GType swcdb_thrift_spec_value_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_VALUE_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_VALUE))
 #define SWCDB_THRIFT_SPEC_VALUE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE, swcdb_thriftSpecValueClass))
 
+/* struct SpecUpdateOP */
+struct _swcdb_thriftSpecUpdateOP
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftUpdateOP op;
+  gboolean __isset_op;
+  gint32 pos;
+  gboolean __isset_pos;
+};
+typedef struct _swcdb_thriftSpecUpdateOP swcdb_thriftSpecUpdateOP;
+
+struct _swcdb_thriftSpecUpdateOPClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecUpdateOPClass swcdb_thriftSpecUpdateOPClass;
+
+GType swcdb_thrift_spec_update_o_p_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_UPDATE_O_P (swcdb_thrift_spec_update_o_p_get_type())
+#define SWCDB_THRIFT_SPEC_UPDATE_O_P(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_UPDATE_O_P, swcdb_thriftSpecUpdateOP))
+#define SWCDB_THRIFT_SPEC_UPDATE_O_P_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_UPDATE_O_P, swcdb_thriftSpecUpdateOPClass))
+#define SWCDB_THRIFT_IS_SPEC_UPDATE_O_P(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_UPDATE_O_P))
+#define SWCDB_THRIFT_IS_SPEC_UPDATE_O_P_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_UPDATE_O_P))
+#define SWCDB_THRIFT_SPEC_UPDATE_O_P_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_UPDATE_O_P, swcdb_thriftSpecUpdateOPClass))
+
 /* struct SpecIntervalUpdate */
 struct _swcdb_thriftSpecIntervalUpdate
 { 
@@ -531,6 +571,8 @@ struct _swcdb_thriftSpecIntervalUpdate
   gboolean __isset_ts;
   swcdb_thriftEncodingType encoder;
   gboolean __isset_encoder;
+  swcdb_thriftSpecUpdateOP * update_op;
+  gboolean __isset_update_op;
 };
 typedef struct _swcdb_thriftSpecIntervalUpdate swcdb_thriftSpecIntervalUpdate;
 
@@ -560,6 +602,8 @@ struct _swcdb_thriftSpecIntervalUpdateSerial
   gboolean __isset_v;
   swcdb_thriftEncodingType encoder;
   gboolean __isset_encoder;
+  swcdb_thriftSpecUpdateOP * update_op;
+  gboolean __isset_update_op;
 };
 typedef struct _swcdb_thriftSpecIntervalUpdateSerial swcdb_thriftSpecIntervalUpdateSerial;
 

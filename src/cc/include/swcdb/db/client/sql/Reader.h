@@ -74,6 +74,9 @@ class Reader {
 
   void read_uint16_t(uint16_t& value, bool& was_set);
 
+  void read_uint24_t(uint24_t& value, bool& was_set,
+                     const char* stop=nullptr);
+
   void read_uint32_t(uint32_t& value, bool& was_set,
                      const char* stop=nullptr);
 
@@ -101,6 +104,9 @@ class Reader {
 
   void read_column(const char* stop,
                    std::string& col_name, DB::Schemas::NamePatterns& names);
+
+  void read_operation(const DB::Types::Column col_type,
+                      DB::Specs::UpdateOP& operation);
 
   void read_ts_and_value(DB::Types::Column col_type, bool require_ts,
                          DB::Cells::Cell& cell);

@@ -105,9 +105,10 @@ DbClient::DbClient()
     "       offset_key = [F] offset_rev='TS'                AND",
     "       value COMP 'DATA'                                  ",
     "       LIMIT=NUM OFFSET=NUM MAX_VERSIONS=NUM ONLY_KEYS ONLY_DELETES",
-    "       update=(TIMESTAMP, VALUE, ENC) |OR| DELETE_MATCHING )",
+    "       update[OP](TIMESTAMP, VALUE, ENC) |OR| DELETE_MATCHING )",
     "     ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;",
-    "* DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..]) "},
+    "* DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..])",
+    "* update[OP]: REPLACE(=),APPEND(+=),PREPEND(=+),INSERT(=:#),SERIAL(~=)"},
     [ptr=this](std::string& cmd){return ptr->select(cmd);},
     "(?i)^(select)(\\s+|$)"
   );

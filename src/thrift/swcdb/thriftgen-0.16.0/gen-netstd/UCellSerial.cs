@@ -161,38 +161,38 @@ public partial class UCellSerial : TBase
 
   public UCellSerial DeepCopy()
   {
-    var tmp260 = new UCellSerial();
+    var tmp265 = new UCellSerial();
     if(__isset.f)
     {
-      tmp260.F = this.F;
+      tmp265.F = this.F;
     }
-    tmp260.__isset.f = this.__isset.f;
+    tmp265.__isset.f = this.__isset.f;
     if((K != null) && __isset.k)
     {
-      tmp260.K = this.K.DeepCopy();
+      tmp265.K = this.K.DeepCopy();
     }
-    tmp260.__isset.k = this.__isset.k;
+    tmp265.__isset.k = this.__isset.k;
     if(__isset.ts)
     {
-      tmp260.Ts = this.Ts;
+      tmp265.Ts = this.Ts;
     }
-    tmp260.__isset.ts = this.__isset.ts;
+    tmp265.__isset.ts = this.__isset.ts;
     if(__isset.ts_desc)
     {
-      tmp260.Ts_desc = this.Ts_desc;
+      tmp265.Ts_desc = this.Ts_desc;
     }
-    tmp260.__isset.ts_desc = this.__isset.ts_desc;
+    tmp265.__isset.ts_desc = this.__isset.ts_desc;
     if((V != null) && __isset.v)
     {
-      tmp260.V = this.V.DeepCopy();
+      tmp265.V = this.V.DeepCopy();
     }
-    tmp260.__isset.v = this.__isset.v;
+    tmp265.__isset.v = this.__isset.v;
     if(__isset.encoder)
     {
-      tmp260.Encoder = this.Encoder;
+      tmp265.Encoder = this.Encoder;
     }
-    tmp260.__isset.encoder = this.__isset.encoder;
-    return tmp260;
+    tmp265.__isset.encoder = this.__isset.encoder;
+    return tmp265;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -226,13 +226,13 @@ public partial class UCellSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list261 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list261.Count);
-                for(int _i262 = 0; _i262 < _list261.Count; ++_i262)
+                TList _list266 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list266.Count);
+                for(int _i267 = 0; _i267 < _list266.Count; ++_i267)
                 {
-                  byte[] _elem263;
-                  _elem263 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem263);
+                  byte[] _elem268;
+                  _elem268 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem268);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -266,14 +266,14 @@ public partial class UCellSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list264 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<CellValueSerial>(_list264.Count);
-                for(int _i265 = 0; _i265 < _list264.Count; ++_i265)
+                TList _list269 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<CellValueSerial>(_list269.Count);
+                for(int _i270 = 0; _i270 < _list269.Count; ++_i270)
                 {
-                  CellValueSerial _elem266;
-                  _elem266 = new CellValueSerial();
-                  await _elem266.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem266);
+                  CellValueSerial _elem271;
+                  _elem271 = new CellValueSerial();
+                  await _elem271.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem271);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -314,29 +314,29 @@ public partial class UCellSerial : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp267 = new TStruct("UCellSerial");
-      await oprot.WriteStructBeginAsync(tmp267, cancellationToken);
-      var tmp268 = new TField();
+      var tmp272 = new TStruct("UCellSerial");
+      await oprot.WriteStructBeginAsync(tmp272, cancellationToken);
+      var tmp273 = new TField();
       if(__isset.f)
       {
-        tmp268.Name = "f";
-        tmp268.Type = TType.I32;
-        tmp268.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp268, cancellationToken);
+        tmp273.Name = "f";
+        tmp273.Type = TType.I32;
+        tmp273.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp273, cancellationToken);
         await oprot.WriteI32Async((int)F, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((K != null) && __isset.k)
       {
-        tmp268.Name = "k";
-        tmp268.Type = TType.List;
-        tmp268.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp268, cancellationToken);
+        tmp273.Name = "k";
+        tmp273.Type = TType.List;
+        tmp273.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp273, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-          foreach (byte[] _iter269 in K)
+          foreach (byte[] _iter274 in K)
           {
-            await oprot.WriteBinaryAsync(_iter269, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter274, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -344,33 +344,33 @@ public partial class UCellSerial : TBase
       }
       if(__isset.ts)
       {
-        tmp268.Name = "ts";
-        tmp268.Type = TType.I64;
-        tmp268.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp268, cancellationToken);
+        tmp273.Name = "ts";
+        tmp273.Type = TType.I64;
+        tmp273.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp273, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts_desc)
       {
-        tmp268.Name = "ts_desc";
-        tmp268.Type = TType.Bool;
-        tmp268.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp268, cancellationToken);
+        tmp273.Name = "ts_desc";
+        tmp273.Type = TType.Bool;
+        tmp273.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp273, cancellationToken);
         await oprot.WriteBoolAsync(Ts_desc, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp268.Name = "v";
-        tmp268.Type = TType.List;
-        tmp268.ID = 5;
-        await oprot.WriteFieldBeginAsync(tmp268, cancellationToken);
+        tmp273.Name = "v";
+        tmp273.Type = TType.List;
+        tmp273.ID = 5;
+        await oprot.WriteFieldBeginAsync(tmp273, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-          foreach (CellValueSerial _iter270 in V)
+          foreach (CellValueSerial _iter275 in V)
           {
-            await _iter270.WriteAsync(oprot, cancellationToken);
+            await _iter275.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -378,10 +378,10 @@ public partial class UCellSerial : TBase
       }
       if(__isset.encoder)
       {
-        tmp268.Name = "encoder";
-        tmp268.Type = TType.I32;
-        tmp268.ID = 6;
-        await oprot.WriteFieldBeginAsync(tmp268, cancellationToken);
+        tmp273.Name = "encoder";
+        tmp273.Type = TType.I32;
+        tmp273.ID = 6;
+        await oprot.WriteFieldBeginAsync(tmp273, cancellationToken);
         await oprot.WriteI32Async((int)Encoder, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -439,46 +439,46 @@ public partial class UCellSerial : TBase
 
   public override string ToString()
   {
-    var tmp271 = new StringBuilder("UCellSerial(");
-    int tmp272 = 0;
+    var tmp276 = new StringBuilder("UCellSerial(");
+    int tmp277 = 0;
     if(__isset.f)
     {
-      if(0 < tmp272++) { tmp271.Append(", "); }
-      tmp271.Append("F: ");
-      F.ToString(tmp271);
+      if(0 < tmp277++) { tmp276.Append(", "); }
+      tmp276.Append("F: ");
+      F.ToString(tmp276);
     }
     if((K != null) && __isset.k)
     {
-      if(0 < tmp272++) { tmp271.Append(", "); }
-      tmp271.Append("K: ");
-      K.ToString(tmp271);
+      if(0 < tmp277++) { tmp276.Append(", "); }
+      tmp276.Append("K: ");
+      K.ToString(tmp276);
     }
     if(__isset.ts)
     {
-      if(0 < tmp272++) { tmp271.Append(", "); }
-      tmp271.Append("Ts: ");
-      Ts.ToString(tmp271);
+      if(0 < tmp277++) { tmp276.Append(", "); }
+      tmp276.Append("Ts: ");
+      Ts.ToString(tmp276);
     }
     if(__isset.ts_desc)
     {
-      if(0 < tmp272++) { tmp271.Append(", "); }
-      tmp271.Append("Ts_desc: ");
-      Ts_desc.ToString(tmp271);
+      if(0 < tmp277++) { tmp276.Append(", "); }
+      tmp276.Append("Ts_desc: ");
+      Ts_desc.ToString(tmp276);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp272++) { tmp271.Append(", "); }
-      tmp271.Append("V: ");
-      V.ToString(tmp271);
+      if(0 < tmp277++) { tmp276.Append(", "); }
+      tmp276.Append("V: ");
+      V.ToString(tmp276);
     }
     if(__isset.encoder)
     {
-      if(0 < tmp272++) { tmp271.Append(", "); }
-      tmp271.Append("Encoder: ");
-      Encoder.ToString(tmp271);
+      if(0 < tmp277++) { tmp276.Append(", "); }
+      tmp276.Append("Encoder: ");
+      Encoder.ToString(tmp276);
     }
-    tmp271.Append(')');
-    return tmp271.ToString();
+    tmp276.Append(')');
+    return tmp276.ToString();
   }
 }
 

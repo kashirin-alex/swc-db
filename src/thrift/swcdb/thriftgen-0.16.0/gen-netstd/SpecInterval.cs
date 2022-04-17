@@ -249,63 +249,63 @@ public partial class SpecInterval : TBase
 
   public SpecInterval DeepCopy()
   {
-    var tmp97 = new SpecInterval();
+    var tmp102 = new SpecInterval();
     if((Range_begin != null) && __isset.range_begin)
     {
-      tmp97.Range_begin = this.Range_begin.DeepCopy();
+      tmp102.Range_begin = this.Range_begin.DeepCopy();
     }
-    tmp97.__isset.range_begin = this.__isset.range_begin;
+    tmp102.__isset.range_begin = this.__isset.range_begin;
     if((Range_end != null) && __isset.range_end)
     {
-      tmp97.Range_end = this.Range_end.DeepCopy();
+      tmp102.Range_end = this.Range_end.DeepCopy();
     }
-    tmp97.__isset.range_end = this.__isset.range_end;
+    tmp102.__isset.range_end = this.__isset.range_end;
     if((Offset_key != null) && __isset.offset_key)
     {
-      tmp97.Offset_key = this.Offset_key.DeepCopy();
+      tmp102.Offset_key = this.Offset_key.DeepCopy();
     }
-    tmp97.__isset.offset_key = this.__isset.offset_key;
+    tmp102.__isset.offset_key = this.__isset.offset_key;
     if(__isset.offset_rev)
     {
-      tmp97.Offset_rev = this.Offset_rev;
+      tmp102.Offset_rev = this.Offset_rev;
     }
-    tmp97.__isset.offset_rev = this.__isset.offset_rev;
+    tmp102.__isset.offset_rev = this.__isset.offset_rev;
     if((Key_intervals != null) && __isset.key_intervals)
     {
-      tmp97.Key_intervals = this.Key_intervals.DeepCopy();
+      tmp102.Key_intervals = this.Key_intervals.DeepCopy();
     }
-    tmp97.__isset.key_intervals = this.__isset.key_intervals;
+    tmp102.__isset.key_intervals = this.__isset.key_intervals;
     if((Values != null) && __isset.values)
     {
-      tmp97.Values = this.Values.DeepCopy();
+      tmp102.Values = this.Values.DeepCopy();
     }
-    tmp97.__isset.values = this.__isset.values;
+    tmp102.__isset.values = this.__isset.values;
     if((Ts_start != null) && __isset.ts_start)
     {
-      tmp97.Ts_start = (SpecTimestamp)this.Ts_start.DeepCopy();
+      tmp102.Ts_start = (SpecTimestamp)this.Ts_start.DeepCopy();
     }
-    tmp97.__isset.ts_start = this.__isset.ts_start;
+    tmp102.__isset.ts_start = this.__isset.ts_start;
     if((Ts_finish != null) && __isset.ts_finish)
     {
-      tmp97.Ts_finish = (SpecTimestamp)this.Ts_finish.DeepCopy();
+      tmp102.Ts_finish = (SpecTimestamp)this.Ts_finish.DeepCopy();
     }
-    tmp97.__isset.ts_finish = this.__isset.ts_finish;
+    tmp102.__isset.ts_finish = this.__isset.ts_finish;
     if((Flags != null) && __isset.flags)
     {
-      tmp97.Flags = (SpecFlags)this.Flags.DeepCopy();
+      tmp102.Flags = (SpecFlags)this.Flags.DeepCopy();
     }
-    tmp97.__isset.flags = this.__isset.flags;
+    tmp102.__isset.flags = this.__isset.flags;
     if(__isset.options)
     {
-      tmp97.Options = this.Options;
+      tmp102.Options = this.Options;
     }
-    tmp97.__isset.options = this.__isset.options;
+    tmp102.__isset.options = this.__isset.options;
     if((Updating != null) && __isset.updating)
     {
-      tmp97.Updating = (SpecIntervalUpdate)this.Updating.DeepCopy();
+      tmp102.Updating = (SpecIntervalUpdate)this.Updating.DeepCopy();
     }
-    tmp97.__isset.updating = this.__isset.updating;
-    return tmp97;
+    tmp102.__isset.updating = this.__isset.updating;
+    return tmp102;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -329,13 +329,13 @@ public partial class SpecInterval : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list98 = await iprot.ReadListBeginAsync(cancellationToken);
-                Range_begin = new List<byte[]>(_list98.Count);
-                for(int _i99 = 0; _i99 < _list98.Count; ++_i99)
+                TList _list103 = await iprot.ReadListBeginAsync(cancellationToken);
+                Range_begin = new List<byte[]>(_list103.Count);
+                for(int _i104 = 0; _i104 < _list103.Count; ++_i104)
                 {
-                  byte[] _elem100;
-                  _elem100 = await iprot.ReadBinaryAsync(cancellationToken);
-                  Range_begin.Add(_elem100);
+                  byte[] _elem105;
+                  _elem105 = await iprot.ReadBinaryAsync(cancellationToken);
+                  Range_begin.Add(_elem105);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -349,13 +349,13 @@ public partial class SpecInterval : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list101 = await iprot.ReadListBeginAsync(cancellationToken);
-                Range_end = new List<byte[]>(_list101.Count);
-                for(int _i102 = 0; _i102 < _list101.Count; ++_i102)
+                TList _list106 = await iprot.ReadListBeginAsync(cancellationToken);
+                Range_end = new List<byte[]>(_list106.Count);
+                for(int _i107 = 0; _i107 < _list106.Count; ++_i107)
                 {
-                  byte[] _elem103;
-                  _elem103 = await iprot.ReadBinaryAsync(cancellationToken);
-                  Range_end.Add(_elem103);
+                  byte[] _elem108;
+                  _elem108 = await iprot.ReadBinaryAsync(cancellationToken);
+                  Range_end.Add(_elem108);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -369,13 +369,13 @@ public partial class SpecInterval : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list104 = await iprot.ReadListBeginAsync(cancellationToken);
-                Offset_key = new List<byte[]>(_list104.Count);
-                for(int _i105 = 0; _i105 < _list104.Count; ++_i105)
+                TList _list109 = await iprot.ReadListBeginAsync(cancellationToken);
+                Offset_key = new List<byte[]>(_list109.Count);
+                for(int _i110 = 0; _i110 < _list109.Count; ++_i110)
                 {
-                  byte[] _elem106;
-                  _elem106 = await iprot.ReadBinaryAsync(cancellationToken);
-                  Offset_key.Add(_elem106);
+                  byte[] _elem111;
+                  _elem111 = await iprot.ReadBinaryAsync(cancellationToken);
+                  Offset_key.Add(_elem111);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -399,14 +399,14 @@ public partial class SpecInterval : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list107 = await iprot.ReadListBeginAsync(cancellationToken);
-                Key_intervals = new List<SpecKeyInterval>(_list107.Count);
-                for(int _i108 = 0; _i108 < _list107.Count; ++_i108)
+                TList _list112 = await iprot.ReadListBeginAsync(cancellationToken);
+                Key_intervals = new List<SpecKeyInterval>(_list112.Count);
+                for(int _i113 = 0; _i113 < _list112.Count; ++_i113)
                 {
-                  SpecKeyInterval _elem109;
-                  _elem109 = new SpecKeyInterval();
-                  await _elem109.ReadAsync(iprot, cancellationToken);
-                  Key_intervals.Add(_elem109);
+                  SpecKeyInterval _elem114;
+                  _elem114 = new SpecKeyInterval();
+                  await _elem114.ReadAsync(iprot, cancellationToken);
+                  Key_intervals.Add(_elem114);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -420,14 +420,14 @@ public partial class SpecInterval : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list110 = await iprot.ReadListBeginAsync(cancellationToken);
-                Values = new List<SpecValue>(_list110.Count);
-                for(int _i111 = 0; _i111 < _list110.Count; ++_i111)
+                TList _list115 = await iprot.ReadListBeginAsync(cancellationToken);
+                Values = new List<SpecValue>(_list115.Count);
+                for(int _i116 = 0; _i116 < _list115.Count; ++_i116)
                 {
-                  SpecValue _elem112;
-                  _elem112 = new SpecValue();
-                  await _elem112.ReadAsync(iprot, cancellationToken);
-                  Values.Add(_elem112);
+                  SpecValue _elem117;
+                  _elem117 = new SpecValue();
+                  await _elem117.ReadAsync(iprot, cancellationToken);
+                  Values.Add(_elem117);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -512,20 +512,20 @@ public partial class SpecInterval : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp113 = new TStruct("SpecInterval");
-      await oprot.WriteStructBeginAsync(tmp113, cancellationToken);
-      var tmp114 = new TField();
+      var tmp118 = new TStruct("SpecInterval");
+      await oprot.WriteStructBeginAsync(tmp118, cancellationToken);
+      var tmp119 = new TField();
       if((Range_begin != null) && __isset.range_begin)
       {
-        tmp114.Name = "range_begin";
-        tmp114.Type = TType.List;
-        tmp114.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "range_begin";
+        tmp119.Type = TType.List;
+        tmp119.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Range_begin.Count), cancellationToken);
-          foreach (byte[] _iter115 in Range_begin)
+          foreach (byte[] _iter120 in Range_begin)
           {
-            await oprot.WriteBinaryAsync(_iter115, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter120, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -533,15 +533,15 @@ public partial class SpecInterval : TBase
       }
       if((Range_end != null) && __isset.range_end)
       {
-        tmp114.Name = "range_end";
-        tmp114.Type = TType.List;
-        tmp114.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "range_end";
+        tmp119.Type = TType.List;
+        tmp119.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Range_end.Count), cancellationToken);
-          foreach (byte[] _iter116 in Range_end)
+          foreach (byte[] _iter121 in Range_end)
           {
-            await oprot.WriteBinaryAsync(_iter116, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter121, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -549,15 +549,15 @@ public partial class SpecInterval : TBase
       }
       if((Offset_key != null) && __isset.offset_key)
       {
-        tmp114.Name = "offset_key";
-        tmp114.Type = TType.List;
-        tmp114.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "offset_key";
+        tmp119.Type = TType.List;
+        tmp119.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.String, Offset_key.Count), cancellationToken);
-          foreach (byte[] _iter117 in Offset_key)
+          foreach (byte[] _iter122 in Offset_key)
           {
-            await oprot.WriteBinaryAsync(_iter117, cancellationToken);
+            await oprot.WriteBinaryAsync(_iter122, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -565,24 +565,24 @@ public partial class SpecInterval : TBase
       }
       if(__isset.offset_rev)
       {
-        tmp114.Name = "offset_rev";
-        tmp114.Type = TType.I64;
-        tmp114.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "offset_rev";
+        tmp119.Type = TType.I64;
+        tmp119.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         await oprot.WriteI64Async(Offset_rev, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Key_intervals != null) && __isset.key_intervals)
       {
-        tmp114.Name = "key_intervals";
-        tmp114.Type = TType.List;
-        tmp114.ID = 5;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "key_intervals";
+        tmp119.Type = TType.List;
+        tmp119.ID = 5;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Key_intervals.Count), cancellationToken);
-          foreach (SpecKeyInterval _iter118 in Key_intervals)
+          foreach (SpecKeyInterval _iter123 in Key_intervals)
           {
-            await _iter118.WriteAsync(oprot, cancellationToken);
+            await _iter123.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -590,15 +590,15 @@ public partial class SpecInterval : TBase
       }
       if((Values != null) && __isset.values)
       {
-        tmp114.Name = "values";
-        tmp114.Type = TType.List;
-        tmp114.ID = 6;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "values";
+        tmp119.Type = TType.List;
+        tmp119.ID = 6;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Values.Count), cancellationToken);
-          foreach (SpecValue _iter119 in Values)
+          foreach (SpecValue _iter124 in Values)
           {
-            await _iter119.WriteAsync(oprot, cancellationToken);
+            await _iter124.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -606,46 +606,46 @@ public partial class SpecInterval : TBase
       }
       if((Ts_start != null) && __isset.ts_start)
       {
-        tmp114.Name = "ts_start";
-        tmp114.Type = TType.Struct;
-        tmp114.ID = 7;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "ts_start";
+        tmp119.Type = TType.Struct;
+        tmp119.ID = 7;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         await Ts_start.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Ts_finish != null) && __isset.ts_finish)
       {
-        tmp114.Name = "ts_finish";
-        tmp114.Type = TType.Struct;
-        tmp114.ID = 8;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "ts_finish";
+        tmp119.Type = TType.Struct;
+        tmp119.ID = 8;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         await Ts_finish.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Flags != null) && __isset.flags)
       {
-        tmp114.Name = "flags";
-        tmp114.Type = TType.Struct;
-        tmp114.ID = 9;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "flags";
+        tmp119.Type = TType.Struct;
+        tmp119.ID = 9;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         await Flags.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.options)
       {
-        tmp114.Name = "options";
-        tmp114.Type = TType.I32;
-        tmp114.ID = 10;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "options";
+        tmp119.Type = TType.I32;
+        tmp119.ID = 10;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         await oprot.WriteI32Async((int)Options, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Updating != null) && __isset.updating)
       {
-        tmp114.Name = "updating";
-        tmp114.Type = TType.Struct;
-        tmp114.ID = 11;
-        await oprot.WriteFieldBeginAsync(tmp114, cancellationToken);
+        tmp119.Name = "updating";
+        tmp119.Type = TType.Struct;
+        tmp119.ID = 11;
+        await oprot.WriteFieldBeginAsync(tmp119, cancellationToken);
         await Updating.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -728,76 +728,76 @@ public partial class SpecInterval : TBase
 
   public override string ToString()
   {
-    var tmp120 = new StringBuilder("SpecInterval(");
-    int tmp121 = 0;
+    var tmp125 = new StringBuilder("SpecInterval(");
+    int tmp126 = 0;
     if((Range_begin != null) && __isset.range_begin)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Range_begin: ");
-      Range_begin.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Range_begin: ");
+      Range_begin.ToString(tmp125);
     }
     if((Range_end != null) && __isset.range_end)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Range_end: ");
-      Range_end.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Range_end: ");
+      Range_end.ToString(tmp125);
     }
     if((Offset_key != null) && __isset.offset_key)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Offset_key: ");
-      Offset_key.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Offset_key: ");
+      Offset_key.ToString(tmp125);
     }
     if(__isset.offset_rev)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Offset_rev: ");
-      Offset_rev.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Offset_rev: ");
+      Offset_rev.ToString(tmp125);
     }
     if((Key_intervals != null) && __isset.key_intervals)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Key_intervals: ");
-      Key_intervals.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Key_intervals: ");
+      Key_intervals.ToString(tmp125);
     }
     if((Values != null) && __isset.values)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Values: ");
-      Values.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Values: ");
+      Values.ToString(tmp125);
     }
     if((Ts_start != null) && __isset.ts_start)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Ts_start: ");
-      Ts_start.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Ts_start: ");
+      Ts_start.ToString(tmp125);
     }
     if((Ts_finish != null) && __isset.ts_finish)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Ts_finish: ");
-      Ts_finish.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Ts_finish: ");
+      Ts_finish.ToString(tmp125);
     }
     if((Flags != null) && __isset.flags)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Flags: ");
-      Flags.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Flags: ");
+      Flags.ToString(tmp125);
     }
     if(__isset.options)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Options: ");
-      Options.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Options: ");
+      Options.ToString(tmp125);
     }
     if((Updating != null) && __isset.updating)
     {
-      if(0 < tmp121++) { tmp120.Append(", "); }
-      tmp120.Append("Updating: ");
-      Updating.ToString(tmp120);
+      if(0 < tmp126++) { tmp125.Append(", "); }
+      tmp125.Append("Updating: ");
+      Updating.ToString(tmp125);
     }
-    tmp120.Append(')');
-    return tmp120.ToString();
+    tmp125.Append(')');
+    return tmp125.ToString();
   }
 }
 

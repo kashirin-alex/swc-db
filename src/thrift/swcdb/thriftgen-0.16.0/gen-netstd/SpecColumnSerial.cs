@@ -85,18 +85,18 @@ public partial class SpecColumnSerial : TBase
 
   public SpecColumnSerial DeepCopy()
   {
-    var tmp212 = new SpecColumnSerial();
+    var tmp217 = new SpecColumnSerial();
     if(__isset.cid)
     {
-      tmp212.Cid = this.Cid;
+      tmp217.Cid = this.Cid;
     }
-    tmp212.__isset.cid = this.__isset.cid;
+    tmp217.__isset.cid = this.__isset.cid;
     if((Intervals != null) && __isset.intervals)
     {
-      tmp212.Intervals = this.Intervals.DeepCopy();
+      tmp217.Intervals = this.Intervals.DeepCopy();
     }
-    tmp212.__isset.intervals = this.__isset.intervals;
-    return tmp212;
+    tmp217.__isset.intervals = this.__isset.intervals;
+    return tmp217;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -130,14 +130,14 @@ public partial class SpecColumnSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list213 = await iprot.ReadListBeginAsync(cancellationToken);
-                Intervals = new List<SpecIntervalSerial>(_list213.Count);
-                for(int _i214 = 0; _i214 < _list213.Count; ++_i214)
+                TList _list218 = await iprot.ReadListBeginAsync(cancellationToken);
+                Intervals = new List<SpecIntervalSerial>(_list218.Count);
+                for(int _i219 = 0; _i219 < _list218.Count; ++_i219)
                 {
-                  SpecIntervalSerial _elem215;
-                  _elem215 = new SpecIntervalSerial();
-                  await _elem215.ReadAsync(iprot, cancellationToken);
-                  Intervals.Add(_elem215);
+                  SpecIntervalSerial _elem220;
+                  _elem220 = new SpecIntervalSerial();
+                  await _elem220.ReadAsync(iprot, cancellationToken);
+                  Intervals.Add(_elem220);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -168,29 +168,29 @@ public partial class SpecColumnSerial : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp216 = new TStruct("SpecColumnSerial");
-      await oprot.WriteStructBeginAsync(tmp216, cancellationToken);
-      var tmp217 = new TField();
+      var tmp221 = new TStruct("SpecColumnSerial");
+      await oprot.WriteStructBeginAsync(tmp221, cancellationToken);
+      var tmp222 = new TField();
       if(__isset.cid)
       {
-        tmp217.Name = "cid";
-        tmp217.Type = TType.I64;
-        tmp217.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp217, cancellationToken);
+        tmp222.Name = "cid";
+        tmp222.Type = TType.I64;
+        tmp222.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp222, cancellationToken);
         await oprot.WriteI64Async(Cid, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Intervals != null) && __isset.intervals)
       {
-        tmp217.Name = "intervals";
-        tmp217.Type = TType.List;
-        tmp217.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp217, cancellationToken);
+        tmp222.Name = "intervals";
+        tmp222.Type = TType.List;
+        tmp222.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp222, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Intervals.Count), cancellationToken);
-          foreach (SpecIntervalSerial _iter218 in Intervals)
+          foreach (SpecIntervalSerial _iter223 in Intervals)
           {
-            await _iter218.WriteAsync(oprot, cancellationToken);
+            await _iter223.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -230,22 +230,22 @@ public partial class SpecColumnSerial : TBase
 
   public override string ToString()
   {
-    var tmp219 = new StringBuilder("SpecColumnSerial(");
-    int tmp220 = 0;
+    var tmp224 = new StringBuilder("SpecColumnSerial(");
+    int tmp225 = 0;
     if(__isset.cid)
     {
-      if(0 < tmp220++) { tmp219.Append(", "); }
-      tmp219.Append("Cid: ");
-      Cid.ToString(tmp219);
+      if(0 < tmp225++) { tmp224.Append(", "); }
+      tmp224.Append("Cid: ");
+      Cid.ToString(tmp224);
     }
     if((Intervals != null) && __isset.intervals)
     {
-      if(0 < tmp220++) { tmp219.Append(", "); }
-      tmp219.Append("Intervals: ");
-      Intervals.ToString(tmp219);
+      if(0 < tmp225++) { tmp224.Append(", "); }
+      tmp224.Append("Intervals: ");
+      Intervals.ToString(tmp224);
     }
-    tmp219.Append(')');
-    return tmp219.ToString();
+    tmp224.Append(')');
+    return tmp224.ToString();
   }
 }
 

@@ -10,6 +10,10 @@
 #include "swcdb/db/Protocol/Rgr/params/RangeQuerySelect.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelect.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelectUpdating.h"
+#include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Append.h"
+#include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Prepend.h"
+#include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Insert.h"
+#include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Serial.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelectDeleting.h"
 
 
@@ -69,10 +73,57 @@ struct RangeQuerySelect {
       conn->send_response(Buffers::make(ev, rsp));
 
     } else if(params.interval.has_opt__updating()) {
-      range->scan(Ranger::Callback::RangeQuerySelectUpdating::Ptr(
-        new Ranger::Callback::RangeQuerySelectUpdating(
-          conn, ev, std::move(params.interval), range)
-      ));
+      uint8_t op = params.interval.updating->operation.get_op();
+      if(range->cfg->col_type == DB::Types::Column::SERIAL) {
+          if(op == DB::Specs::UpdateOP::INSERT)
+            op = DB::Specs::UpdateOP::REPLACE;
+      } else if(DB::Types::is_counter(range->cfg->col_type) ||
+                op == DB::Specs::UpdateOP::SERIAL)  {
+        op = DB::Specs::UpdateOP::REPLACE;
+      }
+
+      switch(op) {
+        case DB::Specs::UpdateOP::REPLACE: {
+          range->scan(Ranger::Callback::RangeQuerySelectUpdating::Ptr(
+            new Ranger::Callback::RangeQuerySelectUpdating(
+              conn, ev, std::move(params.interval), range)
+          ));
+          break;
+        }
+        case DB::Specs::UpdateOP::APPEND: {
+          range->scan(Ranger::Callback::RangeQuerySelectUpdating_Append::Ptr(
+            new Ranger::Callback::RangeQuerySelectUpdating_Append(
+              conn, ev, std::move(params.interval), range)
+          ));
+          break;
+        }
+        case DB::Specs::UpdateOP::PREPEND: {
+          range->scan(Ranger::Callback::RangeQuerySelectUpdating_Prepend::Ptr(
+            new Ranger::Callback::RangeQuerySelectUpdating_Prepend(
+              conn, ev, std::move(params.interval), range)
+          ));
+          break;
+        }
+        case DB::Specs::UpdateOP::INSERT: {
+          range->scan(Ranger::Callback::RangeQuerySelectUpdating_Insert::Ptr(
+            new Ranger::Callback::RangeQuerySelectUpdating_Insert(
+              conn, ev, std::move(params.interval), range)
+          ));
+          break;
+        }
+        case DB::Specs::UpdateOP::SERIAL: {
+          range->scan(Ranger::Callback::RangeQuerySelectUpdating_Serial::Ptr(
+            new Ranger::Callback::RangeQuerySelectUpdating_Serial(
+              conn, ev, std::move(params.interval), range)
+          ));
+          break;
+        }
+        default: {
+          Params::RangeQuerySelectRsp rsp(Error::INVALID_ARGUMENT);
+          conn->send_response(Buffers::make(ev, rsp));
+          break;
+        }
+      }
 
     } else if(params.interval.has_opt__deleting()) {
       range->scan(Ranger::Callback::RangeQuerySelectDeleting::Ptr(
