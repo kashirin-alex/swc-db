@@ -9,7 +9,7 @@
 
 #include "swcdb/core/Compat.h"
 #include "swcdb/core/Buffer.h"
-#include "swcdb/db/Cells/CellKey.h"
+#include "swcdb/db/Cells/Cell.h"
 
 
 namespace SWC { namespace DB { namespace Cell {
@@ -327,6 +327,19 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
 //
 
 
+/// Field for Update
+class FieldUpdate {
+  public:
+  SWC_CAN_INLINE
+  FieldUpdate() noexcept { }
+  virtual ~FieldUpdate() noexcept { }
+  virtual bool without_adding_field() const noexcept         = 0;
+  virtual uint24_t encoded_length() const noexcept           = 0;
+  virtual void encode(uint8_t** bufp) const                  = 0;
+  virtual void decode(const uint8_t** ptrp, size_t* remainp) = 0;
+  virtual std::ostream& print(std::ostream& out) const       = 0;
+};
+
 
 /*
 FieldsWriter wfields;
@@ -349,6 +362,11 @@ struct FieldsWriter final : DynamicBuffer {
     field->encode(&ptr);
   }
 
+  SWC_CAN_INLINE
+  void add(FieldUpdate* ufield) {
+    ensure(ufield->encoded_length());
+    ufield->encode(&ptr);
+  }
 
   void add(uint24_t fid, const int64_t& value);
 
@@ -448,96 +466,353 @@ struct Fields {
 
 
 
+
+
 //
-class FieldsReaderMap final
-    : private std::array<std::map<uint32_t, Field*>*, 7> {
+class FieldUpdate_MATH : public FieldUpdate {
+  public:
+  static constexpr const uint8_t OP_EQUAL           = 0x00;
+  static constexpr const uint8_t OP_PLUS            = 0x01;
+  static constexpr const uint8_t OP_MULTIPLY        = 0x02;
+  static constexpr const uint8_t OP_DIVIDE          = 0x04;
+  static constexpr const uint8_t CTRL_NO_ADD_FIELD  = 0xF0;
+  SWC_CAN_INLINE
+  FieldUpdate_MATH(uint8_t a_op=OP_EQUAL) noexcept : op(a_op) { }
+  SWC_CAN_INLINE
+  FieldUpdate_MATH(const uint8_t** ptrp, size_t* remainp)
+                  : op(Serialization::decode_i8(ptrp, remainp)) {             
+  }
+  SWC_CAN_INLINE
+  bool without_adding_field() const noexcept override {
+    return op & CTRL_NO_ADD_FIELD;
+  }
+  SWC_CAN_INLINE
+  void set_op(const char** ptr, uint32_t* remainp) noexcept{
+    op = OP_EQUAL;
+    if(**ptr == '!') {
+      op |= CTRL_NO_ADD_FIELD;
+      ++*ptr;
+      --*remainp;
+    }
+    uint8_t len = 0;
+    if(*remainp >= 2) {
+      if(Condition::str_eq(*ptr, "+=", 2)) {
+        op |= OP_PLUS;
+        len += 2;
+      } else if(Condition::str_eq(*ptr, "*=", 2)) {
+        op |= OP_MULTIPLY;
+        len += 2;
+      } else if(Condition::str_eq(*ptr, "/=", 2)) {
+        op |= OP_DIVIDE;
+        len += 2;
+      } else if(Condition::str_eq(*ptr, "==", 2)) {
+        len += 2;
+      }
+    } else if(*remainp && **ptr == '=') {
+      ++len;
+    }
+    *ptr += len;
+    *remainp -= len;
+  }
+  template<typename T>
+  SWC_CAN_INLINE
+  void apply(const Field* infieldp, T& field) {
+    const T* infield(reinterpret_cast<const T*>(infieldp));
+    switch(op | CTRL_NO_ADD_FIELD) {
+      case OP_EQUAL | CTRL_NO_ADD_FIELD:
+        field.value = infield->value;
+        break;
+      case OP_PLUS | CTRL_NO_ADD_FIELD:
+        field.value += infield->value;
+        break;
+      case OP_MULTIPLY | CTRL_NO_ADD_FIELD:
+        field.value *= infield->value;
+        break;
+      case OP_DIVIDE | CTRL_NO_ADD_FIELD:
+        if(infield->value)
+          field.value /= infield->value;
+        break;
+      default:
+        break;
+    }
+  }
+  SWC_CAN_INLINE
+  uint24_t encoded_length() const noexcept override {
+    return 1;
+  }
+  SWC_CAN_INLINE
+  void encode(uint8_t** bufp) const override {
+    Serialization::encode_i8(bufp, op);
+  }
+  SWC_CAN_INLINE
+  void decode(const uint8_t** ptrp, size_t* remainp) override {
+    op = Serialization::decode_i8(ptrp, remainp);
+  }
+  std::ostream& print(std::ostream& out) const override {
+    uint8_t tmp = op;
+    if(without_adding_field()) {
+      tmp ^= CTRL_NO_ADD_FIELD;
+      out << "CTRL_NO_ADD_FIELD ";
+    }
+    switch(tmp) {
+      case OP_EQUAL:
+        return out << "EQUAL";
+      case OP_PLUS:
+        return out << "PLUS";
+      case OP_MULTIPLY:
+        return out << "MULTIPLY";
+      case OP_DIVIDE:
+        return out << "DIVIDE";
+      default:
+        return out << "UNKNOWN";
+    }
+  }
+  uint8_t op;
+};
+
+//
+class FieldUpdate_LIST : public FieldUpdate {
+  public:
+  static constexpr const uint8_t OP_REPLACE         = 0x00;
+  static constexpr const uint8_t OP_APPEND          = 0x01;
+  static constexpr const uint8_t OP_PREPEND         = 0x02;
+  static constexpr const uint8_t OP_INSERT          = 0x04;
+  static constexpr const uint8_t CTRL_NO_ADD_FIELD  = 0xF0;
+  SWC_CAN_INLINE
+  FieldUpdate_LIST(uint8_t a_op=OP_REPLACE, uint24_t a_pos=0)
+                   noexcept : op(a_op), pos(a_pos) {
+  }
+  SWC_CAN_INLINE
+  FieldUpdate_LIST(const uint8_t** ptrp, size_t* remainp)
+                  : op(Serialization::decode_i8(ptrp, remainp)),
+                    pos(op & OP_INSERT
+                          ? Serialization::decode_vi24(ptrp, remainp)
+                          : uint24_t(0)) {
+  }
+  SWC_CAN_INLINE
+  virtual bool without_adding_field() const noexcept override {
+    return op & CTRL_NO_ADD_FIELD;
+  }
+  SWC_CAN_INLINE
+  void set_op(const char** ptr, uint32_t* remainp, int& err) noexcept{
+    op = OP_REPLACE;
+    if(**ptr == '!') {
+      op |= CTRL_NO_ADD_FIELD;
+      ++*ptr;
+      --*remainp;
+    }
+    uint8_t len = 0;
+    if(*remainp >= 2) {
+      if(Condition::str_eq(*ptr, "+=", 2)) {
+        op |= OP_APPEND;
+        len += 2;
+      } else if(Condition::str_eq(*ptr, "=+", 2)) {
+        op |= OP_PREPEND;
+        len += 2;
+      } else if(Condition::str_eq(*ptr, "=:", 2)) {
+        op |= OP_INSERT;
+        len += 2;
+      } else if(Condition::str_eq(*ptr, "==", 2)) {
+        len += 2;
+      }
+    } else if(*remainp && **ptr == '=') {
+      ++len;
+    }
+    *ptr += len;
+    *remainp -= len;
+    if(op & OP_INSERT) {
+      errno = 0;
+      char** end_at = const_cast<char**>(ptr);
+      int64_t v = std::strtoll(*ptr, end_at, 10);
+      if(errno) {
+        err = errno;
+      } else if (v > UINT24_MAX || v < INT24_MIN) {
+        err = ERANGE;
+      } else {
+        pos = v;
+        len = *end_at - *ptr;
+        *ptr += len;
+        *remainp -= len;
+      }
+    }
+  }
+  SWC_CAN_INLINE
+  virtual uint24_t encoded_length() const noexcept override {
+    return 1 + (op & OP_INSERT
+                  ? Serialization::encoded_length_vi24(pos) : 0);
+  }
+  SWC_CAN_INLINE
+  virtual void encode(uint8_t** bufp) const override {
+    Serialization::encode_i8(bufp, op);
+    if(op & OP_INSERT)
+      Serialization::encode_vi24(bufp, pos);
+  }
+  SWC_CAN_INLINE
+  virtual void decode(const uint8_t** ptrp, size_t* remainp) override {
+    op = Serialization::decode_i8(ptrp, remainp);
+    if(op & OP_INSERT)
+      pos = Serialization::decode_vi24(ptrp, remainp);;
+  }
+  virtual std::ostream& print(std::ostream& out) const override {
+    uint8_t tmp = op;
+    if(without_adding_field()) {
+      tmp ^= CTRL_NO_ADD_FIELD;
+      out << "CTRL_NO_ADD_FIELD ";
+    }
+    switch(tmp) {
+      case OP_REPLACE:
+        return out << "REPLACE";
+      case OP_APPEND:
+        return out << "APPEND";
+      case OP_PREPEND:
+        return out << "PREPEND";
+      case OP_INSERT:
+        return out << "INSERT:" << pos;
+      default:
+        return out << "UNKNOWN";
+    }
+  }
+  uint8_t  op;
+  uint24_t pos;
+};
+
+
+
+/// Fields Reader with FieldsWriter with FieldUpdate serialization
+struct FieldUpdateOP {
+  Field*        field;
+  FieldUpdate*  ufield;
+  SWC_CAN_INLINE
+  FieldUpdateOP() noexcept : field(nullptr), ufield(nullptr) { }
+  SWC_CAN_INLINE
+  FieldUpdateOP(FieldUpdateOP&& other) noexcept
+                : field(other.field), ufield(other.ufield) {
+    other.field = nullptr;
+    other.ufield = nullptr;
+  }
+  SWC_CAN_INLINE
+  FieldUpdateOP& operator=(FieldUpdateOP&& other) noexcept {
+    delete field;
+    delete ufield;
+    field = nullptr;
+    ufield = nullptr;
+    std::swap(field, other.field);
+    std::swap(ufield, other.ufield);
+    return *this;
+  }
+  FieldUpdateOP(const FieldUpdateOP&)            = delete;
+  FieldUpdateOP& operator=(const FieldUpdateOP&) = delete;
+  ~FieldUpdateOP() noexcept {
+    delete field;
+    delete ufield;
+  }
+  operator bool() const noexcept {
+    return ufield;
+  }
+};
+typedef Core::Vector<const FieldUpdateOP*> FieldUpdateOpPtrs;
+
+
+
+struct FieldsUpdaterMap final
+    : private std::array<std::map<uint32_t, FieldUpdateOP>*, 7> {
   public:
 
   uint24_t count;
 
   SWC_CAN_INLINE
-  FieldsReaderMap() noexcept : count(0) {
+  FieldsUpdaterMap() noexcept : count(0) {
     fill(nullptr);
   }
 
   SWC_CAN_INLINE
-  FieldsReaderMap(const uint8_t* ptr, size_t remain, bool take_ownership)
+  FieldsUpdaterMap(const uint8_t* ptr, size_t remain, bool take_ownership)
                   : count(0) {
     fill(nullptr);
-    read(ptr, remain, take_ownership);
+    decode(ptr, remain, take_ownership);
   }
 
   SWC_CAN_INLINE
-  ~FieldsReaderMap() noexcept {
+  ~FieldsUpdaterMap() noexcept {
     for(auto it_t = cbegin() + 1; it_t != cend(); ++it_t) {
-      if(*it_t) {
-        for(auto it_f = (*it_t)->cbegin(); it_f != (*it_t)->cend(); ++it_f) {
-          delete it_f->second;
-        }
-        delete *it_t;
-      }
+      delete *it_t;
     }
   }
 
-  void read(const uint8_t* ptr, size_t remain, bool take_ownership) {
-    for(Field* field; remain; ) {
+  void decode(const uint8_t* ptr, size_t remain, bool take_ownership) {
+    FieldUpdateOP opfield;
+    while(remain) {
       switch(read_type(&ptr, &remain)) {
         case Type::INT64: {
-          field = new Field_INT64(&ptr, &remain);
+          opfield.field = new Field_INT64(&ptr, &remain);
+          opfield.ufield = new FieldUpdate_MATH(&ptr, &remain);
           break;
         }
         case Type::DOUBLE: {
-          field = new Field_DOUBLE(&ptr, &remain);
+          opfield.field = new Field_DOUBLE(&ptr, &remain);
+          opfield.ufield = new FieldUpdate_MATH(&ptr, &remain);
           break;
         }
         case Type::BYTES: {
-          field = new Field_BYTES(&ptr, &remain, take_ownership);
+          opfield.field = new Field_BYTES(&ptr, &remain);
+          opfield.ufield = new FieldUpdate_LIST(&ptr, &remain);
           break;
         }
         case Type::KEY: {
-          field = new Field_KEY(&ptr, &remain, take_ownership);
+          opfield.field = new Field_KEY(&ptr, &remain, take_ownership);
           break;
         }
         case Type::LIST_INT64: {
-          field = new Field_LIST_INT64(&ptr, &remain, take_ownership);
+          opfield.field = new Field_LIST_INT64(&ptr, &remain, take_ownership);
           break;
         }
         case Type::LIST_BYTES: {
-          field = new Field_LIST_BYTES(&ptr, &remain, take_ownership);
+          opfield.field = new Field_LIST_BYTES(&ptr, &remain, take_ownership);
           break;
         }
         default:
           continue;
       }
-      auto& field_id_values = (*this)[field->type()];
-      if(!field_id_values)
-        field_id_values = new std::map<uint32_t, Field*>();
-      (*field_id_values)[uint32_t(field->fid)] = field;
-      ++count;
+      if(!opfield)
+        continue;
+
+      auto& typ_fields = (*this)[opfield.field->type()];
+      if(typ_fields) {
+        count += typ_fields->insert_or_assign(
+          uint32_t(opfield.field->fid),
+          std::move(opfield)
+        ).second;
+      } else {
+        typ_fields = new std::map<uint32_t, FieldUpdateOP>();
+        (*typ_fields)[uint32_t(opfield.field->fid)] = std::move(opfield);
+        ++count;
+      }
     }
   }
 
-  template<typename T>
-  T find_matching_type_and_id(T infield) {
-    auto& field_id_values = (*this)[infield->type()];
-    if(field_id_values) {
-      const auto it = field_id_values->find(infield->fid);
-      if(it != field_id_values->cend()) {
-        return reinterpret_cast<T>(it->second);
+  FieldUpdateOP*
+  find_matching_type_and_id(const Field* field) const noexcept {
+    auto& typ_fields = (*this)[field->type()];
+    if(typ_fields) {
+      const auto it = typ_fields->find(field->fid);
+      if(it != typ_fields->cend()) {
+        return &it->second;
       }
     }
     return nullptr;
   }
 
-  template<typename T>
-  T get_not_in(T fields) {
-    T not_in;
+  FieldUpdateOpPtrs
+  get_not_in(const FieldUpdateOpPtrs& opfields) const {
+    FieldUpdateOpPtrs not_in;
+    not_in.reserve(count - opfields.size());
     for(auto it_t = cbegin() + 1; it_t != cend(); ++it_t) {
-      if(*it_t) {
-        for(auto it_f = (*it_t)->cbegin(); it_f != (*it_t)->cend(); ++it_f) {
-          auto found = std::find(fields.cbegin(), fields.cend(), it_f->second);
-          if(found == fields.cend())
-            not_in.push_back(it_f->second);
+      if(!*it_t)
+        continue;
+      for(auto it_f = (*it_t)->cbegin(); it_f != (*it_t)->cend(); ++it_f) {
+        if(std::find(opfields.cbegin(), opfields.cend(), &it_f->second)
+            == opfields.cend()) {
+          not_in.push_back(&it_f->second);
         }
       }
     }

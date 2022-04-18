@@ -30,7 +30,7 @@ class RangeQuerySelectUpdating_Serial final
                                       std::move(req_spec),
                                       a_range
                                     ),
-                                    fields_for_update(
+                                    u_fields(
                                       spec.updating->value,
                                       spec.updating->vlen,
                                       false
@@ -49,36 +49,38 @@ class RangeQuerySelectUpdating_Serial final
     DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(cell.vlen + spec.updating->vlen);
 
-    Core::Vector<DB::Cell::Serial::Value::Field*, uint32_t> found_fields;
-    found_fields.reserve(fields_for_update.count);
+    DB::Cell::Serial::Value::FieldUpdateOpPtrs found_u_fields;
+    found_u_fields.reserve(u_fields.count);
 
     while(remain) {
       switch(DB::Cell::Serial::Value::read_type(&ptr, &remain)) {
         case DB::Cell::Serial::Value::Type::INT64: {
           DB::Cell::Serial::Value::Field_INT64 field(&ptr, &remain);
-          auto ufield = fields_for_update.find_matching_type_and_id(&field);
-          if(ufield) {
-            found_fields.push_back(ufield);
-
+          auto opfield = u_fields.find_matching_type_and_id(&field);
+          if(opfield) {
+            found_u_fields.push_back(opfield);
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>(
+              opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;
         }
         case DB::Cell::Serial::Value::Type::DOUBLE: {
           DB::Cell::Serial::Value::Field_DOUBLE field(&ptr, &remain);
-          auto ufield = fields_for_update.find_matching_type_and_id(&field);
-          if(ufield) {
-            found_fields.push_back(ufield);
-
+          auto opfield = u_fields.find_matching_type_and_id(&field);
+          if(opfield) {
+            found_u_fields.push_back(opfield);
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>(
+              opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;
         }
         case DB::Cell::Serial::Value::Type::BYTES: {
           DB::Cell::Serial::Value::Field_BYTES field(&ptr, &remain);
-          auto ufield = fields_for_update.find_matching_type_and_id(&field);
-          if(ufield) {
-            found_fields.push_back(ufield);
+          auto opfield = u_fields.find_matching_type_and_id(&field);
+          if(opfield) {
+            found_u_fields.push_back(opfield);
 
           }
           wfields.add(&field);
@@ -86,9 +88,9 @@ class RangeQuerySelectUpdating_Serial final
         }
         case DB::Cell::Serial::Value::Type::KEY: {
           DB::Cell::Serial::Value::Field_KEY field(&ptr, &remain);
-          auto ufield = fields_for_update.find_matching_type_and_id(&field);
-          if(ufield) {
-            found_fields.push_back(ufield);
+          auto opfield = u_fields.find_matching_type_and_id(&field);
+          if(opfield) {
+            found_u_fields.push_back(opfield);
 
           }
           wfields.add(&field);
@@ -96,9 +98,9 @@ class RangeQuerySelectUpdating_Serial final
         }
         case DB::Cell::Serial::Value::Type::LIST_INT64: {
           DB::Cell::Serial::Value::Field_LIST_INT64 field(&ptr, &remain);
-          auto ufield = fields_for_update.find_matching_type_and_id(&field);
-          if(ufield) {
-            found_fields.push_back(ufield);
+          auto opfield = u_fields.find_matching_type_and_id(&field);
+          if(opfield) {
+            found_u_fields.push_back(opfield);
 
           }
           wfields.add(&field);
@@ -106,9 +108,9 @@ class RangeQuerySelectUpdating_Serial final
         }
         case DB::Cell::Serial::Value::Type::LIST_BYTES: {
           DB::Cell::Serial::Value::Field_LIST_BYTES field(&ptr, &remain);
-          auto ufield = fields_for_update.find_matching_type_and_id(&field);
-          if(ufield) {
-            found_fields.push_back(ufield);
+          auto opfield = u_fields.find_matching_type_and_id(&field);
+          if(opfield) {
+            found_u_fields.push_back(opfield);
 
           }
           wfields.add(&field);
@@ -119,16 +121,17 @@ class RangeQuerySelectUpdating_Serial final
       }
     }
 
-    auto missing_fields(fields_for_update.get_not_in(found_fields));
-    for(auto field : missing_fields) {
-      wfields.add(field);
+    auto missing_u_fields(u_fields.get_not_in(found_u_fields));
+    for(auto opfield : missing_u_fields) {
+      if(!opfield->ufield->without_adding_field())
+        wfields.add(opfield->field);
     }
 
     cell.set_value(wfields.base, wfields.fill(), true);
   }
 
   private:
-  DB::Cell::Serial::Value::FieldsReaderMap fields_for_update;
+  const DB::Cell::Serial::Value::FieldsUpdaterMap u_fields;
 
 };
 

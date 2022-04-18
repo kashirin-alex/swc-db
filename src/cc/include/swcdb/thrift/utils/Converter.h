@@ -49,9 +49,7 @@ void set(const Key& key, DB::Cell::Key& dbkey) {
 }
 
 void set(const CellValuesSerial& value,
-         DB::Cell::Serial::Value::FieldsWriter& wfields,
-         uint8_t op=DB::Specs::UpdateOP::REPLACE) {
-  (void)op; // TODO: OP is applied only as REPLACE
+         DB::Cell::Serial::Value::FieldsWriter& wfields) {
   size_t len = 0;
   for(auto& fields : value) {
     if(fields.__isset.v_int64)
@@ -90,6 +88,12 @@ void set(const CellValuesSerial& value,
       wfields.add(fields.field_id, fields.v_lb);
   }
 }
+
+/*
+void set(const CellValuesSerialOp& value,
+         DB::Cell::Serial::Value::FieldsWriter& wfields) {
+}
+*/
 
 void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
   dbspec.reserve(spec.size());
@@ -321,7 +325,11 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
         set(intval.updating.update_op, update_op);
 
       DB::Cell::Serial::Value::FieldsWriter wfields;
-      set(intval.updating.v, wfields, update_op.get_op());
+      //if(update_op.get_op() == DB::Specs::UpdateOP::SERIAL) {
+      //  set(intval.updating.v_op, wfields);
+      //} else {
+        set(intval.updating.v, wfields);
+      //}
       DB::Cells::Cell dbcell;
       intval.updating.__isset.encoder
         ? dbcell.set_value(DB::Types::Encoder(uint8_t(intval.updating.encoder)),

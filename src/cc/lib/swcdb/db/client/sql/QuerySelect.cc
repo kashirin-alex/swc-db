@@ -1176,7 +1176,12 @@ void QuerySelect::read_update(DB::Specs::Interval& intval) {
     return;
   DB::Cells::Cell cell;
   cell.set_timestamp_null();
-  read_ts_and_value(intval.values.col_type, false, cell);
+  read_ts_and_value(
+    intval.values.col_type,
+    false,
+    cell,
+    op.get_op() == DB::Specs::UpdateOP::SERIAL
+  );
 
   if(remain && !err) {
     intval.updating = DB::Specs::IntervalUpdate::make(

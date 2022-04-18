@@ -515,7 +515,7 @@ void Reader::read_operation(const DB::Types::Column col_type,
 }
 
 void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
-                               DB::Cells::Cell& cell) {
+                               DB::Cells::Cell& cell, bool w_serial) {
   std::string buf;
   read(buf, ",)");
   if(err)
@@ -587,28 +587,46 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
         switch(typ) {
 
           case DB::Cell::Serial::Value::Type::INT64: {
+            DB::Cell::Serial::Value::FieldUpdate_MATH ufield;
+            if(w_serial)
+              ufield.set_op(&ptr, &remain);
             int64_t v;
             read_int64_t(v, was_set, ",]");
             if(err)
               return;
             wfields.add(fid, v);
+            if(w_serial)
+              wfields.add(&ufield);
             break;
           }
 
           case DB::Cell::Serial::Value::Type::DOUBLE: {
+            DB::Cell::Serial::Value::FieldUpdate_MATH ufield;
+            if(w_serial)
+              ufield.set_op(&ptr, &remain);
             long double v;
             read_double_t(v, was_set, ",]");
             if(err)
               return;
             wfields.add(fid, v);
+            if(w_serial)
+              wfields.add(&ufield);
             break;
           }
 
           case DB::Cell::Serial::Value::Type::BYTES: {
+            DB::Cell::Serial::Value::FieldUpdate_LIST ufield;
+            if(w_serial) {
+              ufield.set_op(&ptr, &remain, err);
+              if(err)
+                return error_msg(err, "Bad OP syntax");
+            }
             read(buf, ",]");
             if(err)
               return;
             wfields.add(fid, buf);
+            if(w_serial)
+              wfields.add(&ufield);
             buf.clear();
             break;
           }

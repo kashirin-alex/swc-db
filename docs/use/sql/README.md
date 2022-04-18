@@ -396,8 +396,17 @@ The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE [OP] (TI
     |  `+=`  | APPEND  | PLAIN, SERIAL          | appends the update value to the cell's current value    |
     |  `=+`  | PREPEND | PLAIN, SERIAL          | prepends the update value to the cell's current value   |
     |  `=:#` | INSERT  | PLAIN, SERIAL(infield) | insert the update value at position in current value    |
-    |  `~=`  | SERIAL  | SERIAL                 | update is done by the inner serial-fields defintions    |
-
+    |  `~=`  | SERIAL  | SERIAL                 | update is done by the inner serial-fields defintions, such as: ```UPDATE [OP] (TIMESTAMP, [ID:TYPE:[OP]val, .. ], ENC)```   |
+ 
+  * The supported UPDATE operations(`OP`) for numberic with MATH-op in the inner SERIAL fields :
+    | syntax | name              | supported field-types  | description                                                   |
+    |  ---   |   ---             |       ---              |     ---                                                       |
+    |  `=`   | EQUAL             | INT64, DOUBLE          | set field value to the new value (_default_)                  |
+    |  `+=`  | PLUS              | INT64, DOUBLE          | plus new value to field's value (negative number allowed)     |
+    |  `*=`  | MULTIPLY          | INT64, DOUBLE          | multiply current value by update value                        |
+    |  `/=`  | DIVIDE            | INT64, DOUBLE          | divide current value by the new value (ignored at zero)       |
+    |  `!`   | CTRL_NO_ADD_FIELD | INT64, DOUBLE          | Applicable infront of other OPs, a control operation, in case a field for update does not exist, to not add a new field  |
+ 
 The cells of the response are the fetched cells before update has been applied. \
 These options let the use of a column in a synchronized manner that open usage possibilities to cases such as:
   * auto-increment value for purpose such as an unique ID.

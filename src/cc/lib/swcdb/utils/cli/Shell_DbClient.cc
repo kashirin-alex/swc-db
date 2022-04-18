@@ -108,7 +108,8 @@ DbClient::DbClient()
     "       update[OP](TIMESTAMP, VALUE, ENC) |OR| DELETE_MATCHING )",
     "     ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;",
     "* DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP \"VALUE\", ..])",
-    "* update[OP]: REPLACE(=),APPEND(+=),PREPEND(=+),INSERT(=:#),SERIAL(~=)"},
+    "* update[OP]: REPLACE(=),APPEND(+=),PREPEND(=+),INSERT(=:#),SERIAL(~=)",
+    "* SERIAL(~=): [ID:TYPE:[OP]val, ..]"},
     [ptr=this](std::string& cmd){return ptr->select(cmd);},
     "(?i)^(select)(\\s+|$)"
   );
