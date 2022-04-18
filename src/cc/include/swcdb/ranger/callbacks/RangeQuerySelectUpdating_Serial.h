@@ -35,6 +35,7 @@ class RangeQuerySelectUpdating_Serial final
                                       spec.updating->vlen,
                                       false
                                     ) {
+    only_keys = false;
   }
 
   virtual ~RangeQuerySelectUpdating_Serial() noexcept { }

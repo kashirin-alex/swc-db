@@ -30,6 +30,7 @@ class RangeQuerySelectUpdating_Insert final
                                       std::move(req_spec),
                                       a_range
                                     ) {
+    only_keys = false;
   }
 
   virtual ~RangeQuerySelectUpdating_Insert() noexcept { }

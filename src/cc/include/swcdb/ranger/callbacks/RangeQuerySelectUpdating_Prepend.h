@@ -30,6 +30,7 @@ class RangeQuerySelectUpdating_Prepend final
                                       std::move(req_spec),
                                       a_range
                                     ) {
+    only_keys = false;
   }
 
   virtual ~RangeQuerySelectUpdating_Prepend() noexcept { }

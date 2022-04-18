@@ -92,6 +92,17 @@ class RangeQuerySelect : public ReqScan {
 
     Comm::Buffers::Ptr cbp;
     if(!cells.empty()) {
+      if(!only_keys && spec.flags.is_only_keys()) {
+        // rewrite cells without value
+        DynamicBuffer no_value_cells;
+        const uint8_t* ptr = cells.base;
+        size_t remain = cells.fill();
+        no_value_cells.ensure(remain);
+        while(remain) {
+          DB::Cells::Cell(&ptr, &remain).write(no_value_cells, true);
+        }
+        cells.take_ownership(no_value_cells);
+      }
       StaticBuffer sndbuf(cells);
       cbp = Comm::Buffers::make(m_ev, params, sndbuf);
     } else {
