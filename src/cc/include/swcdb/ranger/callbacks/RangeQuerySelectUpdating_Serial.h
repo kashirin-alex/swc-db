@@ -36,12 +36,13 @@ class RangeQuerySelectUpdating_Serial final
                                       false
                                     ) {
     only_keys = false;
+    opfields_found.reserve(u_fields.count);
+    opfields_missing.reserve(u_fields.count);
   }
 
   virtual ~RangeQuerySelectUpdating_Serial() noexcept { }
 
   void update_cell_value(DB::Cells::Cell& cell) override {
-    // TODO: (it is only rewrites and fill not-found)
 
     const uint8_t* ptr = cell.value;
     size_t remain = cell.vlen;
@@ -49,16 +50,13 @@ class RangeQuerySelectUpdating_Serial final
     DB::Cell::Serial::Value::FieldsWriter wfields;
     wfields.ensure(cell.vlen + spec.updating->vlen);
 
-    DB::Cell::Serial::Value::FieldUpdateOpPtrs found_u_fields;
-    found_u_fields.reserve(u_fields.count);
-
     while(remain) {
       switch(DB::Cell::Serial::Value::read_type(&ptr, &remain)) {
         case DB::Cell::Serial::Value::Type::INT64: {
           DB::Cell::Serial::Value::Field_INT64 field(&ptr, &remain);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
-            found_u_fields.push_back(opfield);
+            opfields_found.push_back(opfield);
             reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>(
               opfield->ufield)->apply(opfield->field, field);
           }
@@ -69,7 +67,7 @@ class RangeQuerySelectUpdating_Serial final
           DB::Cell::Serial::Value::Field_DOUBLE field(&ptr, &remain);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
-            found_u_fields.push_back(opfield);
+            opfields_found.push_back(opfield);
             reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>(
               opfield->ufield)->apply(opfield->field, field);
           }
@@ -80,8 +78,9 @@ class RangeQuerySelectUpdating_Serial final
           DB::Cell::Serial::Value::Field_BYTES field(&ptr, &remain);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
-            found_u_fields.push_back(opfield);
-
+            opfields_found.push_back(opfield);
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_LIST*>(
+              opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;
@@ -90,7 +89,7 @@ class RangeQuerySelectUpdating_Serial final
           DB::Cell::Serial::Value::Field_KEY field(&ptr, &remain);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
-            found_u_fields.push_back(opfield);
+            opfields_found.push_back(opfield);
 
           }
           wfields.add(&field);
@@ -100,7 +99,7 @@ class RangeQuerySelectUpdating_Serial final
           DB::Cell::Serial::Value::Field_LIST_INT64 field(&ptr, &remain);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
-            found_u_fields.push_back(opfield);
+            opfields_found.push_back(opfield);
 
           }
           wfields.add(&field);
@@ -110,7 +109,7 @@ class RangeQuerySelectUpdating_Serial final
           DB::Cell::Serial::Value::Field_LIST_BYTES field(&ptr, &remain);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
-            found_u_fields.push_back(opfield);
+            opfields_found.push_back(opfield);
 
           }
           wfields.add(&field);
@@ -121,17 +120,22 @@ class RangeQuerySelectUpdating_Serial final
       }
     }
 
-    auto missing_u_fields(u_fields.get_not_in(found_u_fields));
-    for(auto opfield : missing_u_fields) {
+    u_fields.get_not_in(opfields_found, opfields_missing);
+    for(auto opfield : opfields_missing) {
       if(!opfield->ufield->without_adding_field())
         wfields.add(opfield->field);
     }
 
     cell.set_value(wfields.base, wfields.fill(), true);
+
+    opfields_found.clear();
+    opfields_missing.clear();
   }
 
   private:
   const DB::Cell::Serial::Value::FieldsUpdaterMap u_fields;
+  DB::Cell::Serial::Value::FieldUpdateOpPtrs      opfields_found;
+  DB::Cell::Serial::Value::FieldUpdateOpPtrs      opfields_missing;
 
 };
 

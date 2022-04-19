@@ -508,7 +508,8 @@ class FieldUpdate_MATH : public FieldUpdate {
       } else if(Condition::str_eq(*ptr, "==", 2)) {
         len += 2;
       }
-    } else if(*remainp && **ptr == '=') {
+    }
+    if(!len && *remainp && **ptr == '=') {
       ++len;
     }
     *ptr += len;
@@ -519,21 +520,26 @@ class FieldUpdate_MATH : public FieldUpdate {
   void apply(const Field* infieldp, T& field) {
     const T* infield(reinterpret_cast<const T*>(infieldp));
     switch(op | CTRL_NO_ADD_FIELD) {
-      case OP_EQUAL | CTRL_NO_ADD_FIELD:
+      case OP_EQUAL | CTRL_NO_ADD_FIELD: {
         field.value = infield->value;
         break;
-      case OP_PLUS | CTRL_NO_ADD_FIELD:
+      }
+      case OP_PLUS | CTRL_NO_ADD_FIELD: {
         field.value += infield->value;
         break;
-      case OP_MULTIPLY | CTRL_NO_ADD_FIELD:
+      }
+      case OP_MULTIPLY | CTRL_NO_ADD_FIELD: {
         field.value *= infield->value;
         break;
-      case OP_DIVIDE | CTRL_NO_ADD_FIELD:
+      }
+      case OP_DIVIDE | CTRL_NO_ADD_FIELD: {
         if(infield->value)
           field.value /= infield->value;
         break;
-      default:
+      }
+      default: {
         break;
+      }
     }
   }
   SWC_CAN_INLINE
@@ -615,7 +621,8 @@ class FieldUpdate_LIST : public FieldUpdate {
       } else if(Condition::str_eq(*ptr, "==", 2)) {
         len += 2;
       }
-    } else if(*remainp && **ptr == '=') {
+    }
+    if(!len && *remainp && **ptr == '=') {
       ++len;
     }
     *ptr += len;
@@ -640,6 +647,42 @@ class FieldUpdate_LIST : public FieldUpdate {
   virtual uint24_t encoded_length() const noexcept override {
     return 1 + (op & OP_INSERT
                   ? Serialization::encoded_length_vi24(pos) : 0);
+  }
+  SWC_CAN_INLINE
+  void apply(const Field* infieldp, Field_BYTES& field) {
+    const Field_BYTES* infield(
+      reinterpret_cast<const Field_BYTES*>(infieldp));
+    switch(op | CTRL_NO_ADD_FIELD) {
+      case OP_REPLACE | CTRL_NO_ADD_FIELD: {
+        field.assign(infield->base, infield->size);
+        break;
+      }
+      case OP_APPEND | CTRL_NO_ADD_FIELD: {
+        StaticBuffer value(field.size + infield->size);
+        memcpy(value.base, field.base, field.size);
+        memcpy(value.base + field.size, infield->base, infield->size);
+        field.set(value);
+        break;
+      }
+      case OP_PREPEND | CTRL_NO_ADD_FIELD: {
+        StaticBuffer value(field.size + infield->size);
+        memcpy(value.base, infield->base, infield->size);
+        memcpy(value.base + infield->size, field.base, field.size);
+        field.set(value);
+        break;
+      }
+      case OP_INSERT | CTRL_NO_ADD_FIELD: {
+        uint32_t p(pos > field.size ? uint32_t(field.size) : uint32_t(pos));
+        StaticBuffer value(field.size + infield->size);
+        memcpy(value.base, field.base, p);
+        memcpy(value.base +p, infield->base, infield->size);
+        memcpy(value.base +p + infield->size, field.base +p, field.size -p);
+        field.set(value);
+        break;
+      }
+      default:
+        break;
+    }
   }
   SWC_CAN_INLINE
   virtual void encode(uint8_t** bufp) const override {
@@ -802,10 +845,8 @@ struct FieldsUpdaterMap final
     return nullptr;
   }
 
-  FieldUpdateOpPtrs
-  get_not_in(const FieldUpdateOpPtrs& opfields) const {
-    FieldUpdateOpPtrs not_in;
-    not_in.reserve(count - opfields.size());
+  void get_not_in(const FieldUpdateOpPtrs& opfields,
+                  FieldUpdateOpPtrs& not_in) const {
     for(auto it_t = cbegin() + 1; it_t != cend(); ++it_t) {
       if(!*it_t)
         continue;
@@ -816,7 +857,6 @@ struct FieldsUpdaterMap final
         }
       }
     }
-    return not_in;
   }
 
 };
