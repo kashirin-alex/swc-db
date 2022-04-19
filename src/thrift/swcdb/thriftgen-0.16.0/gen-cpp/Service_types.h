@@ -328,11 +328,15 @@ struct UpdateOP {
     /**
      * The operation to Insert
      */
-    INSERT = 4,
+    INSERT = 3,
+    /**
+     * The operation to Insert
+     */
+    OVERWRITE = 4,
     /**
      * The operation is by inner Serial fields defintions
      */
-    SERIAL = 8
+    SERIAL = 5
   };
 };
 
@@ -1518,7 +1522,7 @@ class SpecUpdateOP : public virtual ::apache::thrift::TBase {
    */
   UpdateOP::type op;
   /**
-   * The position of INSERT operation
+   * The position of INSERT/OVERWRITE operation in UpdateOP
    */
   int32_t pos;
 

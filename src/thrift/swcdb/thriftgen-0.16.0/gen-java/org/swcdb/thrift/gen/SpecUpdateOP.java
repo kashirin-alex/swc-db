@@ -23,7 +23,7 @@ public class SpecUpdateOP implements org.apache.thrift.TBase<SpecUpdateOP, SpecU
    */
   public @org.apache.thrift.annotation.Nullable UpdateOP op; // required
   /**
-   * The position of INSERT operation
+   * The position of INSERT/OVERWRITE operation in UpdateOP
    */
   public int pos; // optional
 
@@ -36,7 +36,7 @@ public class SpecUpdateOP implements org.apache.thrift.TBase<SpecUpdateOP, SpecU
      */
     OP((short)1, "op"),
     /**
-     * The position of INSERT operation
+     * The position of INSERT/OVERWRITE operation in UpdateOP
      */
     POS((short)2, "pos");
 
@@ -181,14 +181,14 @@ public class SpecUpdateOP implements org.apache.thrift.TBase<SpecUpdateOP, SpecU
   }
 
   /**
-   * The position of INSERT operation
+   * The position of INSERT/OVERWRITE operation in UpdateOP
    */
   public int getPos() {
     return this.pos;
   }
 
   /**
-   * The position of INSERT operation
+   * The position of INSERT/OVERWRITE operation in UpdateOP
    */
   public SpecUpdateOP setPos(int pos) {
     this.pos = pos;

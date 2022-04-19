@@ -148,11 +148,13 @@ module Swcdb
         # The operation to Prepend
         PREPEND = 2
         # The operation to Insert
-        INSERT = 4
+        INSERT = 3
+        # The operation to Insert
+        OVERWRITE = 4
         # The operation is by inner Serial fields defintions
-        SERIAL = 8
-        VALUE_MAP = {0 => "REPLACE", 1 => "APPEND", 2 => "PREPEND", 4 => "INSERT", 8 => "SERIAL"}
-        VALID_VALUES = Set.new([REPLACE, APPEND, PREPEND, INSERT, SERIAL]).freeze
+        SERIAL = 5
+        VALUE_MAP = {0 => "REPLACE", 1 => "APPEND", 2 => "PREPEND", 3 => "INSERT", 4 => "OVERWRITE", 5 => "SERIAL"}
+        VALID_VALUES = Set.new([REPLACE, APPEND, PREPEND, INSERT, OVERWRITE, SERIAL]).freeze
       end
 
       module Flag
@@ -595,7 +597,7 @@ module Swcdb
         FIELDS = {
           # The Operation
           OP => {:type => ::Thrift::Types::I32, :name => 'op', :enum_class => ::Swcdb::Thrift::Gen::UpdateOP},
-          # The position of INSERT operation
+          # The position of INSERT/OVERWRITE operation in UpdateOP
           POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true}
         }
 

@@ -417,16 +417,18 @@ enum UpdateOP {
   /** The operation to Prepend */
   PREPEND     = 0x02,
   /** The operation to Insert */
-  INSERT      = 0x04,
+  INSERT      = 0x03,
+  /** The operation to Insert */
+  OVERWRITE   = 0x04,
   /** The operation is by inner Serial fields defintions */
-  SERIAL      = 0x08,
+  SERIAL      = 0x05,
 }
 
 struct SpecUpdateOP {
   /** The Operation */
   1: UpdateOP       op
 
-  /** The position of INSERT operation */
+  /** The position of INSERT/OVERWRITE operation in UpdateOP */
   2: optional i32   pos
 }
 

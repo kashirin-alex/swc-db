@@ -529,14 +529,17 @@ impl UpdateOP {
   /// The operation to Prepend
   pub const PREPEND: UpdateOP = UpdateOP(2);
   /// The operation to Insert
-  pub const INSERT: UpdateOP = UpdateOP(4);
+  pub const INSERT: UpdateOP = UpdateOP(3);
+  /// The operation to Insert
+  pub const OVERWRITE: UpdateOP = UpdateOP(4);
   /// The operation is by inner Serial fields defintions
-  pub const SERIAL: UpdateOP = UpdateOP(8);
+  pub const SERIAL: UpdateOP = UpdateOP(5);
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::REPLACE,
     Self::APPEND,
     Self::PREPEND,
     Self::INSERT,
+    Self::OVERWRITE,
     Self::SERIAL,
   ];
   #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -555,8 +558,9 @@ impl From<i32> for UpdateOP {
       0 => UpdateOP::REPLACE,
       1 => UpdateOP::APPEND,
       2 => UpdateOP::PREPEND,
-      4 => UpdateOP::INSERT,
-      8 => UpdateOP::SERIAL,
+      3 => UpdateOP::INSERT,
+      4 => UpdateOP::OVERWRITE,
+      5 => UpdateOP::SERIAL,
       _ => UpdateOP(i)
     }
   }
@@ -1990,7 +1994,7 @@ impl Default for SpecValue {
 pub struct SpecUpdateOP {
   /// The Operation
   pub op: Option<UpdateOP>,
-  /// The position of INSERT operation
+  /// The position of INSERT/OVERWRITE operation in UpdateOP
   pub pos: Option<i32>,
 }
 

@@ -500,18 +500,18 @@ void Reader::read_operation(const DB::Types::Column col_type,
         : DB::Specs::UpdateOP::REPLACE
     );
 
-  if(found_token("=:", 2)) {
-    uint24_t pos = 0;
-    bool was_set;
-    read_uint24_t(pos, was_set, " (");
-    if(!err) {
-      operation.set_op(DB::Specs::UpdateOP::INSERT);
-      operation.set_pos(pos);
-    }
-    return;
-  }
+  if(found_token("+:", 2))
+    operation.set_op(DB::Specs::UpdateOP::INSERT);
+  else if(found_token("=:", 2))
+    operation.set_op(DB::Specs::UpdateOP::OVERWRITE);
+  else
+    return operation.set_op(DB::Specs::UpdateOP::REPLACE);
 
-  return operation.set_op(DB::Specs::UpdateOP::REPLACE);
+  uint32_t pos = 0;
+  bool was_set;
+  read_uint32_t(pos, was_set, " (");
+  if(!err)
+    operation.set_pos(pos);
 }
 
 void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,

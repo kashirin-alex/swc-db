@@ -13,6 +13,7 @@
 #include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Append.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Prepend.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Insert.h"
+#include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Overwrite.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelectUpdating_Serial.h"
 #include "swcdb/ranger/callbacks/RangeQuerySelectDeleting.h"
 
@@ -75,7 +76,7 @@ struct RangeQuerySelect {
     } else if(params.interval.has_opt__updating()) {
       uint8_t op = params.interval.updating->operation.get_op();
       if(range->cfg->col_type == DB::Types::Column::SERIAL) {
-          if(op == DB::Specs::UpdateOP::INSERT)
+          if(params.interval.updating->operation.has_pos())
             op = DB::Specs::UpdateOP::REPLACE;
       } else if(DB::Types::is_counter(range->cfg->col_type) ||
                 op == DB::Specs::UpdateOP::SERIAL)  {
@@ -107,6 +108,13 @@ struct RangeQuerySelect {
         case DB::Specs::UpdateOP::INSERT: {
           range->scan(Ranger::Callback::RangeQuerySelectUpdating_Insert::Ptr(
             new Ranger::Callback::RangeQuerySelectUpdating_Insert(
+              conn, ev, std::move(params.interval), range)
+          ));
+          break;
+        }
+        case DB::Specs::UpdateOP::OVERWRITE: {
+          range->scan(Ranger::Callback::RangeQuerySelectUpdating_Overwrite::Ptr(
+            new Ranger::Callback::RangeQuerySelectUpdating_Overwrite(
               conn, ev, std::move(params.interval), range)
           ));
           break;

@@ -590,6 +590,10 @@ int _kUpdateOPValues[] = {
    */
   UpdateOP::INSERT,
   /**
+   * The operation to Insert
+   */
+  UpdateOP::OVERWRITE,
+  /**
    * The operation is by inner Serial fields defintions
    */
   UpdateOP::SERIAL
@@ -612,11 +616,15 @@ const char* _kUpdateOPNames[] = {
    */
   "INSERT",
   /**
+   * The operation to Insert
+   */
+  "OVERWRITE",
+  /**
    * The operation is by inner Serial fields defintions
    */
   "SERIAL"
 };
-const std::map<int, const char*> _UpdateOP_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kUpdateOPValues, _kUpdateOPNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _UpdateOP_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(6, _kUpdateOPValues, _kUpdateOPNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const UpdateOP::type& val) {
   std::map<int, const char*>::const_iterator it = _UpdateOP_VALUES_TO_NAMES.find(val);

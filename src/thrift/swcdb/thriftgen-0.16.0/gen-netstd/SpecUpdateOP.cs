@@ -55,7 +55,7 @@ public partial class SpecUpdateOP : TBase
   }
 
   /// <summary>
-  /// The position of INSERT operation
+  /// The position of INSERT/OVERWRITE operation in UpdateOP
   /// </summary>
   public int Pos
   {

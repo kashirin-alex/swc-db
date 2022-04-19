@@ -119,10 +119,8 @@ void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
 
 void set(const SpecUpdateOP& spec, DB::Specs::UpdateOP& dbspec) {
   dbspec.set_op(uint8_t(spec.op));
-  if(spec.__isset.pos &&
-     dbspec.get_op() == DB::Specs::UpdateOP::INSERT) {
+  if(spec.__isset.pos && dbspec.has_pos())
     dbspec.set_pos(spec.pos);
-  }
 }
 
 void set(const SpecValues& spec, DB::Specs::Values& dbspec) {

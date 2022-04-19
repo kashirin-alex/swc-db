@@ -254,23 +254,26 @@ class UpdateOP(object):
     REPLACE = 0
     APPEND = 1
     PREPEND = 2
-    INSERT = 4
-    SERIAL = 8
+    INSERT = 3
+    OVERWRITE = 4
+    SERIAL = 5
 
     _VALUES_TO_NAMES = {
         0: "REPLACE",
         1: "APPEND",
         2: "PREPEND",
-        4: "INSERT",
-        8: "SERIAL",
+        3: "INSERT",
+        4: "OVERWRITE",
+        5: "SERIAL",
     }
 
     _NAMES_TO_VALUES = {
         "REPLACE": 0,
         "APPEND": 1,
         "PREPEND": 2,
-        "INSERT": 4,
-        "SERIAL": 8,
+        "INSERT": 3,
+        "OVERWRITE": 4,
+        "SERIAL": 5,
     }
 
 
@@ -1551,7 +1554,7 @@ class SpecUpdateOP(object):
     """
     Attributes:
      - op: The Operation
-     - pos: The position of INSERT operation
+     - pos: The position of INSERT/OVERWRITE operation in UpdateOP
 
     """
 

@@ -138,6 +138,7 @@ toString_UpdateOP(int value)
   case SWCDB_THRIFT_UPDATE_O_P_APPEND:return "SWCDB_THRIFT_UPDATE_O_P_APPEND";
   case SWCDB_THRIFT_UPDATE_O_P_PREPEND:return "SWCDB_THRIFT_UPDATE_O_P_PREPEND";
   case SWCDB_THRIFT_UPDATE_O_P_INSERT:return "SWCDB_THRIFT_UPDATE_O_P_INSERT";
+  case SWCDB_THRIFT_UPDATE_O_P_OVERWRITE:return "SWCDB_THRIFT_UPDATE_O_P_OVERWRITE";
   case SWCDB_THRIFT_UPDATE_O_P_SERIAL:return "SWCDB_THRIFT_UPDATE_O_P_SERIAL";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
@@ -4800,7 +4801,7 @@ swcdb_thrift_spec_update_o_p_class_init (swcdb_thriftSpecUpdateOPClass * cls)
                        NULL,
                        NULL,
                        0,
-                       8,
+                       5,
                        0,
                        G_PARAM_READWRITE));
 

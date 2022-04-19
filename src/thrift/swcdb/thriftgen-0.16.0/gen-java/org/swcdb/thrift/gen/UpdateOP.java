@@ -23,11 +23,15 @@ public enum UpdateOP implements org.apache.thrift.TEnum {
   /**
    * The operation to Insert
    */
-  INSERT(4),
+  INSERT(3),
+  /**
+   * The operation to Insert
+   */
+  OVERWRITE(4),
   /**
    * The operation is by inner Serial fields defintions
    */
-  SERIAL(8);
+  SERIAL(5);
 
   private final int value;
 
@@ -55,9 +59,11 @@ public enum UpdateOP implements org.apache.thrift.TEnum {
         return APPEND;
       case 2:
         return PREPEND;
-      case 4:
+      case 3:
         return INSERT;
-      case 8:
+      case 4:
+        return OVERWRITE;
+      case 5:
         return SERIAL;
       default:
         return null;

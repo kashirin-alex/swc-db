@@ -1157,7 +1157,7 @@ void QuerySelect::read_flags(DB::Specs::Flags& flags) {
 }
 
 void QuerySelect::read_update(DB::Specs::Interval& intval) {
-  // update = ('TS', +=|=+|~=|=:#|='DATA', ENCODER) || ( ) - empty optional
+  // update = ('TS', +=|=+|~=|+:#|=:#|='DATA', ENCODER) || ( ) - empty optional
 
   seek_space();
   DB::Specs::UpdateOP op;

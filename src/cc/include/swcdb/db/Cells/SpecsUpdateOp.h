@@ -20,9 +20,9 @@ struct UpdateOP {
   static constexpr const uint8_t REPLACE   = 0x00;
   static constexpr const uint8_t APPEND    = 0x01;
   static constexpr const uint8_t PREPEND   = 0x02;
-  static constexpr const uint8_t INSERT    = 0x04;
-  static constexpr const uint8_t SERIAL    = 0x08;
-  static constexpr const uint8_t _HAS_POS  = 0x10;
+  static constexpr const uint8_t INSERT    = 0x03;
+  static constexpr const uint8_t OVERWRITE = 0x04;
+  static constexpr const uint8_t SERIAL    = 0x05;
 
   static const char* to_string(uint8_t op) noexcept {
     switch(op) {
@@ -38,6 +38,9 @@ struct UpdateOP {
       case INSERT: {
         return "INSERT";
       }
+      case OVERWRITE: {
+        return "OVERWRITE";
+      }
       case SERIAL: {
         return "SERIAL";
       }
@@ -48,14 +51,14 @@ struct UpdateOP {
   }
 
   SWC_CAN_INLINE
-  UpdateOP(uint8_t a_op=REPLACE, uint24_t a_pos=0) noexcept
+  UpdateOP(uint8_t a_op=REPLACE, uint32_t a_pos=0) noexcept
           : op(a_op), pos(a_pos) {
   }
 
   SWC_CAN_INLINE
   UpdateOP(const uint8_t** bufp, size_t* remainp)
           : op(Serialization::decode_i8(bufp, remainp)),
-            pos(has_pos() ? Serialization::decode_vi24(bufp, remainp) : uint24_t(0)) {
+            pos(has_pos() ? Serialization::decode_vi32(bufp, remainp) : 0) {
   }
 
   SWC_CAN_INLINE
@@ -94,36 +97,34 @@ struct UpdateOP {
 
   SWC_CAN_INLINE
   uint8_t get_op() const noexcept {
-    return has_pos() ? op ^ _HAS_POS : op;
+    return op;
   }
 
   SWC_CAN_INLINE
-  void set_pos(uint24_t a_pos) noexcept {
-    op |= _HAS_POS;
+  void set_pos(uint32_t a_pos) noexcept {
     pos = a_pos;
   }
 
   SWC_CAN_INLINE
-  uint24_t get_pos() const noexcept {
+  uint32_t get_pos() const noexcept {
     return pos;
   }
 
   SWC_CAN_INLINE
   bool has_pos() const noexcept {
-    return op & _HAS_POS;
+    return op == INSERT || op == OVERWRITE;
   }
 
   SWC_CAN_INLINE
   size_t encoded_length() const noexcept {
-    return 1 +
-            (has_pos() ? Serialization::encoded_length_vi24(pos) : 0);
+    return 1 + (has_pos() ? Serialization::encoded_length_vi32(pos) : 0);
   }
 
   SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     Serialization::encode_i8(bufp, op);
     if(has_pos())
-      Serialization::encode_vi24(bufp, pos);
+      Serialization::encode_vi32(bufp, pos);
   }
 
   SWC_CAN_INLINE
@@ -134,7 +135,7 @@ struct UpdateOP {
   }
 
   uint8_t    op;
-  uint24_t   pos;
+  uint32_t   pos;
 
 };
 

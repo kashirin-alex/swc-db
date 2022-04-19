@@ -27,9 +27,13 @@ public enum UpdateOP
   /// <summary>
   /// The operation to Insert
   /// </summary>
-  INSERT = 4,
+  INSERT = 3,
+  /// <summary>
+  /// The operation to Insert
+  /// </summary>
+  OVERWRITE = 4,
   /// <summary>
   /// The operation is by inner Serial fields defintions
   /// </summary>
-  SERIAL = 8,
+  SERIAL = 5,
 }
