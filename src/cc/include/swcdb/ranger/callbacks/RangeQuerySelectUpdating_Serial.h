@@ -57,8 +57,8 @@ class RangeQuerySelectUpdating_Serial final
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
-            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>(
-              opfield->ufield)->apply(opfield->field, field);
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>
+              (opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;
@@ -68,8 +68,8 @@ class RangeQuerySelectUpdating_Serial final
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
-            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>(
-              opfield->ufield)->apply(opfield->field, field);
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_MATH*>
+              (opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;
@@ -79,8 +79,8 @@ class RangeQuerySelectUpdating_Serial final
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
-            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_LIST*>(
-              opfield->ufield)->apply(opfield->field, field);
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_LIST*>
+              (opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;
@@ -100,7 +100,8 @@ class RangeQuerySelectUpdating_Serial final
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
-
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_LIST_INT64*>
+              (opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;
@@ -110,7 +111,8 @@ class RangeQuerySelectUpdating_Serial final
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
-
+            reinterpret_cast<DB::Cell::Serial::Value::FieldUpdate_LIST_BYTES*>
+              (opfield->ufield)->apply(opfield->field, field);
           }
           wfields.add(&field);
           break;

@@ -14,6 +14,8 @@ set(swcdb_sources
   Cells/Interval.cc
   Cells/CellKeyVec.cc
   Cells/CellKey.cc
+  Cells/CellValueSerialField.cc
+  Cells/CellValueSerialFieldUpdate.cc
   Cells/CellValueSerialFields.cc
   Cells/Cell.cc
 

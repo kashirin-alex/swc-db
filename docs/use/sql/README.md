@@ -390,35 +390,36 @@ The following flags, ```token``` and ```key=value```, are available: \
 The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE [OP] (TIMESTAMP, VALUE, ENC)``` options for updating a cells-interval.
   * The supported UPDATE operations(`OP`)  :
 
-    | syntax | name      | supported column-types | description                                                                                       |
-    |  ---   |   ---     |       ---              |     ---                                                                                           |
-    |  `=`   | REPLACE   | PLAIN, SERIAL, COUNTER | replace with the update value (_default as well if other OP not supported by the col-type_)       |
-    |  `+=`  | APPEND    | PLAIN, SERIAL          | appends the update value to the cell's current value                                              |
-    |  `=+`  | PREPEND   | PLAIN, SERIAL          | prepends the update value to the cell's current value                                             |
-    |  `+:#` | INSERT    | PLAIN                  | insert the update value at position in current value (appends if pos above value)                 |
-    |  `=:#` | OVERWRITE | PLAIN                  | overwrite the current value at position with new value (appends if pos above value)               |
-    |  `~=`  | SERIAL    | SERIAL                 | update is done by the inner serial-fields defintions (```UPDATE[OP](TS,[ID:TYPE:[OP]val, ..])```) |
+    | syntax | name              | supported column-types        | description                                                                                                                                  |
+    |  ---   |   ---             |       ---                     |     ---                                                                                                                                      |
+    |  `=`   | REPLACE           | PLAIN, SERIAL, COUNTER        | replace with the update value (_default as well if other OP not supported by the col-type_)                                                  |
+    |  `+=`  | APPEND            | PLAIN, SERIAL                 | appends the update value to the cell's current value                                                                                         |
+    |  `=+`  | PREPEND           | PLAIN, SERIAL                 | prepends the update value to the cell's current value                                                                                        |
+    |  `+:#` | INSERT            | PLAIN                         | insert the update value at position in current value (appends if pos above value)                                                            |
+    |  `=:#` | OVERWRITE         | PLAIN                         | overwrite the current value at position with new value (appends if pos above value)                                                          |
+    |  `~=`  | SERIAL            | SERIAL                        | update is done by the inner serial-fields defintions (```UPDATE[OP](TS,[ID:TYPE:[OP]val, ..])```)                                            |
 
   * The supported UPDATE operations(`OP`) for numberic with MATH-op in the inner SERIAL fields:
 
-    | syntax | name              | supported field-types  | description                                                                               |
-    |  ---   |   ---             |       ---              |     ---                                                                                   |
-    |  `=`   | EQUAL             | INT64, DOUBLE          | set field value to the new value (_default_)                                              |
-    |  `+=`  | PLUS              | INT64, DOUBLE          | plus new value to field's value (negative number allowed)                                 |
-    |  `*=`  | MULTIPLY          | INT64, DOUBLE          | multiply current value by update value                                                    |
-    |  `/=`  | DIVIDE            | INT64, DOUBLE          | divide current value by the new value (ignored at zero)                                   |
-    |  `!`   | CTRL_NO_ADD_FIELD | INT64, DOUBLE          | Applicable infront of other OPs. A control operation, in case a field for update does not exist, to not add a new field  |
+    | syntax | name              | supported field-types         | description                                                                                                                                  |
+    |  ---   |   ---             |       ---                     |     ---                                                                                                                                      |
+    |  `=`   | EQUAL             | INT64, DOUBLE                 | set field value to the new value (_default_)                                                                                                 |
+    |  `+=`  | PLUS              | INT64, DOUBLE                 | plus new value to field's value (negative number allowed)                                                                                    |
+    |  `*=`  | MULTIPLY          | INT64, DOUBLE                 | multiply current value by update value                                                                                                       |
+    |  `/=`  | DIVIDE            | INT64, DOUBLE                 | divide current value by the new value (ignored at zero)                                                                                      |
+    |  `!`   | CTRL_NO_ADD_FIELD | INT64, DOUBLE                 | Applicable infront of other OPs. A control operation, in case a field for update does not exist, to not add a new field                      |
 
   * The supported UPDATE operations(`OP`) for array/list/bytes with LIST-op in the inner SERIAL fields:
 
-    | syntax | name              | supported field-types  | description                                                                               |
-    |  ---   |   ---             |       ---              |     ---                                                                                   |
-    |  `=`   | REPLACE           | BYTES                  | replace with the update value (_default_)                                                 |
-    |  `+=`  | APPEND            | BYTES                  | appends the update value to a field value                                                 |
-    |  `=+`  | PREPEND           | BYTES                  | prepends the update value to a field value                                                |
-    |  `+:#` | INSERT            | BYTES                  | insert the update value at position in a field value (appends if pos above value)         |
-    |  `=:#` | OVERWRITE         | BYTES                  | overwrite a field value at position with new value (appends if pos above value)           |
-    |  `!`   | CTRL_NO_ADD_FIELD | BYTES                  | Applicable infront of other OPs, a control operation, in case a field for update does not exist, to not add a new field  |
+    | syntax | name              | supported field-types         | description                                                                                                                                  |
+    |  ---   |   ---             |       ---                     |     ---                                                                                                                                      |
+    |  `=`   | REPLACE           | BYTES, LIST_BYTES, LIST_INT64 | replace with the update value (_default_)                                                                                                    |
+    |  `+=`  | APPEND            | BYTES, LIST_BYTES, LIST_INT64 | appends the update value to a field value                                                                                                    |
+    |  `=+`  | PREPEND           | BYTES, LIST_BYTES, LIST_INT64 | prepends the update value to a field value                                                                                                   |
+    |  `+:#` | INSERT            | BYTES, LIST_BYTES, LIST_INT64 | insert the update value at position in a field value (appends if pos above value)                                                            |
+    |  `=:#` | OVERWRITE         | BYTES, LIST_BYTES, LIST_INT64 | overwrite a field value at position with new value (appends if pos above value)                                                              |
+    |  `?:`  | BY_INDEX          | LIST_BYTES, LIST_INT64        | the field value is with IDX & OP in items (UPDATE~=(TS,```[ID:LI:?:[ [IDX][OP]val, [IDX][OP]val, ..] ]```))                                  |
+    |  `!`   | CTRL_NO_ADD_FIELD | BYTES, LIST_BYTES, LIST_INT64 | except for BY_INDEX, Applicable infront of other OPs, a control operation, in case a field for update does not exist, to not add a new field |
 
 The cells of the response are the fetched cells before update has been applied. \
 These options let the use of a column in a synchronized manner that open usage possibilities to cases such as:
