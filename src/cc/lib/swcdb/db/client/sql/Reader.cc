@@ -591,9 +591,13 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
             if(w_serial)
               ufield.set_op(&ptr, &remain);
             int64_t v;
-            read_int64_t(v, was_set, ",]");
-            if(err)
-              return;
+            if(w_serial && ufield.is_delete_field()) {
+              v = 0;
+            } else {
+              read_int64_t(v, was_set, ",]");
+              if(err)
+                return;
+            }
             wfields.add(fid, v);
             if(w_serial)
               wfields.add(&ufield);
@@ -605,9 +609,13 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
             if(w_serial)
               ufield.set_op(&ptr, &remain);
             long double v;
-            read_double_t(v, was_set, ",]");
-            if(err)
-              return;
+            if(w_serial && ufield.is_delete_field()) {
+              v = 0;
+            } else {
+              read_double_t(v, was_set, ",]");
+              if(err)
+                return;
+            }
             wfields.add(fid, v);
             if(w_serial)
               wfields.add(&ufield);
@@ -621,9 +629,13 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
               if(err)
                 return error_msg(err, "Bad OP syntax");
             }
-            read(buf, ",]");
-            if(err)
-              return;
+            if(w_serial && ufield.is_delete_field()) {
+              buf.clear();
+            } else {
+              read(buf, ",]");
+              if(err)
+                return;
+            }
             wfields.add(fid, buf);
             if(w_serial)
               wfields.add(&ufield);
@@ -648,34 +660,36 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
               if(err)
                 return error_msg(err, "Bad OP syntax");
             }
-            seek_space();
-            expect_token("[", 1, bracket_square);
-            if(err)
-              return;
             Core::Vector<int64_t> items;
-            do {
+            if(!w_serial || !ufield.is_delete_field()) {
               seek_space();
-              if(!is_char(",]")) {
-                if(w_serial && ufield.is_op_by_idx()) {
-                  seek_space();
-                  uint24_t idx=0;
-                  read_uint24_t(idx, was_set, "!*/+=");
+              expect_token("[", 1, bracket_square);
+              if(err)
+                return;
+              do {
+                seek_space();
+                if(!is_char(",]")) {
+                  if(w_serial && ufield.is_op_by_idx()) {
+                    seek_space();
+                    uint24_t idx=0;
+                    read_uint24_t(idx, was_set, "!*/+=");
+                    if(err)
+                      return;
+                    seek_space();
+                    ufield.add_item(idx).set_op(&ptr, &remain);
+                    //if(err)
+                    //  return error_msg(err, "Bad OP syntax");
+                  }
+                  read_int64_t(items.emplace_back(), was_set, ",]");
                   if(err)
                     return;
                   seek_space();
-                  ufield.add_item(idx).set_op(&ptr, &remain);
-                  //if(err)
-                  //  return error_msg(err, "Bad OP syntax");
                 }
-                read_int64_t(items.emplace_back(), was_set, ",]");
-                if(err)
-                  return;
-                seek_space();
-              }
-            } while(found_char(','));
-            expect_token("]", 1, bracket_square);
-            if(err)
-              return;
+              } while(found_char(','));
+              expect_token("]", 1, bracket_square);
+              if(err)
+                return;
+            }
             wfields.add(fid, items);
             if(w_serial)
               wfields.add(&ufield);
@@ -690,34 +704,36 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
               if(err)
                 return error_msg(err, "Bad OP syntax");
             }
-            seek_space();
-            expect_token("[", 1, bracket_square);
-            if(err)
-              return;
             Core::Vector<std::string> items;
-            do {
+            if(!w_serial || !ufield.is_delete_field()) {
               seek_space();
-              if(!is_char(",]")) {
-                if(w_serial && ufield.is_op_by_idx()) {
-                  seek_space();
-                  uint24_t idx=0;
-                  read_uint24_t(idx, was_set, "!+=");
+              expect_token("[", 1, bracket_square);
+              if(err)
+                return;
+              do {
+                seek_space();
+                if(!is_char(",]")) {
+                  if(w_serial && ufield.is_op_by_idx()) {
+                    seek_space();
+                    uint24_t idx=0;
+                    read_uint24_t(idx, was_set, "!+=");
+                    if(err)
+                      return;
+                    seek_space();
+                    ufield.add_item(idx).set_op(&ptr, &remain, err);
+                    if(err)
+                      return error_msg(err, "Bad OP syntax");
+                  }
+                  read(items.emplace_back(), ",]");
                   if(err)
                     return;
                   seek_space();
-                  ufield.add_item(idx).set_op(&ptr, &remain, err);
-                  if(err)
-                    return error_msg(err, "Bad OP syntax");
                 }
-                read(items.emplace_back(), ",]");
-                if(err)
-                  return;
-                seek_space();
-              }
-            } while(found_char(','));
-            expect_token("]", 1, bracket_square);
-            if(err)
-              return;
+              } while(found_char(','));
+              expect_token("]", 1, bracket_square);
+              if(err)
+                return;
+            }
             wfields.add(fid, items);
             if(w_serial)
               wfields.add(&ufield);

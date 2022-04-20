@@ -13,8 +13,10 @@ namespace Serial { namespace Value {
 
 
 std::ostream& FieldUpdate::print(std::ostream& out) const {
-  if(without_adding_field())
+  if(is_no_add_field())
     out << "CTRL_NO_ADD_FIELD ";
+  if(is_delete_field())
+    out << "CTRL_DELETE_FIELD ";
   return out;
 }
 

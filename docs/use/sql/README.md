@@ -408,6 +408,7 @@ The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE [OP] (TI
     |  `*=`  | MULTIPLY          | INT64, DOUBLE                 | multiply current value by update value                                                                                                       |
     |  `/=`  | DIVIDE            | INT64, DOUBLE                 | divide current value by the new value (ignored at zero)                                                                                      |
     |  `!`   | CTRL_NO_ADD_FIELD | INT64, DOUBLE                 | Applicable infront of other OPs. A control operation, in case a field for update does not exist, to not add a new field                      |
+    |  `DEL` | CTRL_DELETE_FIELD | INT64, DOUBLE                 | delete the given field (without value after OP)                                                                                              |
 
   * The supported UPDATE operations(`OP`) for array/list/bytes with LIST-op in the inner SERIAL fields:
 
@@ -420,6 +421,7 @@ The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE [OP] (TI
     |  `=:#` | OVERWRITE         | BYTES, LIST_BYTES, LIST_INT64 | overwrite a field value at position with new value (appends if pos above value)                                                              |
     |  `?:`  | BY_INDEX          | LIST_BYTES, LIST_INT64        | the field value is with IDX & OP in items (UPDATE~=(TS,```[ID:LI:?:[ [IDX][OP]val, [IDX][OP]val, ..] ]```))                                  |
     |  `!`   | CTRL_NO_ADD_FIELD | BYTES, LIST_BYTES, LIST_INT64 | except for BY_INDEX, Applicable infront of other OPs, a control operation, in case a field for update does not exist, to not add a new field |
+    |  `DEL` | CTRL_DELETE_FIELD | BYTES, LIST_BYTES, LIST_INT64 | delete the given field (without value after OP)                                                                                              |
 
 The cells of the response are the fetched cells before update has been applied. \
 These options let the use of a column in a synchronized manner that open usage possibilities to cases such as:

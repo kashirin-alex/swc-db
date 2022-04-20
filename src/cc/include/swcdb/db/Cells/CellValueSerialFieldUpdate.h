@@ -29,6 +29,7 @@ class FieldUpdate {
   public:
   static constexpr const uint8_t CTRL_DEFAULT       = 0x00;
   static constexpr const uint8_t CTRL_NO_ADD_FIELD  = 0x01;
+  static constexpr const uint8_t CTRL_DELETE_FIELD  = 0x02;
   SWC_CAN_INLINE
   FieldUpdate() noexcept : ctrl(CTRL_DEFAULT) { }
   SWC_CAN_INLINE
@@ -38,15 +39,30 @@ class FieldUpdate {
   virtual ~FieldUpdate() noexcept { }
   SWC_CAN_INLINE
   void set_ctrl(const char** ptr, uint32_t* remainp) noexcept {
-    if(**ptr == '!') {
-      ctrl |= CTRL_NO_ADD_FIELD;
+    if(*remainp && **ptr == '!') {
+      set_no_add_field();
       ++*ptr;
       --*remainp;
+    } else if(*remainp >= 3 && Condition::str_eq(*ptr, "DEL", 3)) {
+      set_delete_field();
+      *ptr += 3;
+      *remainp -=3;
     }
   }
   SWC_CAN_INLINE
-  bool without_adding_field() const noexcept {
+  void set_no_add_field() noexcept {
+    ctrl |= CTRL_NO_ADD_FIELD;
+  }
+  SWC_CAN_INLINE
+  bool is_no_add_field() const noexcept {
     return ctrl & CTRL_NO_ADD_FIELD;
+  }
+  SWC_CAN_INLINE
+  void set_delete_field() noexcept {
+    ctrl |= CTRL_DELETE_FIELD;
+  }
+  bool is_delete_field() const noexcept {
+    return ctrl & CTRL_DELETE_FIELD;
   }
   SWC_CAN_INLINE
   virtual uint24_t encoded_length() const noexcept {
@@ -483,7 +499,7 @@ class FieldUpdate_LIST_ITEMS final
         for( ;iti < ItemsT::cend(); ++iti, ++itu) {
           if(iti->idx < vec.size())
             iti->apply(*itu, vec[iti->idx]);
-          else if(!iti->without_adding_field())
+          else if(!iti->is_no_add_field())
             iti->apply(*itu, vec.emplace_back());
         }
         field.set_from(vec);
