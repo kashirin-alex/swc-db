@@ -277,6 +277,21 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
     }
   }
 
+  template<typename T>
+  uint32_t convert_less_to(T& items, uint32_t pos, uint32_t amt) const {
+    uint32_t count = 0;
+    const uint8_t* ptr = base;
+    for(size_t remain = size; remain; ++count) {
+      int64_t v = Serialization::decode_vi64(&ptr, &remain);
+      if(!amt || count < pos) {
+        items.push_back(v);
+      } else {
+        --amt;
+      }
+    }
+    return count;
+  }
+
   void print(std::ostream& out) const override;
 
 };
@@ -331,6 +346,24 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
     }
   }
 
+  template<typename T>
+  uint32_t convert_less_to(T& items, uint32_t pos, uint32_t amt) const {
+    uint32_t count = 0;
+    const uint8_t* ptr = base;
+    for(size_t remain = size; remain; ++count) {
+      size_t len;
+      auto cptr = reinterpret_cast<
+        const typename T::value_type::value_type*>(
+          Serialization::decode_bytes(&ptr, &remain, &len));
+      if(!amt || count < pos) {
+        items.emplace_back(cptr, len);
+      } else {
+        --amt;
+      }
+    }
+    return count;
+  }
+  
   void print(std::ostream& out) const override;
 
 };

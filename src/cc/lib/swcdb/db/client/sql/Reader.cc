@@ -716,7 +716,7 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
                   if(w_serial && ufield.is_op_by_idx()) {
                     seek_space();
                     uint24_t idx=0;
-                    read_uint24_t(idx, was_set, "!+=");
+                    read_uint24_t(idx, was_set, "!+=-");
                     if(err)
                       return;
                     seek_space();

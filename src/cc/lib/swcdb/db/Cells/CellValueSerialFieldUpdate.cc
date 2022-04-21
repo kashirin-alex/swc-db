@@ -49,6 +49,8 @@ std::ostream& FieldUpdate_LIST::print(std::ostream& out) const {
       return out << "INSERT:" << pos;
     case OP::OVERWRITE:
       return out << "OVERWRITE:" << pos;
+    case OP::ERASE:
+      return out << "ERASE:" << pos;
     case OP::BY_INDEX:
       return out << "BY_INDEX";
     default:

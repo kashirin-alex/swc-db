@@ -419,6 +419,7 @@ The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE [OP] (TI
     |  `=+`  | PREPEND           | BYTES, LIST_BYTES, LIST_INT64 | prepends the update value to a field value                                                                                                   |
     |  `+:#` | INSERT            | BYTES, LIST_BYTES, LIST_INT64 | insert the update value at position in a field value (appends if pos above value)                                                            |
     |  `=:#` | OVERWRITE         | BYTES, LIST_BYTES, LIST_INT64 | overwrite a field value at position with new value (appends if pos above value)                                                              |
+    |  `-:#` | ERASE             | BYTES, LIST_BYTES, LIST_INT64 | erases the position in a field value                                                                                                         |    
     |  `?:`  | BY_INDEX          | LIST_BYTES, LIST_INT64        | the field value is with IDX & OP in items (UPDATE~=(TS,```[ID:LI:?:[ [IDX][OP]val, [IDX][OP]val, ..] ]```))                                  |
     |  `!`   | CTRL_NO_ADD_FIELD | BYTES, LIST_BYTES, LIST_INT64 | except for BY_INDEX, Applicable infront of other OPs, a control operation, in case a field for update does not exist, to not add a new field |
     |  `DEL` | CTRL_DELETE_FIELD | BYTES, LIST_BYTES, LIST_INT64 | delete the given field (without value after OP)                                                                                              |

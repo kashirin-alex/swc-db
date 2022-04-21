@@ -182,9 +182,10 @@ class FieldUpdate_LIST : public FieldUpdate {
     REPLACE         = 0x00,
     APPEND          = 0x01,
     PREPEND         = 0x02,
-    INSERT          = 0x03,
-    OVERWRITE       = 0x04,
-    BY_INDEX        = 0x05
+    INSERT          = 0x04,
+    OVERWRITE       = 0x05,
+    ERASE           = 0x06,
+    BY_INDEX        = 0x07
   };
   SWC_CAN_INLINE
   FieldUpdate_LIST(OP a_op=OP::REPLACE, uint24_t a_pos=0)
@@ -200,7 +201,9 @@ class FieldUpdate_LIST : public FieldUpdate {
   }
   SWC_CAN_INLINE
   bool has_pos() const noexcept {
-    return op == OP::INSERT || op == OP::OVERWRITE;
+    return op == OP::INSERT ||
+           op == OP::OVERWRITE ||
+           op == OP::ERASE;
   }
   SWC_CAN_INLINE
   bool is_op_by_idx() const noexcept {
@@ -224,6 +227,9 @@ class FieldUpdate_LIST : public FieldUpdate {
         len += 2;
       } else if(Condition::str_eq(*ptr, "=:", 2)) {
         op = OP::OVERWRITE;
+        len += 2;
+      } else if(Condition::str_eq(*ptr, "-:", 2)) {
+        op = OP::ERASE;
         len += 2;
       } else if(w_by_idx && Condition::str_eq(*ptr, "?:", 2)) {
         op = OP::BY_INDEX;
@@ -305,6 +311,19 @@ class FieldUpdate_LIST : public FieldUpdate {
         if(at < field.size)
           memcpy(value.base + at, field.base + at, field.size - at);
         field.set(value);
+        break;
+      }
+      case OP::ERASE: {
+        if(pos < field.size) {
+          uint32_t p = pos;
+          uint32_t remain = 0;
+          if(p + infield.size < field.size)
+            remain = field.size - (p + infield.size);
+          StaticBuffer value(p + remain);
+          memcpy(value.base, field.base, p);
+          memcpy(value.base + p, field.base + p + infield.size, remain);
+          field.set(value);
+        }
         break;
       }
       default:
@@ -486,6 +505,17 @@ class FieldUpdate_LIST_ITEMS final
             items.push_back(std::move(*it));
         }
         field.set_from(items);
+        break;
+      }
+      case OP::ERASE: {
+        if(field.size) {
+          if(!data)
+            infield->convert_to(*(data = new DataT()));
+          DataT vec;
+          auto has_count = field.convert_less_to(vec, pos, data->size());
+          if(has_count != vec.size())
+            field.set_from(vec);
+        }
         break;
       }
       case OP::BY_INDEX: {
