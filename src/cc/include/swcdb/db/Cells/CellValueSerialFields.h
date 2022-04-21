@@ -50,6 +50,13 @@ struct FieldsWriter final : DynamicBuffer {
     ufield->encode(&ptr);
   }
 
+  SWC_CAN_INLINE
+  void add(Field* field, FieldUpdate* ufield) {
+    ensure(field->encoded_length() + ufield->encoded_length());
+    field->encode(&ptr);
+    ufield->encode(&ptr);
+  }
+
   void add(uint24_t fid, const int64_t& value);
 
   void add(uint24_t fid, const long double& value);

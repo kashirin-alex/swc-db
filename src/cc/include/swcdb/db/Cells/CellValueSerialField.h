@@ -273,7 +273,7 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
     if(size) {
       const uint8_t* ptr = base;
       for(size_t remain = size; remain;)
-        items.push_back(Serialization::decode_vi64(&ptr, &remain));
+        items.insert(items.cend(), Serialization::decode_vi64(&ptr, &remain));
     }
   }
 
@@ -341,7 +341,7 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
         auto cptr = reinterpret_cast<
           const typename T::value_type::value_type*>(
             Serialization::decode_bytes(&ptr, &remain, &len));
-        items.emplace_back(cptr, len);
+        items.insert(items.cend(), typename T::value_type(cptr, len));
       }
     }
   }
@@ -363,7 +363,7 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
     }
     return count;
   }
-  
+
   void print(std::ostream& out) const override;
 
 };

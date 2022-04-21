@@ -669,14 +669,28 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
               do {
                 seek_space();
                 if(!is_char(",]")) {
-                  if(w_serial && ufield.is_op_by_idx()) {
+                  if(w_serial) {
                     seek_space();
-                    uint24_t idx=0;
-                    read_uint24_t(idx, was_set, "!*/+=");
-                    if(err)
-                      return;
-                    seek_space();
-                    ufield.add_item(idx).set_op(&ptr, &remain);
+                    if(ufield.is_op_by_idx()) {
+                      uint24_t idx=0;
+                      read_uint24_t(idx, was_set, "!*/+=");
+                      if(err)
+                        return;
+                      seek_space();
+                      ufield.add_item(idx).set_op(&ptr, &remain);
+                    } else if(ufield.is_op_by_unique()) {
+                      ufield.add_item(0).set_op(&ptr, &remain, true);
+                    } else if(ufield.is_op_by_cond()) {
+                      Condition::Comp comp;
+                      expect_comparator(comp);
+                      if(comp == Condition::RE || comp == Condition::PF)
+                        return error_msg(
+                          Error::SQL_PARSE_ERROR,
+                          "unsupported 'comparator' RE|PF"
+                        );
+                      seek_space();
+                      ufield.add_item(comp).set_op(&ptr, &remain, true);
+                    }
                     //if(err)
                     //  return error_msg(err, "Bad OP syntax");
                   }
@@ -713,14 +727,30 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
               do {
                 seek_space();
                 if(!is_char(",]")) {
-                  if(w_serial && ufield.is_op_by_idx()) {
+                  if(w_serial) {
                     seek_space();
-                    uint24_t idx=0;
-                    read_uint24_t(idx, was_set, "!+=-");
-                    if(err)
-                      return;
-                    seek_space();
-                    ufield.add_item(idx).set_op(&ptr, &remain, err);
+                    if(ufield.is_op_by_idx()) {
+                      uint24_t idx=0;
+                      read_uint24_t(idx, was_set, "!+=-");
+                      if(err)
+                        return;
+                      seek_space();
+                      ufield.add_item(idx).set_op(&ptr, &remain, err);
+                    } else if(ufield.is_op_by_unique()) {
+                      ufield.add_item(0).set_op(&ptr, &remain, err, true);
+                    } else if(ufield.is_op_by_cond()) {
+                      Condition::Comp comp;
+                      expect_comparator(comp, true);
+                      auto& uitem = ufield.add_item(comp);
+                      seek_space();
+                      uitem.set_op(&ptr, &remain, err, true);
+                      if(uitem.is_value_set() &&
+                         (comp == Condition::RE || comp == Condition::PF))
+                        return error_msg(
+                          Error::SQL_PARSE_ERROR,
+                          "unsupported 'comparator' RE|PF for set-value"
+                        );
+                    }
                     if(err)
                       return error_msg(err, "Bad OP syntax");
                   }

@@ -198,7 +198,7 @@ void Field_LIST_INT64::print(std::ostream& out) const {
   if(size) {
     const uint8_t* ptr = base;
     for(size_t remain = size;;) {
-      out << Serialization::decode_vi64(&ptr, &remain);
+      out << int64_t(Serialization::decode_vi64(&ptr, &remain));
       if(!remain)
         break;
       out << ',';

@@ -8,6 +8,7 @@
 #define swcdb_db_cells_CellValueSerialFieldUpdate_h
 
 #include "swcdb/db/Cells/CellValueSerialField.h"
+#include <set>
 
 
 namespace SWC { namespace DB { namespace Cell {
@@ -30,6 +31,8 @@ class FieldUpdate {
   static constexpr const uint8_t CTRL_DEFAULT       = 0x00;
   static constexpr const uint8_t CTRL_NO_ADD_FIELD  = 0x01;
   static constexpr const uint8_t CTRL_DELETE_FIELD  = 0x02;
+  static constexpr const uint8_t CTRL_VALUE_SET     = 0x04;
+  static constexpr const uint8_t CTRL_VALUE_DEL     = 0x08;
   SWC_CAN_INLINE
   FieldUpdate() noexcept : ctrl(CTRL_DEFAULT) { }
   SWC_CAN_INLINE
@@ -38,16 +41,33 @@ class FieldUpdate {
   }
   virtual ~FieldUpdate() noexcept { }
   SWC_CAN_INLINE
-  void set_ctrl(const char** ptr, uint32_t* remainp) noexcept {
+  bool set_ctrl(const char** ptr, uint32_t* remainp,
+                bool w_value_ctrl) noexcept {
     if(*remainp && **ptr == '!') {
       set_no_add_field();
       ++*ptr;
       --*remainp;
-    } else if(*remainp >= 3 && Condition::str_eq(*ptr, "DEL", 3)) {
+    }
+    if(w_value_ctrl && *remainp) {
+      if(**ptr == 'I') {
+        set_value_set();
+        ++*ptr;
+        --*remainp;
+        return false;
+      } else if(**ptr == 'O') {
+        set_value_del();
+        ++*ptr;
+        --*remainp;
+        return false;
+      }
+    }
+    if(*remainp >= 3 && Condition::str_eq(*ptr, "DEL", 3)) {
       set_delete_field();
       *ptr += 3;
       *remainp -=3;
+      return false;
     }
+    return true;
   }
   SWC_CAN_INLINE
   void set_no_add_field() noexcept {
@@ -61,8 +81,29 @@ class FieldUpdate {
   void set_delete_field() noexcept {
     ctrl |= CTRL_DELETE_FIELD;
   }
+  SWC_CAN_INLINE
   bool is_delete_field() const noexcept {
     return ctrl & CTRL_DELETE_FIELD;
+  }
+  SWC_CAN_INLINE
+  void set_value_set() noexcept {
+    ctrl |= CTRL_VALUE_SET;
+  }
+  SWC_CAN_INLINE
+  bool is_value_set() const noexcept {
+    return ctrl & CTRL_VALUE_SET;
+  }
+  SWC_CAN_INLINE
+  void set_value_del() noexcept {
+    ctrl |= CTRL_VALUE_DEL;
+  }
+  SWC_CAN_INLINE
+  bool is_value_del() const noexcept {
+    return ctrl & CTRL_VALUE_DEL;
+  }
+  SWC_CAN_INLINE
+  bool is_sub_op_required() const noexcept {
+    return !(is_value_del() || is_value_set() || is_delete_field());
   }
   SWC_CAN_INLINE
   virtual uint24_t encoded_length() const noexcept {
@@ -96,11 +137,16 @@ class FieldUpdate_MATH : public FieldUpdate {
   SWC_CAN_INLINE
   FieldUpdate_MATH(const uint8_t** ptrp, size_t* remainp)
                   : FieldUpdate(ptrp, remainp),
-                    op(OP(Serialization::decode_i8(ptrp, remainp))) {
+                    op(is_sub_op_required()
+                        ? OP(Serialization::decode_i8(ptrp, remainp))
+                        : OP::EQUAL
+                      ) {
   }
   SWC_CAN_INLINE
-  void set_op(const char** ptr, uint32_t* remainp) noexcept{
-    set_ctrl(ptr, remainp);
+  void set_op(const char** ptr, uint32_t* remainp,
+              bool w_value_ctrl=false) noexcept {
+    if(!set_ctrl(ptr, remainp, w_value_ctrl))
+      return;
     uint8_t len = 0;
     if(*remainp >= 2) {
       if(Condition::str_eq(*ptr, "+=", 2)) {
@@ -156,19 +202,27 @@ class FieldUpdate_MATH : public FieldUpdate {
   void apply(const Field* infieldp, T& field) const {
     apply(reinterpret_cast<const T*>(infieldp)->value, field.value);
   }
+  template<typename T>
+  SWC_CAN_INLINE
+  bool is_matching(Condition::Comp comp,
+                   const T& p1, const T& p2) const noexcept {
+    return Condition::is_matching(comp, p1, p2);
+  }
   SWC_CAN_INLINE
   uint24_t encoded_length() const noexcept override {
-    return FieldUpdate::encoded_length() + 1;
+    return FieldUpdate::encoded_length() + is_sub_op_required();
   }
   SWC_CAN_INLINE
   void encode(uint8_t** bufp) const override {
     FieldUpdate::encode(bufp);
-    Serialization::encode_i8(bufp, uint8_t(op));
+    if(is_sub_op_required())
+      Serialization::encode_i8(bufp, uint8_t(op));
   }
   SWC_CAN_INLINE
   void decode(const uint8_t** ptrp, size_t* remainp) override {
     FieldUpdate::decode(ptrp, remainp);
-    op = OP(Serialization::decode_i8(ptrp, remainp));
+    if(is_sub_op_required())
+      op = OP(Serialization::decode_i8(ptrp, remainp));
   }
   virtual std::ostream& print(std::ostream& out) const override;
 
@@ -182,10 +236,12 @@ class FieldUpdate_LIST : public FieldUpdate {
     REPLACE         = 0x00,
     APPEND          = 0x01,
     PREPEND         = 0x02,
-    INSERT          = 0x04,
-    OVERWRITE       = 0x05,
-    ERASE           = 0x06,
-    BY_INDEX        = 0x07
+    INSERT          = 0x03,
+    OVERWRITE       = 0x04,
+    ERASE           = 0x05,
+    BY_UNIQUE       = 0x06,
+    BY_COND         = 0x07,
+    BY_INDEX        = 0x08
   };
   SWC_CAN_INLINE
   FieldUpdate_LIST(OP a_op=OP::REPLACE, uint24_t a_pos=0)
@@ -194,7 +250,10 @@ class FieldUpdate_LIST : public FieldUpdate {
   SWC_CAN_INLINE
   FieldUpdate_LIST(const uint8_t** ptrp, size_t* remainp)
                   : FieldUpdate(ptrp, remainp),
-                    op(OP(Serialization::decode_i8(ptrp, remainp))),
+                    op(is_sub_op_required()
+                        ? OP(Serialization::decode_i8(ptrp, remainp))
+                        : OP::REPLACE
+                      ),
                     pos(has_pos()
                           ? Serialization::decode_vi24(ptrp, remainp)
                           : uint24_t(0)) {
@@ -206,14 +265,31 @@ class FieldUpdate_LIST : public FieldUpdate {
            op == OP::ERASE;
   }
   SWC_CAN_INLINE
+  bool is_op_by_unique() const noexcept {
+    return op == OP::BY_UNIQUE;
+  }
+  SWC_CAN_INLINE
+  bool is_op_by_cond() const noexcept {
+    return op == OP::BY_COND;
+  }
+  SWC_CAN_INLINE
   bool is_op_by_idx() const noexcept {
     return op == OP::BY_INDEX;
   }
-
-  template<bool w_by_idx=false>
   SWC_CAN_INLINE
-  void set_op(const char** ptr, uint32_t* remainp, int& err) noexcept {
-    set_ctrl(ptr, remainp);
+  bool is_op_require_data() const noexcept {
+    return is_op_by_idx() || is_op_by_cond();
+  }
+  SWC_CAN_INLINE
+  bool has_item_op() const noexcept {
+    return is_op_by_idx() || is_op_by_unique() || is_op_by_cond();
+  }
+  template<bool is_upper_type=false>
+  SWC_CAN_INLINE
+  void set_op(const char** ptr, uint32_t* remainp, int& err,
+              bool w_value_ctrl=false) noexcept {
+    if(!set_ctrl(ptr, remainp, w_value_ctrl))
+      return;
     uint8_t len = 0;
     if(*remainp >= 2) {
       if(Condition::str_eq(*ptr, "+=", 2)) {
@@ -231,7 +307,13 @@ class FieldUpdate_LIST : public FieldUpdate {
       } else if(Condition::str_eq(*ptr, "-:", 2)) {
         op = OP::ERASE;
         len += 2;
-      } else if(w_by_idx && Condition::str_eq(*ptr, "?:", 2)) {
+      } else if(is_upper_type && Condition::str_eq(*ptr, "U~", 2)) {
+        op = OP::BY_UNIQUE;
+        len += 2;
+      } else if(is_upper_type && Condition::str_eq(*ptr, "C~", 2)) {
+        op = OP::BY_COND;
+        len += 2;
+      } else if(is_upper_type && Condition::str_eq(*ptr, "?:", 2)) {
         op = OP::BY_INDEX;
         len += 2;
       } else if(Condition::str_eq(*ptr, "==", 2)) {
@@ -354,25 +436,41 @@ class FieldUpdate_LIST : public FieldUpdate {
   void apply(const Field* infieldp, T& field) const {
     apply(*reinterpret_cast<const T*>(infieldp), field);
   }
+  template<typename T>
+  SWC_CAN_INLINE
+  bool is_matching(Condition::Comp comp,
+                   const T& p1, const T& p2) const noexcept {
+    return Condition::is_matching_extended(
+      comp,
+      reinterpret_cast<const uint8_t*>(p1.data()),
+      p1.size(),
+      reinterpret_cast<const uint8_t*>(p2.data()),
+      p2.size()
+    );
+  }
   SWC_CAN_INLINE
   virtual uint24_t encoded_length() const noexcept override {
     return FieldUpdate::encoded_length() +
-           1 +
+           is_sub_op_required() +
            (has_pos() ? Serialization::encoded_length_vi24(pos) : 0);
   }
   SWC_CAN_INLINE
   virtual void encode(uint8_t** bufp) const override {
     FieldUpdate::encode(bufp);
-    Serialization::encode_i8(bufp, uint8_t(op));
-    if(has_pos())
-      Serialization::encode_vi24(bufp, pos);
+    if(is_sub_op_required()) {
+      Serialization::encode_i8(bufp, uint8_t(op));
+      if(has_pos())
+        Serialization::encode_vi24(bufp, pos);
+    }
   }
   SWC_CAN_INLINE
   virtual void decode(const uint8_t** ptrp, size_t* remainp) override {
     FieldUpdate::decode(ptrp, remainp);
-    op = OP(Serialization::decode_i8(ptrp, remainp));
-    if(has_pos())
-      pos = Serialization::decode_vi24(ptrp, remainp);;
+    if(is_sub_op_required()) {
+      op = OP(Serialization::decode_i8(ptrp, remainp));
+      if(has_pos())
+        pos = Serialization::decode_vi24(ptrp, remainp);;
+    }
   }
   virtual std::ostream& print(std::ostream& out) const override;
 
@@ -382,39 +480,48 @@ class FieldUpdate_LIST : public FieldUpdate {
 
 
 template<typename UpdateField_T>
-class FieldUpdate_BY_IDX : public UpdateField_T {
+class FieldUpdate_Ext final : public UpdateField_T {
   public:
   SWC_CAN_INLINE
-  FieldUpdate_BY_IDX(uint24_t i) noexcept : UpdateField_T(), idx(i) { }
+  FieldUpdate_Ext(uint32_t i) noexcept : UpdateField_T(), data(i) { }
   SWC_CAN_INLINE
-  FieldUpdate_BY_IDX(const uint8_t** ptrp, size_t* remainp)
-                    : UpdateField_T(ptrp, remainp),
-                      idx(Serialization::decode_vi24(ptrp, remainp)) {
+  FieldUpdate_Ext(bool w_data, const uint8_t** ptrp, size_t* remainp)
+                  : UpdateField_T(ptrp, remainp),
+                    data(w_data
+                          ? Serialization::decode_vi32(ptrp, remainp)
+                          : uint32_t(0)
+                        ) {
   }
-  virtual ~FieldUpdate_BY_IDX() noexcept { }
+  virtual ~FieldUpdate_Ext() noexcept { }
   SWC_CAN_INLINE
-  void set_idx(uint24_t i) noexcept {
-    idx = i;
+  void set_data(uint32_t i) noexcept {
+    data = i;
   }
   SWC_CAN_INLINE
-  uint24_t encoded_length() const noexcept override {
+  uint32_t encoded_length(bool w_data) const noexcept {
     return UpdateField_T::encoded_length() +
-           Serialization::encoded_length_vi24(idx);
+           (w_data
+            ? Serialization::encoded_length_vi32(data)
+            : 0);
   }
   SWC_CAN_INLINE
-  void encode(uint8_t** bufp) const override {
+  void encode(bool w_data, uint8_t** bufp) const {
     UpdateField_T::encode(bufp);
-    Serialization::encode_vi24(bufp, idx);
+    if(w_data)
+      Serialization::encode_vi32(bufp, data);
   }
   SWC_CAN_INLINE
-  void decode(const uint8_t** ptrp, size_t* remainp) override {
+  void decode(bool w_data, const uint8_t** ptrp, size_t* remainp) {
     UpdateField_T::decode(ptrp, remainp);
-    idx = Serialization::decode_vi24(ptrp, remainp);
+    if(w_data)
+      data = Serialization::decode_vi32(ptrp, remainp);
   }
-  virtual std::ostream& print(std::ostream& out) const override {
-    return UpdateField_T::print(out << " idx=" << idx << ' ');
+  std::ostream& print(bool w_data, std::ostream& out) const {
+    if(w_data)
+      out << " data=" << data;
+    return UpdateField_T::print(out << ' ');
   }
-  uint24_t idx;
+  uint32_t data;
 };
 
 
@@ -422,8 +529,8 @@ class FieldUpdate_BY_IDX : public UpdateField_T {
 template<typename UpdateField_T, typename ValueT>
 class FieldUpdate_LIST_ITEMS final
     : public FieldUpdate_LIST,
-      private Core::Vector<FieldUpdate_BY_IDX<UpdateField_T>> {
-  using ItemsT = Core::Vector<FieldUpdate_BY_IDX<UpdateField_T>>;
+      private Core::Vector<FieldUpdate_Ext<UpdateField_T>> {
+  using ItemsT = Core::Vector<FieldUpdate_Ext<UpdateField_T>>;
   using DataT = Core::Vector<ValueT>;
   mutable DataT* data;
   public:
@@ -438,19 +545,20 @@ class FieldUpdate_LIST_ITEMS final
   SWC_CAN_INLINE
   FieldUpdate_LIST_ITEMS(const uint8_t** ptrp, size_t* remainp)
                         : FieldUpdate_LIST(ptrp, remainp), data(nullptr) {
-    if(is_op_by_idx()) {
+    if(has_item_op()) {
       uint24_t len = Serialization::decode_vi24(ptrp, remainp);
       ItemsT::reserve(len);
+      bool w_data = is_op_require_data();
       for(;len; --len)
-        ItemsT::emplace_back(ptrp, remainp);
+        ItemsT::emplace_back(w_data, ptrp, remainp);
     }
   }
   virtual ~FieldUpdate_LIST_ITEMS() noexcept {
     delete data;
   }
   SWC_CAN_INLINE
-  UpdateField_T& add_item(uint24_t idx) {
-    return ItemsT::emplace_back(idx);
+  UpdateField_T& add_item(uint32_t i) {
+    return ItemsT::emplace_back(i);
   }
   template<typename T>
   SWC_CAN_INLINE
@@ -518,6 +626,48 @@ class FieldUpdate_LIST_ITEMS final
         }
         break;
       }
+      case OP::BY_UNIQUE: {
+        if(!data)
+          infield->convert_to(*(data = new DataT()));
+        const DataT& vec_in = *data;
+        std::set<ValueT> vec;
+        field.convert_to(vec);
+        auto itu = vec_in.cbegin();
+        for(auto iti = ItemsT::cbegin() ;iti < ItemsT::cend(); ++iti, ++itu) {
+          if(iti->is_value_set())
+            vec.insert(*itu);
+          else if(iti->is_value_del())
+            vec.erase(*itu);
+        }
+        field.set_from(vec);
+        break;
+      }
+      case OP::BY_COND: {
+        if(!data)
+          infield->convert_to(*(data = new DataT()));
+        const DataT& vec_in = *data;
+        DataT vec;
+        field.convert_to(vec);
+        auto itu = vec_in.cbegin();
+        for(auto iti = ItemsT::cbegin() ;iti < ItemsT::cend(); ++iti, ++itu) {
+          auto it = vec.cbegin();
+          auto comp(Condition::Comp(iti->data));
+          for(; it < vec.cend(); ++it) {
+            if(iti->is_matching(comp, *itu, *it))
+              break;
+          }
+          if(it == vec.cend()) {
+            if(iti->is_value_set())
+              vec.emplace_back(*itu);
+          } else if(iti->is_value_del()) {
+            vec.erase(it);
+            --iti;
+            --itu;
+          }
+        }
+        field.set_from(vec);
+        break;
+      }
       case OP::BY_INDEX: {
         if(!data)
           infield->convert_to(*(data = new DataT()));
@@ -527,8 +677,8 @@ class FieldUpdate_LIST_ITEMS final
         auto iti = ItemsT::cbegin();
         auto itu = vec_in.cbegin();
         for( ;iti < ItemsT::cend(); ++iti, ++itu) {
-          if(iti->idx < vec.size())
-            iti->apply(*itu, vec[iti->idx]);
+          if(iti->data < vec.size())
+            iti->apply(*itu, vec[iti->data]);
           else if(!iti->is_no_add_field())
             iti->apply(*itu, vec.emplace_back());
         }
@@ -542,38 +692,42 @@ class FieldUpdate_LIST_ITEMS final
   SWC_CAN_INLINE
   uint24_t encoded_length() const noexcept override {
     uint24_t len = FieldUpdate_LIST::encoded_length();
-    if(is_op_by_idx()) {
+    if(has_item_op()) {
       len += Serialization::encoded_length_vi24(ItemsT::size());
+      bool w_data = is_op_require_data();
       for(auto& item : *this)
-        len += item.encoded_length();
+        len += item.encoded_length(w_data);
     }
     return len;
   }
   SWC_CAN_INLINE
   void encode(uint8_t** bufp) const override {
     FieldUpdate_LIST::encode(bufp);
-    if(is_op_by_idx()) {
+    if(has_item_op()) {
       Serialization::encode_vi24(bufp, ItemsT::size());
+      bool w_data = is_op_require_data();
       for(auto& item : *this)
-        item.encode(bufp);
+        item.encode(w_data, bufp);
     }
   }
   SWC_CAN_INLINE
   void decode(const uint8_t** ptrp, size_t* remainp) override {
     FieldUpdate_LIST::decode(ptrp, remainp);
-    if(is_op_by_idx()) {
+    if(has_item_op()) {
       uint24_t len = Serialization::decode_vi24(ptrp, remainp);
       ItemsT::reserve(len);
+      bool w_data = is_op_require_data();
       for(;len; --len)
-        ItemsT::emplace_back(ptrp, remainp);
+        ItemsT::emplace_back(w_data, ptrp, remainp);
     }
   }
   virtual std::ostream& print(std::ostream& out) const override {
     FieldUpdate_LIST::print(out);
-    if(is_op_by_idx()) {
+    if(has_item_op()) {
       out << " items=" << ItemsT::size() << '[';
+      bool w_data = is_op_require_data();
       for(auto& item : *this)
-        item.print(out) << ',';
+        item.print(w_data, out) << ',';
       out << ']';
     }
     return out;

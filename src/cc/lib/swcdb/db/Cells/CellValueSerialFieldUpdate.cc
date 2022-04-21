@@ -17,6 +17,10 @@ std::ostream& FieldUpdate::print(std::ostream& out) const {
     out << "CTRL_NO_ADD_FIELD ";
   if(is_delete_field())
     out << "CTRL_DELETE_FIELD ";
+  if(is_value_set())
+    out << "CTRL_VALUE_SET ";
+  if(is_value_del())
+    out << "CTRL_VALUE_DEL ";
   return out;
 }
 
@@ -51,6 +55,10 @@ std::ostream& FieldUpdate_LIST::print(std::ostream& out) const {
       return out << "OVERWRITE:" << pos;
     case OP::ERASE:
       return out << "ERASE:" << pos;
+    case OP::BY_UNIQUE:
+      return out << "BY_UNIQUE";
+    case OP::BY_COND:
+      return out << "BY_COND";
     case OP::BY_INDEX:
       return out << "BY_INDEX";
     default:
