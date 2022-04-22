@@ -498,25 +498,25 @@ class FieldUpdate_Ext final : public UpdateField_T {
     data = i;
   }
   SWC_CAN_INLINE
-  uint32_t encoded_length(bool w_data) const noexcept {
+  uint32_t ext_encoded_length(bool w_data) const noexcept {
     return UpdateField_T::encoded_length() +
            (w_data
             ? Serialization::encoded_length_vi32(data)
             : 0);
   }
   SWC_CAN_INLINE
-  void encode(bool w_data, uint8_t** bufp) const {
+  void ext_encode(bool w_data, uint8_t** bufp) const {
     UpdateField_T::encode(bufp);
     if(w_data)
       Serialization::encode_vi32(bufp, data);
   }
   SWC_CAN_INLINE
-  void decode(bool w_data, const uint8_t** ptrp, size_t* remainp) {
+  void ext_decode(bool w_data, const uint8_t** ptrp, size_t* remainp) {
     UpdateField_T::decode(ptrp, remainp);
     if(w_data)
       data = Serialization::decode_vi32(ptrp, remainp);
   }
-  std::ostream& print(bool w_data, std::ostream& out) const {
+  std::ostream& ext_print(bool w_data, std::ostream& out) const {
     if(w_data)
       out << " data=" << data;
     return UpdateField_T::print(out << ' ');
@@ -696,7 +696,7 @@ class FieldUpdate_LIST_ITEMS final
       len += Serialization::encoded_length_vi24(ItemsT::size());
       bool w_data = is_op_require_data();
       for(auto& item : *this)
-        len += item.encoded_length(w_data);
+        len += item.ext_encoded_length(w_data);
     }
     return len;
   }
@@ -707,7 +707,7 @@ class FieldUpdate_LIST_ITEMS final
       Serialization::encode_vi24(bufp, ItemsT::size());
       bool w_data = is_op_require_data();
       for(auto& item : *this)
-        item.encode(w_data, bufp);
+        item.ext_encode(w_data, bufp);
     }
   }
   SWC_CAN_INLINE
@@ -727,7 +727,7 @@ class FieldUpdate_LIST_ITEMS final
       out << " items=" << ItemsT::size() << '[';
       bool w_data = is_op_require_data();
       for(auto& item : *this)
-        item.print(w_data, out) << ',';
+        item.ext_print(w_data, out) << ',';
       out << ']';
     }
     return out;
