@@ -9,6 +9,7 @@ from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
 from swcdb.thrift.native import Service
 from swcdb.thrift.native.ttypes import *
+from swcdb.thrift.native.constants import *
 
 
 # Not Implemented thrift.transport.TSSLSocket

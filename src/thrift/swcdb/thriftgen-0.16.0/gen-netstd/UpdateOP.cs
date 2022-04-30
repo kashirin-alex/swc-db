@@ -13,27 +13,27 @@
 public enum UpdateOP
 {
   /// <summary>
-  /// The operation to Replace
+  /// The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_)
   /// </summary>
   REPLACE = 0,
   /// <summary>
-  /// The operation to Append
+  /// The OP supported by column-types: PLAIN, SERIAL. Appends the update value to the cell's current
   /// </summary>
   APPEND = 1,
   /// <summary>
-  /// The operation to Prepend
+  /// The OP supported by column-types: PLAIN, SERIAL. Prepends the update value to the cell's current
   /// </summary>
   PREPEND = 2,
   /// <summary>
-  /// The operation to Insert
+  /// The OP supported by column-type PLAIN. Inserts the update value at position in current value (appends if pos above value)
   /// </summary>
   INSERT = 3,
   /// <summary>
-  /// The operation to Insert
+  /// The OP supported by column-type PLAIN. Overwrites the current value at position with new value (appends if pos above value)
   /// </summary>
   OVERWRITE = 4,
   /// <summary>
-  /// The operation is by inner Serial fields defintions
+  /// The OP supported by column-type SERIAL. update is done by the inner serial-fields defintions
   /// </summary>
   SERIAL = 5,
 }

@@ -522,17 +522,17 @@ impl From<&SpecIntervalOptions> for i32 {
 pub struct UpdateOP(pub i32);
 
 impl UpdateOP {
-  /// The operation to Replace
+  /// The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_)
   pub const REPLACE: UpdateOP = UpdateOP(0);
-  /// The operation to Append
+  /// The OP supported by column-types: PLAIN, SERIAL. Appends the update value to the cell's current
   pub const APPEND: UpdateOP = UpdateOP(1);
-  /// The operation to Prepend
+  /// The OP supported by column-types: PLAIN, SERIAL. Prepends the update value to the cell's current
   pub const PREPEND: UpdateOP = UpdateOP(2);
-  /// The operation to Insert
+  /// The OP supported by column-type PLAIN. Inserts the update value at position in current value (appends if pos above value)
   pub const INSERT: UpdateOP = UpdateOP(3);
-  /// The operation to Insert
+  /// The OP supported by column-type PLAIN. Overwrites the current value at position with new value (appends if pos above value)
   pub const OVERWRITE: UpdateOP = UpdateOP(4);
-  /// The operation is by inner Serial fields defintions
+  /// The OP supported by column-type SERIAL. update is done by the inner serial-fields defintions
   pub const SERIAL: UpdateOP = UpdateOP(5);
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::REPLACE,
@@ -643,6 +643,144 @@ impl From<&Flag> for i32 {
   }
 }
 
+/// MATH Operations for Serial Field Update of types INT64 and DOUBLE
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct FUMATHOP(pub i32);
+
+impl FUMATHOP {
+  /// set field value to the new value
+  pub const EQUAL: FUMATHOP = FUMATHOP(0);
+  /// plus new value to field's value (negative number allowed)
+  pub const PLUS: FUMATHOP = FUMATHOP(1);
+  /// multiply current value by update value
+  pub const MULTIPLY: FUMATHOP = FUMATHOP(2);
+  /// divide current value by the new value (ignored at zero)
+  pub const DIVIDE: FUMATHOP = FUMATHOP(3);
+  pub const ENUM_VALUES: &'static [Self] = &[
+    Self::EQUAL,
+    Self::PLUS,
+    Self::MULTIPLY,
+    Self::DIVIDE,
+  ];
+  #[allow(clippy::trivially_copy_pass_by_ref)]
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    o_prot.write_i32(self.0)
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<FUMATHOP> {
+    let enum_value = i_prot.read_i32()?;
+    Ok(FUMATHOP::from(enum_value))
+  }
+}
+
+impl From<i32> for FUMATHOP {
+  fn from(i: i32) -> Self {
+    match i {
+      0 => FUMATHOP::EQUAL,
+      1 => FUMATHOP::PLUS,
+      2 => FUMATHOP::MULTIPLY,
+      3 => FUMATHOP::DIVIDE,
+      _ => FUMATHOP(i)
+    }
+  }
+}
+
+impl From<&i32> for FUMATHOP {
+  fn from(i: &i32) -> Self {
+    FUMATHOP::from(*i)
+  }
+}
+
+impl From<FUMATHOP> for i32 {
+  fn from(e: FUMATHOP) -> i32 {
+    e.0
+  }
+}
+
+impl From<&FUMATHOP> for i32 {
+  fn from(e: &FUMATHOP) -> i32 {
+    e.0
+  }
+}
+
+/// LIST Operations for Serial Field Update of array/list/bytes with LIST-op in the inner SERIAL fields
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct FULISTOP(pub i32);
+
+impl FULISTOP {
+  /// Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Replaces with the update value
+  pub const REPLACE: FULISTOP = FULISTOP(0);
+  /// Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Appends the update value to a field value
+  pub const APPEND: FULISTOP = FULISTOP(1);
+  /// Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Prepends the update value to a field value
+  pub const PREPEND: FULISTOP = FULISTOP(2);
+  /// Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Insert the update value at position in a field value (appends if pos above value)
+  pub const INSERT: FULISTOP = FULISTOP(3);
+  /// Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Overwrites a field value at position with new value (appends if pos above value)
+  pub const OVERWRITE: FULISTOP = FULISTOP(4);
+  /// Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Erases the position in a field value
+  pub const ERASE: FULISTOP = FULISTOP(5);
+  /// Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP
+  pub const BY_UNIQUE: FULISTOP = FULISTOP(6);
+  /// Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator
+  pub const BY_COND: FULISTOP = FULISTOP(7);
+  /// Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items
+  pub const BY_INDEX: FULISTOP = FULISTOP(8);
+  pub const ENUM_VALUES: &'static [Self] = &[
+    Self::REPLACE,
+    Self::APPEND,
+    Self::PREPEND,
+    Self::INSERT,
+    Self::OVERWRITE,
+    Self::ERASE,
+    Self::BY_UNIQUE,
+    Self::BY_COND,
+    Self::BY_INDEX,
+  ];
+  #[allow(clippy::trivially_copy_pass_by_ref)]
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    o_prot.write_i32(self.0)
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<FULISTOP> {
+    let enum_value = i_prot.read_i32()?;
+    Ok(FULISTOP::from(enum_value))
+  }
+}
+
+impl From<i32> for FULISTOP {
+  fn from(i: i32) -> Self {
+    match i {
+      0 => FULISTOP::REPLACE,
+      1 => FULISTOP::APPEND,
+      2 => FULISTOP::PREPEND,
+      3 => FULISTOP::INSERT,
+      4 => FULISTOP::OVERWRITE,
+      5 => FULISTOP::ERASE,
+      6 => FULISTOP::BY_UNIQUE,
+      7 => FULISTOP::BY_COND,
+      8 => FULISTOP::BY_INDEX,
+      _ => FULISTOP(i)
+    }
+  }
+}
+
+impl From<&i32> for FULISTOP {
+  fn from(i: &i32) -> Self {
+    FULISTOP::from(*i)
+  }
+}
+
+impl From<FULISTOP> for i32 {
+  fn from(e: FULISTOP) -> i32 {
+    e.0
+  }
+}
+
+impl From<&FULISTOP> for i32 {
+  fn from(e: &FULISTOP) -> i32 {
+    e.0
+  }
+}
+
 /// The Cells Results types for using with CellsGroup requests
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CellsResult(pub i32);
@@ -721,6 +859,8 @@ pub type UCells = Vec<UCell>;
 pub type UCCells = BTreeMap<i64, UCells>;
 
 pub type CellValuesSerial = Vec<CellValueSerial>;
+
+pub type CellValuesSerialOp = Vec<CellValueSerialOp>;
 
 pub type UCellsSerial = Vec<UCellSerial>;
 
@@ -1992,9 +2132,9 @@ impl Default for SpecValue {
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SpecUpdateOP {
-  /// The Operation
+  /// The Operation of update
   pub op: Option<UpdateOP>,
-  /// The position of INSERT/OVERWRITE operation in UpdateOP
+  /// The position/index of INSERT and OVERWRITE update operations
   pub pos: Option<i32>,
 }
 
@@ -2182,8 +2322,10 @@ impl Default for SpecIntervalUpdate {
 pub struct SpecIntervalUpdateSerial {
   /// The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
   pub ts: Option<i64>,
-  /// The value for the updated cell
+  /// The values of serial-fields for the updated cell
   pub v: Option<Box<CellValuesSerial>>,
+  /// The values of serial-fields for the the SERIAL operation update
+  pub v_op: Option<Box<CellValuesSerialOp>>,
   /// Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
   pub encoder: Option<EncodingType>,
   /// Optionally the operaton of value update
@@ -2191,10 +2333,11 @@ pub struct SpecIntervalUpdateSerial {
 }
 
 impl SpecIntervalUpdateSerial {
-  pub fn new<F1, F2, F3, F4>(ts: F1, v: F2, encoder: F3, update_op: F4) -> SpecIntervalUpdateSerial where F1: Into<Option<i64>>, F2: Into<Option<Box<CellValuesSerial>>>, F3: Into<Option<EncodingType>>, F4: Into<Option<SpecUpdateOP>> {
+  pub fn new<F1, F2, F3, F4, F5>(ts: F1, v: F2, v_op: F3, encoder: F4, update_op: F5) -> SpecIntervalUpdateSerial where F1: Into<Option<i64>>, F2: Into<Option<Box<CellValuesSerial>>>, F3: Into<Option<Box<CellValuesSerialOp>>>, F4: Into<Option<EncodingType>>, F5: Into<Option<SpecUpdateOP>> {
     SpecIntervalUpdateSerial {
       ts: ts.into(),
       v: v.into(),
+      v_op: v_op.into(),
       encoder: encoder.into(),
       update_op: update_op.into(),
     }
@@ -2203,8 +2346,9 @@ impl SpecIntervalUpdateSerial {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<i64> = Some(0);
     let mut f_2: Option<Box<CellValuesSerial>> = Some(Vec::new());
-    let mut f_3: Option<EncodingType> = None;
-    let mut f_4: Option<SpecUpdateOP> = None;
+    let mut f_3: Option<Box<CellValuesSerialOp>> = Some(Vec::new());
+    let mut f_4: Option<EncodingType> = None;
+    let mut f_5: Option<SpecUpdateOP> = None;
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -2227,12 +2371,22 @@ impl SpecIntervalUpdateSerial {
           f_2 = Some(val);
         },
         3 => {
-          let val = EncodingType::read_from_in_protocol(i_prot)?;
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<CellValueSerialOp> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_8 = CellValueSerialOp::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_8);
+          }
+          i_prot.read_list_end()?;
           f_3 = Some(val);
         },
         4 => {
-          let val = SpecUpdateOP::read_from_in_protocol(i_prot)?;
+          let val = EncodingType::read_from_in_protocol(i_prot)?;
           f_4 = Some(val);
+        },
+        5 => {
+          let val = SpecUpdateOP::read_from_in_protocol(i_prot)?;
+          f_5 = Some(val);
         },
         _ => {
           i_prot.skip(field_ident.field_type)?;
@@ -2244,8 +2398,9 @@ impl SpecIntervalUpdateSerial {
     let ret = SpecIntervalUpdateSerial {
       ts: f_1,
       v: f_2,
-      encoder: f_3,
-      update_op: f_4,
+      v_op: f_3,
+      encoder: f_4,
+      update_op: f_5,
     };
     Ok(ret)
   }
@@ -2266,13 +2421,22 @@ impl SpecIntervalUpdateSerial {
       o_prot.write_list_end()?;
       o_prot.write_field_end()?
     }
+    if let Some(ref fld_var) = self.v_op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v_op", TType::List, 3))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
     if let Some(ref fld_var) = self.encoder {
-      o_prot.write_field_begin(&TFieldIdentifier::new("encoder", TType::I32, 3))?;
+      o_prot.write_field_begin(&TFieldIdentifier::new("encoder", TType::I32, 4))?;
       fld_var.write_to_out_protocol(o_prot)?;
       o_prot.write_field_end()?
     }
     if let Some(ref fld_var) = self.update_op {
-      o_prot.write_field_begin(&TFieldIdentifier::new("update_op", TType::Struct, 4))?;
+      o_prot.write_field_begin(&TFieldIdentifier::new("update_op", TType::Struct, 5))?;
       fld_var.write_to_out_protocol(o_prot)?;
       o_prot.write_field_end()?
     }
@@ -2286,6 +2450,7 @@ impl Default for SpecIntervalUpdateSerial {
     SpecIntervalUpdateSerial{
       ts: Some(0),
       v: Some(Vec::new()),
+      v_op: Some(Vec::new()),
       encoder: None,
       update_op: None,
     }
@@ -2363,8 +2528,8 @@ impl SpecInterval {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_8 = i_prot.read_bytes()?;
-            val.push(list_elem_8);
+            let list_elem_9 = i_prot.read_bytes()?;
+            val.push(list_elem_9);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -2373,8 +2538,8 @@ impl SpecInterval {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_9 = i_prot.read_bytes()?;
-            val.push(list_elem_9);
+            let list_elem_10 = i_prot.read_bytes()?;
+            val.push(list_elem_10);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -2383,8 +2548,8 @@ impl SpecInterval {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_10 = i_prot.read_bytes()?;
-            val.push(list_elem_10);
+            let list_elem_11 = i_prot.read_bytes()?;
+            val.push(list_elem_11);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -2397,8 +2562,8 @@ impl SpecInterval {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecKeyInterval> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_11 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_11);
+            let list_elem_12 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_12);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -2407,8 +2572,8 @@ impl SpecInterval {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValue> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_12 = SpecValue::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_12);
+            let list_elem_13 = SpecValue::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_13);
           }
           i_prot.read_list_end()?;
           f_6 = Some(val);
@@ -2595,8 +2760,8 @@ impl SpecColumn {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecInterval> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_13 = SpecInterval::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_13);
+            let list_elem_14 = SpecInterval::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_14);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -2921,8 +3086,8 @@ impl SpecValueSerialKEY {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecFraction> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_14 = SpecFraction::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_14);
+            let list_elem_15 = SpecFraction::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_15);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3010,8 +3175,8 @@ impl SpecValueSerialLI {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerialINT64> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_15 = SpecValueSerialINT64::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_15);
+            let list_elem_16 = SpecValueSerialINT64::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_16);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3099,8 +3264,8 @@ impl SpecValueSerialLB {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerialBYTES> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_16 = SpecValueSerialBYTES::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_16);
+            let list_elem_17 = SpecValueSerialBYTES::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_17);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3341,8 +3506,8 @@ impl SpecValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerialField> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_17 = SpecValueSerialField::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_17);
+            let list_elem_18 = SpecValueSerialField::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_18);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3462,8 +3627,8 @@ impl SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_18 = i_prot.read_bytes()?;
-            val.push(list_elem_18);
+            let list_elem_19 = i_prot.read_bytes()?;
+            val.push(list_elem_19);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -3472,8 +3637,8 @@ impl SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_19 = i_prot.read_bytes()?;
-            val.push(list_elem_19);
+            let list_elem_20 = i_prot.read_bytes()?;
+            val.push(list_elem_20);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3482,8 +3647,8 @@ impl SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_20 = i_prot.read_bytes()?;
-            val.push(list_elem_20);
+            let list_elem_21 = i_prot.read_bytes()?;
+            val.push(list_elem_21);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -3496,8 +3661,8 @@ impl SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecKeyInterval> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_21 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_21);
+            let list_elem_22 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_22);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -3506,8 +3671,8 @@ impl SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_22 = SpecValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_22);
+            let list_elem_23 = SpecValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_23);
           }
           i_prot.read_list_end()?;
           f_6 = Some(val);
@@ -3694,8 +3859,8 @@ impl SpecColumnSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecIntervalSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_23 = SpecIntervalSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_23);
+            let list_elem_24 = SpecIntervalSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_24);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3783,8 +3948,8 @@ impl SpecScan {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecColumn> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_24 = SpecColumn::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_24);
+            let list_elem_25 = SpecColumn::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_25);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -3793,8 +3958,8 @@ impl SpecScan {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecColumnSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_25 = SpecColumnSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_25);
+            let list_elem_26 = SpecColumnSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_26);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3913,8 +4078,8 @@ impl UCell {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_26 = i_prot.read_bytes()?;
-            val.push(list_elem_26);
+            let list_elem_27 = i_prot.read_bytes()?;
+            val.push(list_elem_27);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4078,8 +4243,8 @@ impl CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_27 = i_prot.read_bytes()?;
-            val.push(list_elem_27);
+            let list_elem_28 = i_prot.read_bytes()?;
+            val.push(list_elem_28);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -4088,8 +4253,8 @@ impl CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<i64> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_28 = i_prot.read_i64()?;
-            val.push(list_elem_28);
+            let list_elem_29 = i_prot.read_i64()?;
+            val.push(list_elem_29);
           }
           i_prot.read_list_end()?;
           f_6 = Some(val);
@@ -4098,8 +4263,8 @@ impl CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_29 = i_prot.read_bytes()?;
-            val.push(list_elem_29);
+            let list_elem_30 = i_prot.read_bytes()?;
+            val.push(list_elem_30);
           }
           i_prot.read_list_end()?;
           f_7 = Some(val);
@@ -4192,6 +4357,757 @@ impl Default for CellValueSerial {
 }
 
 //
+// FUINT64
+//
+
+/// Serial INT64 Field Update
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct FUINT64 {
+  pub ctrl: Option<i8>,
+  pub op: Option<FUMATHOP>,
+  pub pos: Option<i32>,
+  pub comp: Option<Comp>,
+  pub v: Option<i64>,
+}
+
+impl FUINT64 {
+  pub fn new<F1, F2, F3, F4, F5>(ctrl: F1, op: F2, pos: F3, comp: F4, v: F5) -> FUINT64 where F1: Into<Option<i8>>, F2: Into<Option<FUMATHOP>>, F3: Into<Option<i32>>, F4: Into<Option<Comp>>, F5: Into<Option<i64>> {
+    FUINT64 {
+      ctrl: ctrl.into(),
+      op: op.into(),
+      pos: pos.into(),
+      comp: comp.into(),
+      v: v.into(),
+    }
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<FUINT64> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i8> = Some(0);
+    let mut f_2: Option<FUMATHOP> = None;
+    let mut f_3: Option<i32> = None;
+    let mut f_4: Option<Comp> = None;
+    let mut f_5: Option<i64> = Some(0);
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i8()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = FUMATHOP::read_from_in_protocol(i_prot)?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i32()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = Comp::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let val = i_prot.read_i64()?;
+          f_5 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = FUINT64 {
+      ctrl: f_1,
+      op: f_2,
+      pos: f_3,
+      comp: f_4,
+      v: f_5,
+    };
+    Ok(ret)
+  }
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("FU_INT64");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.ctrl {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ctrl", TType::I08, 1))?;
+      o_prot.write_i8(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I32, 2))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.pos {
+      o_prot.write_field_begin(&TFieldIdentifier::new("pos", TType::I32, 3))?;
+      o_prot.write_i32(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.comp {
+      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 4))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::I64, 5))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for FUINT64 {
+  fn default() -> Self {
+    FUINT64{
+      ctrl: Some(0),
+      op: None,
+      pos: Some(0),
+      comp: None,
+      v: Some(0),
+    }
+  }
+}
+
+//
+// FUDOUBLE
+//
+
+/// Serial DOUBLE Field Update
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct FUDOUBLE {
+  pub ctrl: Option<i8>,
+  pub op: Option<FUMATHOP>,
+  pub pos: Option<i32>,
+  pub comp: Option<Comp>,
+  pub v: Option<OrderedFloat<f64>>,
+}
+
+impl FUDOUBLE {
+  pub fn new<F1, F2, F3, F4, F5>(ctrl: F1, op: F2, pos: F3, comp: F4, v: F5) -> FUDOUBLE where F1: Into<Option<i8>>, F2: Into<Option<FUMATHOP>>, F3: Into<Option<i32>>, F4: Into<Option<Comp>>, F5: Into<Option<OrderedFloat<f64>>> {
+    FUDOUBLE {
+      ctrl: ctrl.into(),
+      op: op.into(),
+      pos: pos.into(),
+      comp: comp.into(),
+      v: v.into(),
+    }
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<FUDOUBLE> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i8> = Some(0);
+    let mut f_2: Option<FUMATHOP> = None;
+    let mut f_3: Option<i32> = None;
+    let mut f_4: Option<Comp> = None;
+    let mut f_5: Option<OrderedFloat<f64>> = Some(OrderedFloat::from(0.0));
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i8()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = FUMATHOP::read_from_in_protocol(i_prot)?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i32()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = Comp::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let val = OrderedFloat::from(i_prot.read_double()?);
+          f_5 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = FUDOUBLE {
+      ctrl: f_1,
+      op: f_2,
+      pos: f_3,
+      comp: f_4,
+      v: f_5,
+    };
+    Ok(ret)
+  }
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("FU_DOUBLE");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.ctrl {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ctrl", TType::I08, 1))?;
+      o_prot.write_i8(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I32, 2))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.pos {
+      o_prot.write_field_begin(&TFieldIdentifier::new("pos", TType::I32, 3))?;
+      o_prot.write_i32(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.comp {
+      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 4))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::Double, 5))?;
+      o_prot.write_double(fld_var.into())?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for FUDOUBLE {
+  fn default() -> Self {
+    FUDOUBLE{
+      ctrl: Some(0),
+      op: None,
+      pos: Some(0),
+      comp: None,
+      v: Some(OrderedFloat::from(0.0)),
+    }
+  }
+}
+
+//
+// FUBYTES
+//
+
+/// Serial BYTES Field Update
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct FUBYTES {
+  pub ctrl: Option<i8>,
+  pub op: Option<FULISTOP>,
+  pub pos: Option<i32>,
+  pub comp: Option<Comp>,
+  pub v: Option<Vec<u8>>,
+}
+
+impl FUBYTES {
+  pub fn new<F1, F2, F3, F4, F5>(ctrl: F1, op: F2, pos: F3, comp: F4, v: F5) -> FUBYTES where F1: Into<Option<i8>>, F2: Into<Option<FULISTOP>>, F3: Into<Option<i32>>, F4: Into<Option<Comp>>, F5: Into<Option<Vec<u8>>> {
+    FUBYTES {
+      ctrl: ctrl.into(),
+      op: op.into(),
+      pos: pos.into(),
+      comp: comp.into(),
+      v: v.into(),
+    }
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<FUBYTES> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i8> = Some(0);
+    let mut f_2: Option<FULISTOP> = None;
+    let mut f_3: Option<i32> = None;
+    let mut f_4: Option<Comp> = None;
+    let mut f_5: Option<Vec<u8>> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i8()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = FULISTOP::read_from_in_protocol(i_prot)?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i32()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = Comp::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let val = i_prot.read_bytes()?;
+          f_5 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = FUBYTES {
+      ctrl: f_1,
+      op: f_2,
+      pos: f_3,
+      comp: f_4,
+      v: f_5,
+    };
+    Ok(ret)
+  }
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("FU_BYTES");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.ctrl {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ctrl", TType::I08, 1))?;
+      o_prot.write_i8(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I32, 2))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.pos {
+      o_prot.write_field_begin(&TFieldIdentifier::new("pos", TType::I32, 3))?;
+      o_prot.write_i32(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.comp {
+      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 4))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::String, 5))?;
+      o_prot.write_bytes(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for FUBYTES {
+  fn default() -> Self {
+    FUBYTES{
+      ctrl: Some(0),
+      op: None,
+      pos: Some(0),
+      comp: None,
+      v: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// FULI
+//
+
+/// Serial LIST_INT64 Field Update
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct FULI {
+  pub ctrl: Option<i8>,
+  pub op: Option<FULISTOP>,
+  pub pos: Option<i32>,
+  pub v: Option<Vec<FUINT64>>,
+}
+
+impl FULI {
+  pub fn new<F1, F2, F3, F4>(ctrl: F1, op: F2, pos: F3, v: F4) -> FULI where F1: Into<Option<i8>>, F2: Into<Option<FULISTOP>>, F3: Into<Option<i32>>, F4: Into<Option<Vec<FUINT64>>> {
+    FULI {
+      ctrl: ctrl.into(),
+      op: op.into(),
+      pos: pos.into(),
+      v: v.into(),
+    }
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<FULI> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i8> = Some(0);
+    let mut f_2: Option<FULISTOP> = None;
+    let mut f_3: Option<i32> = None;
+    let mut f_4: Option<Vec<FUINT64>> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i8()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = FULISTOP::read_from_in_protocol(i_prot)?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i32()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<FUINT64> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_31 = FUINT64::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_31);
+          }
+          i_prot.read_list_end()?;
+          f_4 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = FULI {
+      ctrl: f_1,
+      op: f_2,
+      pos: f_3,
+      v: f_4,
+    };
+    Ok(ret)
+  }
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("FU_LI");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.ctrl {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ctrl", TType::I08, 1))?;
+      o_prot.write_i8(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I32, 2))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.pos {
+      o_prot.write_field_begin(&TFieldIdentifier::new("pos", TType::I32, 3))?;
+      o_prot.write_i32(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::List, 4))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for FULI {
+  fn default() -> Self {
+    FULI{
+      ctrl: Some(0),
+      op: None,
+      pos: Some(0),
+      v: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// FULB
+//
+
+/// Serial LIST_BYTES Field Update
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct FULB {
+  pub ctrl: Option<i8>,
+  pub op: Option<FULISTOP>,
+  pub pos: Option<i32>,
+  pub v: Option<Vec<FUBYTES>>,
+}
+
+impl FULB {
+  pub fn new<F1, F2, F3, F4>(ctrl: F1, op: F2, pos: F3, v: F4) -> FULB where F1: Into<Option<i8>>, F2: Into<Option<FULISTOP>>, F3: Into<Option<i32>>, F4: Into<Option<Vec<FUBYTES>>> {
+    FULB {
+      ctrl: ctrl.into(),
+      op: op.into(),
+      pos: pos.into(),
+      v: v.into(),
+    }
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<FULB> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i8> = Some(0);
+    let mut f_2: Option<FULISTOP> = None;
+    let mut f_3: Option<i32> = None;
+    let mut f_4: Option<Vec<FUBYTES>> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i8()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = FULISTOP::read_from_in_protocol(i_prot)?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i32()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<FUBYTES> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_32 = FUBYTES::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_32);
+          }
+          i_prot.read_list_end()?;
+          f_4 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = FULB {
+      ctrl: f_1,
+      op: f_2,
+      pos: f_3,
+      v: f_4,
+    };
+    Ok(ret)
+  }
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("FU_LB");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.ctrl {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ctrl", TType::I08, 1))?;
+      o_prot.write_i8(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I32, 2))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.pos {
+      o_prot.write_field_begin(&TFieldIdentifier::new("pos", TType::I32, 3))?;
+      o_prot.write_i32(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::List, 4))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for FULB {
+  fn default() -> Self {
+    FULB{
+      ctrl: Some(0),
+      op: None,
+      pos: Some(0),
+      v: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// CellValueSerialOp
+//
+
+/// The Serial Values Cell field with Update Operation
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct CellValueSerialOp {
+  /// The Field ID, a single ID can have any/all the field types
+  pub field_id: Option<i32>,
+  /// The INT64 type update-field
+  pub v_int64: Option<FUINT64>,
+  /// The DOUBLE type update-field
+  pub v_double: Option<FUDOUBLE>,
+  /// The BYTES type update-field
+  pub v_bytes: Option<FUBYTES>,
+  /// The Cell KEY type update-field
+  pub v_key: Option<Key>,
+  /// The LIST INT64 type update-field
+  pub v_li: Option<FULI>,
+  /// The LIST BYTES type update-field
+  pub v_lb: Option<FULB>,
+}
+
+impl CellValueSerialOp {
+  pub fn new<F1, F2, F3, F4, F5, F6, F7>(field_id: F1, v_int64: F2, v_double: F3, v_bytes: F4, v_key: F5, v_li: F6, v_lb: F7) -> CellValueSerialOp where F1: Into<Option<i32>>, F2: Into<Option<FUINT64>>, F3: Into<Option<FUDOUBLE>>, F4: Into<Option<FUBYTES>>, F5: Into<Option<Key>>, F6: Into<Option<FULI>>, F7: Into<Option<FULB>> {
+    CellValueSerialOp {
+      field_id: field_id.into(),
+      v_int64: v_int64.into(),
+      v_double: v_double.into(),
+      v_bytes: v_bytes.into(),
+      v_key: v_key.into(),
+      v_li: v_li.into(),
+      v_lb: v_lb.into(),
+    }
+  }
+  pub fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<CellValueSerialOp> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i32> = Some(0);
+    let mut f_2: Option<FUINT64> = None;
+    let mut f_3: Option<FUDOUBLE> = None;
+    let mut f_4: Option<FUBYTES> = None;
+    let mut f_5: Option<Key> = Some(Vec::new());
+    let mut f_6: Option<FULI> = None;
+    let mut f_7: Option<FULB> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i32()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = FUINT64::read_from_in_protocol(i_prot)?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = FUDOUBLE::read_from_in_protocol(i_prot)?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = FUBYTES::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_33 = i_prot.read_bytes()?;
+            val.push(list_elem_33);
+          }
+          i_prot.read_list_end()?;
+          f_5 = Some(val);
+        },
+        6 => {
+          let val = FULI::read_from_in_protocol(i_prot)?;
+          f_6 = Some(val);
+        },
+        7 => {
+          let val = FULB::read_from_in_protocol(i_prot)?;
+          f_7 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = CellValueSerialOp {
+      field_id: f_1,
+      v_int64: f_2,
+      v_double: f_3,
+      v_bytes: f_4,
+      v_key: f_5,
+      v_li: f_6,
+      v_lb: f_7,
+    };
+    Ok(ret)
+  }
+  pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("CellValueSerialOp");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.field_id {
+      o_prot.write_field_begin(&TFieldIdentifier::new("field_id", TType::I32, 1))?;
+      o_prot.write_i32(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v_int64 {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v_int64", TType::Struct, 2))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v_double {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v_double", TType::Struct, 3))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v_bytes {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v_bytes", TType::Struct, 4))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v_key {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v_key", TType::List, 5))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v_li {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v_li", TType::Struct, 6))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v_lb {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v_lb", TType::Struct, 7))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for CellValueSerialOp {
+  fn default() -> Self {
+    CellValueSerialOp{
+      field_id: Some(0),
+      v_int64: None,
+      v_double: None,
+      v_bytes: None,
+      v_key: Some(Vec::new()),
+      v_li: None,
+      v_lb: None,
+    }
+  }
+}
+
+//
 // UCellSerial
 //
 
@@ -4246,8 +5162,8 @@ impl UCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_30 = i_prot.read_bytes()?;
-            val.push(list_elem_30);
+            let list_elem_34 = i_prot.read_bytes()?;
+            val.push(list_elem_34);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4264,8 +5180,8 @@ impl UCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_31 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_31);
+            let list_elem_35 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_35);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -4397,8 +5313,8 @@ impl Cell {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_32 = i_prot.read_bytes()?;
-            val.push(list_elem_32);
+            let list_elem_36 = i_prot.read_bytes()?;
+            val.push(list_elem_36);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4516,8 +5432,8 @@ impl CellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_33 = i_prot.read_bytes()?;
-            val.push(list_elem_33);
+            let list_elem_37 = i_prot.read_bytes()?;
+            val.push(list_elem_37);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4530,8 +5446,8 @@ impl CellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_34 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_34);
+            let list_elem_38 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_38);
           }
           i_prot.read_list_end()?;
           f_4 = Some(val);
@@ -4633,8 +5549,8 @@ impl Cells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Cell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_35 = Cell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_35);
+            let list_elem_39 = Cell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_39);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -4643,8 +5559,8 @@ impl Cells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_36 = CellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_36);
+            let list_elem_40 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_40);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4736,8 +5652,8 @@ impl CCell {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_37 = i_prot.read_bytes()?;
-            val.push(list_elem_37);
+            let list_elem_41 = i_prot.read_bytes()?;
+            val.push(list_elem_41);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -4840,8 +5756,8 @@ impl CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_38 = i_prot.read_bytes()?;
-            val.push(list_elem_38);
+            let list_elem_42 = i_prot.read_bytes()?;
+            val.push(list_elem_42);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -4854,8 +5770,8 @@ impl CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_39 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_39);
+            let list_elem_43 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_43);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -4950,8 +5866,8 @@ impl ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_40 = CCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_40);
+            let list_elem_44 = CCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_44);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -4960,8 +5876,8 @@ impl ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_41 = CCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_41);
+            let list_elem_45 = CCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_45);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5155,8 +6071,8 @@ impl KCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_42 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_42);
+            let list_elem_46 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_46);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -5251,8 +6167,8 @@ impl KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_43 = i_prot.read_bytes()?;
-            val.push(list_elem_43);
+            let list_elem_47 = i_prot.read_bytes()?;
+            val.push(list_elem_47);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -5261,8 +6177,8 @@ impl KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_44 = KCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_44);
+            let list_elem_48 = KCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_48);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5271,8 +6187,8 @@ impl KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_45 = KCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_45);
+            let list_elem_49 = KCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_49);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -5477,8 +6393,8 @@ impl FCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_46 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_46);
+            let list_elem_50 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_50);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -5573,9 +6489,9 @@ impl FCells {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<Vec<u8>, Box<FCells>> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_47 = i_prot.read_bytes()?;
-            let map_val_48 = Box::new(FCells::read_from_in_protocol(i_prot)?);
-            val.insert(map_key_47, map_val_48);
+            let map_key_51 = i_prot.read_bytes()?;
+            let map_val_52 = Box::new(FCells::read_from_in_protocol(i_prot)?);
+            val.insert(map_key_51, map_val_52);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -5584,8 +6500,8 @@ impl FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_49 = FCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_49);
+            let list_elem_53 = FCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_53);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5594,8 +6510,8 @@ impl FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_50 = FCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_50);
+            let list_elem_54 = FCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_54);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -5707,9 +6623,9 @@ impl CellsGroup {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_51 = i_prot.read_string()?;
-            let map_val_52 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_51, map_val_52);
+            let map_key_55 = i_prot.read_string()?;
+            let map_val_56 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_55, map_val_56);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -5718,8 +6634,8 @@ impl CellsGroup {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_53 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_53);
+            let list_elem_57 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_57);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -5909,8 +6825,8 @@ impl Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_54 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_54);
+            let list_elem_58 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_58);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -5923,8 +6839,8 @@ impl Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_55 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_55);
+            let list_elem_59 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_59);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -5983,6 +6899,16 @@ impl Default for Result {
     }
   }
 }
+
+pub const FU_CTRL_DEFAULT: i8 = 0;
+
+pub const FU_CTRL_NO_ADD_FIELD: i8 = 1;
+
+pub const FU_CTRL_DELETE_FIELD: i8 = 2;
+
+pub const FU_CTRL_VALUE_SET: i8 = 4;
+
+pub const FU_CTRL_VALUE_DEL: i8 = 8;
 
 //
 // Service service client
@@ -8380,8 +9306,8 @@ impl ServiceSqlListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_56 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_56);
+            let list_elem_60 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_60);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -8516,8 +9442,8 @@ impl ServiceSqlCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_57 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_57);
+            let list_elem_61 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_61);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -8778,9 +9704,9 @@ impl ServiceSqlSelectRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_58 = i_prot.read_string()?;
-            let map_val_59 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_58, map_val_59);
+            let map_key_62 = i_prot.read_string()?;
+            let map_val_63 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_62, map_val_63);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -8916,8 +9842,8 @@ impl ServiceSqlSelectRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_60 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_60);
+            let list_elem_64 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_64);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -9743,15 +10669,15 @@ impl ServiceUpdateArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_61 = i_prot.read_i64()?;
+            let map_key_65 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_62: Vec<UCell> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_66: Vec<UCell> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_63 = UCell::read_from_in_protocol(i_prot)?;
-              map_val_62.push(list_elem_63);
+              let list_elem_67 = UCell::read_from_in_protocol(i_prot)?;
+              map_val_66.push(list_elem_67);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_61, map_val_62);
+            val.insert(map_key_65, map_val_66);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -9882,15 +10808,15 @@ impl ServiceUpdateSerialArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_64 = i_prot.read_i64()?;
+            let map_key_68 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_65: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_69: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_66 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_65.push(list_elem_66);
+              let list_elem_70 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_69.push(list_elem_70);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_64, map_val_65);
+            val.insert(map_key_68, map_val_69);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -10185,8 +11111,8 @@ impl ServiceListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_67 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_67);
+            let list_elem_71 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_71);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10321,8 +11247,8 @@ impl ServiceCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_68 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_68);
+            let list_elem_72 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_72);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10583,9 +11509,9 @@ impl ServiceScanRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_69 = i_prot.read_string()?;
-            let map_val_70 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_69, map_val_70);
+            let map_key_73 = i_prot.read_string()?;
+            let map_val_74 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_73, map_val_74);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -10721,8 +11647,8 @@ impl ServiceScanRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_71 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_71);
+            let list_elem_75 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_75);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);

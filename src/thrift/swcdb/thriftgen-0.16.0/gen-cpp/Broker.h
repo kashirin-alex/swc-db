@@ -119,9 +119,9 @@ class BrokerMultiface : virtual public BrokerIf, public  ::SWC::Thrift::ServiceM
 // only be used when you need to share a connection among multiple threads
 class BrokerConcurrentClient : virtual public BrokerIf, public  ::SWC::Thrift::ServiceConcurrentClient {
  public:
-  BrokerConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot, std::shared_ptr<::apache::thrift::async::TConcurrentClientSyncInfo> sync) :
+  BrokerConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot, std::shared_ptr< ::apache::thrift::async::TConcurrentClientSyncInfo> sync) :
      ::SWC::Thrift::ServiceConcurrentClient(prot, prot, sync) {}
-  BrokerConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> iprot, std::shared_ptr< ::apache::thrift::protocol::TProtocol> oprot, std::shared_ptr<::apache::thrift::async::TConcurrentClientSyncInfo> sync) :     ::SWC::Thrift::ServiceConcurrentClient(iprot, oprot, sync) {}
+  BrokerConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> iprot, std::shared_ptr< ::apache::thrift::protocol::TProtocol> oprot, std::shared_ptr< ::apache::thrift::async::TConcurrentClientSyncInfo> sync) :     ::SWC::Thrift::ServiceConcurrentClient(iprot, oprot, sync) {}
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getInputProtocol() {
     return piprot_;
   }

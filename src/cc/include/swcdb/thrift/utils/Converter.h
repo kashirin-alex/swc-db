@@ -89,11 +89,175 @@ void set(const CellValuesSerial& value,
   }
 }
 
-/*
 void set(const CellValuesSerialOp& value,
          DB::Cell::Serial::Value::FieldsWriter& wfields) {
+  size_t len = 0;
+  for(auto& fields : value) {
+    if(fields.__isset.v_int64) {
+      len += 16;
+    }
+    if(fields.__isset.v_double) {
+      len += 24;
+    }
+    if(fields.__isset.v_bytes) {
+      len += fields.v_bytes.v.size() + 16;
+    }
+    if(!fields.v_key.empty()) {
+      len += fields.v_key.size() + 16;
+    }
+    if(fields.__isset.v_li) {
+      len += fields.v_li.v.size() * 16;
+    }
+    if(fields.__isset.v_lb) {
+      for(auto& u : fields.v_lb.v)
+        len += u.v.size() + 16;
+      len += 16;
+    }
+  }
+  wfields.ensure(len);
+  for(auto& fields : value) {
+    if(fields.__isset.v_int64) {
+      DB::Cell::Serial::Value::FieldUpdate_MATH ufield(
+        DB::Cell::Serial::Value::FieldUpdate_MATH::OP(
+          uint8_t(fields.v_int64.op)
+        ),
+        fields.v_int64.ctrl
+      );
+      wfields.add(fields.field_id, fields.v_int64.v);
+      wfields.add(&ufield);
+    }
+    if(fields.__isset.v_double) {
+      DB::Cell::Serial::Value::FieldUpdate_MATH ufield(
+        DB::Cell::Serial::Value::FieldUpdate_MATH::OP(
+          uint8_t(fields.v_double.op)
+        ),
+        fields.v_double.ctrl
+      );
+      long double v(fields.v_double.v);
+      wfields.add(fields.field_id, v);
+      wfields.add(&ufield);
+    }
+    if(fields.__isset.v_bytes) {
+      DB::Cell::Serial::Value::FieldUpdate_LIST ufield(
+        DB::Cell::Serial::Value::FieldUpdate_LIST::OP(
+          uint8_t(fields.v_bytes.op)
+        ),
+        fields.v_bytes.pos,
+        fields.v_bytes.ctrl
+      );
+      // Fix applicable OP
+      if(ufield.is_op_by_unique())
+        exception(Error::INCOMPATIBLE_OPTIONS, "not supported OP::BY_UNIQUE");
+      if(ufield.is_op_by_cond())
+        exception(Error::INCOMPATIBLE_OPTIONS, "not supported OP::BY_COND");
+      if(ufield.is_op_by_idx())
+        exception(Error::INCOMPATIBLE_OPTIONS, "not supported OP::BY_INDEX");
+
+      wfields.add(
+        fields.field_id,
+        ufield.is_delete_field() ? std::string() : fields.v_bytes.v
+      );
+      wfields.add(&ufield);
+    }
+    if(!fields.v_key.empty()) {
+      DB::Cell::Serial::Value::Field_KEY field;
+      field.fid = fields.field_id;
+      set(fields.v_key, field.key);
+      wfields.add(&field);
+    }
+    if(fields.__isset.v_li) {
+      DB::Cell::Serial::Value::FieldUpdate_LIST_INT64 ufield(
+        DB::Cell::Serial::Value::FieldUpdate_LIST_INT64::OP(
+          uint8_t(fields.v_li.op)
+        ),
+        fields.v_li.pos,
+        fields.v_li.ctrl
+      );
+
+      Core::Vector<int64_t> items;
+      if(!ufield.is_delete_field()) {
+        items.reserve(fields.v_li.v.size());
+        for(auto& u : fields.v_li.v) {
+          if(ufield.is_op_by_idx()) {
+            ufield.add_item(
+              u.pos,
+              DB::Cell::Serial::Value::FieldUpdate_MATH::OP(
+                uint8_t(u.op)
+              ),
+              u.ctrl
+            );
+          } else if(ufield.is_op_by_unique()) {
+            ufield.add_item(
+              0,
+              DB::Cell::Serial::Value::FieldUpdate_MATH::OP(
+                uint8_t(u.op)
+              ),
+              u.ctrl
+            );
+          } else if(ufield.is_op_by_cond()) {
+            ufield.add_item(
+              uint32_t(Condition::Comp(uint8_t(u.comp))),
+              DB::Cell::Serial::Value::FieldUpdate_MATH::OP(
+                uint8_t(u.op)
+              ),
+              u.ctrl
+            );
+          }
+          items.push_back(u.v);
+        }
+      }
+      wfields.add(fields.field_id, items);
+      wfields.add(&ufield);
+    }
+    if(fields.__isset.v_lb) {
+      DB::Cell::Serial::Value::FieldUpdate_LIST_BYTES ufield(
+        DB::Cell::Serial::Value::FieldUpdate_LIST_BYTES::OP(
+          uint8_t(fields.v_lb.op)
+        ),
+        fields.v_lb.pos,
+        fields.v_lb.ctrl
+      );
+
+      Core::Vector<std::string> items;
+      if(!ufield.is_delete_field()) {
+        items.reserve(fields.v_lb.v.size());
+        for(auto& u : fields.v_lb.v) {
+          if(ufield.is_op_by_idx()) {
+            ufield.add_item(
+              u.pos,
+              DB::Cell::Serial::Value::FieldUpdate_LIST_BYTES::OP(
+                uint8_t(u.op)
+              ),
+              0,
+              u.ctrl
+            );
+          } else if(ufield.is_op_by_unique()) {
+            ufield.add_item(
+              0,
+              DB::Cell::Serial::Value::FieldUpdate_LIST_BYTES::OP(
+                uint8_t(u.op)
+              ),
+              0,
+              u.ctrl
+            );
+          } else if(ufield.is_op_by_cond()) {
+            ufield.add_item(
+              uint32_t(Condition::Comp(uint8_t(u.comp))),
+              DB::Cell::Serial::Value::FieldUpdate_LIST_BYTES::OP(
+                uint8_t(u.op)
+              ),
+              0,
+              u.ctrl
+            );
+          }
+          items.push_back(u.v);
+        }
+      }
+      wfields.add(fields.field_id, items);
+      wfields.add(&ufield);
+    }
+  }
 }
-*/
 
 void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
   dbspec.reserve(spec.size());
@@ -323,11 +487,11 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
         set(intval.updating.update_op, update_op);
 
       DB::Cell::Serial::Value::FieldsWriter wfields;
-      //if(update_op.get_op() == DB::Specs::UpdateOP::SERIAL) {
-      //  set(intval.updating.v_op, wfields);
-      //} else {
+      if(update_op.get_op() == DB::Specs::UpdateOP::SERIAL) {
+        set(intval.updating.v_op, wfields);
+      } else {
         set(intval.updating.v, wfields);
-      //}
+      }
       DB::Cells::Cell dbcell;
       intval.updating.__isset.encoder
         ? dbcell.set_value(DB::Types::Encoder(uint8_t(intval.updating.encoder)),

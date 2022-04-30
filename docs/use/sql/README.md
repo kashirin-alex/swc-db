@@ -395,8 +395,8 @@ The Select Query can be applied with ```DELETE_MATCHING``` or ```UPDATE [OP] (TI
     |  `=`   | REPLACE                | PLAIN, SERIAL, COUNTER        | replace with the update value (_default as well if other OP not supported by the col-type_)                                                  |
     |  `+=`  | APPEND                 | PLAIN, SERIAL                 | appends the update value to the cell's current value                                                                                         |
     |  `=+`  | PREPEND                | PLAIN, SERIAL                 | prepends the update value to the cell's current value                                                                                        |
-    |  `+:#` | INSERT                 | PLAIN                         | insert the update value at position in current value (appends if pos above value)                                                            |
-    |  `=:#` | OVERWRITE              | PLAIN                         | overwrite the current value at position with new value (appends if pos above value)                                                          |
+    |  `+:#` | INSERT                 | PLAIN                         | inserts the update value at position in current value (appends if pos above value)                                                            |
+    |  `=:#` | OVERWRITE              | PLAIN                         | overwrites the current value at position with new value (appends if pos above value)                                                          |
     |  `~=`  | SERIAL                 | SERIAL                        | update is done by the inner serial-fields defintions (```UPDATE[OP](TS,[ID:TYPE:[OP]val, ..])```)                                            |
 
   * The supported UPDATE operations(`OP`) for numberic with MATH-op in the inner SERIAL fields:

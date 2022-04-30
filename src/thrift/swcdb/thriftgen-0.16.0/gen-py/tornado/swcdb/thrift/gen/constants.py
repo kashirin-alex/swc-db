@@ -11,3 +11,8 @@ from thrift.protocol.TProtocol import TProtocolException
 from thrift.TRecursive import fix_spec
 
 from .ttypes import *
+FU_CTRL_DEFAULT = 0
+FU_CTRL_NO_ADD_FIELD = 1
+FU_CTRL_DELETE_FIELD = 2
+FU_CTRL_VALUE_SET = 4
+FU_CTRL_VALUE_DEL = 8

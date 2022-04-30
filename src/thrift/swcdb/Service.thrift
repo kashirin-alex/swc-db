@@ -409,26 +409,32 @@ struct SpecValue {
 /** The Cell Value Specifications defined as SpecValue items in a list-container */
 typedef list<SpecValue> SpecValues
 
+
 enum UpdateOP {
-  /** The operation to Replace */
+  /** The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_) */
   REPLACE     = 0x00,
-  /** The operation to Append */
+
+  /** The OP supported by column-types: PLAIN, SERIAL. Appends the update value to the cell's current  */
   APPEND      = 0x01,
-  /** The operation to Prepend */
+
+  /** The OP supported by column-types: PLAIN, SERIAL. Prepends the update value to the cell's current */
   PREPEND     = 0x02,
-  /** The operation to Insert */
+
+  /** The OP supported by column-type PLAIN. Inserts the update value at position in current value (appends if pos above value) */
   INSERT      = 0x03,
-  /** The operation to Insert */
+
+  /** The OP supported by column-type PLAIN. Overwrites the current value at position with new value (appends if pos above value) */
   OVERWRITE   = 0x04,
-  /** The operation is by inner Serial fields defintions */
+
+  /** The OP supported by column-type SERIAL. update is done by the inner serial-fields defintions */
   SERIAL      = 0x05,
 }
 
 struct SpecUpdateOP {
-  /** The Operation */
+  /** The Operation of update */
   1: UpdateOP       op
 
-  /** The position of INSERT/OVERWRITE operation in UpdateOP */
+  /** The position/index of INSERT and OVERWRITE update operations */
   2: optional i32   pos
 }
 
@@ -453,14 +459,17 @@ struct SpecIntervalUpdateSerial {
   /** The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1 */
   1: i64                    ts
 
-  /** The value for the updated cell */
+  /** The values of serial-fields for the updated cell */
   2: CellValuesSerial       v
 
+  /** The values of serial-fields for the the SERIAL operation update */
+  3: CellValuesSerialOp     v_op
+
   /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
-  3: optional EncodingType  encoder
+  4: optional EncodingType  encoder
 
   /** Optionally the operaton of value update */
-  4: optional SpecUpdateOP  update_op
+  5: optional SpecUpdateOP  update_op
 }
 
 
@@ -482,7 +491,7 @@ struct SpecInterval {
   5: SpecKeyIntervals               key_intervals
 
   /** The Cell Value Specifications, cell-value match */
-  6: SpecValues                     values;
+  6: SpecValues                     values
 
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
   7: optional SpecTimestamp         ts_start
@@ -619,7 +628,7 @@ struct SpecIntervalSerial {
   5: SpecKeyIntervals                     key_intervals
 
   /** The Serial Cell Value Specifications, cell-value fields match */
-  6: SpecValuesSerial                     values;
+  6: SpecValuesSerial                     values
 
   /** The Timestamp Start Spec, the start of cells-interval timestamp match */
   7: optional SpecTimestamp               ts_start
@@ -737,6 +746,140 @@ struct CellValueSerial {
 /** The Serial Cell Value Fields defined as CellValueSerial items in a list-container */
 typedef list<CellValueSerial> CellValuesSerial
 //
+
+
+
+/** A control bit of default-state */
+const i8 FU_CTRL_DEFAULT       = 0
+/** A control bit to not add a new field in case a field for update does not exist (Except for BY_INDEX OP) */
+const i8 FU_CTRL_NO_ADD_FIELD  = 1
+/** A control bit to delete the given field */
+const i8 FU_CTRL_DELETE_FIELD  = 2
+/**  A control bit to add/set if not exists (only available with OP used by BY_UNIQUE OR BY_COND in List field-types ) */
+const i8 FU_CTRL_VALUE_SET     = 4
+/**  A control bit delete any that exist (only available with OP used by BY_UNIQUE OR BY_COND in List field-types ) */
+const i8 FU_CTRL_VALUE_DEL     = 8
+
+
+/** MATH Operations for Serial Field Update of types INT64 and DOUBLE */
+enum FU_MATH_OP {
+  /** set field value to the new value */
+  EQUAL           = 0,
+
+  /** plus new value to field's value (negative number allowed) */
+  PLUS            = 1,
+
+  /** multiply current value by update value */
+  MULTIPLY        = 2,
+
+  /** divide current value by the new value (ignored at zero) */
+  DIVIDE          = 3
+}
+
+/** LIST Operations for Serial Field Update of array/list/bytes with LIST-op in the inner SERIAL fields */
+enum FU_LIST_OP {
+  /** Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Replaces with the update value */
+  REPLACE         = 0,
+
+  /** Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Appends the update value to a field value  */
+  APPEND          = 1,
+
+  /** Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Prepends the update value to a field value */
+  PREPEND         = 2,
+
+  /** Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Insert the update value at position in a field value (appends if pos above value) */
+  INSERT          = 3,
+
+  /** Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Overwrites a field value at position with new value (appends if pos above value) */
+  OVERWRITE       = 4,
+
+  /** Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Erases the position in a field value */
+  ERASE           = 5,
+
+  /** Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP */
+  BY_UNIQUE       = 6,
+
+  /** Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator */
+  BY_COND         = 7,
+
+  /** Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items  */
+  BY_INDEX        = 8
+}
+
+
+
+/** Serial INT64 Field Update */
+struct FU_INT64 {
+  1: i8                       ctrl = FU_CTRL_DEFAULT
+  2: FU_MATH_OP               op = FU_MATH_OP.EQUAL
+  3: optional i32             pos
+  4: optional Comp            comp
+  5: i64                      v
+}
+
+/** Serial DOUBLE Field Update */
+struct FU_DOUBLE {
+  1: i8                       ctrl = FU_CTRL_DEFAULT
+  2: FU_MATH_OP               op = FU_MATH_OP.EQUAL
+  3: optional i32             pos
+  4: optional Comp            comp
+  5: double                   v
+}
+
+/** Serial BYTES Field Update */
+struct FU_BYTES {
+  1: i8                       ctrl = FU_CTRL_DEFAULT
+  2: FU_LIST_OP               op = FU_LIST_OP.REPLACE
+  3: optional i32             pos
+  4: optional Comp            comp
+  5: binary                   v
+}
+
+/** Serial LIST_INT64 Field Update */
+struct FU_LI {
+  1: i8                       ctrl = FU_CTRL_DEFAULT
+  2: FU_LIST_OP               op = FU_LIST_OP.REPLACE
+  3: optional i32             pos
+  4: list<FU_INT64>           v
+}
+
+/** Serial LIST_BYTES Field Update */
+struct FU_LB {
+  1: i8                       ctrl = FU_CTRL_DEFAULT
+  2: FU_LIST_OP               op = FU_LIST_OP.REPLACE
+  3: optional i32             pos
+  4: list<FU_BYTES>           v
+}
+
+
+/** The Serial Values Cell field with Update Operation */
+struct CellValueSerialOp {
+  /** The Field ID, a single ID can have any/all the field types */
+  1: i32                      field_id
+
+  /** The INT64 type update-field */
+  2: optional FU_INT64        v_int64
+
+  /** The DOUBLE type update-field */
+  3: optional FU_DOUBLE       v_double
+
+  /** The BYTES type update-field */
+  4: optional FU_BYTES        v_bytes
+
+  /** The Cell KEY type update-field */
+  5: Key                      v_key
+
+  /** The LIST INT64 type update-field */
+  6: optional FU_LI           v_li
+
+  /** The LIST BYTES type update-field */
+  7: optional FU_LB           v_lb
+}
+/** The Serial Cell Value Fields defined as CellValueSerialOp items in a list-container */
+typedef list<CellValueSerialOp> CellValuesSerialOp
+//
+
+
 
 /** The Cell data for using with Update of SERIAL Column Type */
 struct UCellSerial {

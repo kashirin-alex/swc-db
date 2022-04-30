@@ -87,18 +87,18 @@ public partial class SpecValueSerial_LB : TBase
 
   public SpecValueSerial_LB DeepCopy()
   {
-    var tmp169 = new SpecValueSerial_LB();
+    var tmp173 = new SpecValueSerial_LB();
     if(__isset.comp)
     {
-      tmp169.Comp = this.Comp;
+      tmp173.Comp = this.Comp;
     }
-    tmp169.__isset.comp = this.__isset.comp;
+    tmp173.__isset.comp = this.__isset.comp;
     if((V != null) && __isset.v)
     {
-      tmp169.V = this.V.DeepCopy();
+      tmp173.V = this.V.DeepCopy();
     }
-    tmp169.__isset.v = this.__isset.v;
-    return tmp169;
+    tmp173.__isset.v = this.__isset.v;
+    return tmp173;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -132,14 +132,14 @@ public partial class SpecValueSerial_LB : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list170 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<SpecValueSerial_BYTES>(_list170.Count);
-                for(int _i171 = 0; _i171 < _list170.Count; ++_i171)
+                TList _list174 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<SpecValueSerial_BYTES>(_list174.Count);
+                for(int _i175 = 0; _i175 < _list174.Count; ++_i175)
                 {
-                  SpecValueSerial_BYTES _elem172;
-                  _elem172 = new SpecValueSerial_BYTES();
-                  await _elem172.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem172);
+                  SpecValueSerial_BYTES _elem176;
+                  _elem176 = new SpecValueSerial_BYTES();
+                  await _elem176.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem176);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -170,29 +170,29 @@ public partial class SpecValueSerial_LB : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp173 = new TStruct("SpecValueSerial_LB");
-      await oprot.WriteStructBeginAsync(tmp173, cancellationToken);
-      var tmp174 = new TField();
+      var tmp177 = new TStruct("SpecValueSerial_LB");
+      await oprot.WriteStructBeginAsync(tmp177, cancellationToken);
+      var tmp178 = new TField();
       if(__isset.comp)
       {
-        tmp174.Name = "comp";
-        tmp174.Type = TType.I32;
-        tmp174.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp174, cancellationToken);
+        tmp178.Name = "comp";
+        tmp178.Type = TType.I32;
+        tmp178.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp178, cancellationToken);
         await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp174.Name = "v";
-        tmp174.Type = TType.List;
-        tmp174.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp174, cancellationToken);
+        tmp178.Name = "v";
+        tmp178.Type = TType.List;
+        tmp178.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp178, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-          foreach (SpecValueSerial_BYTES _iter175 in V)
+          foreach (SpecValueSerial_BYTES _iter179 in V)
           {
-            await _iter175.WriteAsync(oprot, cancellationToken);
+            await _iter179.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -232,22 +232,22 @@ public partial class SpecValueSerial_LB : TBase
 
   public override string ToString()
   {
-    var tmp176 = new StringBuilder("SpecValueSerial_LB(");
-    int tmp177 = 0;
+    var tmp180 = new StringBuilder("SpecValueSerial_LB(");
+    int tmp181 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("Comp: ");
-      Comp.ToString(tmp176);
+      if(0 < tmp181++) { tmp180.Append(", "); }
+      tmp180.Append("Comp: ");
+      Comp.ToString(tmp180);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp177++) { tmp176.Append(", "); }
-      tmp176.Append("V: ");
-      V.ToString(tmp176);
+      if(0 < tmp181++) { tmp180.Append(", "); }
+      tmp180.Append("V: ");
+      V.ToString(tmp180);
     }
-    tmp176.Append(')');
-    return tmp176.ToString();
+    tmp180.Append(')');
+    return tmp180.ToString();
   }
 }
 

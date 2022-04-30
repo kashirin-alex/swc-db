@@ -540,14 +540,14 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
           case 3: // V
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list336 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<CellValueSerial>(_list336.size);
-                @org.apache.thrift.annotation.Nullable CellValueSerial _elem337;
-                for (int _i338 = 0; _i338 < _list336.size; ++_i338)
+                org.apache.thrift.protocol.TList _list368 = iprot.readListBegin();
+                struct.v = new java.util.ArrayList<CellValueSerial>(_list368.size);
+                @org.apache.thrift.annotation.Nullable CellValueSerial _elem369;
+                for (int _i370 = 0; _i370 < _list368.size; ++_i370)
                 {
-                  _elem337 = new CellValueSerial();
-                  _elem337.read(iprot);
-                  struct.v.add(_elem337);
+                  _elem369 = new CellValueSerial();
+                  _elem369.read(iprot);
+                  struct.v.add(_elem369);
                 }
                 iprot.readListEnd();
               }
@@ -583,9 +583,9 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
         oprot.writeFieldBegin(V_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (CellValueSerial _iter339 : struct.v)
+          for (CellValueSerial _iter371 : struct.v)
           {
-            _iter339.write(oprot);
+            _iter371.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -628,9 +628,9 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
       if (struct.isSetV()) {
         {
           oprot.writeI32(struct.v.size());
-          for (CellValueSerial _iter340 : struct.v)
+          for (CellValueSerial _iter372 : struct.v)
           {
-            _iter340.write(oprot);
+            _iter372.write(oprot);
           }
         }
       }
@@ -650,14 +650,14 @@ public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSe
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list341 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<CellValueSerial>(_list341.size);
-          @org.apache.thrift.annotation.Nullable CellValueSerial _elem342;
-          for (int _i343 = 0; _i343 < _list341.size; ++_i343)
+          org.apache.thrift.protocol.TList _list373 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.v = new java.util.ArrayList<CellValueSerial>(_list373.size);
+          @org.apache.thrift.annotation.Nullable CellValueSerial _elem374;
+          for (int _i375 = 0; _i375 < _list373.size; ++_i375)
           {
-            _elem342 = new CellValueSerial();
-            _elem342.read(iprot);
-            struct.v.add(_elem342);
+            _elem374 = new CellValueSerial();
+            _elem374.read(iprot);
+            struct.v.add(_elem374);
           }
         }
         struct.setVIsSet(true);

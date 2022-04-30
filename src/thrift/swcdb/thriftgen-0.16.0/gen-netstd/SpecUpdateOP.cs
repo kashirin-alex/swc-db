@@ -37,7 +37,7 @@ public partial class SpecUpdateOP : TBase
   private int _pos;
 
   /// <summary>
-  /// The Operation
+  /// The Operation of update
   /// 
   /// <seealso cref="global::.UpdateOP"/>
   /// </summary>
@@ -55,7 +55,7 @@ public partial class SpecUpdateOP : TBase
   }
 
   /// <summary>
-  /// The position of INSERT/OVERWRITE operation in UpdateOP
+  /// The position/index of INSERT and OVERWRITE update operations
   /// </summary>
   public int Pos
   {

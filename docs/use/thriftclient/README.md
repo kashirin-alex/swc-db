@@ -42,29 +42,33 @@ _**Some of use cases can be found at**_:
 
 | Module | Services & Functions | Data types | Constants |
 | --- | --- | --- | --- |
-|Service|[Service](#service-service)|[KeySeq](#enumeration-keyseq)||
-||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)||
-||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)||
-||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)||
-||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)||
+|Service|[Service](#service-service)|[KeySeq](#enumeration-keyseq)|[FU_CTRL_DEFAULT](#constant-fu_ctrl_default)|
+||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
+||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
+||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
+||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
 ||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[SpecFlagsOpt](#enumeration-specflagsopt)||
 ||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[SpecIntervalOptions](#enumeration-specintervaloptions)||
-||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[Flag](#enumeration-flag)||
-||	[ &bull; sql_query](#function-servicesql_query)|[CellsResult](#enumeration-cellsresult)||
-||	[ &bull; sql_update](#function-servicesql_update)|[Schemas](#typedef-schemas)||
-||	[ &bull; exec_sql](#function-serviceexec_sql)|[Key](#typedef-key)||
-||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecKey](#typedef-speckey)||
-||	[ &bull; updater_close](#function-serviceupdater_close)|[SpecKeyIntervals](#typedef-speckeyintervals)||
-||	[ &bull; update](#function-serviceupdate)|[SpecValues](#typedef-specvalues)||
-||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
-||	[ &bull; mng_column](#function-servicemng_column)|[SpecValuesSerial](#typedef-specvaluesserial)||
-||	[ &bull; list_columns](#function-servicelist_columns)|[UCells](#typedef-ucells)||
-||	[ &bull; compact_columns](#function-servicecompact_columns)|[UCCells](#typedef-uccells)||
-||	[ &bull; scan](#function-servicescan)|[CellValuesSerial](#typedef-cellvaluesserial)||
-||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[UCellsSerial](#typedef-ucellsserial)||
-||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[UCCellsSerial](#typedef-uccellsserial)||
-||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[CCells](#typedef-ccells)||
-||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[KCells](#typedef-kcells)||
+||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[UpdateOP](#enumeration-updateop)||
+||	[ &bull; sql_query](#function-servicesql_query)|[Flag](#enumeration-flag)||
+||	[ &bull; sql_update](#function-servicesql_update)|[FU_MATH_OP](#enumeration-fu_math_op)||
+||	[ &bull; exec_sql](#function-serviceexec_sql)|[FU_LIST_OP](#enumeration-fu_list_op)||
+||	[ &bull; updater_create](#function-serviceupdater_create)|[CellsResult](#enumeration-cellsresult)||
+||	[ &bull; updater_close](#function-serviceupdater_close)|[Schemas](#typedef-schemas)||
+||	[ &bull; update](#function-serviceupdate)|[Key](#typedef-key)||
+||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecKey](#typedef-speckey)||
+||	[ &bull; mng_column](#function-servicemng_column)|[SpecKeyIntervals](#typedef-speckeyintervals)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[SpecValues](#typedef-specvalues)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
+||	[ &bull; scan](#function-servicescan)|[SpecValuesSerial](#typedef-specvaluesserial)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[UCells](#typedef-ucells)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[UCCells](#typedef-uccells)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[CellValuesSerial](#typedef-cellvaluesserial)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[CellValuesSerialOp](#typedef-cellvaluesserialop)||
+|||[UCellsSerial](#typedef-ucellsserial)||
+|||[UCCellsSerial](#typedef-uccellsserial)||
+|||[CCells](#typedef-ccells)||
+|||[KCells](#typedef-kcells)||
 |||[CompactResults](#typedef-compactresults)||
 |||[Exception](#exception-exception)||
 |||[Schema](#struct-schema)||
@@ -77,6 +81,7 @@ _**Some of use cases can be found at**_:
 |||[SpecTimestamp](#struct-spectimestamp)||
 |||[SpecKeyInterval](#struct-speckeyinterval)||
 |||[SpecValue](#struct-specvalue)||
+|||[SpecUpdateOP](#struct-specupdateop)||
 |||[SpecIntervalUpdate](#struct-specintervalupdate)||
 |||[SpecIntervalUpdateSerial](#struct-specintervalupdateserial)||
 |||[SpecInterval](#struct-specinterval)||
@@ -94,6 +99,12 @@ _**Some of use cases can be found at**_:
 |||[SpecScan](#struct-specscan)||
 |||[UCell](#struct-ucell)||
 |||[CellValueSerial](#struct-cellvalueserial)||
+|||[FU_INT64](#struct-fu_int64)||
+|||[FU_DOUBLE](#struct-fu_double)||
+|||[FU_BYTES](#struct-fu_bytes)||
+|||[FU_LI](#struct-fu_li)||
+|||[FU_LB](#struct-fu_lb)||
+|||[CellValueSerialOp](#struct-cellvalueserialop)||
 |||[UCellSerial](#struct-ucellserial)||
 |||[Cell](#struct-cell)||
 |||[CellSerial](#struct-cellserial)||
@@ -111,6 +122,17 @@ _**Some of use cases can be found at**_:
 |||[CompactResult](#struct-compactresult)||
 |||[Result](#struct-result)||
 
+
+***
+## Constants
+
+|Constant|Type|Value||
+|---|---|---|---|
+| ```FU_CTRL_DEFAULT``` | ```i8```| ``````0`````` |A control bit of default-state |
+| ```FU_CTRL_NO_ADD_FIELD``` | ```i8```| ``````1`````` |A control bit to not add a new field in case a field for update does not exist (Except for BY_INDEX OP) |
+| ```FU_CTRL_DELETE_FIELD``` | ```i8```| ``````2`````` |A control bit to delete the given field |
+| ```FU_CTRL_VALUE_SET``` | ```i8```| ``````4`````` |A control bit to add/set if not exists (only available with OP used by BY_UNIQUE OR BY_COND in List field-types ) |
+| ```FU_CTRL_VALUE_DEL``` | ```i8```| ``````8`````` |A control bit delete any that exist (only available with OP used by BY_UNIQUE OR BY_COND in List field-types ) |
 
 ***
 ## Enumerations
@@ -205,6 +227,18 @@ The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'opt
 |```UPDATING```|```4```|Update Bit Option |
 |```DELETING```|```8```|Delete Bit Option |
 
+### Enumeration: UpdateOP
+
+
+|Name|Value|Description|
+|---|---|---|
+|```REPLACE```|```0```|The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_) |
+|```APPEND```|```1```|The OP supported by column-types: PLAIN, SERIAL. Appends the update value to the cell's current |
+|```PREPEND```|```2```|The OP supported by column-types: PLAIN, SERIAL. Prepends the update value to the cell's current |
+|```INSERT```|```3```|The OP supported by column-type PLAIN. Inserts the update value at position in current value (appends if pos above value) |
+|```OVERWRITE```|```4```|The OP supported by column-type PLAIN. Overwrites the current value at position with new value (appends if pos above value) |
+|```SERIAL```|```5```|The OP supported by column-type SERIAL. update is done by the inner serial-fields defintions |
+
 ### Enumeration: Flag
 The Cell Flag 
 
@@ -214,6 +248,31 @@ The Cell Flag
 |```INSERT```|```1```|The Cell is an insert |
 |```DELETE_LE```|```2```|The Cell is a delete versions lower-equal |
 |```DELETE_EQ```|```3```|The Cell is a  delete version equal |
+
+### Enumeration: FU_MATH_OP
+MATH Operations for Serial Field Update of types INT64 and DOUBLE 
+
+|Name|Value|Description|
+|---|---|---|
+|```EQUAL```|```0```|set field value to the new value |
+|```PLUS```|```1```|plus new value to field's value (negative number allowed) |
+|```MULTIPLY```|```2```|multiply current value by update value |
+|```DIVIDE```|```3```|divide current value by the new value (ignored at zero) |
+
+### Enumeration: FU_LIST_OP
+LIST Operations for Serial Field Update of array/list/bytes with LIST-op in the inner SERIAL fields 
+
+|Name|Value|Description|
+|---|---|---|
+|```REPLACE```|```0```|Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Replaces with the update value |
+|```APPEND```|```1```|Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Appends the update value to a field value |
+|```PREPEND```|```2```|Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Prepends the update value to a field value |
+|```INSERT```|```3```|Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Insert the update value at position in a field value (appends if pos above value) |
+|```OVERWRITE```|```4```|Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Overwrites a field value at position with new value (appends if pos above value) |
+|```ERASE```|```5```|Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Erases the position in a field value |
+|```BY_UNIQUE```|```6```|Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP |
+|```BY_COND```|```7```|Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator |
+|```BY_INDEX```|```8```|Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items |
 
 ### Enumeration: CellsResult
 The Cells Results types for using with CellsGroup requests 
@@ -286,6 +345,12 @@ _Base type_: **map&lt;```i64```, [```UCells```](#typedef-ucells)&gt;**
 The Serial Cell Value Fields defined as CellValueSerial items in a list-container 
 
 _Base type_: **list&lt;[```CellValueSerial```](#struct-cellvalueserial)&gt;**
+
+
+### Typedef: CellValuesSerialOp
+The Serial Cell Value Fields defined as CellValueSerialOp items in a list-container 
+
+_Base type_: **list&lt;[```CellValueSerialOp```](#struct-cellvalueserialop)&gt;**
 
 
 ### Typedef: UCellsSerial
@@ -429,6 +494,14 @@ The Value Specifications, option to use with Extended Logical Comparators
 |1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
 |2|v|```binary```|The binary(bytes) to match against the Cell value |default||
 
+### Struct: SpecUpdateOP
+
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|op|[```UpdateOP```](#enumeration-updateop)|The Operation of update |default||
+|2|pos|```i32```|The position/index of INSERT and OVERWRITE update operations |optional||
+
 ### Struct: SpecIntervalUpdate
 The Value specs for an Updating Interval of 'updating' in SpecInterval 
 
@@ -437,6 +510,7 @@ The Value specs for an Updating Interval of 'updating' in SpecInterval
 |1|v|```binary```|The value for the updated cell |default||
 |2|ts|```i64```|The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set) |optional||
 |3|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
+|4|update_op|[```SpecUpdateOP```](#struct-specupdateop)|Optionally the operaton of value update |optional||
 
 ### Struct: SpecIntervalUpdateSerial
 The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial 
@@ -444,8 +518,10 @@ The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
 |1|ts|```i64```|The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1 |default||
-|2|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The value for the updated cell |default||
-|3|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
+|2|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The values of serial-fields for the updated cell |default||
+|3|v_op|[```CellValuesSerialOp```](#typedef-cellvaluesserialop)|The values of serial-fields for the the SERIAL operation update |default||
+|4|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
+|5|update_op|[```SpecUpdateOP```](#struct-specupdateop)|Optionally the operaton of value update |optional||
 
 ### Struct: SpecInterval
 The Cells Interval Specifications with interval-scope Flags 
@@ -599,6 +675,72 @@ The Serial Value Cell field
 |5|v_key|[```Key```](#typedef-key)|The Cell KEY type field |default||
 |6|v_li|list&lt;```i64```&gt;|The LIST INT64 type field |default||
 |7|v_lb|list&lt;```binary```&gt;|The LIST BYTES type field |default||
+
+### Struct: FU_INT64
+Serial INT64 Field Update 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|ctrl|```i8```||default|``````0``````|
+|2|op|[```FU_MATH_OP```](#enumeration-fu_math_op)||default|```[```FU_MATH_OP.EQUAL```](#constant-fu_math_opequal)```|
+|3|pos|```i32```||optional||
+|4|comp|[```Comp```](#enumeration-comp)||optional||
+|5|v|```i64```||default||
+
+### Struct: FU_DOUBLE
+Serial DOUBLE Field Update 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|ctrl|```i8```||default|``````0``````|
+|2|op|[```FU_MATH_OP```](#enumeration-fu_math_op)||default|```[```FU_MATH_OP.EQUAL```](#constant-fu_math_opequal)```|
+|3|pos|```i32```||optional||
+|4|comp|[```Comp```](#enumeration-comp)||optional||
+|5|v|```double```||default||
+
+### Struct: FU_BYTES
+Serial BYTES Field Update 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|ctrl|```i8```||default|``````0``````|
+|2|op|[```FU_LIST_OP```](#enumeration-fu_list_op)||default|```[```FU_LIST_OP.REPLACE```](#constant-fu_list_opreplace)```|
+|3|pos|```i32```||optional||
+|4|comp|[```Comp```](#enumeration-comp)||optional||
+|5|v|```binary```||default||
+
+### Struct: FU_LI
+Serial LIST_INT64 Field Update 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|ctrl|```i8```||default|``````0``````|
+|2|op|[```FU_LIST_OP```](#enumeration-fu_list_op)||default|```[```FU_LIST_OP.REPLACE```](#constant-fu_list_opreplace)```|
+|3|pos|```i32```||optional||
+|4|v|list&lt;[```FU_INT64```](#struct-fu_int64)&gt;||default||
+
+### Struct: FU_LB
+Serial LIST_BYTES Field Update 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|ctrl|```i8```||default|``````0``````|
+|2|op|[```FU_LIST_OP```](#enumeration-fu_list_op)||default|```[```FU_LIST_OP.REPLACE```](#constant-fu_list_opreplace)```|
+|3|pos|```i32```||optional||
+|4|v|list&lt;[```FU_BYTES```](#struct-fu_bytes)&gt;||default||
+
+### Struct: CellValueSerialOp
+The Serial Values Cell field with Update Operation 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|field_id|```i32```|The Field ID, a single ID can have any/all the field types |default||
+|2|v_int64|[```FU_INT64```](#struct-fu_int64)|The INT64 type update-field |optional||
+|3|v_double|[```FU_DOUBLE```](#struct-fu_double)|The DOUBLE type update-field |optional||
+|4|v_bytes|[```FU_BYTES```](#struct-fu_bytes)|The BYTES type update-field |optional||
+|5|v_key|[```Key```](#typedef-key)|The Cell KEY type update-field |default||
+|6|v_li|[```FU_LI```](#struct-fu_li)|The LIST INT64 type update-field |optional||
+|7|v_lb|[```FU_LB```](#struct-fu_lb)|The LIST BYTES type update-field |optional||
 
 ### Struct: UCellSerial
 The Cell data for using with Update of SERIAL Column Type 

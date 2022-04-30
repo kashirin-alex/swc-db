@@ -17,26 +17,26 @@ public class SpecUpdateOP implements org.apache.thrift.TBase<SpecUpdateOP, SpecU
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecUpdateOPTupleSchemeFactory();
 
   /**
-   * The Operation
+   * The Operation of update
    * 
    * @see UpdateOP
    */
   public @org.apache.thrift.annotation.Nullable UpdateOP op; // required
   /**
-   * The position of INSERT/OVERWRITE operation in UpdateOP
+   * The position/index of INSERT and OVERWRITE update operations
    */
   public int pos; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * The Operation
+     * The Operation of update
      * 
      * @see UpdateOP
      */
     OP((short)1, "op"),
     /**
-     * The position of INSERT/OVERWRITE operation in UpdateOP
+     * The position/index of INSERT and OVERWRITE update operations
      */
     POS((short)2, "pos");
 
@@ -146,7 +146,7 @@ public class SpecUpdateOP implements org.apache.thrift.TBase<SpecUpdateOP, SpecU
   }
 
   /**
-   * The Operation
+   * The Operation of update
    * 
    * @see UpdateOP
    */
@@ -156,7 +156,7 @@ public class SpecUpdateOP implements org.apache.thrift.TBase<SpecUpdateOP, SpecU
   }
 
   /**
-   * The Operation
+   * The Operation of update
    * 
    * @see UpdateOP
    */
@@ -181,14 +181,14 @@ public class SpecUpdateOP implements org.apache.thrift.TBase<SpecUpdateOP, SpecU
   }
 
   /**
-   * The position of INSERT/OVERWRITE operation in UpdateOP
+   * The position/index of INSERT and OVERWRITE update operations
    */
   public int getPos() {
     return this.pos;
   }
 
   /**
-   * The position of INSERT/OVERWRITE operation in UpdateOP
+   * The position/index of INSERT and OVERWRITE update operations
    */
   public SpecUpdateOP setPos(int pos) {
     this.pos = pos;

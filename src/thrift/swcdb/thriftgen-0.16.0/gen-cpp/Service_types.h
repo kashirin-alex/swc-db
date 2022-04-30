@@ -314,27 +314,27 @@ std::string to_string(const SpecIntervalOptions::type& val);
 struct UpdateOP {
   enum type {
     /**
-     * The operation to Replace
+     * The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_)
      */
     REPLACE = 0,
     /**
-     * The operation to Append
+     * The OP supported by column-types: PLAIN, SERIAL. Appends the update value to the cell's current
      */
     APPEND = 1,
     /**
-     * The operation to Prepend
+     * The OP supported by column-types: PLAIN, SERIAL. Prepends the update value to the cell's current
      */
     PREPEND = 2,
     /**
-     * The operation to Insert
+     * The OP supported by column-type PLAIN. Inserts the update value at position in current value (appends if pos above value)
      */
     INSERT = 3,
     /**
-     * The operation to Insert
+     * The OP supported by column-type PLAIN. Overwrites the current value at position with new value (appends if pos above value)
      */
     OVERWRITE = 4,
     /**
-     * The operation is by inner Serial fields defintions
+     * The OP supported by column-type SERIAL. update is done by the inner serial-fields defintions
      */
     SERIAL = 5
   };
@@ -375,6 +375,86 @@ extern const std::map<int, const char*> _Flag_VALUES_TO_NAMES;
 std::ostream& operator<<(std::ostream& out, const Flag::type& val);
 
 std::string to_string(const Flag::type& val);
+
+/**
+ * MATH Operations for Serial Field Update of types INT64 and DOUBLE
+ */
+struct FU_MATH_OP {
+  enum type {
+    /**
+     * set field value to the new value
+     */
+    EQUAL = 0,
+    /**
+     * plus new value to field's value (negative number allowed)
+     */
+    PLUS = 1,
+    /**
+     * multiply current value by update value
+     */
+    MULTIPLY = 2,
+    /**
+     * divide current value by the new value (ignored at zero)
+     */
+    DIVIDE = 3
+  };
+};
+
+extern const std::map<int, const char*> _FU_MATH_OP_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const FU_MATH_OP::type& val);
+
+std::string to_string(const FU_MATH_OP::type& val);
+
+/**
+ * LIST Operations for Serial Field Update of array/list/bytes with LIST-op in the inner SERIAL fields
+ */
+struct FU_LIST_OP {
+  enum type {
+    /**
+     * Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Replaces with the update value
+     */
+    REPLACE = 0,
+    /**
+     * Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Appends the update value to a field value
+     */
+    APPEND = 1,
+    /**
+     * Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Prepends the update value to a field value
+     */
+    PREPEND = 2,
+    /**
+     * Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Insert the update value at position in a field value (appends if pos above value)
+     */
+    INSERT = 3,
+    /**
+     * Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Overwrites a field value at position with new value (appends if pos above value)
+     */
+    OVERWRITE = 4,
+    /**
+     * Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Erases the position in a field value
+     */
+    ERASE = 5,
+    /**
+     * Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP
+     */
+    BY_UNIQUE = 6,
+    /**
+     * Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator
+     */
+    BY_COND = 7,
+    /**
+     * Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items
+     */
+    BY_INDEX = 8
+  };
+};
+
+extern const std::map<int, const char*> _FU_LIST_OP_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const FU_LIST_OP::type& val);
+
+std::string to_string(const FU_LIST_OP::type& val);
 
 /**
  * The Cells Results types for using with CellsGroup requests
@@ -455,6 +535,11 @@ typedef std::map<int64_t, UCells>  UCCells;
  * The Serial Cell Value Fields defined as CellValueSerial items in a list-container
  */
 typedef std::vector<class CellValueSerial>  CellValuesSerial;
+
+/**
+ * The Serial Cell Value Fields defined as CellValueSerialOp items in a list-container
+ */
+typedef std::vector<class CellValueSerialOp>  CellValuesSerialOp;
 
 /**
  * The Cells for Update defined as UCellSerial items in a list-container
@@ -538,6 +623,18 @@ class SpecScan;
 class UCell;
 
 class CellValueSerial;
+
+class FU_INT64;
+
+class FU_DOUBLE;
+
+class FU_BYTES;
+
+class FU_LI;
+
+class FU_LB;
+
+class CellValueSerialOp;
 
 class UCellSerial;
 
@@ -1516,13 +1613,13 @@ class SpecUpdateOP : public virtual ::apache::thrift::TBase {
 
   virtual ~SpecUpdateOP() noexcept;
   /**
-   * The Operation
+   * The Operation of update
    * 
    * @see UpdateOP
    */
   UpdateOP::type op;
   /**
-   * The position of INSERT/OVERWRITE operation in UpdateOP
+   * The position/index of INSERT and OVERWRITE update operations
    */
   int32_t pos;
 
@@ -1647,9 +1744,10 @@ void swap(SpecIntervalUpdate &a, SpecIntervalUpdate &b);
 std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdate& obj);
 
 typedef struct _SpecIntervalUpdateSerial__isset {
-  _SpecIntervalUpdateSerial__isset() : ts(false), v(false), encoder(false), update_op(false) {}
+  _SpecIntervalUpdateSerial__isset() : ts(false), v(false), v_op(false), encoder(false), update_op(false) {}
   bool ts :1;
   bool v :1;
+  bool v_op :1;
   bool encoder :1;
   bool update_op :1;
 } _SpecIntervalUpdateSerial__isset;
@@ -1675,9 +1773,13 @@ class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
    */
   int64_t ts;
   /**
-   * The value for the updated cell
+   * The values of serial-fields for the updated cell
    */
   CellValuesSerial v;
+  /**
+   * The values of serial-fields for the the SERIAL operation update
+   */
+  CellValuesSerialOp v_op;
   /**
    * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
    * 
@@ -1695,6 +1797,8 @@ class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
 
   void __set_v(const CellValuesSerial& val);
 
+  void __set_v_op(const CellValuesSerialOp& val);
+
   void __set_encoder(const EncodingType::type val);
 
   void __set_update_op(const SpecUpdateOP& val);
@@ -1704,6 +1808,8 @@ class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
     if (!(ts == rhs.ts))
       return false;
     if (!(v == rhs.v))
+      return false;
+    if (!(v_op == rhs.v_op))
       return false;
     if (__isset.encoder != rhs.__isset.encoder)
       return false;
@@ -2997,6 +3103,533 @@ class CellValueSerial : public virtual ::apache::thrift::TBase {
 void swap(CellValueSerial &a, CellValueSerial &b);
 
 std::ostream& operator<<(std::ostream& out, const CellValueSerial& obj);
+
+typedef struct _FU_INT64__isset {
+  _FU_INT64__isset() : ctrl(true), op(true), pos(false), comp(false), v(false) {}
+  bool ctrl :1;
+  bool op :1;
+  bool pos :1;
+  bool comp :1;
+  bool v :1;
+} _FU_INT64__isset;
+
+/**
+ * Serial INT64 Field Update
+ */
+class FU_INT64 : public virtual ::apache::thrift::TBase {
+ public:
+
+  FU_INT64(const FU_INT64&) noexcept;
+  FU_INT64(FU_INT64&&) noexcept;
+  FU_INT64& operator=(const FU_INT64&) noexcept;
+  FU_INT64& operator=(FU_INT64&&) noexcept;
+  FU_INT64() noexcept
+           : ctrl(0),
+             op(static_cast<FU_MATH_OP::type>(0)),
+             pos(0),
+             comp(static_cast<Comp::type>(0)),
+             v(0) {
+  }
+
+  virtual ~FU_INT64() noexcept;
+  int8_t ctrl;
+  /**
+   * 
+   * @see FU_MATH_OP
+   */
+  FU_MATH_OP::type op;
+  int32_t pos;
+  /**
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  int64_t v;
+
+  _FU_INT64__isset __isset;
+
+  void __set_ctrl(const int8_t val);
+
+  void __set_op(const FU_MATH_OP::type val);
+
+  void __set_pos(const int32_t val);
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const int64_t val);
+
+  bool operator == (const FU_INT64 & rhs) const
+  {
+    if (!(ctrl == rhs.ctrl))
+      return false;
+    if (!(op == rhs.op))
+      return false;
+    if (__isset.pos != rhs.__isset.pos)
+      return false;
+    else if (__isset.pos && !(pos == rhs.pos))
+      return false;
+    if (__isset.comp != rhs.__isset.comp)
+      return false;
+    else if (__isset.comp && !(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const FU_INT64 &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FU_INT64 & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FU_INT64 &a, FU_INT64 &b);
+
+std::ostream& operator<<(std::ostream& out, const FU_INT64& obj);
+
+typedef struct _FU_DOUBLE__isset {
+  _FU_DOUBLE__isset() : ctrl(true), op(true), pos(false), comp(false), v(false) {}
+  bool ctrl :1;
+  bool op :1;
+  bool pos :1;
+  bool comp :1;
+  bool v :1;
+} _FU_DOUBLE__isset;
+
+/**
+ * Serial DOUBLE Field Update
+ */
+class FU_DOUBLE : public virtual ::apache::thrift::TBase {
+ public:
+
+  FU_DOUBLE(const FU_DOUBLE&) noexcept;
+  FU_DOUBLE(FU_DOUBLE&&) noexcept;
+  FU_DOUBLE& operator=(const FU_DOUBLE&) noexcept;
+  FU_DOUBLE& operator=(FU_DOUBLE&&) noexcept;
+  FU_DOUBLE() noexcept
+            : ctrl(0),
+              op(static_cast<FU_MATH_OP::type>(0)),
+              pos(0),
+              comp(static_cast<Comp::type>(0)),
+              v(0) {
+  }
+
+  virtual ~FU_DOUBLE() noexcept;
+  int8_t ctrl;
+  /**
+   * 
+   * @see FU_MATH_OP
+   */
+  FU_MATH_OP::type op;
+  int32_t pos;
+  /**
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  double v;
+
+  _FU_DOUBLE__isset __isset;
+
+  void __set_ctrl(const int8_t val);
+
+  void __set_op(const FU_MATH_OP::type val);
+
+  void __set_pos(const int32_t val);
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const double val);
+
+  bool operator == (const FU_DOUBLE & rhs) const
+  {
+    if (!(ctrl == rhs.ctrl))
+      return false;
+    if (!(op == rhs.op))
+      return false;
+    if (__isset.pos != rhs.__isset.pos)
+      return false;
+    else if (__isset.pos && !(pos == rhs.pos))
+      return false;
+    if (__isset.comp != rhs.__isset.comp)
+      return false;
+    else if (__isset.comp && !(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const FU_DOUBLE &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FU_DOUBLE & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FU_DOUBLE &a, FU_DOUBLE &b);
+
+std::ostream& operator<<(std::ostream& out, const FU_DOUBLE& obj);
+
+typedef struct _FU_BYTES__isset {
+  _FU_BYTES__isset() : ctrl(true), op(true), pos(false), comp(false), v(false) {}
+  bool ctrl :1;
+  bool op :1;
+  bool pos :1;
+  bool comp :1;
+  bool v :1;
+} _FU_BYTES__isset;
+
+/**
+ * Serial BYTES Field Update
+ */
+class FU_BYTES : public virtual ::apache::thrift::TBase {
+ public:
+
+  FU_BYTES(const FU_BYTES&);
+  FU_BYTES(FU_BYTES&&) noexcept;
+  FU_BYTES& operator=(const FU_BYTES&);
+  FU_BYTES& operator=(FU_BYTES&&) noexcept;
+  FU_BYTES() noexcept
+           : ctrl(0),
+             op(static_cast<FU_LIST_OP::type>(0)),
+             pos(0),
+             comp(static_cast<Comp::type>(0)),
+             v() {
+  }
+
+  virtual ~FU_BYTES() noexcept;
+  int8_t ctrl;
+  /**
+   * 
+   * @see FU_LIST_OP
+   */
+  FU_LIST_OP::type op;
+  int32_t pos;
+  /**
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  std::string v;
+
+  _FU_BYTES__isset __isset;
+
+  void __set_ctrl(const int8_t val);
+
+  void __set_op(const FU_LIST_OP::type val);
+
+  void __set_pos(const int32_t val);
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const FU_BYTES & rhs) const
+  {
+    if (!(ctrl == rhs.ctrl))
+      return false;
+    if (!(op == rhs.op))
+      return false;
+    if (__isset.pos != rhs.__isset.pos)
+      return false;
+    else if (__isset.pos && !(pos == rhs.pos))
+      return false;
+    if (__isset.comp != rhs.__isset.comp)
+      return false;
+    else if (__isset.comp && !(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const FU_BYTES &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FU_BYTES & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FU_BYTES &a, FU_BYTES &b);
+
+std::ostream& operator<<(std::ostream& out, const FU_BYTES& obj);
+
+typedef struct _FU_LI__isset {
+  _FU_LI__isset() : ctrl(true), op(true), pos(false), v(false) {}
+  bool ctrl :1;
+  bool op :1;
+  bool pos :1;
+  bool v :1;
+} _FU_LI__isset;
+
+/**
+ * Serial LIST_INT64 Field Update
+ */
+class FU_LI : public virtual ::apache::thrift::TBase {
+ public:
+
+  FU_LI(const FU_LI&);
+  FU_LI(FU_LI&&) noexcept;
+  FU_LI& operator=(const FU_LI&);
+  FU_LI& operator=(FU_LI&&) noexcept;
+  FU_LI() noexcept
+        : ctrl(0),
+          op(static_cast<FU_LIST_OP::type>(0)),
+          pos(0) {
+  }
+
+  virtual ~FU_LI() noexcept;
+  int8_t ctrl;
+  /**
+   * 
+   * @see FU_LIST_OP
+   */
+  FU_LIST_OP::type op;
+  int32_t pos;
+  std::vector<FU_INT64>  v;
+
+  _FU_LI__isset __isset;
+
+  void __set_ctrl(const int8_t val);
+
+  void __set_op(const FU_LIST_OP::type val);
+
+  void __set_pos(const int32_t val);
+
+  void __set_v(const std::vector<FU_INT64> & val);
+
+  bool operator == (const FU_LI & rhs) const
+  {
+    if (!(ctrl == rhs.ctrl))
+      return false;
+    if (!(op == rhs.op))
+      return false;
+    if (__isset.pos != rhs.__isset.pos)
+      return false;
+    else if (__isset.pos && !(pos == rhs.pos))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const FU_LI &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FU_LI & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FU_LI &a, FU_LI &b);
+
+std::ostream& operator<<(std::ostream& out, const FU_LI& obj);
+
+typedef struct _FU_LB__isset {
+  _FU_LB__isset() : ctrl(true), op(true), pos(false), v(false) {}
+  bool ctrl :1;
+  bool op :1;
+  bool pos :1;
+  bool v :1;
+} _FU_LB__isset;
+
+/**
+ * Serial LIST_BYTES Field Update
+ */
+class FU_LB : public virtual ::apache::thrift::TBase {
+ public:
+
+  FU_LB(const FU_LB&);
+  FU_LB(FU_LB&&) noexcept;
+  FU_LB& operator=(const FU_LB&);
+  FU_LB& operator=(FU_LB&&) noexcept;
+  FU_LB() noexcept
+        : ctrl(0),
+          op(static_cast<FU_LIST_OP::type>(0)),
+          pos(0) {
+  }
+
+  virtual ~FU_LB() noexcept;
+  int8_t ctrl;
+  /**
+   * 
+   * @see FU_LIST_OP
+   */
+  FU_LIST_OP::type op;
+  int32_t pos;
+  std::vector<FU_BYTES>  v;
+
+  _FU_LB__isset __isset;
+
+  void __set_ctrl(const int8_t val);
+
+  void __set_op(const FU_LIST_OP::type val);
+
+  void __set_pos(const int32_t val);
+
+  void __set_v(const std::vector<FU_BYTES> & val);
+
+  bool operator == (const FU_LB & rhs) const
+  {
+    if (!(ctrl == rhs.ctrl))
+      return false;
+    if (!(op == rhs.op))
+      return false;
+    if (__isset.pos != rhs.__isset.pos)
+      return false;
+    else if (__isset.pos && !(pos == rhs.pos))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const FU_LB &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FU_LB & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FU_LB &a, FU_LB &b);
+
+std::ostream& operator<<(std::ostream& out, const FU_LB& obj);
+
+typedef struct _CellValueSerialOp__isset {
+  _CellValueSerialOp__isset() : field_id(false), v_int64(false), v_double(false), v_bytes(false), v_key(false), v_li(false), v_lb(false) {}
+  bool field_id :1;
+  bool v_int64 :1;
+  bool v_double :1;
+  bool v_bytes :1;
+  bool v_key :1;
+  bool v_li :1;
+  bool v_lb :1;
+} _CellValueSerialOp__isset;
+
+/**
+ * The Serial Values Cell field with Update Operation
+ */
+class CellValueSerialOp : public virtual ::apache::thrift::TBase {
+ public:
+
+  CellValueSerialOp(const CellValueSerialOp&);
+  CellValueSerialOp(CellValueSerialOp&&) noexcept;
+  CellValueSerialOp& operator=(const CellValueSerialOp&);
+  CellValueSerialOp& operator=(CellValueSerialOp&&) noexcept;
+  CellValueSerialOp() noexcept
+                    : field_id(0) {
+  }
+
+  virtual ~CellValueSerialOp() noexcept;
+  /**
+   * The Field ID, a single ID can have any/all the field types
+   */
+  int32_t field_id;
+  /**
+   * The INT64 type update-field
+   */
+  FU_INT64 v_int64;
+  /**
+   * The DOUBLE type update-field
+   */
+  FU_DOUBLE v_double;
+  /**
+   * The BYTES type update-field
+   */
+  FU_BYTES v_bytes;
+  /**
+   * The Cell KEY type update-field
+   */
+  Key v_key;
+  /**
+   * The LIST INT64 type update-field
+   */
+  FU_LI v_li;
+  /**
+   * The LIST BYTES type update-field
+   */
+  FU_LB v_lb;
+
+  _CellValueSerialOp__isset __isset;
+
+  void __set_field_id(const int32_t val);
+
+  void __set_v_int64(const FU_INT64& val);
+
+  void __set_v_double(const FU_DOUBLE& val);
+
+  void __set_v_bytes(const FU_BYTES& val);
+
+  void __set_v_key(const Key& val);
+
+  void __set_v_li(const FU_LI& val);
+
+  void __set_v_lb(const FU_LB& val);
+
+  bool operator == (const CellValueSerialOp & rhs) const
+  {
+    if (!(field_id == rhs.field_id))
+      return false;
+    if (__isset.v_int64 != rhs.__isset.v_int64)
+      return false;
+    else if (__isset.v_int64 && !(v_int64 == rhs.v_int64))
+      return false;
+    if (__isset.v_double != rhs.__isset.v_double)
+      return false;
+    else if (__isset.v_double && !(v_double == rhs.v_double))
+      return false;
+    if (__isset.v_bytes != rhs.__isset.v_bytes)
+      return false;
+    else if (__isset.v_bytes && !(v_bytes == rhs.v_bytes))
+      return false;
+    if (!(v_key == rhs.v_key))
+      return false;
+    if (__isset.v_li != rhs.__isset.v_li)
+      return false;
+    else if (__isset.v_li && !(v_li == rhs.v_li))
+      return false;
+    if (__isset.v_lb != rhs.__isset.v_lb)
+      return false;
+    else if (__isset.v_lb && !(v_lb == rhs.v_lb))
+      return false;
+    return true;
+  }
+  bool operator != (const CellValueSerialOp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CellValueSerialOp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CellValueSerialOp &a, CellValueSerialOp &b);
+
+std::ostream& operator<<(std::ostream& out, const CellValueSerialOp& obj);
 
 typedef struct _UCellSerial__isset {
   _UCellSerial__isset() : f(false), k(false), ts(false), ts_desc(false), v(false), encoder(false) {}

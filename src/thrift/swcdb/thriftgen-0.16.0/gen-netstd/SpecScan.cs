@@ -103,23 +103,23 @@ public partial class SpecScan : TBase
 
   public SpecScan DeepCopy()
   {
-    var tmp226 = new SpecScan();
+    var tmp230 = new SpecScan();
     if((Columns != null) && __isset.columns)
     {
-      tmp226.Columns = this.Columns.DeepCopy();
+      tmp230.Columns = this.Columns.DeepCopy();
     }
-    tmp226.__isset.columns = this.__isset.columns;
+    tmp230.__isset.columns = this.__isset.columns;
     if((Columns_serial != null) && __isset.columns_serial)
     {
-      tmp226.Columns_serial = this.Columns_serial.DeepCopy();
+      tmp230.Columns_serial = this.Columns_serial.DeepCopy();
     }
-    tmp226.__isset.columns_serial = this.__isset.columns_serial;
+    tmp230.__isset.columns_serial = this.__isset.columns_serial;
     if((Flags != null) && __isset.flags)
     {
-      tmp226.Flags = (SpecFlags)this.Flags.DeepCopy();
+      tmp230.Flags = (SpecFlags)this.Flags.DeepCopy();
     }
-    tmp226.__isset.flags = this.__isset.flags;
-    return tmp226;
+    tmp230.__isset.flags = this.__isset.flags;
+    return tmp230;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -143,14 +143,14 @@ public partial class SpecScan : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list227 = await iprot.ReadListBeginAsync(cancellationToken);
-                Columns = new List<SpecColumn>(_list227.Count);
-                for(int _i228 = 0; _i228 < _list227.Count; ++_i228)
+                TList _list231 = await iprot.ReadListBeginAsync(cancellationToken);
+                Columns = new List<SpecColumn>(_list231.Count);
+                for(int _i232 = 0; _i232 < _list231.Count; ++_i232)
                 {
-                  SpecColumn _elem229;
-                  _elem229 = new SpecColumn();
-                  await _elem229.ReadAsync(iprot, cancellationToken);
-                  Columns.Add(_elem229);
+                  SpecColumn _elem233;
+                  _elem233 = new SpecColumn();
+                  await _elem233.ReadAsync(iprot, cancellationToken);
+                  Columns.Add(_elem233);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -164,14 +164,14 @@ public partial class SpecScan : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list230 = await iprot.ReadListBeginAsync(cancellationToken);
-                Columns_serial = new List<SpecColumnSerial>(_list230.Count);
-                for(int _i231 = 0; _i231 < _list230.Count; ++_i231)
+                TList _list234 = await iprot.ReadListBeginAsync(cancellationToken);
+                Columns_serial = new List<SpecColumnSerial>(_list234.Count);
+                for(int _i235 = 0; _i235 < _list234.Count; ++_i235)
                 {
-                  SpecColumnSerial _elem232;
-                  _elem232 = new SpecColumnSerial();
-                  await _elem232.ReadAsync(iprot, cancellationToken);
-                  Columns_serial.Add(_elem232);
+                  SpecColumnSerial _elem236;
+                  _elem236 = new SpecColumnSerial();
+                  await _elem236.ReadAsync(iprot, cancellationToken);
+                  Columns_serial.Add(_elem236);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -213,20 +213,20 @@ public partial class SpecScan : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp233 = new TStruct("SpecScan");
-      await oprot.WriteStructBeginAsync(tmp233, cancellationToken);
-      var tmp234 = new TField();
+      var tmp237 = new TStruct("SpecScan");
+      await oprot.WriteStructBeginAsync(tmp237, cancellationToken);
+      var tmp238 = new TField();
       if((Columns != null) && __isset.columns)
       {
-        tmp234.Name = "columns";
-        tmp234.Type = TType.List;
-        tmp234.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp234, cancellationToken);
+        tmp238.Name = "columns";
+        tmp238.Type = TType.List;
+        tmp238.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp238, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Columns.Count), cancellationToken);
-          foreach (SpecColumn _iter235 in Columns)
+          foreach (SpecColumn _iter239 in Columns)
           {
-            await _iter235.WriteAsync(oprot, cancellationToken);
+            await _iter239.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -234,15 +234,15 @@ public partial class SpecScan : TBase
       }
       if((Columns_serial != null) && __isset.columns_serial)
       {
-        tmp234.Name = "columns_serial";
-        tmp234.Type = TType.List;
-        tmp234.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp234, cancellationToken);
+        tmp238.Name = "columns_serial";
+        tmp238.Type = TType.List;
+        tmp238.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp238, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Columns_serial.Count), cancellationToken);
-          foreach (SpecColumnSerial _iter236 in Columns_serial)
+          foreach (SpecColumnSerial _iter240 in Columns_serial)
           {
-            await _iter236.WriteAsync(oprot, cancellationToken);
+            await _iter240.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -250,10 +250,10 @@ public partial class SpecScan : TBase
       }
       if((Flags != null) && __isset.flags)
       {
-        tmp234.Name = "flags";
-        tmp234.Type = TType.Struct;
-        tmp234.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp234, cancellationToken);
+        tmp238.Name = "flags";
+        tmp238.Type = TType.Struct;
+        tmp238.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp238, cancellationToken);
         await Flags.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -296,28 +296,28 @@ public partial class SpecScan : TBase
 
   public override string ToString()
   {
-    var tmp237 = new StringBuilder("SpecScan(");
-    int tmp238 = 0;
+    var tmp241 = new StringBuilder("SpecScan(");
+    int tmp242 = 0;
     if((Columns != null) && __isset.columns)
     {
-      if(0 < tmp238++) { tmp237.Append(", "); }
-      tmp237.Append("Columns: ");
-      Columns.ToString(tmp237);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("Columns: ");
+      Columns.ToString(tmp241);
     }
     if((Columns_serial != null) && __isset.columns_serial)
     {
-      if(0 < tmp238++) { tmp237.Append(", "); }
-      tmp237.Append("Columns_serial: ");
-      Columns_serial.ToString(tmp237);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("Columns_serial: ");
+      Columns_serial.ToString(tmp241);
     }
     if((Flags != null) && __isset.flags)
     {
-      if(0 < tmp238++) { tmp237.Append(", "); }
-      tmp237.Append("Flags: ");
-      Flags.ToString(tmp237);
+      if(0 < tmp242++) { tmp241.Append(", "); }
+      tmp241.Append("Flags: ");
+      Flags.ToString(tmp241);
     }
-    tmp237.Append(')');
-    return tmp237.ToString();
+    tmp241.Append(')');
+    return tmp241.ToString();
   }
 }
 

@@ -22,6 +22,7 @@ struct UpdateOP {
   static constexpr const uint8_t PREPEND   = 0x02;
   static constexpr const uint8_t INSERT    = 0x03;
   static constexpr const uint8_t OVERWRITE = 0x04;
+  // + TODO: ERASE
   static constexpr const uint8_t SERIAL    = 0x05;
 
   static const char* to_string(uint8_t op) noexcept {

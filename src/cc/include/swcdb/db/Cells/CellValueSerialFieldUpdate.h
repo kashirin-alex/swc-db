@@ -34,7 +34,7 @@ class FieldUpdate {
   static constexpr const uint8_t CTRL_VALUE_SET     = 0x04;
   static constexpr const uint8_t CTRL_VALUE_DEL     = 0x08;
   SWC_CAN_INLINE
-  FieldUpdate() noexcept : ctrl(CTRL_DEFAULT) { }
+  FieldUpdate(uint8_t a_ctrl) noexcept : ctrl(a_ctrl) { }
   SWC_CAN_INLINE
   FieldUpdate(const uint8_t** ptrp, size_t* remainp)
               : ctrl(Serialization::decode_i8(ptrp, remainp)) {
@@ -133,7 +133,9 @@ class FieldUpdate_MATH : public FieldUpdate {
     DIVIDE          = 0x03
   };
   SWC_CAN_INLINE
-  FieldUpdate_MATH(OP a_op=OP::EQUAL) noexcept : op(a_op) { }
+  FieldUpdate_MATH(OP a_op=OP::EQUAL, uint8_t a_ctrl=CTRL_DEFAULT) noexcept
+                  : FieldUpdate(a_ctrl), op(a_op) {
+  }
   SWC_CAN_INLINE
   FieldUpdate_MATH(const uint8_t** ptrp, size_t* remainp)
                   : FieldUpdate(ptrp, remainp),
@@ -244,8 +246,9 @@ class FieldUpdate_LIST : public FieldUpdate {
     BY_INDEX        = 0x08
   };
   SWC_CAN_INLINE
-  FieldUpdate_LIST(OP a_op=OP::REPLACE, uint24_t a_pos=0)
-                   noexcept : op(a_op), pos(a_pos) {
+  FieldUpdate_LIST(OP a_op=OP::REPLACE, uint24_t a_pos=0,
+                   uint8_t a_ctrl=CTRL_DEFAULT) noexcept
+                  : FieldUpdate(a_ctrl), op(a_op), pos(a_pos) {
   }
   SWC_CAN_INLINE
   FieldUpdate_LIST(const uint8_t** ptrp, size_t* remainp)
@@ -482,8 +485,12 @@ class FieldUpdate_LIST : public FieldUpdate {
 template<typename UpdateField_T>
 class FieldUpdate_Ext final : public UpdateField_T {
   public:
+  template<typename... ArgsT>
   SWC_CAN_INLINE
-  FieldUpdate_Ext(uint32_t i) noexcept : UpdateField_T(), data(i) { }
+  FieldUpdate_Ext(uint32_t i, ArgsT&&... args) noexcept
+                  : UpdateField_T(std::forward<ArgsT>(args)...),
+                    data(i) {
+  }
   SWC_CAN_INLINE
   FieldUpdate_Ext(bool w_data, const uint8_t** ptrp, size_t* remainp)
                   : UpdateField_T(ptrp, remainp),
@@ -539,8 +546,10 @@ class FieldUpdate_LIST_ITEMS final
   FieldUpdate_LIST_ITEMS(FieldUpdate_LIST_ITEMS&&)                 = delete;
   FieldUpdate_LIST_ITEMS& operator=(FieldUpdate_LIST_ITEMS&&)      = delete;
   SWC_CAN_INLINE
-  FieldUpdate_LIST_ITEMS(OP a_op=OP::REPLACE, uint24_t a_pos=0) noexcept
-                        : FieldUpdate_LIST(a_op, a_pos), data(nullptr) {
+  FieldUpdate_LIST_ITEMS(OP a_op=OP::REPLACE, uint24_t a_pos=0,
+                         uint8_t a_ctrl=CTRL_DEFAULT) noexcept
+                        : FieldUpdate_LIST(a_op, a_pos, a_ctrl),
+                          data(nullptr) {
   }
   SWC_CAN_INLINE
   FieldUpdate_LIST_ITEMS(const uint8_t** ptrp, size_t* remainp)
@@ -556,9 +565,10 @@ class FieldUpdate_LIST_ITEMS final
   virtual ~FieldUpdate_LIST_ITEMS() noexcept {
     delete data;
   }
+  template<typename... ArgsT>
   SWC_CAN_INLINE
-  UpdateField_T& add_item(uint32_t i) {
-    return ItemsT::emplace_back(i);
+  UpdateField_T& add_item(uint32_t i, ArgsT&&... args) {
+    return ItemsT::emplace_back(i, std::forward<ArgsT>(args)...);
   }
   template<typename T>
   SWC_CAN_INLINE

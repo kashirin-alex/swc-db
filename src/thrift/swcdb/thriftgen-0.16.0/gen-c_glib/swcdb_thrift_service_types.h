@@ -145,6 +145,35 @@ typedef enum _swcdb_thriftFlag swcdb_thriftFlag;
 const char *
 toString_Flag(int value); 
 
+enum _swcdb_thriftFU_MATH_OP {
+  SWCDB_THRIFT_F_U__M_A_T_H__O_P_EQUAL = 0,
+  SWCDB_THRIFT_F_U__M_A_T_H__O_P_PLUS = 1,
+  SWCDB_THRIFT_F_U__M_A_T_H__O_P_MULTIPLY = 2,
+  SWCDB_THRIFT_F_U__M_A_T_H__O_P_DIVIDE = 3
+};
+typedef enum _swcdb_thriftFU_MATH_OP swcdb_thriftFU_MATH_OP;
+
+/* return the name of the constant */
+const char *
+toString_FU_MATH_OP(int value); 
+
+enum _swcdb_thriftFU_LIST_OP {
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_REPLACE = 0,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_APPEND = 1,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_PREPEND = 2,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_INSERT = 3,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_OVERWRITE = 4,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_ERASE = 5,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_BY_UNIQUE = 6,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_BY_COND = 7,
+  SWCDB_THRIFT_F_U__L_I_S_T__O_P_BY_INDEX = 8
+};
+typedef enum _swcdb_thriftFU_LIST_OP swcdb_thriftFU_LIST_OP;
+
+/* return the name of the constant */
+const char *
+toString_FU_LIST_OP(int value); 
+
 enum _swcdb_thriftCellsResult {
   SWCDB_THRIFT_CELLS_RESULT_IN_LIST = 0,
   SWCDB_THRIFT_CELLS_RESULT_ON_COLUMN = 1,
@@ -176,6 +205,8 @@ typedef GPtrArray swcdb_thriftUCells;
 typedef GHashTable swcdb_thriftUCCells;
 
 typedef GPtrArray swcdb_thriftCellValuesSerial;
+
+typedef GPtrArray swcdb_thriftCellValuesSerialOp;
 
 typedef GPtrArray swcdb_thriftUCellsSerial;
 
@@ -601,6 +632,8 @@ struct _swcdb_thriftSpecIntervalUpdateSerial
   gboolean __isset_ts;
   GPtrArray * v;
   gboolean __isset_v;
+  GPtrArray * v_op;
+  gboolean __isset_v_op;
   swcdb_thriftEncodingType encoder;
   gboolean __isset_encoder;
   swcdb_thriftSpecUpdateOP * update_op;
@@ -1093,6 +1126,204 @@ GType swcdb_thrift_cell_value_serial_get_type (void);
 #define SWCDB_THRIFT_IS_CELL_VALUE_SERIAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL))
 #define SWCDB_THRIFT_CELL_VALUE_SERIAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL, swcdb_thriftCellValueSerialClass))
 
+/* struct FU_INT64 */
+struct _swcdb_thriftFU_INT64
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint8 ctrl;
+  gboolean __isset_ctrl;
+  swcdb_thriftFU_MATH_OP op;
+  gboolean __isset_op;
+  gint32 pos;
+  gboolean __isset_pos;
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  gint64 v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftFU_INT64 swcdb_thriftFU_INT64;
+
+struct _swcdb_thriftFU_INT64Class
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftFU_INT64Class swcdb_thriftFU_INT64Class;
+
+GType swcdb_thrift_f_u__i_n_t64_get_type (void);
+#define SWCDB_THRIFT_TYPE_F_U__I_N_T64 (swcdb_thrift_f_u__i_n_t64_get_type())
+#define SWCDB_THRIFT_F_U__I_N_T64(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_U__I_N_T64, swcdb_thriftFU_INT64))
+#define SWCDB_THRIFT_F_U__I_N_T64_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_U__I_N_T64, swcdb_thriftFU_INT64Class))
+#define SWCDB_THRIFT_IS_F_U__I_N_T64(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_U__I_N_T64))
+#define SWCDB_THRIFT_IS_F_U__I_N_T64_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_U__I_N_T64))
+#define SWCDB_THRIFT_F_U__I_N_T64_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_U__I_N_T64, swcdb_thriftFU_INT64Class))
+
+/* struct FU_DOUBLE */
+struct _swcdb_thriftFU_DOUBLE
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint8 ctrl;
+  gboolean __isset_ctrl;
+  swcdb_thriftFU_MATH_OP op;
+  gboolean __isset_op;
+  gint32 pos;
+  gboolean __isset_pos;
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  gdouble v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftFU_DOUBLE swcdb_thriftFU_DOUBLE;
+
+struct _swcdb_thriftFU_DOUBLEClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftFU_DOUBLEClass swcdb_thriftFU_DOUBLEClass;
+
+GType swcdb_thrift_f_u__d_o_u_b_l_e_get_type (void);
+#define SWCDB_THRIFT_TYPE_F_U__D_O_U_B_L_E (swcdb_thrift_f_u__d_o_u_b_l_e_get_type())
+#define SWCDB_THRIFT_F_U__D_O_U_B_L_E(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_U__D_O_U_B_L_E, swcdb_thriftFU_DOUBLE))
+#define SWCDB_THRIFT_F_U__D_O_U_B_L_E_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_U__D_O_U_B_L_E, swcdb_thriftFU_DOUBLEClass))
+#define SWCDB_THRIFT_IS_F_U__D_O_U_B_L_E(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_U__D_O_U_B_L_E))
+#define SWCDB_THRIFT_IS_F_U__D_O_U_B_L_E_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_U__D_O_U_B_L_E))
+#define SWCDB_THRIFT_F_U__D_O_U_B_L_E_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_U__D_O_U_B_L_E, swcdb_thriftFU_DOUBLEClass))
+
+/* struct FU_BYTES */
+struct _swcdb_thriftFU_BYTES
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint8 ctrl;
+  gboolean __isset_ctrl;
+  swcdb_thriftFU_LIST_OP op;
+  gboolean __isset_op;
+  gint32 pos;
+  gboolean __isset_pos;
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  GByteArray * v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftFU_BYTES swcdb_thriftFU_BYTES;
+
+struct _swcdb_thriftFU_BYTESClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftFU_BYTESClass swcdb_thriftFU_BYTESClass;
+
+GType swcdb_thrift_f_u__b_y_t_e_s_get_type (void);
+#define SWCDB_THRIFT_TYPE_F_U__B_Y_T_E_S (swcdb_thrift_f_u__b_y_t_e_s_get_type())
+#define SWCDB_THRIFT_F_U__B_Y_T_E_S(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_U__B_Y_T_E_S, swcdb_thriftFU_BYTES))
+#define SWCDB_THRIFT_F_U__B_Y_T_E_S_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_U__B_Y_T_E_S, swcdb_thriftFU_BYTESClass))
+#define SWCDB_THRIFT_IS_F_U__B_Y_T_E_S(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_U__B_Y_T_E_S))
+#define SWCDB_THRIFT_IS_F_U__B_Y_T_E_S_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_U__B_Y_T_E_S))
+#define SWCDB_THRIFT_F_U__B_Y_T_E_S_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_U__B_Y_T_E_S, swcdb_thriftFU_BYTESClass))
+
+/* struct FU_LI */
+struct _swcdb_thriftFU_LI
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint8 ctrl;
+  gboolean __isset_ctrl;
+  swcdb_thriftFU_LIST_OP op;
+  gboolean __isset_op;
+  gint32 pos;
+  gboolean __isset_pos;
+  GPtrArray * v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftFU_LI swcdb_thriftFU_LI;
+
+struct _swcdb_thriftFU_LIClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftFU_LIClass swcdb_thriftFU_LIClass;
+
+GType swcdb_thrift_f_u__l_i_get_type (void);
+#define SWCDB_THRIFT_TYPE_F_U__L_I (swcdb_thrift_f_u__l_i_get_type())
+#define SWCDB_THRIFT_F_U__L_I(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_U__L_I, swcdb_thriftFU_LI))
+#define SWCDB_THRIFT_F_U__L_I_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_U__L_I, swcdb_thriftFU_LIClass))
+#define SWCDB_THRIFT_IS_F_U__L_I(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_U__L_I))
+#define SWCDB_THRIFT_IS_F_U__L_I_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_U__L_I))
+#define SWCDB_THRIFT_F_U__L_I_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_U__L_I, swcdb_thriftFU_LIClass))
+
+/* struct FU_LB */
+struct _swcdb_thriftFU_LB
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint8 ctrl;
+  gboolean __isset_ctrl;
+  swcdb_thriftFU_LIST_OP op;
+  gboolean __isset_op;
+  gint32 pos;
+  gboolean __isset_pos;
+  GPtrArray * v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftFU_LB swcdb_thriftFU_LB;
+
+struct _swcdb_thriftFU_LBClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftFU_LBClass swcdb_thriftFU_LBClass;
+
+GType swcdb_thrift_f_u__l_b_get_type (void);
+#define SWCDB_THRIFT_TYPE_F_U__L_B (swcdb_thrift_f_u__l_b_get_type())
+#define SWCDB_THRIFT_F_U__L_B(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_U__L_B, swcdb_thriftFU_LB))
+#define SWCDB_THRIFT_F_U__L_B_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_U__L_B, swcdb_thriftFU_LBClass))
+#define SWCDB_THRIFT_IS_F_U__L_B(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_U__L_B))
+#define SWCDB_THRIFT_IS_F_U__L_B_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_U__L_B))
+#define SWCDB_THRIFT_F_U__L_B_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_U__L_B, swcdb_thriftFU_LBClass))
+
+/* struct CellValueSerialOp */
+struct _swcdb_thriftCellValueSerialOp
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint32 field_id;
+  gboolean __isset_field_id;
+  swcdb_thriftFU_INT64 * v_int64;
+  gboolean __isset_v_int64;
+  swcdb_thriftFU_DOUBLE * v_double;
+  gboolean __isset_v_double;
+  swcdb_thriftFU_BYTES * v_bytes;
+  gboolean __isset_v_bytes;
+  GPtrArray * v_key;
+  gboolean __isset_v_key;
+  swcdb_thriftFU_LI * v_li;
+  gboolean __isset_v_li;
+  swcdb_thriftFU_LB * v_lb;
+  gboolean __isset_v_lb;
+};
+typedef struct _swcdb_thriftCellValueSerialOp swcdb_thriftCellValueSerialOp;
+
+struct _swcdb_thriftCellValueSerialOpClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftCellValueSerialOpClass swcdb_thriftCellValueSerialOpClass;
+
+GType swcdb_thrift_cell_value_serial_op_get_type (void);
+#define SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL_OP (swcdb_thrift_cell_value_serial_op_get_type())
+#define SWCDB_THRIFT_CELL_VALUE_SERIAL_OP(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL_OP, swcdb_thriftCellValueSerialOp))
+#define SWCDB_THRIFT_CELL_VALUE_SERIAL_OP_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_CELL_VALUE_SERIAL_OP, swcdb_thriftCellValueSerialOpClass))
+#define SWCDB_THRIFT_IS_CELL_VALUE_SERIAL_OP(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL_OP))
+#define SWCDB_THRIFT_IS_CELL_VALUE_SERIAL_OP_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL_OP))
+#define SWCDB_THRIFT_CELL_VALUE_SERIAL_OP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_CELL_VALUE_SERIAL_OP, swcdb_thriftCellValueSerialOpClass))
+
 /* struct UCellSerial */
 struct _swcdb_thriftUCellSerial
 { 
@@ -1564,6 +1795,11 @@ GType swcdb_thrift_result_get_type (void);
 #define SWCDB_THRIFT_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_RESULT, swcdb_thriftResultClass))
 
 /* constants */
+#define SWCDB_THRIFT_FU_CTRL_DEFAULT 0
+#define SWCDB_THRIFT_FU_CTRL_NO_ADD_FIELD 1
+#define SWCDB_THRIFT_FU_CTRL_DELETE_FIELD 2
+#define SWCDB_THRIFT_FU_CTRL_VALUE_SET 4
+#define SWCDB_THRIFT_FU_CTRL_VALUE_DEL 8
 
 /* struct ServiceSqlMngColumnArgs */
 struct _swcdb_thriftServiceSqlMngColumnArgs

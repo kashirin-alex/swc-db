@@ -87,18 +87,18 @@ public partial class SpecValueSerial : TBase
 
   public SpecValueSerial DeepCopy()
   {
-    var tmp183 = new SpecValueSerial();
+    var tmp187 = new SpecValueSerial();
     if(__isset.comp)
     {
-      tmp183.Comp = this.Comp;
+      tmp187.Comp = this.Comp;
     }
-    tmp183.__isset.comp = this.__isset.comp;
+    tmp187.__isset.comp = this.__isset.comp;
     if((Fields != null) && __isset.fields)
     {
-      tmp183.Fields = this.Fields.DeepCopy();
+      tmp187.Fields = this.Fields.DeepCopy();
     }
-    tmp183.__isset.fields = this.__isset.fields;
-    return tmp183;
+    tmp187.__isset.fields = this.__isset.fields;
+    return tmp187;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -132,14 +132,14 @@ public partial class SpecValueSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                TList _list184 = await iprot.ReadListBeginAsync(cancellationToken);
-                Fields = new List<SpecValueSerialField>(_list184.Count);
-                for(int _i185 = 0; _i185 < _list184.Count; ++_i185)
+                TList _list188 = await iprot.ReadListBeginAsync(cancellationToken);
+                Fields = new List<SpecValueSerialField>(_list188.Count);
+                for(int _i189 = 0; _i189 < _list188.Count; ++_i189)
                 {
-                  SpecValueSerialField _elem186;
-                  _elem186 = new SpecValueSerialField();
-                  await _elem186.ReadAsync(iprot, cancellationToken);
-                  Fields.Add(_elem186);
+                  SpecValueSerialField _elem190;
+                  _elem190 = new SpecValueSerialField();
+                  await _elem190.ReadAsync(iprot, cancellationToken);
+                  Fields.Add(_elem190);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -170,29 +170,29 @@ public partial class SpecValueSerial : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp187 = new TStruct("SpecValueSerial");
-      await oprot.WriteStructBeginAsync(tmp187, cancellationToken);
-      var tmp188 = new TField();
+      var tmp191 = new TStruct("SpecValueSerial");
+      await oprot.WriteStructBeginAsync(tmp191, cancellationToken);
+      var tmp192 = new TField();
       if(__isset.comp)
       {
-        tmp188.Name = "comp";
-        tmp188.Type = TType.I32;
-        tmp188.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp188, cancellationToken);
+        tmp192.Name = "comp";
+        tmp192.Type = TType.I32;
+        tmp192.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp192, cancellationToken);
         await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Fields != null) && __isset.fields)
       {
-        tmp188.Name = "fields";
-        tmp188.Type = TType.List;
-        tmp188.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp188, cancellationToken);
+        tmp192.Name = "fields";
+        tmp192.Type = TType.List;
+        tmp192.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp192, cancellationToken);
         {
           await oprot.WriteListBeginAsync(new TList(TType.Struct, Fields.Count), cancellationToken);
-          foreach (SpecValueSerialField _iter189 in Fields)
+          foreach (SpecValueSerialField _iter193 in Fields)
           {
-            await _iter189.WriteAsync(oprot, cancellationToken);
+            await _iter193.WriteAsync(oprot, cancellationToken);
           }
           await oprot.WriteListEndAsync(cancellationToken);
         }
@@ -232,22 +232,22 @@ public partial class SpecValueSerial : TBase
 
   public override string ToString()
   {
-    var tmp190 = new StringBuilder("SpecValueSerial(");
-    int tmp191 = 0;
+    var tmp194 = new StringBuilder("SpecValueSerial(");
+    int tmp195 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp191++) { tmp190.Append(", "); }
-      tmp190.Append("Comp: ");
-      Comp.ToString(tmp190);
+      if(0 < tmp195++) { tmp194.Append(", "); }
+      tmp194.Append("Comp: ");
+      Comp.ToString(tmp194);
     }
     if((Fields != null) && __isset.fields)
     {
-      if(0 < tmp191++) { tmp190.Append(", "); }
-      tmp190.Append("Fields: ");
-      Fields.ToString(tmp190);
+      if(0 < tmp195++) { tmp194.Append(", "); }
+      tmp194.Append("Fields: ");
+      Fields.ToString(tmp194);
     }
-    tmp190.Append(')');
-    return tmp190.ToString();
+    tmp194.Append(')');
+    return tmp194.ToString();
   }
 }
 

@@ -141,17 +141,17 @@ module Swcdb
       end
 
       module UpdateOP
-        # The operation to Replace
+        # The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_)
         REPLACE = 0
-        # The operation to Append
+        # The OP supported by column-types: PLAIN, SERIAL. Appends the update value to the cell's current
         APPEND = 1
-        # The operation to Prepend
+        # The OP supported by column-types: PLAIN, SERIAL. Prepends the update value to the cell's current
         PREPEND = 2
-        # The operation to Insert
+        # The OP supported by column-type PLAIN. Inserts the update value at position in current value (appends if pos above value)
         INSERT = 3
-        # The operation to Insert
+        # The OP supported by column-type PLAIN. Overwrites the current value at position with new value (appends if pos above value)
         OVERWRITE = 4
-        # The operation is by inner Serial fields defintions
+        # The OP supported by column-type SERIAL. update is done by the inner serial-fields defintions
         SERIAL = 5
         VALUE_MAP = {0 => "REPLACE", 1 => "APPEND", 2 => "PREPEND", 3 => "INSERT", 4 => "OVERWRITE", 5 => "SERIAL"}
         VALID_VALUES = Set.new([REPLACE, APPEND, PREPEND, INSERT, OVERWRITE, SERIAL]).freeze
@@ -168,6 +168,42 @@ module Swcdb
         DELETE_EQ = 3
         VALUE_MAP = {0 => "NONE", 1 => "INSERT", 2 => "DELETE_LE", 3 => "DELETE_EQ"}
         VALID_VALUES = Set.new([NONE, INSERT, DELETE_LE, DELETE_EQ]).freeze
+      end
+
+      module FU_MATH_OP
+        # set field value to the new value
+        EQUAL = 0
+        # plus new value to field's value (negative number allowed)
+        PLUS = 1
+        # multiply current value by update value
+        MULTIPLY = 2
+        # divide current value by the new value (ignored at zero)
+        DIVIDE = 3
+        VALUE_MAP = {0 => "EQUAL", 1 => "PLUS", 2 => "MULTIPLY", 3 => "DIVIDE"}
+        VALID_VALUES = Set.new([EQUAL, PLUS, MULTIPLY, DIVIDE]).freeze
+      end
+
+      module FU_LIST_OP
+        # Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Replaces with the update value
+        REPLACE = 0
+        # Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Appends the update value to a field value
+        APPEND = 1
+        # Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Prepends the update value to a field value
+        PREPEND = 2
+        # Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Insert the update value at position in a field value (appends if pos above value)
+        INSERT = 3
+        # Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Overwrites a field value at position with new value (appends if pos above value)
+        OVERWRITE = 4
+        # Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Erases the position in a field value
+        ERASE = 5
+        # Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP
+        BY_UNIQUE = 6
+        # Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator
+        BY_COND = 7
+        # Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items
+        BY_INDEX = 8
+        VALUE_MAP = {0 => "REPLACE", 1 => "APPEND", 2 => "PREPEND", 3 => "INSERT", 4 => "OVERWRITE", 5 => "ERASE", 6 => "BY_UNIQUE", 7 => "BY_COND", 8 => "BY_INDEX"}
+        VALID_VALUES = Set.new([REPLACE, APPEND, PREPEND, INSERT, OVERWRITE, ERASE, BY_UNIQUE, BY_COND, BY_INDEX]).freeze
       end
 
       module CellsResult
@@ -240,6 +276,18 @@ module Swcdb
       class UCell; end
 
       class CellValueSerial; end
+
+      class FU_INT64; end
+
+      class FU_DOUBLE; end
+
+      class FU_BYTES; end
+
+      class FU_LI; end
+
+      class FU_LB; end
+
+      class CellValueSerialOp; end
 
       class UCellSerial; end
 
@@ -595,9 +643,9 @@ module Swcdb
         POS = 2
 
         FIELDS = {
-          # The Operation
+          # The Operation of update
           OP => {:type => ::Thrift::Types::I32, :name => 'op', :enum_class => ::Swcdb::Thrift::Gen::UpdateOP},
-          # The position of INSERT/OVERWRITE operation in UpdateOP
+          # The position/index of INSERT and OVERWRITE update operations
           POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true}
         }
 
@@ -647,14 +695,17 @@ module Swcdb
         include ::Thrift::Struct, ::Thrift::Struct_Union
         TS = 1
         V = 2
-        ENCODER = 3
-        UPDATE_OP = 4
+        V_OP = 3
+        ENCODER = 4
+        UPDATE_OP = 5
 
         FIELDS = {
           # The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
           TS => {:type => ::Thrift::Types::I64, :name => 'ts'},
-          # The value for the updated cell
+          # The values of serial-fields for the updated cell
           V => {:type => ::Thrift::Types::LIST, :name => 'v', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellValueSerial}},
+          # The values of serial-fields for the the SERIAL operation update
+          V_OP => {:type => ::Thrift::Types::LIST, :name => 'v_op', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellValueSerialOp}},
           # Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
           ENCODER => {:type => ::Thrift::Types::I32, :name => 'encoder', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::EncodingType},
           # Optionally the operaton of value update
@@ -1108,6 +1159,187 @@ module Swcdb
           V_LI => {:type => ::Thrift::Types::LIST, :name => 'v_li', :element => {:type => ::Thrift::Types::I64}},
           # The LIST BYTES type field
           V_LB => {:type => ::Thrift::Types::LIST, :name => 'v_lb', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # Serial INT64 Field Update
+      class FU_INT64
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        CTRL = 1
+        OP = 2
+        POS = 3
+        COMP = 4
+        V = 5
+
+        FIELDS = {
+          CTRL => {:type => ::Thrift::Types::BYTE, :name => 'ctrl', :default => 0},
+          OP => {:type => ::Thrift::Types::I32, :name => 'op', :default =>           0, :enum_class => ::Swcdb::Thrift::Gen::FU_MATH_OP},
+          POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true},
+          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::Comp},
+          V => {:type => ::Thrift::Types::I64, :name => 'v'}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @op.nil? || ::Swcdb::Thrift::Gen::FU_MATH_OP::VALID_VALUES.include?(@op)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field op!')
+          end
+          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # Serial DOUBLE Field Update
+      class FU_DOUBLE
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        CTRL = 1
+        OP = 2
+        POS = 3
+        COMP = 4
+        V = 5
+
+        FIELDS = {
+          CTRL => {:type => ::Thrift::Types::BYTE, :name => 'ctrl', :default => 0},
+          OP => {:type => ::Thrift::Types::I32, :name => 'op', :default =>           0, :enum_class => ::Swcdb::Thrift::Gen::FU_MATH_OP},
+          POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true},
+          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::Comp},
+          V => {:type => ::Thrift::Types::DOUBLE, :name => 'v'}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @op.nil? || ::Swcdb::Thrift::Gen::FU_MATH_OP::VALID_VALUES.include?(@op)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field op!')
+          end
+          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # Serial BYTES Field Update
+      class FU_BYTES
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        CTRL = 1
+        OP = 2
+        POS = 3
+        COMP = 4
+        V = 5
+
+        FIELDS = {
+          CTRL => {:type => ::Thrift::Types::BYTE, :name => 'ctrl', :default => 0},
+          OP => {:type => ::Thrift::Types::I32, :name => 'op', :default =>           0, :enum_class => ::Swcdb::Thrift::Gen::FU_LIST_OP},
+          POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true},
+          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::Comp},
+          V => {:type => ::Thrift::Types::STRING, :name => 'v', :binary => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @op.nil? || ::Swcdb::Thrift::Gen::FU_LIST_OP::VALID_VALUES.include?(@op)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field op!')
+          end
+          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # Serial LIST_INT64 Field Update
+      class FU_LI
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        CTRL = 1
+        OP = 2
+        POS = 3
+        V = 4
+
+        FIELDS = {
+          CTRL => {:type => ::Thrift::Types::BYTE, :name => 'ctrl', :default => 0},
+          OP => {:type => ::Thrift::Types::I32, :name => 'op', :default =>           0, :enum_class => ::Swcdb::Thrift::Gen::FU_LIST_OP},
+          POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true},
+          V => {:type => ::Thrift::Types::LIST, :name => 'v', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::FU_INT64}}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @op.nil? || ::Swcdb::Thrift::Gen::FU_LIST_OP::VALID_VALUES.include?(@op)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field op!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # Serial LIST_BYTES Field Update
+      class FU_LB
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        CTRL = 1
+        OP = 2
+        POS = 3
+        V = 4
+
+        FIELDS = {
+          CTRL => {:type => ::Thrift::Types::BYTE, :name => 'ctrl', :default => 0},
+          OP => {:type => ::Thrift::Types::I32, :name => 'op', :default =>           0, :enum_class => ::Swcdb::Thrift::Gen::FU_LIST_OP},
+          POS => {:type => ::Thrift::Types::I32, :name => 'pos', :optional => true},
+          V => {:type => ::Thrift::Types::LIST, :name => 'v', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::FU_BYTES}}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @op.nil? || ::Swcdb::Thrift::Gen::FU_LIST_OP::VALID_VALUES.include?(@op)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field op!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Serial Values Cell field with Update Operation
+      class CellValueSerialOp
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        FIELD_ID = 1
+        V_INT64 = 2
+        V_DOUBLE = 3
+        V_BYTES = 4
+        V_KEY = 5
+        V_LI = 6
+        V_LB = 7
+
+        FIELDS = {
+          # The Field ID, a single ID can have any/all the field types
+          FIELD_ID => {:type => ::Thrift::Types::I32, :name => 'field_id'},
+          # The INT64 type update-field
+          V_INT64 => {:type => ::Thrift::Types::STRUCT, :name => 'v_int64', :class => ::Swcdb::Thrift::Gen::FU_INT64, :optional => true},
+          # The DOUBLE type update-field
+          V_DOUBLE => {:type => ::Thrift::Types::STRUCT, :name => 'v_double', :class => ::Swcdb::Thrift::Gen::FU_DOUBLE, :optional => true},
+          # The BYTES type update-field
+          V_BYTES => {:type => ::Thrift::Types::STRUCT, :name => 'v_bytes', :class => ::Swcdb::Thrift::Gen::FU_BYTES, :optional => true},
+          # The Cell KEY type update-field
+          V_KEY => {:type => ::Thrift::Types::LIST, :name => 'v_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # The LIST INT64 type update-field
+          V_LI => {:type => ::Thrift::Types::STRUCT, :name => 'v_li', :class => ::Swcdb::Thrift::Gen::FU_LI, :optional => true},
+          # The LIST BYTES type update-field
+          V_LB => {:type => ::Thrift::Types::STRUCT, :name => 'v_lb', :class => ::Swcdb::Thrift::Gen::FU_LB, :optional => true}
         }
 
         def struct_fields; FIELDS; end

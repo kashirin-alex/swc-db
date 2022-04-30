@@ -3691,11 +3691,11 @@ class ServiceMultiface : virtual public ServiceIf {
 // only be used when you need to share a connection among multiple threads
 class ServiceConcurrentClient : virtual public ServiceIf {
  public:
-  ServiceConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot, std::shared_ptr<::apache::thrift::async::TConcurrentClientSyncInfo> sync) : sync_(sync)
+  ServiceConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot, std::shared_ptr< ::apache::thrift::async::TConcurrentClientSyncInfo> sync) : sync_(sync)
 {
     setProtocol(prot);
   }
-  ServiceConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> iprot, std::shared_ptr< ::apache::thrift::protocol::TProtocol> oprot, std::shared_ptr<::apache::thrift::async::TConcurrentClientSyncInfo> sync) : sync_(sync)
+  ServiceConcurrentClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> iprot, std::shared_ptr< ::apache::thrift::protocol::TProtocol> oprot, std::shared_ptr< ::apache::thrift::async::TConcurrentClientSyncInfo> sync) : sync_(sync)
 {
     setProtocol(iprot,oprot);
   }
@@ -3911,7 +3911,7 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
   ::apache::thrift::protocol::TProtocol* iprot_;
   ::apache::thrift::protocol::TProtocol* oprot_;
-  std::shared_ptr<::apache::thrift::async::TConcurrentClientSyncInfo> sync_;
+  std::shared_ptr< ::apache::thrift::async::TConcurrentClientSyncInfo> sync_;
 };
 
 #ifdef _MSC_VER
