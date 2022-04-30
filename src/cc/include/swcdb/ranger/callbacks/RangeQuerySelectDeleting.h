@@ -24,7 +24,16 @@ class RangeQuerySelectDeleting : public RangeQuerySelect {
                            DB::Specs::Interval&& req_spec,
                            const RangePtr& a_range)
                           : RangeQuerySelect(
-                              conn, ev, std::move(req_spec), a_range) {
+                              conn,
+                              ev,
+                              std::move(req_spec),
+                              a_range
+                            ),
+                            del_flag(
+                              a_range->cfg->cell_versions() == 1
+                                ? DB::Cells::Flag::DELETE_LE
+                                : DB::Cells::Flag::DELETE_EQ
+                            ) {
   }
 
   virtual ~RangeQuerySelectDeleting() noexcept { }
@@ -54,7 +63,7 @@ class RangeQuerySelectDeleting : public RangeQuerySelect {
       for(DB::Cells::Cell updated_cell; remain; ) {
         updated_cell.read(&ptr, &remain);
 
-        updated_cell.flag = DB::Cells::Flag::DELETE_EQ;
+        updated_cell.flag = del_flag;
         updated_cell.set_revision(Time::now_ns());
 
         commitlog._add(updated_cell, &log_offset_it, &log_offset_hint);
@@ -65,6 +74,9 @@ class RangeQuerySelectDeleting : public RangeQuerySelect {
 
     cells.set_mark();
   }
+
+  private:
+  const DB::Cells::Flag del_flag;
 
 };
 
