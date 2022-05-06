@@ -51,7 +51,7 @@ class Interface {
   protected:
 
   mutable int           err;
-  CLI                   _state;
+  Core::Atomic<CLI>     _state;
 
   typedef std::function<bool(std::string&)> OptCall_t;
   void add_option(const char* a_name,

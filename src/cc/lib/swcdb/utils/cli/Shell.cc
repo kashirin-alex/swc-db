@@ -76,7 +76,7 @@ int run() {
   return 0;
 }
 
-
+ 
 
 struct Interface::Option final {
   Option(std::string&& a_name, Core::Vector<std::string>&& a_desc,
@@ -119,6 +119,13 @@ CLI Interface::run() {
 	  	std::ifstream history_file(history.c_str());
 		  rx.history_load(history_file);
 	  }
+    rx.bind_key(
+      replxx::Replxx::KEY::control( 'C' ),
+      [this, &rx](char32_t c) {
+        _state.store(CLI::QUIT_CLI);
+	      return rx.invoke(replxx::Replxx::ACTION::ABORT_LINE, c);
+      }
+    );
     const char* line;
     const char* ptr;
   #else
@@ -150,6 +157,10 @@ CLI Interface::run() {
 
     prompt_state = false;
     do {
+      if(errno) {
+        stop = _state == CLI::QUIT_CLI;
+        break;
+      }
       c = *ptr;
       ++ptr;
       if((next_line = !c))
@@ -270,15 +281,15 @@ bool Interface::switch_to(std::string& cmd)  {
   }
   parser.seek_space();
   if(parser.found_token("client", 6)) {
-    _state = CLI::DBCLIENT;
+    _state.store(CLI::DBCLIENT);
   } else if(parser.found_token("mngr", 4)) {
-    _state = CLI::MANAGER;
+    _state.store(CLI::MANAGER);
   } else if(parser.found_token("rgr", 3)) {
-    _state = CLI::RANGER;
+    _state.store(CLI::RANGER);
   } else if(parser.found_token("fs", 2)) {
-    _state = CLI::FILESYSTEM;
+    _state.store(CLI::FILESYSTEM);
   } else if(parser.found_token("stats", 5)) {
-    _state = CLI::STATISTICS;
+    _state.store(CLI::STATISTICS);
   } else {
     err = Error::INVALID_ARGUMENT;
     return error("Bad Interface Option");
