@@ -10,6 +10,21 @@
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-v0.5.9)
 
     fixed missing read_history at non-replxx in Utils::shell::Interface
+    fixed Utils::shell::Interface at CTRL+C exit gracefully
+    added support of update-operation in Cells-Interval select-query Specs
+    added struct UpdateOP file swcdb/db/Cells/SpecsUpdateOp.h
+    added UpdateOP DB::Specs::IntervalUpdate::operation
+    added base/interface class DB::Cell::Serial::Value::FieldUpdate
+    added classes DB::Cell::Serial::Value::FieldUpdate_*TYPE
+    added files db/cells/Field{s,Update} for CellValueSerialFields.{h,cc}
+    added void DB::Cell::Serial::Value::FieldsWriter::add(FieldUpdate*)
+    added class DB::Cell::Serial::Value::FieldsUpdaterMap
+    added client::SQL::Reader::read_operation(col_type, UpdateOP&)
+    fixed Ranger ReqScan with an update require a value at ONLY_KEYS
+    added Ranger RangeQuerySelectUpdating_{Ap/Prepend,Insert,Overwrite,Serial}
+    added Ranger use Select-callback by interval.updating->operation.op
+    changed Ranger RangeQuerySelectDeleting DELETE_LE flag at cell-versions==1
+    added query-select SQL syntax and Thrift Service support for Update OP
     added python module 'serialization' with methods decode_{vi64,counter}(..)
     updated for ASIO 1.22.1 requirement & OPENSSL_NO_DEPRECATED=ON by default
 

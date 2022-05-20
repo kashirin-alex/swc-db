@@ -76,7 +76,7 @@ int run() {
   return 0;
 }
 
- 
+
 
 struct Interface::Option final {
   Option(std::string&& a_name, Core::Vector<std::string>&& a_desc,
@@ -123,7 +123,7 @@ CLI Interface::run() {
       replxx::Replxx::KEY::control( 'C' ),
       [this, &rx](char32_t c) {
         _state.store(CLI::QUIT_CLI);
-	      return rx.invoke(replxx::Replxx::ACTION::ABORT_LINE, c);
+        return rx.invoke(replxx::Replxx::ACTION::ABORT_LINE, c);
       }
     );
     const char* line;
