@@ -7,7 +7,17 @@
 
 
 
-### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-v0.5.9)
+### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
+
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...master)
+******
+
+
+
+
+### [SWC-DB v0.5.9](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.9) (2022-05-21)
 
     fixed missing read_history at non-replxx in Utils::shell::Interface
     fixed Utils::shell::Interface at CTRL+C exit gracefully
@@ -26,9 +36,9 @@
     changed Ranger RangeQuerySelectDeleting DELETE_LE flag at cell-versions==1
     added query-select SQL syntax and Thrift Service support for Update OP
     added python module 'serialization' with methods decode_{vi64,counter}(..)
-    updated for ASIO 1.22.1 requirement & OPENSSL_NO_DEPRECATED=ON by default
+    updated for ASIO 1.22.1 and OPENSSL_NO_DEPRECATED=ON by default
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.8...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.8...v0.5.9)
 ******
 
 
