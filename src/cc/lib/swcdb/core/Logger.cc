@@ -14,26 +14,31 @@ namespace SWC { namespace Core {
 /** INITIATE SINGLETONE LOGGER INSTANCE. **/
 LogWriter logger;
 
-static const char* priority_name[] = {
-  "FATAL",
-  "ALERT",
-  "CRIT",
-  "ERROR",
-  "WARN",
-  "NOTICE",
-  "INFO",
-  "DEBUG",
-  "NOTSET"
-};
 
-std::string LogWriter::repr(uint8_t priority) {
-  return priority < LOG_NOTSET ?
-          get_name(priority)
-        : "undefined logging level: " +std::to_string(priority);
+namespace { //local namespace
+
+static SWC_CAN_INLINE
+const char* get_name(uint8_t priority) noexcept {
+  switch(priority) {
+    case LOG_FATAL:  return "FATAL";
+    case LOG_ALERT:  return "ALERT";
+    case LOG_CRIT:   return "CRIT";
+    case LOG_ERROR:  return "ERROR";
+    case LOG_WARN:   return "WARN";
+    case LOG_NOTICE: return "NOTICE";
+    case LOG_INFO:   return "INFO";
+    case LOG_DEBUG:  return "DEBUG";
+    default:         return "NOTSET";
+  }
 }
 
-const char* LogWriter::get_name(uint8_t priority) noexcept {
-  return priority <= LOG_NOTSET ? priority_name[priority] : "UNDEFINED";
+}
+
+
+std::string LogWriter::repr(uint8_t priority) {
+  return priority <= LOG_DEBUG ?
+          get_name(priority)
+        : "undefined logging level: " +std::to_string(priority);
 }
 
 uint8_t LogWriter::from_string(const std::string& loglevel) noexcept {

@@ -26,7 +26,6 @@ namespace SWC {
  */
 
 enum LogPriority : uint8_t {
-  LOG_EMERG  = 0,
   LOG_FATAL  = 0,
   LOG_ALERT  = 1,
   LOG_CRIT   = 2,
@@ -34,8 +33,7 @@ enum LogPriority : uint8_t {
   LOG_WARN   = 4,
   LOG_NOTICE = 5,
   LOG_INFO   = 6,
-  LOG_DEBUG  = 7,
-  LOG_NOTSET = 8
+  LOG_DEBUG  = 7
 };
 
 
@@ -53,9 +51,6 @@ class LogWriter final {
   public:
 
   static std::string repr(uint8_t priority);
-
-  static const char* SWC_CONST_FUNC
-  get_name(uint8_t priority) noexcept;
 
   static uint8_t SWC_PURE_FUNC
   from_string(const std::string& loglevel) noexcept;
