@@ -239,7 +239,7 @@ def wait_ready(c, on_start=False, codes=None):
     while True:
         res = c.local(' '.join([
             "echo 'cluster;quit;'",
-            "| "+swcdb_install_path+"/bin/swcdb --mngr --quiet -l=warn"] +
+            "| "+swcdb_install_path+"/bin/swcdb --mngr --quiet"] +
             swcdb_common_options(False) + [";"] ),
                 hide=True)
         code = ""

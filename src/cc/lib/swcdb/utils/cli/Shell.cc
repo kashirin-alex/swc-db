@@ -157,10 +157,14 @@ CLI Interface::run() {
 
     prompt_state = false;
     do {
+
+      #if defined(USE_REPLXX)
       if(errno) {
         stop = _state == CLI::QUIT_CLI;
         break;
       }
+      #endif
+
       c = *ptr;
       ++ptr;
       if((next_line = !c))
