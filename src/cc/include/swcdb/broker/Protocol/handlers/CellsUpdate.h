@@ -50,7 +50,15 @@ class Updater final
       return;
 
     if(!err && requires_commit() && Env::Bkr::is_accepting()) {
-      commit(&column);
+      struct Task {
+        Updater::Ptr ptr;
+        SWC_CAN_INLINE
+        Task(Updater::Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+        void operator()() { ptr->commit(&ptr->column); }
+      };
+      Env::Bkr::post(
+        Task(std::dynamic_pointer_cast<Updater>(shared_from_this()))
+      );
       return;
     }
 
