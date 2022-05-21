@@ -185,8 +185,10 @@ class FileWriter {
     if(Types::is_counter(typ)) {
       uint8_t op;
       int64_t eq_rev = TIMESTAMP_NULL;
-      int64_t v = cell.get_counter(op, eq_rev);
-      cell_buff.add((v > 0 ? "+" : "") + std::to_string(v));
+      int64_t i = cell.get_counter(op, eq_rev);
+      std::string v(i > 0 ? "+" : "");
+      v.append(std::to_string(i));
+      cell_buff.add(v);
 
       if(op & OP_EQUAL) {
         cell_buff.add('\t'); //
