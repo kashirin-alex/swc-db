@@ -25,6 +25,14 @@ using Thrift.Collections;
 public static class ServiceConstants
 {
   /// <summary>
+  /// The TIMESTAMP NULL value
+  /// </summary>
+  public const long TIMESTAMP_NULL = -9223372036854775807;
+  /// <summary>
+  /// The TIMESTAMP AUTO value
+  /// </summary>
+  public const long TIMESTAMP_AUTO = -9223372036854775806;
+  /// <summary>
   /// A control bit of default-state
   /// </summary>
   public const sbyte FU_CTRL_DEFAULT = 0;

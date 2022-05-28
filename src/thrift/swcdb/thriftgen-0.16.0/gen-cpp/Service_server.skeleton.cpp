@@ -171,6 +171,21 @@ class ServiceHandler : virtual public ServiceIf {
   }
 
   /**
+   * The method is to update cells by several Column-Types,
+   * optionally to work with updater-id.
+   * 
+   * @param plain The PLAIN Cells to update
+   * 
+   * @param serial The SERIAL Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) {
+    // Your implementation goes here
+    printf("update_by_types\n");
+  }
+
+  /**
    * The direct method to Manage Column
    * 
    * @param func The Action Function to use

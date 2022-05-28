@@ -168,6 +168,19 @@ class Iface(object):
         """
         pass
 
+    def update_by_types(self, plain, serial, updater_id):
+        """
+        The method is to update cells by several Column-Types,
+        optionally to work with updater-id.
+
+        Parameters:
+         - plain: The PLAIN Cells to update
+         - serial: The SERIAL Cells to update
+         - updater_id: The Updater ID to use for write
+
+        """
+        pass
+
     def mng_column(self, func, schema):
         """
         The direct method to Manage Column
@@ -766,6 +779,45 @@ class Client(Iface):
             raise result.e
         return
 
+    def update_by_types(self, plain, serial, updater_id):
+        """
+        The method is to update cells by several Column-Types,
+        optionally to work with updater-id.
+
+        Parameters:
+         - plain: The PLAIN Cells to update
+         - serial: The SERIAL Cells to update
+         - updater_id: The Updater ID to use for write
+
+        """
+        self.send_update_by_types(plain, serial, updater_id)
+        self.recv_update_by_types()
+
+    def send_update_by_types(self, plain, serial, updater_id):
+        self._oprot.writeMessageBegin('update_by_types', TMessageType.CALL, self._seqid)
+        args = update_by_types_args()
+        args.plain = plain
+        args.serial = serial
+        args.updater_id = updater_id
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_update_by_types(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = update_by_types_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.e is not None:
+            raise result.e
+        return
+
     def mng_column(self, func, schema):
         """
         The direct method to Manage Column
@@ -1075,6 +1127,7 @@ class Processor(Iface, TProcessor):
         self._processMap["updater_close"] = Processor.process_updater_close
         self._processMap["update"] = Processor.process_update
         self._processMap["update_serial"] = Processor.process_update_serial
+        self._processMap["update_by_types"] = Processor.process_update_by_types
         self._processMap["mng_column"] = Processor.process_mng_column
         self._processMap["list_columns"] = Processor.process_list_columns
         self._processMap["compact_columns"] = Processor.process_compact_columns
@@ -1465,6 +1518,32 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("update_serial", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_update_by_types(self, seqid, iprot, oprot):
+        args = update_by_types_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_by_types_result()
+        try:
+            self._handler.update_by_types(args.plain, args.serial, args.updater_id)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("update_by_types", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -3964,6 +4043,216 @@ update_serial_result.thrift_spec = (
 )
 
 
+class update_by_types_args(object):
+    """
+    Attributes:
+     - plain: The PLAIN Cells to update
+     - serial: The SERIAL Cells to update
+     - updater_id: The Updater ID to use for write
+
+    """
+
+    __slots__ = (
+        'plain',
+        'serial',
+        'updater_id',
+    )
+
+
+    def __init__(self, plain=None, serial=None, updater_id=0,):
+        self.plain = plain
+        self.serial = serial
+        self.updater_id = updater_id
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.MAP:
+                    self.plain = {}
+                    (_ktype473, _vtype474, _size472) = iprot.readMapBegin()
+                    for _i476 in range(_size472):
+                        _key477 = iprot.readI64()
+                        _val478 = []
+                        (_etype482, _size479) = iprot.readListBegin()
+                        for _i483 in range(_size479):
+                            _elem484 = UCell()
+                            _elem484.read(iprot)
+                            _val478.append(_elem484)
+                        iprot.readListEnd()
+                        self.plain[_key477] = _val478
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.MAP:
+                    self.serial = {}
+                    (_ktype486, _vtype487, _size485) = iprot.readMapBegin()
+                    for _i489 in range(_size485):
+                        _key490 = iprot.readI64()
+                        _val491 = []
+                        (_etype495, _size492) = iprot.readListBegin()
+                        for _i496 in range(_size492):
+                            _elem497 = UCellSerial()
+                            _elem497.read(iprot)
+                            _val491.append(_elem497)
+                        iprot.readListEnd()
+                        self.serial[_key490] = _val491
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.updater_id = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_by_types_args')
+        if self.plain is not None:
+            oprot.writeFieldBegin('plain', TType.MAP, 1)
+            oprot.writeMapBegin(TType.I64, TType.LIST, len(self.plain))
+            for kiter498, viter499 in self.plain.items():
+                oprot.writeI64(kiter498)
+                oprot.writeListBegin(TType.STRUCT, len(viter499))
+                for iter500 in viter499:
+                    iter500.write(oprot)
+                oprot.writeListEnd()
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.serial is not None:
+            oprot.writeFieldBegin('serial', TType.MAP, 2)
+            oprot.writeMapBegin(TType.I64, TType.LIST, len(self.serial))
+            for kiter501, viter502 in self.serial.items():
+                oprot.writeI64(kiter501)
+                oprot.writeListBegin(TType.STRUCT, len(viter502))
+                for iter503 in viter502:
+                    iter503.write(oprot)
+                oprot.writeListEnd()
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.updater_id is not None:
+            oprot.writeFieldBegin('updater_id', TType.I64, 3)
+            oprot.writeI64(self.updater_id)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_by_types_args)
+update_by_types_args.thrift_spec = (
+    None,  # 0
+    (1, TType.MAP, 'plain', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCell, None], False), False), None, ),  # 1
+    (2, TType.MAP, 'serial', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCellSerial, None], False), False), None, ),  # 2
+    (3, TType.I64, 'updater_id', None, 0, ),  # 3
+)
+
+
+class update_by_types_result(object):
+    """
+    Attributes:
+     - e
+
+    """
+
+    __slots__ = (
+        'e',
+    )
+
+
+    def __init__(self, e=None,):
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_by_types_result')
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_by_types_result)
+update_by_types_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
 class mng_column_args(object):
     """
     Attributes:
@@ -4228,11 +4517,11 @@ class list_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype475, _size472) = iprot.readListBegin()
-                    for _i476 in range(_size472):
-                        _elem477 = Schema()
-                        _elem477.read(iprot)
-                        self.success.append(_elem477)
+                    (_etype507, _size504) = iprot.readListBegin()
+                    for _i508 in range(_size504):
+                        _elem509 = Schema()
+                        _elem509.read(iprot)
+                        self.success.append(_elem509)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -4254,8 +4543,8 @@ class list_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter478 in self.success:
-                iter478.write(oprot)
+            for iter510 in self.success:
+                iter510.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -4396,11 +4685,11 @@ class compact_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype482, _size479) = iprot.readListBegin()
-                    for _i483 in range(_size479):
-                        _elem484 = CompactResult()
-                        _elem484.read(iprot)
-                        self.success.append(_elem484)
+                    (_etype514, _size511) = iprot.readListBegin()
+                    for _i515 in range(_size511):
+                        _elem516 = CompactResult()
+                        _elem516.read(iprot)
+                        self.success.append(_elem516)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -4422,8 +4711,8 @@ class compact_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter485 in self.success:
-                iter485.write(oprot)
+            for iter517 in self.success:
+                iter517.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -4724,12 +5013,12 @@ class scan_rslt_on_column_result(object):
             if fid == 0:
                 if ftype == TType.MAP:
                     self.success = {}
-                    (_ktype487, _vtype488, _size486) = iprot.readMapBegin()
-                    for _i490 in range(_size486):
-                        _key491 = iprot.readString()
-                        _val492 = ColCells()
-                        _val492.read(iprot)
-                        self.success[_key491] = _val492
+                    (_ktype519, _vtype520, _size518) = iprot.readMapBegin()
+                    for _i522 in range(_size518):
+                        _key523 = iprot.readString()
+                        _val524 = ColCells()
+                        _val524.read(iprot)
+                        self.success[_key523] = _val524
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -4751,9 +5040,9 @@ class scan_rslt_on_column_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.MAP, 0)
             oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.success))
-            for kiter493, viter494 in self.success.items():
-                oprot.writeString(kiter493)
-                viter494.write(oprot)
+            for kiter525, viter526 in self.success.items():
+                oprot.writeString(kiter525)
+                viter526.write(oprot)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -4894,11 +5183,11 @@ class scan_rslt_on_key_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype498, _size495) = iprot.readListBegin()
-                    for _i499 in range(_size495):
-                        _elem500 = kCells()
-                        _elem500.read(iprot)
-                        self.success.append(_elem500)
+                    (_etype530, _size527) = iprot.readListBegin()
+                    for _i531 in range(_size527):
+                        _elem532 = kCells()
+                        _elem532.read(iprot)
+                        self.success.append(_elem532)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -4920,8 +5209,8 @@ class scan_rslt_on_key_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter501 in self.success:
-                iter501.write(oprot)
+            for iter533 in self.success:
+                iter533.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:

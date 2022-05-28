@@ -10,6 +10,16 @@ package org.swcdb.thrift.gen;
 public class ServiceConstants {
 
   /**
+   * The TIMESTAMP NULL value
+   */
+  public static final long TIMESTAMP_NULL = -9223372036854775807L;
+
+  /**
+   * The TIMESTAMP AUTO value
+   */
+  public static final long TIMESTAMP_AUTO = -9223372036854775806L;
+
+  /**
    * A control bit of default-state
    */
   public static final byte FU_CTRL_DEFAULT = (byte)0;

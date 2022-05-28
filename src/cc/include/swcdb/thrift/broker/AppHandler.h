@@ -453,8 +453,9 @@ class AppHandler final : virtual public BrokerIf {
       sizeof(hdlr) + sizeof(*hdlr.get()));
   }
 
-  /* UPDATE */
-  void update(const UCCells& cells, const int64_t updater_id) override  {
+  /* UPDATE-PLAIN */
+  void update(const UCCells& cells,
+              const int64_t updater_id) override  {
     Processing process(this);
 
     client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
@@ -464,36 +465,8 @@ class AppHandler final : virtual public BrokerIf {
       hdlr = client::Query::Update::Handlers::Common::make(
         Env::Clients::get());
 
-    int err = Error::OK;
-    for(auto& col_cells : cells) {
-      if(!hdlr->get(col_cells.first)) {
-        auto schema = hdlr->clients->get_schema(err, col_cells.first);
-        if(err)
-          Converter::exception(err);
-        hdlr->create(schema);
-      }
-    }
-    DB::Cells::Cell dbcell;
-    for(auto& col_cells : cells) {
-      auto col = hdlr->get(col_cells.first);
-      for(auto& cell : col_cells.second) {
-        dbcell.flag = uint8_t(cell.f);
-        dbcell.key.read(cell.k);
-        dbcell.control = 0;
-        if(cell.__isset.ts)
-          dbcell.set_timestamp(cell.ts);
-        if(cell.__isset.ts_desc)
-          dbcell.set_time_order_desc(cell.ts_desc);
-
-        cell.__isset.encoder
-          ? dbcell.set_value(
-              DB::Types::Encoder(uint8_t(cell.encoder)), cell.v)
-          : dbcell.set_value(cell.v);
-
-        col->add(dbcell);
-        hdlr->commit_or_wait(col.get());
-      }
-    }
+    set_cols(cells, hdlr);
+    set(cells, hdlr);
 
     if(updater_id) {
       hdlr->commit_or_wait();
@@ -501,7 +474,7 @@ class AppHandler final : virtual public BrokerIf {
       hdlr->commit_if_need();
       hdlr->wait();
     }
-    if((err = hdlr->error()))
+    if(int err = hdlr->error())
       Converter::exception(err);
   }
 
@@ -517,38 +490,8 @@ class AppHandler final : virtual public BrokerIf {
       hdlr = client::Query::Update::Handlers::Common::make(
         Env::Clients::get());
 
-    int err = Error::OK;
-    for(auto& col_cells : cells) {
-      if(!hdlr->get(col_cells.first)) {
-        auto schema = hdlr->clients->get_schema(err, col_cells.first);
-        if(err)
-          Converter::exception(err);
-        hdlr->create(schema);
-      }
-    }
-    DB::Cells::Cell dbcell;
-    for(auto& col_cells : cells) {
-      auto col = hdlr->get(col_cells.first);
-      for(auto& cell : col_cells.second) {
-        dbcell.flag = uint8_t(cell.f);
-        dbcell.key.read(cell.k);
-        dbcell.control = 0;
-        if(cell.__isset.ts)
-          dbcell.set_timestamp(cell.ts);
-        if(cell.__isset.ts_desc)
-          dbcell.set_time_order_desc(cell.ts_desc);
-
-        DB::Cell::Serial::Value::FieldsWriter wfields;
-        Converter::set(cell.v, wfields);
-        cell.__isset.encoder
-          ? dbcell.set_value(DB::Types::Encoder(uint8_t(cell.encoder)),
-                             wfields.base, wfields.fill())
-          : dbcell.set_value(wfields.base, wfields.fill(), false);
-
-        col->add(dbcell);
-        hdlr->commit_or_wait(col.get());
-      }
-    }
+    set_cols(cells, hdlr);
+    set(cells, hdlr);
 
     if(updater_id) {
       hdlr->commit_or_wait();
@@ -556,7 +499,36 @@ class AppHandler final : virtual public BrokerIf {
       hdlr->commit_if_need();
       hdlr->wait();
     }
-    if((err = hdlr->error()))
+    if(int err = hdlr->error())
+      Converter::exception(err);
+  }
+
+  /* UPDATE-MODELS */
+  virtual void update_by_types(const UCCells& plain,
+                               const UCCellsSerial& serial,
+                               const int64_t updater_id) override {
+    Processing process(this);
+
+    client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
+    if(updater_id)
+      updater(updater_id, hdlr);
+    else
+      hdlr = client::Query::Update::Handlers::Common::make(
+        Env::Clients::get());
+
+    set_cols(plain, hdlr);
+    set_cols(serial, hdlr);
+
+    set(plain, hdlr);
+    set(serial, hdlr);
+
+    if(updater_id) {
+      hdlr->commit_or_wait();
+    } else {
+      hdlr->commit_if_need();
+      hdlr->wait();
+    }
+    if(int err = hdlr->error())
       Converter::exception(err);
   }
 
@@ -586,6 +558,88 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   private:
+
+  SWC_CAN_INLINE
+  static void set_cols(const UCCells& cells,
+                       client::Query::Update::Handlers::Common::Ptr& hdlr) {
+    int err = Error::OK;
+    for(auto& col_cells : cells) {
+      if(!hdlr->get(col_cells.first)) {
+        auto schema = hdlr->clients->get_schema(err, col_cells.first);
+        if(err)
+          Converter::exception(err);
+        hdlr->create(schema);
+      }
+    }
+  }
+
+  SWC_CAN_INLINE
+  static void set(const UCCells& cells,
+                  client::Query::Update::Handlers::Common::Ptr& hdlr) {
+    DB::Cells::Cell dbcell;
+    for(auto& col_cells : cells) {
+      auto col = hdlr->get(col_cells.first);
+      for(auto& cell : col_cells.second) {
+        dbcell.flag = uint8_t(cell.f);
+        dbcell.key.read(cell.k);
+        dbcell.control = 0;
+        if(cell.__isset.ts)
+          dbcell.set_timestamp(cell.ts);
+        if(cell.__isset.ts_desc)
+          dbcell.set_time_order_desc(cell.ts_desc);
+
+        cell.__isset.encoder
+          ? dbcell.set_value(
+              DB::Types::Encoder(uint8_t(cell.encoder)), cell.v)
+          : dbcell.set_value(cell.v);
+
+        col->add(dbcell);
+        hdlr->commit_or_wait(col.get());
+      }
+    }
+  }
+
+  SWC_CAN_INLINE
+  static void set_cols(const UCCellsSerial& cells,
+                       client::Query::Update::Handlers::Common::Ptr& hdlr) {
+    int err = Error::OK;
+    for(auto& col_cells : cells) {
+      if(!hdlr->get(col_cells.first)) {
+        auto schema = hdlr->clients->get_schema(err, col_cells.first);
+        if(err)
+          Converter::exception(err);
+        hdlr->create(schema);
+      }
+    }
+  }
+
+  SWC_CAN_INLINE
+  static void set(const UCCellsSerial& cells,
+                  client::Query::Update::Handlers::Common::Ptr& hdlr) {
+    DB::Cells::Cell dbcell;
+    for(auto& col_cells : cells) {
+      auto col = hdlr->get(col_cells.first);
+      for(auto& cell : col_cells.second) {
+        dbcell.flag = uint8_t(cell.f);
+        dbcell.key.read(cell.k);
+        dbcell.control = 0;
+        if(cell.__isset.ts)
+          dbcell.set_timestamp(cell.ts);
+        if(cell.__isset.ts_desc)
+          dbcell.set_time_order_desc(cell.ts_desc);
+
+        DB::Cell::Serial::Value::FieldsWriter wfields;
+        Converter::set(cell.v, wfields);
+        cell.__isset.encoder
+          ? dbcell.set_value(DB::Types::Encoder(uint8_t(cell.encoder)),
+                             wfields.base, wfields.fill())
+          : dbcell.set_value(wfields.base, wfields.fill(), false);
+
+        col->add(dbcell);
+        hdlr->commit_or_wait(col.get());
+      }
+    }
+  }
 
   void updater_close() {
     for(client::Query::Update::Handlers::Common::Ptr hdlr;;) {

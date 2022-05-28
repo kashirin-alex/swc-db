@@ -69,10 +69,10 @@ const char* SWC_CONST_FUNC to_string(Flag flag) noexcept;
 Flag SWC_PURE_FUNC flag_from(const uint8_t* rptr, uint32_t len) noexcept;
 
 
-constexpr const int64_t TIMESTAMP_MIN  = INT64_MIN;
-constexpr const int64_t TIMESTAMP_MAX  = INT64_MAX;
 constexpr const int64_t TIMESTAMP_NULL = INT64_MIN + 1;
 constexpr const int64_t TIMESTAMP_AUTO = INT64_MIN + 2;
+constexpr const int64_t TIMESTAMP_MIN  = INT64_MIN + 3;
+constexpr const int64_t TIMESTAMP_MAX  = INT64_MAX;
 
 constexpr const uint8_t TS_DESC        =  0x01;
 constexpr const uint8_t HAVE_ENCODER   =  0x02;

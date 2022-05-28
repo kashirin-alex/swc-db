@@ -48,7 +48,7 @@ public enum FU_LIST_OP
   /// </summary>
   BY_COND = 7,
   /// <summary>
-  /// Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items
+  /// Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion and OP in items
   /// </summary>
   BY_INDEX = 8,
 }

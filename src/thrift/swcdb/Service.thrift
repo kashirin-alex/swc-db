@@ -45,6 +45,14 @@ exception Exception {
 
 
 
+/** The TIMESTAMP NULL value */
+const i64 TIMESTAMP_NULL = -9223372036854775807
+
+/** The TIMESTAMP AUTO value */
+const i64 TIMESTAMP_AUTO = -9223372036854775806
+
+
+
 /** Column Key Sequences */
 enum KeySeq {
   /** Unknown/Unrecognized Type */
@@ -802,7 +810,7 @@ enum FU_LIST_OP {
   /** Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator */
   BY_COND         = 7,
 
-  /** Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items  */
+  /** Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion and OP in items  */
   BY_INDEX        = 8
 }
 
@@ -1288,6 +1296,24 @@ service Service {
     2:i64 updater_id = 0
 
   ) throws (1:Exception e),
+
+
+  /** The method is to update cells by several Column-Types,
+    * optionally to work with updater-id.
+    */
+  void update_by_types(
+
+    /** The PLAIN Cells to update  */
+    1:UCCells       plain,
+
+    /** The SERIAL Cells to update  */
+    2:UCCellsSerial serial,
+
+    /** The Updater ID to use for write */
+    3:i64 updater_id = 0
+
+  ) throws (1:Exception e),
+
 
 
   /** The direct method to Manage Column  */

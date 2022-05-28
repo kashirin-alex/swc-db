@@ -1795,6 +1795,8 @@ GType swcdb_thrift_result_get_type (void);
 #define SWCDB_THRIFT_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_RESULT, swcdb_thriftResultClass))
 
 /* constants */
+#define SWCDB_THRIFT_TIMESTAMP_NULL G_GINT64_CONSTANT (-9223372036854775807)
+#define SWCDB_THRIFT_TIMESTAMP_AUTO G_GINT64_CONSTANT (-9223372036854775806)
 #define SWCDB_THRIFT_FU_CTRL_DEFAULT 0
 #define SWCDB_THRIFT_FU_CTRL_NO_ADD_FIELD 1
 #define SWCDB_THRIFT_FU_CTRL_DELETE_FIELD 2
@@ -2526,6 +2528,60 @@ GType swcdb_thrift_service_update_serial_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_UPDATE_SERIAL_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_SERIAL_RESULT))
 #define SWCDB_THRIFT_IS_SERVICE_UPDATE_SERIAL_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_SERIAL_RESULT))
 #define SWCDB_THRIFT_SERVICE_UPDATE_SERIAL_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_SERIAL_RESULT, swcdb_thriftServiceUpdateSerialResultClass))
+
+/* struct ServiceUpdateByTypesArgs */
+struct _swcdb_thriftServiceUpdateByTypesArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GHashTable * plain;
+  gboolean __isset_plain;
+  GHashTable * serial;
+  gboolean __isset_serial;
+  gint64 updater_id;
+  gboolean __isset_updater_id;
+};
+typedef struct _swcdb_thriftServiceUpdateByTypesArgs swcdb_thriftServiceUpdateByTypesArgs;
+
+struct _swcdb_thriftServiceUpdateByTypesArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceUpdateByTypesArgsClass swcdb_thriftServiceUpdateByTypesArgsClass;
+
+GType swcdb_thrift_service_update_by_types_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_ARGS (swcdb_thrift_service_update_by_types_args_get_type())
+#define SWCDB_THRIFT_SERVICE_UPDATE_BY_TYPES_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_ARGS, swcdb_thriftServiceUpdateByTypesArgs))
+#define SWCDB_THRIFT_SERVICE_UPDATE_BY_TYPES_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_BY_TYPES_ARGS, swcdb_thriftServiceUpdateByTypesArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_BY_TYPES_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_BY_TYPES_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_ARGS))
+#define SWCDB_THRIFT_SERVICE_UPDATE_BY_TYPES_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_ARGS, swcdb_thriftServiceUpdateByTypesArgsClass))
+
+/* struct ServiceUpdateByTypesResult */
+struct _swcdb_thriftServiceUpdateByTypesResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceUpdateByTypesResult swcdb_thriftServiceUpdateByTypesResult;
+
+struct _swcdb_thriftServiceUpdateByTypesResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceUpdateByTypesResultClass swcdb_thriftServiceUpdateByTypesResultClass;
+
+GType swcdb_thrift_service_update_by_types_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_RESULT (swcdb_thrift_service_update_by_types_result_get_type())
+#define SWCDB_THRIFT_SERVICE_UPDATE_BY_TYPES_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_RESULT, swcdb_thriftServiceUpdateByTypesResult))
+#define SWCDB_THRIFT_SERVICE_UPDATE_BY_TYPES_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_BY_TYPES_RESULT, swcdb_thriftServiceUpdateByTypesResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_BY_TYPES_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_BY_TYPES_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_RESULT))
+#define SWCDB_THRIFT_SERVICE_UPDATE_BY_TYPES_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_BY_TYPES_RESULT, swcdb_thriftServiceUpdateByTypesResultClass))
 
 /* struct ServiceMngColumnArgs */
 struct _swcdb_thriftServiceMngColumnArgs

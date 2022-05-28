@@ -233,6 +233,21 @@ module Swcdb
             return
           end
 
+          def update_by_types(plain, serial, updater_id)
+            send_update_by_types(plain, serial, updater_id)
+            recv_update_by_types()
+          end
+
+          def send_update_by_types(plain, serial, updater_id)
+            send_message('update_by_types', Update_by_types_args, :plain => plain, :serial => serial, :updater_id => updater_id)
+          end
+
+          def recv_update_by_types()
+            result = receive_message(Update_by_types_result)
+            raise result.e unless result.e.nil?
+            return
+          end
+
           def mng_column(func, schema)
             send_mng_column(func, schema)
             recv_mng_column()
@@ -517,6 +532,17 @@ module Swcdb
               result.e = e
             end
             write_result(result, oprot, 'update_serial', seqid)
+          end
+
+          def process_update_by_types(seqid, iprot, oprot)
+            args = read_args(iprot, Update_by_types_args)
+            result = Update_by_types_result.new()
+            begin
+              @handler.update_by_types(args.plain, args.serial, args.updater_id)
+            rescue ::Swcdb::Thrift::Gen::Exception => e
+              result.e = e
+            end
+            write_result(result, oprot, 'update_by_types', seqid)
           end
 
           def process_mng_column(seqid, iprot, oprot)
@@ -1091,6 +1117,45 @@ module Swcdb
         end
 
         class Update_serial_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          E = 1
+
+          FIELDS = {
+            E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Update_by_types_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          PLAIN = 1
+          SERIAL = 2
+          UPDATER_ID = 3
+
+          FIELDS = {
+            # The PLAIN Cells to update
+            PLAIN => {:type => ::Thrift::Types::MAP, :name => 'plain', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCell}}},
+            # The SERIAL Cells to update
+            SERIAL => {:type => ::Thrift::Types::MAP, :name => 'serial', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCellSerial}}},
+            # The Updater ID to use for write
+            UPDATER_ID => {:type => ::Thrift::Types::I64, :name => 'updater_id', :default => 0}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Update_by_types_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           E = 1
 

@@ -15,6 +15,8 @@ class ServiceConstants {
  public:
   ServiceConstants();
 
+  int64_t TIMESTAMP_NULL;
+  int64_t TIMESTAMP_AUTO;
   int8_t FU_CTRL_DEFAULT;
   int8_t FU_CTRL_NO_ADD_FIELD;
   int8_t FU_CTRL_DELETE_FIELD;

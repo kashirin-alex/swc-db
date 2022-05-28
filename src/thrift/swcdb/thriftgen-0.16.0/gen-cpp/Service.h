@@ -135,6 +135,18 @@ class ServiceIf {
   virtual void update_serial(const UCCellsSerial& cells, const int64_t updater_id) = 0;
 
   /**
+   * The method is to update cells by several Column-Types,
+   * optionally to work with updater-id.
+   * 
+   * @param plain The PLAIN Cells to update
+   * 
+   * @param serial The SERIAL Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  virtual void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) = 0;
+
+  /**
    * The direct method to Manage Column
    * 
    * @param func The Action Function to use
@@ -263,6 +275,9 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void update_serial(const UCCellsSerial& /* cells */, const int64_t /* updater_id */) override {
+    return;
+  }
+  void update_by_types(const UCCells& /* plain */, const UCCellsSerial& /* serial */, const int64_t /* updater_id */) override {
     return;
   }
   void mng_column(const SchemaFunc::type /* func */, const Schema& /* schema */) override {
@@ -2032,6 +2047,147 @@ class Service_update_serial_presult {
 
 };
 
+typedef struct _Service_update_by_types_args__isset {
+  _Service_update_by_types_args__isset() : plain(false), serial(false), updater_id(true) {}
+  bool plain :1;
+  bool serial :1;
+  bool updater_id :1;
+} _Service_update_by_types_args__isset;
+
+class Service_update_by_types_args {
+ public:
+
+  Service_update_by_types_args(const Service_update_by_types_args&);
+  Service_update_by_types_args(Service_update_by_types_args&&) noexcept;
+  Service_update_by_types_args& operator=(const Service_update_by_types_args&);
+  Service_update_by_types_args& operator=(Service_update_by_types_args&&) noexcept;
+  Service_update_by_types_args() noexcept
+                               : updater_id(0LL) {
+  }
+
+  virtual ~Service_update_by_types_args() noexcept;
+  /**
+   * The PLAIN Cells to update
+   */
+  UCCells plain;
+  /**
+   * The SERIAL Cells to update
+   */
+  UCCellsSerial serial;
+  /**
+   * The Updater ID to use for write
+   */
+  int64_t updater_id;
+
+  _Service_update_by_types_args__isset __isset;
+
+  void __set_plain(const UCCells& val);
+
+  void __set_serial(const UCCellsSerial& val);
+
+  void __set_updater_id(const int64_t val);
+
+  bool operator == (const Service_update_by_types_args & rhs) const
+  {
+    if (!(plain == rhs.plain))
+      return false;
+    if (!(serial == rhs.serial))
+      return false;
+    if (!(updater_id == rhs.updater_id))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_by_types_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_by_types_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_update_by_types_pargs {
+ public:
+
+
+  virtual ~Service_update_by_types_pargs() noexcept;
+  /**
+   * The PLAIN Cells to update
+   */
+  const UCCells* plain;
+  /**
+   * The SERIAL Cells to update
+   */
+  const UCCellsSerial* serial;
+  /**
+   * The Updater ID to use for write
+   */
+  const int64_t* updater_id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_by_types_result__isset {
+  _Service_update_by_types_result__isset() : e(false) {}
+  bool e :1;
+} _Service_update_by_types_result__isset;
+
+class Service_update_by_types_result {
+ public:
+
+  Service_update_by_types_result(const Service_update_by_types_result&);
+  Service_update_by_types_result(Service_update_by_types_result&&) noexcept;
+  Service_update_by_types_result& operator=(const Service_update_by_types_result&);
+  Service_update_by_types_result& operator=(Service_update_by_types_result&&) noexcept;
+  Service_update_by_types_result() noexcept {
+  }
+
+  virtual ~Service_update_by_types_result() noexcept;
+  Exception e;
+
+  _Service_update_by_types_result__isset __isset;
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_update_by_types_result & rhs) const
+  {
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_by_types_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_by_types_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_by_types_presult__isset {
+  _Service_update_by_types_presult__isset() : e(false) {}
+  bool e :1;
+} _Service_update_by_types_presult__isset;
+
+class Service_update_by_types_presult {
+ public:
+
+
+  virtual ~Service_update_by_types_presult() noexcept;
+  Exception e;
+
+  _Service_update_by_types_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _Service_mng_column_args__isset {
   _Service_mng_column_args__isset() : func(false), schema(false) {}
   bool func :1;
@@ -3190,6 +3346,19 @@ class ServiceClient : virtual public ServiceIf {
   void send_update_serial(const UCCellsSerial& cells, const int64_t updater_id);
   void recv_update_serial();
   /**
+   * The method is to update cells by several Column-Types,
+   * optionally to work with updater-id.
+   * 
+   * @param plain The PLAIN Cells to update
+   * 
+   * @param serial The SERIAL Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) override;
+  void send_update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id);
+  void recv_update_by_types();
+  /**
    * The direct method to Manage Column
    * 
    * @param func The Action Function to use
@@ -3286,6 +3455,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_serial(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_by_types(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mng_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_compact_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -3311,6 +3481,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
     processMap_["update"] = &ServiceProcessor::process_update;
     processMap_["update_serial"] = &ServiceProcessor::process_update_serial;
+    processMap_["update_by_types"] = &ServiceProcessor::process_update_by_types;
     processMap_["mng_column"] = &ServiceProcessor::process_mng_column;
     processMap_["list_columns"] = &ServiceProcessor::process_list_columns;
     processMap_["compact_columns"] = &ServiceProcessor::process_compact_columns;
@@ -3559,6 +3730,25 @@ class ServiceMultiface : virtual public ServiceIf {
       ifaces_[i]->update_serial(cells, updater_id);
     }
     ifaces_[i]->update_serial(cells, updater_id);
+  }
+
+  /**
+   * The method is to update cells by several Column-Types,
+   * optionally to work with updater-id.
+   * 
+   * @param plain The PLAIN Cells to update
+   * 
+   * @param serial The SERIAL Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_by_types(plain, serial, updater_id);
+    }
+    ifaces_[i]->update_by_types(plain, serial, updater_id);
   }
 
   /**
@@ -3838,6 +4028,19 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void update_serial(const UCCellsSerial& cells, const int64_t updater_id) override;
   int32_t send_update_serial(const UCCellsSerial& cells, const int64_t updater_id);
   void recv_update_serial(const int32_t seqid);
+  /**
+   * The method is to update cells by several Column-Types,
+   * optionally to work with updater-id.
+   * 
+   * @param plain The PLAIN Cells to update
+   * 
+   * @param serial The SERIAL Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) override;
+  int32_t send_update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id);
+  void recv_update_by_types(const int32_t seqid);
   /**
    * The direct method to Manage Column
    * 

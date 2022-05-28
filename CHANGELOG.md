@@ -9,7 +9,8 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    added Thrift Service method 'update_by_types' update with one call
+    added Thrift Service constants TIMESTAMP_NULL & TIMESTAMP_AUTO
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...master)
 ******

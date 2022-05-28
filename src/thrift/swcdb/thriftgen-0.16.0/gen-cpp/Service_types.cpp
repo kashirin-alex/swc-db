@@ -793,7 +793,7 @@ int _kFU_LIST_OPValues[] = {
    */
   FU_LIST_OP::BY_COND,
   /**
-   * Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items
+   * Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion and OP in items
    */
   FU_LIST_OP::BY_INDEX
 };
@@ -831,7 +831,7 @@ const char* _kFU_LIST_OPNames[] = {
    */
   "BY_COND",
   /**
-   * Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items
+   * Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion and OP in items
    */
   "BY_INDEX"
 };

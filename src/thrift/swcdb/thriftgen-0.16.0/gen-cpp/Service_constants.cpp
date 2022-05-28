@@ -11,6 +11,10 @@ namespace SWC { namespace Thrift {
 const ServiceConstants g_Service_constants;
 
 ServiceConstants::ServiceConstants() {
+  TIMESTAMP_NULL = -9223372036854775807LL;
+
+  TIMESTAMP_AUTO = -9223372036854775806LL;
+
   FU_CTRL_DEFAULT = 0;
 
   FU_CTRL_NO_ADD_FIELD = 1;

@@ -10,6 +10,10 @@ require 'swcdb/thrift/gen/service_types'
 module Swcdb
   module Thrift
     module Gen
+      TIMESTAMP_NULL = -9223372036854775807
+
+      TIMESTAMP_AUTO = -9223372036854775806
+
       FU_CTRL_DEFAULT = 0
 
       FU_CTRL_NO_ADD_FIELD = 1

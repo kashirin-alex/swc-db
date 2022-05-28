@@ -200,7 +200,7 @@ module Swcdb
         BY_UNIQUE = 6
         # Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator
         BY_COND = 7
-        # Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items
+        # Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion and OP in items
         BY_INDEX = 8
         VALUE_MAP = {0 => "REPLACE", 1 => "APPEND", 2 => "PREPEND", 3 => "INSERT", 4 => "OVERWRITE", 5 => "ERASE", 6 => "BY_UNIQUE", 7 => "BY_COND", 8 => "BY_INDEX"}
         VALID_VALUES = Set.new([REPLACE, APPEND, PREPEND, INSERT, OVERWRITE, ERASE, BY_UNIQUE, BY_COND, BY_INDEX]).freeze
