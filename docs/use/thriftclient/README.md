@@ -42,13 +42,13 @@ _**Some of use cases can be found at**_:
 
 | Module | Services & Functions | Data types | Constants |
 | --- | --- | --- | --- |
-|Service|[Service](#service-service)|[KeySeq](#enumeration-keyseq)|[FU_CTRL_DEFAULT](#constant-fu_ctrl_default)|
-||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
-||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
-||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
-||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
-||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[SpecFlagsOpt](#enumeration-specflagsopt)||
-||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[SpecIntervalOptions](#enumeration-specintervaloptions)||
+|Service|[Service](#service-service)|[KeySeq](#enumeration-keyseq)|[TIMESTAMP_NULL](#constant-timestamp_null)|
+||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)|[TIMESTAMP_AUTO](#constant-timestamp_auto)|
+||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)|[FU_CTRL_DEFAULT](#constant-fu_ctrl_default)|
+||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
+||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
+||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[SpecFlagsOpt](#enumeration-specflagsopt)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
+||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[SpecIntervalOptions](#enumeration-specintervaloptions)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
 ||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[UpdateOP](#enumeration-updateop)||
 ||	[ &bull; sql_query](#function-servicesql_query)|[Flag](#enumeration-flag)||
 ||	[ &bull; sql_update](#function-servicesql_update)|[FU_MATH_OP](#enumeration-fu_math_op)||
@@ -57,15 +57,15 @@ _**Some of use cases can be found at**_:
 ||	[ &bull; updater_close](#function-serviceupdater_close)|[Schemas](#typedef-schemas)||
 ||	[ &bull; update](#function-serviceupdate)|[Key](#typedef-key)||
 ||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecKey](#typedef-speckey)||
-||	[ &bull; mng_column](#function-servicemng_column)|[SpecKeyIntervals](#typedef-speckeyintervals)||
-||	[ &bull; list_columns](#function-servicelist_columns)|[SpecValues](#typedef-specvalues)||
-||	[ &bull; compact_columns](#function-servicecompact_columns)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
-||	[ &bull; scan](#function-servicescan)|[SpecValuesSerial](#typedef-specvaluesserial)||
-||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[UCells](#typedef-ucells)||
-||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[UCCells](#typedef-uccells)||
-||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[CellValuesSerial](#typedef-cellvaluesserial)||
-||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[CellValuesSerialOp](#typedef-cellvaluesserialop)||
-|||[UCellsSerial](#typedef-ucellsserial)||
+||	[ &bull; update_by_types](#function-serviceupdate_by_types)|[SpecKeyIntervals](#typedef-speckeyintervals)||
+||	[ &bull; mng_column](#function-servicemng_column)|[SpecValues](#typedef-specvalues)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[SpecValuesSerial](#typedef-specvaluesserial)||
+||	[ &bull; scan](#function-servicescan)|[UCells](#typedef-ucells)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[UCCells](#typedef-uccells)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[CellValuesSerial](#typedef-cellvaluesserial)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[CellValuesSerialOp](#typedef-cellvaluesserialop)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[UCellsSerial](#typedef-ucellsserial)||
 |||[UCCellsSerial](#typedef-uccellsserial)||
 |||[CCells](#typedef-ccells)||
 |||[KCells](#typedef-kcells)||
@@ -128,6 +128,8 @@ _**Some of use cases can be found at**_:
 
 |Constant|Type|Value||
 |---|---|---|---|
+| ```TIMESTAMP_NULL``` | ```i64```| ``````-9223372036854775807`````` |The TIMESTAMP NULL value |
+| ```TIMESTAMP_AUTO``` | ```i64```| ``````-9223372036854775806`````` |The TIMESTAMP AUTO value |
 | ```FU_CTRL_DEFAULT``` | ```i8```| ``````0`````` |A control bit of default-state |
 | ```FU_CTRL_NO_ADD_FIELD``` | ```i8```| ``````1`````` |A control bit to not add a new field in case a field for update does not exist (Except for BY_INDEX OP) |
 | ```FU_CTRL_DELETE_FIELD``` | ```i8```| ``````2`````` |A control bit to delete the given field |
@@ -207,6 +209,8 @@ The available logical Comparators, plus extended logic options applied with 'v' 
 |```POSPS```|```16```|[ &lt;~   ]  :   -posupset [posps]  (eq/part ordered superset) |
 |```FOSBS```|```17```|[ -&gt;   ]  :   -fosubset [fosbs]  (eq/full ordered subset) |
 |```FOSPS```|```18```|[ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset) |
+|```FIP```|```19```|[ :&lt;   ]  :   -fip  (fraction include prior) |
+|```FI```|```20```|[ :       ]  :   -fi   (fraction include) |
 
 ### Enumeration: SpecFlagsOpt
 The Scan options Flags Specifications for the SpecFlags 'options' bit 
@@ -272,7 +276,7 @@ LIST Operations for Serial Field Update of array/list/bytes with LIST-op in the 
 |```ERASE```|```5```|Supported by field-types: BYTES, LIST_BYTES, LIST_INT64. Erases the position in a field value |
 |```BY_UNIQUE```|```6```|Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP |
 |```BY_COND```|```7```|Supported by field-types: LIST_BYTES, LIST_INT64. The field value items have CTRL_VALUE_SET/DEL OP and Comparator |
-|```BY_INDEX```|```8```|Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion & OP in items |
+|```BY_INDEX```|```8```|Supported by field-types: LIST_BYTES, LIST_INT64. The field value is with Postion and OP in items |
 
 ### Enumeration: CellsResult
 The Cells Results types for using with CellsGroup requests 
@@ -1054,6 +1058,21 @@ The direct method to update cells with cell in Update-Columns-Cells-Serial, opti
 * parameters:
 1. cells - The Serial Cells to update 
 2. updater_id - The Updater ID to use for write 
+
+
+#### Function: Service.update_by_types
+The method is to update cells by several Column-Types, optionally to work with updater-id. 
+
+```void```
+ _update_by_types_([```UCCells```](#typedef-uccells) plain,
+[```UCCellsSerial```](#typedef-uccellsserial) serial,
+```i64``` updater_id = ```0```)
+> throws [```Exception```](#exception-exception)
+
+* parameters:
+1. plain - The PLAIN Cells to update 
+2. serial - The SERIAL Cells to update 
+3. updater_id - The Updater ID to use for write 
 
 
 #### Function: Service.mng_column

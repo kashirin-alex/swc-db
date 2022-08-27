@@ -171,30 +171,7 @@ Comp from(const char** buf, uint32_t* remainp, uint8_t extended)  noexcept {
 }
 
 
-const char* to_string(Comp comp, uint8_t extended) noexcept {
-
-  if(extended) {
-    if(extended & COMP_EXTENDED_VALUE) switch (comp) {
-      case Comp::VGT:
-        return COMP_VGT;
-      case Comp::VGE:
-        return COMP_VGE;
-      case Comp::VLE:
-        return COMP_VLE;
-      case Comp::VLT:
-        return COMP_VLT;
-      default:
-        break;
-    }
-    if(extended & COMP_EXTENDED_KEY) switch (comp) {
-      case Comp::FIP:
-        return COMP_FIP;
-      case Comp::FI:
-        return COMP_FI;
-      default:
-        break; 
-    } 
-  }
+const char* to_string(Comp comp) noexcept {
 
   switch (comp) {
     case Comp::EQ:
@@ -225,6 +202,18 @@ const char* to_string(Comp comp, uint8_t extended) noexcept {
       return COMP_FOSBS;
     case Comp::FOSPS:
       return COMP_FOSPS;
+    case Comp::VGT:
+      return COMP_VGT;
+    case Comp::VGE:
+      return COMP_VGE;
+    case Comp::VLE:
+      return COMP_VLE;
+    case Comp::VLT:
+      return COMP_VLT;
+    case Comp::FIP:
+      return COMP_FIP;
+    case Comp::FI:
+      return COMP_FI;
     default:
       return COMP_NONE;
   }

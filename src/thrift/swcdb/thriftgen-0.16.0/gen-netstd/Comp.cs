@@ -91,4 +91,12 @@ public enum Comp
   /// [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
   /// </summary>
   FOSPS = 18,
+  /// <summary>
+  /// [ :&lt;   ]  :   -fip  (fraction include prior)
+  /// </summary>
+  FIP = 19,
+  /// <summary>
+  /// [ :       ]  :   -fi   (fraction include)
+  /// </summary>
+  FI = 20,
 }

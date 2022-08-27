@@ -157,6 +157,8 @@ class Comp(object):
     POSPS = 16
     FOSBS = 17
     FOSPS = 18
+    FIP = 19
+    FI = 20
 
     _VALUES_TO_NAMES = {
         0: "NONE",
@@ -178,6 +180,8 @@ class Comp(object):
         16: "POSPS",
         17: "FOSBS",
         18: "FOSPS",
+        19: "FIP",
+        20: "FI",
     }
 
     _NAMES_TO_VALUES = {
@@ -200,6 +204,8 @@ class Comp(object):
         "POSPS": 16,
         "FOSBS": 17,
         "FOSPS": 18,
+        "FIP": 19,
+        "FI": 20,
     }
 
 

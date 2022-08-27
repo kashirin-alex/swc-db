@@ -77,7 +77,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     }
 
     void print(std::ostream& out) const {
-      out << Condition::to_string(comp, true) << '"' << *this << '"';
+      out << Condition::to_string(comp) << '"' << *this << '"';
     }
 
   };

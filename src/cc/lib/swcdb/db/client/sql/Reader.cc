@@ -162,17 +162,17 @@ Reader::get_schema(const Clients::Ptr& clients,
     if(!patterns.names.empty()) {
       msg.append(" names=[");
       for(auto& p : patterns.names) {
-        msg.append(Condition::to_string(p.comp, true));
+        msg.append(Condition::to_string(p.comp));
         msg.append("'" + p + "', ");
       }
       msg += ']';
     }
     if(!patterns.tags.empty() || patterns.tags.comp != Condition::NONE) {
       msg.append(" tags");
-      msg.append(Condition::to_string(patterns.tags.comp, false));
+      msg.append(Condition::to_string(patterns.tags.comp));
       msg += '[';
       for(auto& p : patterns.tags) {
-        msg.append(Condition::to_string(p.comp, true));
+        msg.append(Condition::to_string(p.comp));
         msg.append("'" + p + "', ");
       }
       msg += ']';
@@ -432,7 +432,7 @@ void Reader::read_column_tags(DB::Schemas::TagsPattern& tags) {
      comp != Condition::FOSPS ) {
     error_msg(Error::SQL_PARSE_ERROR,
       std::string("unsupported 'comparator' ") +
-      Condition::to_string(comp, true)
+      Condition::to_string(comp)
     );
     return;
   }

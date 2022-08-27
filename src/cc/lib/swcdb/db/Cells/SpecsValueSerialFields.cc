@@ -44,7 +44,7 @@ bool Field_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
 
 void Field_INT64::print(std::ostream& out) const {
   out << fid << ':' << 'I' << ':'
-      << Condition::to_string(comp, true) << value;
+      << Condition::to_string(comp) << value;
 }
 //
 
@@ -81,7 +81,7 @@ bool Field_DOUBLE::is_matching(Cell::Serial::Value::Field* vfieldp) {
 
 void Field_DOUBLE::print(std::ostream& out) const {
   out << fid << ':' << 'D' << ':'
-      << Condition::to_string(comp, true) << value;
+      << Condition::to_string(comp) << value;
 }
 //
 
@@ -128,7 +128,7 @@ bool Field_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
 
 void Field_BYTES::print(std::ostream& out) const {
   out << fid << ':' << 'B' << ':'
-      << Condition::to_string(comp, true) << '"';
+      << Condition::to_string(comp) << '"';
   char hex[5];
   hex[4] = '\0';
   const uint8_t* end = value.base + value.size;
@@ -389,9 +389,9 @@ bool Field_LIST_INT64::is_matching(Cell::Serial::Value::Field* vfieldp) {
 }
 
 void Field_LIST_INT64::print(std::ostream& out) const {
-  out << fid << ":LI:" << Condition::to_string(comp, true) << '[';
+  out << fid << ":LI:" << Condition::to_string(comp) << '[';
   if(!items.empty()) for(auto it = items.cbegin(); ;) {
-    out << Condition::to_string(it->comp, true) << it->value;
+    out << Condition::to_string(it->comp) << it->value;
     if(++it == items.cend())
       break;
     out << ',';
@@ -644,9 +644,9 @@ bool Field_LIST_BYTES::is_matching(Cell::Serial::Value::Field* vfieldp) {
 }
 
 void Field_LIST_BYTES::print(std::ostream& out) const {
-  out << fid << ":LB:" << Condition::to_string(comp, true) << '[';
+  out << fid << ":LB:" << Condition::to_string(comp) << '[';
   if(!items.empty()) for(auto it = items.cbegin(); ;) {
-    out << Condition::to_string(it->comp, true) << '\'';
+    out << Condition::to_string(it->comp) << '\'';
     char hex[5];
     hex[4] = '\0';
     const uint8_t* cptr = reinterpret_cast<const uint8_t*>(it->value.c_str());

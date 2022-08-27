@@ -376,8 +376,6 @@ bool
 Key::is_matching(const Cell::Key &key) const {
   if(empty())
     return true;
-  Condition::Comp comp = Condition::NONE;
-
   const uint8_t* ptr = key.data;
   uint32_t len;
   auto it = cbegin();
@@ -385,12 +383,10 @@ Key::is_matching(const Cell::Key &key) const {
     len = Serialization::decode_vi24(&ptr);
     if(!it->is_matching<T_seq>(ptr, len))
       return false;
-    comp = it->comp;
   }
   if(size() == key.count)
     return true;
-
-  switch(comp) {
+  switch((cend() - 1)->comp) {
     case Condition::FIP:
       return size() <= key.count + 1;
     case Condition::FI:

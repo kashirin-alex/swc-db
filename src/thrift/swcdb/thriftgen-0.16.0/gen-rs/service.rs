@@ -328,6 +328,10 @@ impl Comp {
   pub const FOSBS: Comp = Comp(17);
   /// [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
   pub const FOSPS: Comp = Comp(18);
+  /// [ :&lt;   ]  :   -fip  (fraction include prior)
+  pub const FIP: Comp = Comp(19);
+  /// [ :       ]  :   -fi   (fraction include)
+  pub const FI: Comp = Comp(20);
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
     Self::PF,
@@ -348,6 +352,8 @@ impl Comp {
     Self::POSPS,
     Self::FOSBS,
     Self::FOSPS,
+    Self::FIP,
+    Self::FI,
   ];
   #[allow(clippy::trivially_copy_pass_by_ref)]
   pub fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
@@ -381,6 +387,8 @@ impl From<i32> for Comp {
       16 => Comp::POSPS,
       17 => Comp::FOSBS,
       18 => Comp::FOSPS,
+      19 => Comp::FIP,
+      20 => Comp::FI,
       _ => Comp(i)
     }
   }

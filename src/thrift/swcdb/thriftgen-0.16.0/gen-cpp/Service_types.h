@@ -245,7 +245,15 @@ struct Comp {
     /**
      * [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
      */
-    FOSPS = 18
+    FOSPS = 18,
+    /**
+     * [ :&lt;   ]  :   -fip  (fraction include prior)
+     */
+    FIP = 19,
+    /**
+     * [ :       ]  :   -fi   (fraction include)
+     */
+    FI = 20
   };
 };
 

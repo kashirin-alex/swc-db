@@ -95,7 +95,7 @@ void Value::print(Types::Column col_type, std::ostream& out) const {
 
 void Value::display(Types::Column col_type, std::ostream& out,
                     bool pretty) const {
-  out << "size=" << size << ' ' << Condition::to_string(comp, true);
+  out << "size=" << size << ' ' << Condition::to_string(comp);
   if(size) {
     if(col_type == Types::Column::SERIAL) {
       Serial::Value::Fields(data, size).print(out);

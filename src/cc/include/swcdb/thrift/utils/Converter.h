@@ -262,9 +262,9 @@ void set(const CellValuesSerialOp& value,
 void set(const SpecKey& spec, DB::Specs::Key& dbspec) {
   dbspec.reserve(spec.size());
   for(const auto& fraction : spec) {
-    if(uint8_t(fraction.comp) > 0x8) {
+    if(uint8_t(fraction.comp) > 0x8 && uint8_t(fraction.comp) < 0x13) {
       std::string msg("Key ext-fraction-comp(");
-      msg.append(Condition::to_string(Condition::Comp(fraction.comp), true));
+      msg.append(Condition::to_string(Condition::Comp(fraction.comp)));
       msg.append(")");
       exception(Error::INCOMPATIBLE_OPTIONS, msg);
     }

@@ -112,8 +112,12 @@ module Swcdb
         FOSBS = 17
         # [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
         FOSPS = 18
-        VALUE_MAP = {0 => "NONE", 1 => "PF", 2 => "GT", 3 => "GE", 4 => "EQ", 5 => "LE", 6 => "LT", 7 => "NE", 8 => "RE", 9 => "VGT", 10 => "VGE", 11 => "VLE", 12 => "VLT", 13 => "SBS", 14 => "SPS", 15 => "POSBS", 16 => "POSPS", 17 => "FOSBS", 18 => "FOSPS"}
-        VALID_VALUES = Set.new([NONE, PF, GT, GE, EQ, LE, LT, NE, RE, VGT, VGE, VLE, VLT, SBS, SPS, POSBS, POSPS, FOSBS, FOSPS]).freeze
+        # [ :&lt;   ]  :   -fip  (fraction include prior)
+        FIP = 19
+        # [ :       ]  :   -fi   (fraction include)
+        FI = 20
+        VALUE_MAP = {0 => "NONE", 1 => "PF", 2 => "GT", 3 => "GE", 4 => "EQ", 5 => "LE", 6 => "LT", 7 => "NE", 8 => "RE", 9 => "VGT", 10 => "VGE", 11 => "VLE", 12 => "VLT", 13 => "SBS", 14 => "SPS", 15 => "POSBS", 16 => "POSPS", 17 => "FOSBS", 18 => "FOSPS", 19 => "FIP", 20 => "FI"}
+        VALID_VALUES = Set.new([NONE, PF, GT, GE, EQ, LE, LT, NE, RE, VGT, VGE, VLE, VLT, SBS, SPS, POSBS, POSPS, FOSBS, FOSPS, FIP, FI]).freeze
       end
 
       module SpecFlagsOpt

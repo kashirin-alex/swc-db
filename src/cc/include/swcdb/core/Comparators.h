@@ -105,7 +105,7 @@ const char COMP_FI[]    = ":";
 
 Comp from(const char** buf, uint32_t* remainp, uint8_t extended=0x00)  noexcept;
 
-const char* SWC_CONST_FUNC to_string(Comp comp, uint8_t extended=0x00) noexcept;
+const char* SWC_CONST_FUNC to_string(Comp comp) noexcept;
 
 extern SWC_CAN_INLINE
 const char* to_string(uint8_t comp) {

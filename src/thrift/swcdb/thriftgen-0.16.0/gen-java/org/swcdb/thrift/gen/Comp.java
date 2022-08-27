@@ -86,7 +86,15 @@ public enum Comp implements org.apache.thrift.TEnum {
   /**
    * [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
    */
-  FOSPS(18);
+  FOSPS(18),
+  /**
+   * [ :&lt;   ]  :   -fip  (fraction include prior)
+   */
+  FIP(19),
+  /**
+   * [ :       ]  :   -fi   (fraction include)
+   */
+  FI(20);
 
   private final int value;
 
@@ -146,6 +154,10 @@ public enum Comp implements org.apache.thrift.TEnum {
         return FOSBS;
       case 18:
         return FOSPS;
+      case 19:
+        return FIP;
+      case 20:
+        return FI;
       default:
         return null;
     }

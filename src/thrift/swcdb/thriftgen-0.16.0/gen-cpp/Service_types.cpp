@@ -365,7 +365,15 @@ int _kCompValues[] = {
   /**
    * [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
    */
-  Comp::FOSPS
+  Comp::FOSPS,
+  /**
+   * [ :&lt;   ]  :   -fip  (fraction include prior)
+   */
+  Comp::FIP,
+  /**
+   * [ :       ]  :   -fi   (fraction include)
+   */
+  Comp::FI
 };
 const char* _kCompNames[] = {
   /**
@@ -443,9 +451,17 @@ const char* _kCompNames[] = {
   /**
    * [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset)
    */
-  "FOSPS"
+  "FOSPS",
+  /**
+   * [ :&lt;   ]  :   -fip  (fraction include prior)
+   */
+  "FIP",
+  /**
+   * [ :       ]  :   -fi   (fraction include)
+   */
+  "FI"
 };
-const std::map<int, const char*> _Comp_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(19, _kCompValues, _kCompNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _Comp_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(21, _kCompValues, _kCompNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const Comp::type& val) {
   std::map<int, const char*>::const_iterator it = _Comp_VALUES_TO_NAMES.find(val);

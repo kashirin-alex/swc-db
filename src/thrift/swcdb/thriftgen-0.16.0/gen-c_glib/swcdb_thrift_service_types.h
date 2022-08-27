@@ -88,7 +88,9 @@ enum _swcdb_thriftComp {
   SWCDB_THRIFT_COMP_POSBS = 15,
   SWCDB_THRIFT_COMP_POSPS = 16,
   SWCDB_THRIFT_COMP_FOSBS = 17,
-  SWCDB_THRIFT_COMP_FOSPS = 18
+  SWCDB_THRIFT_COMP_FOSPS = 18,
+  SWCDB_THRIFT_COMP_FIP = 19,
+  SWCDB_THRIFT_COMP_FI = 20
 };
 typedef enum _swcdb_thriftComp swcdb_thriftComp;
 
