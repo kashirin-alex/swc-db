@@ -116,7 +116,7 @@ class RgrData final {
       auto& key_intval = spec.key_intervals.add();
       key_intval.start.reserve(2);
       key_intval.start.add(std::to_string(cid), Condition::EQ);
-      key_intval.start.add("", Condition::GE);
+      key_intval.start.add("", Condition::FIP);
 
       auto hdlr = SyncSelector::Ptr(new SyncSelector());
       hdlr->scan(

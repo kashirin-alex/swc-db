@@ -44,7 +44,7 @@ class Reader {
 
   bool found_token(const char* token, uint8_t token_len);
 
-  bool found_comparator(Condition::Comp& comp, bool extended=false);
+  bool found_comparator(Condition::Comp& comp, uint8_t extended=0x00);
 
   void seek_space();
 
@@ -52,7 +52,7 @@ class Reader {
 
   void expect_comma(bool& comma);
 
-  void expect_comparator(Condition::Comp& comp, bool extended=false);
+  void expect_comparator(Condition::Comp& comp, uint8_t extended=0x00);
 
   void expect_digit();
 

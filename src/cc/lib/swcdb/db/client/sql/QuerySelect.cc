@@ -778,7 +778,7 @@ void QuerySelect::read_key(DB::Specs::Key& key) {
     if(found_space())
       continue;
 
-    found_comparator(comp);
+    found_comparator(comp, Condition::COMP_EXTENDED_KEY);
     if(comp == Condition::NONE)
       comp = Condition::EQ;
     read(fraction, ",]");
@@ -797,7 +797,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
                              DB::Specs::Value& value) {
   switch(col_type) {
     case DB::Types::Column::SERIAL: {
-      found_comparator(value.comp, false);
+      found_comparator(value.comp);
       if(value.comp == Condition::NONE)
         value.comp = Condition::EQ;
       else if(value.comp != Condition::EQ && value.comp != Condition::NE)
@@ -829,7 +829,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
 
           case DB::Specs::Serial::Value::Type::INT64: {
             Condition::Comp comp = Condition::NONE;
-            found_comparator(comp, false);
+            found_comparator(comp);
             if(!is_numeric_comparator(comp))
               return;
             int64_t v;
@@ -844,7 +844,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
 
           case DB::Specs::Serial::Value::Type::DOUBLE: {
             Condition::Comp comp = Condition::NONE;
-            found_comparator(comp, false);
+            found_comparator(comp);
             if(!is_numeric_comparator(comp, true))
               return;
             long double v;
@@ -859,7 +859,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
 
           case DB::Specs::Serial::Value::Type::BYTES: {
             Condition::Comp comp = Condition::NONE;
-            found_comparator(comp, true);
+            found_comparator(comp, Condition::COMP_EXTENDED_VALUE);
             if(comp == Condition::NONE)
               comp = Condition::EQ;
             std::string buf;
@@ -873,7 +873,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
 
           case DB::Specs::Serial::Value::Type::KEY: {
             Condition::Comp comp = Condition::NONE;
-            found_comparator(comp, false);
+            found_comparator(comp, Condition::COMP_EXTENDED_KEY);
             if(comp == Condition::NONE)
               comp = Condition::EQ;
             else if(comp != Condition::EQ)
@@ -897,7 +897,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
 
           case DB::Specs::Serial::Value::Type::LIST_INT64: {
             Condition::Comp comp = Condition::NONE;
-            found_comparator(comp, false);
+            found_comparator(comp);
             if(comp == Condition::NONE)
               comp = Condition::EQ;
             else if(comp == Condition::RE || comp == Condition::PF)
@@ -911,7 +911,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               fid, comp);
             do {
               auto& item = field->items.emplace_back();
-              found_comparator(item.comp = Condition::NONE, false);
+              found_comparator(item.comp = Condition::NONE);
               if(!is_numeric_comparator(item.comp))
                 return;
               std::string buff;
@@ -938,7 +938,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
 
           case DB::Specs::Serial::Value::Type::LIST_BYTES: {
             Condition::Comp comp = Condition::NONE;
-            found_comparator(comp, true);
+            found_comparator(comp, Condition::COMP_EXTENDED_VALUE);
             if(comp == Condition::NONE)
               comp = Condition::EQ;
             seek_space();
@@ -949,7 +949,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
               fid, comp);
             do {
               auto& item = field->items.emplace_back();
-              found_comparator(item.comp = Condition::NONE, false);
+              found_comparator(item.comp = Condition::NONE);
               read(item.value, ",]", item.comp == Condition::RE);
               if(err)
                 return;
@@ -989,7 +989,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
     case DB::Types::Column::COUNTER_I32:
     case DB::Types::Column::COUNTER_I16:
     case DB::Types::Column::COUNTER_I8: {
-      found_comparator(value.comp, false);
+      found_comparator(value.comp);
       if(!is_numeric_comparator(value.comp))
         return;
       std::string buf;
@@ -999,7 +999,7 @@ void QuerySelect::read_value(DB::Types::Column col_type,
       break;
     }
     default: {
-      found_comparator(value.comp, true);
+      found_comparator(value.comp, Condition::COMP_EXTENDED_VALUE);
       if(value.comp == Condition::NONE)
         value.comp = Condition::EQ;
       std::string buf;

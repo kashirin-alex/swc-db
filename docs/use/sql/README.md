@@ -101,6 +101,8 @@ The key fields:
 |```POSPS```   | ``` <~ ```           | eq/part ordered superset  |
 |```FOSBS```   | ``` <- ```           | eq/full ordered superset  |
 |```FOSPS```   | ``` -> ```           | eq/full ordered superset  |
+|```FIP```     | ``` :< ```           | fraction include prior    |
+|```FI```      | ``` : ```            | fraction include          |
 
 
 
@@ -332,8 +334,8 @@ The Exact Cell Key match condition is when Comparator is EQ and Condition-Key is
 
 * ##### The Condition-Key syntax
 The Condition of Key is the Fractions in square-brackets with each Fraction having an option to match on Comparator with Value/Expression. Without a Comparator applied to a Fraction the Comparator is auto-set to EQ. \
-Optionally to select all the inner/deeper-level fractions including or excluding the prior Fraction by setting last fraction with Comparators GT or GE. \
-***```[ COMP"F1",  COMP"F2",  COMP"F3",  COMP"F4",  COMP"F5",  COMP"F6",  COMP"F7", >="" ]```***
+Optionally to select all the inner/deeper-level fractions including or excluding the prior Fraction by setting last fraction with Comparators FI or FIP. \
+***```[ COMP"F1",  COMP"F2",  COMP"F3",  COMP"F4",  COMP"F5",  COMP"F6",  COMP"F7", :<"" ]```***
 
 
 * ##### The Condition-Value syntax

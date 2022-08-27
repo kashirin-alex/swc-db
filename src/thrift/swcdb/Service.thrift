@@ -273,6 +273,12 @@ enum Comp {
   /** [ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset) */
   FOSPS   = 0x12,
 
+  /** [ :&lt;   ]  :   -fip  (fraction include prior) */
+  FIP     = 0x13,
+
+  /** [ :       ]  :   -fi   (fraction include) */
+  FI      = 0x14,
+
 }
 
 

@@ -21,7 +21,8 @@ namespace SWC {
  */
 namespace Condition {
 
-
+const uint COMP_EXTENDED_VALUE = 0x01;
+const uint COMP_EXTENDED_KEY   = 0x02;
 
 enum Comp : uint8_t {
   NONE    = 0x00, // [      ] :  -none            (no comparison aplied)
@@ -34,7 +35,7 @@ enum Comp : uint8_t {
   NE      = 0x07, // [  !=  ] :  -ne              (not-equal)
   RE      = 0x08, // [  re  ] :  -re [r,regexp]   (regular-expression)
 
-  // extended logic options: ge,le,gt,lt are LEXIC and with 'V' VOLUME
+  // (COMP_EXTENDED_VALUE) extended logic options: ge,le,gt,lt are LEXIC and with 'V' VOLUME
   VGT     = 0x09, // [  v>  ] :  -vgt              (vol greater-than)
   VGE     = 0x0A, // [  v>= ] :  -vge              (vol greater-equal)
   VLE     = 0x0B, // [  v<= ] :  -vle              (vol lower-equal)
@@ -47,7 +48,6 @@ enum Comp : uint8_t {
   POSPS   = 0x10, // [  <~  ] :  -posupset [posps] (eq/part ordered superset)
   FOSBS   = 0x11, // [  ->  ] :  -fosubset [fosbs] (eq/full ordered subset)
   FOSPS   = 0x12, // [  <-  ] :  -fosupset [fosps] (eq/full ordered superset)
-
   /*  p1(spec) p2(data)
     SUBSET:
       int/double - (p2 <% p1) True is ((p1 mod p2) == 0)
@@ -70,6 +70,10 @@ enum Comp : uint8_t {
       int - (p2 -> p1) True is ((p2 OR p1) == p2)
       domain object True is (p2[6,1,2,3,9] '->' p1[1,2,3])
   */
+
+  // COMP_EXTENDED_KEY () extended key
+  FIP     = 0x13, // [  :<  ] :  -fip             (fraction include prior)
+  FI      = 0x14, // [  :   ] :  -fi              (fraction include)
 
 };
 
@@ -94,12 +98,14 @@ const char COMP_POSBS[] = "~>";
 const char COMP_POSPS[] = "<~";
 const char COMP_FOSBS[] = "->";
 const char COMP_FOSPS[] = "<-";
+const char COMP_FIP[]   = ":<";
+const char COMP_FI[]    = ":";
 
 
 
-Comp from(const char** buf, uint32_t* remainp, bool extended=false)  noexcept;
+Comp from(const char** buf, uint32_t* remainp, uint8_t extended=0x00)  noexcept;
 
-const char* SWC_CONST_FUNC to_string(Comp comp, bool extended=false) noexcept;
+const char* SWC_CONST_FUNC to_string(Comp comp, uint8_t extended=0x00) noexcept;
 
 extern SWC_CAN_INLINE
 const char* to_string(uint8_t comp) {

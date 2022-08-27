@@ -627,7 +627,7 @@ SpecScan select_specs(Client& client) {
     key_intval.start.resize(2);
     key_intval.start[0].__set_comp(Comp::EQ);
     key_intval.start[0].__set_f("a1");
-    key_intval.start[1].__set_comp(Comp::GE);
+    key_intval.start[1].__set_comp(Comp::FIP);
     key_intval.start[1].__set_f("");
   }
   return ss;

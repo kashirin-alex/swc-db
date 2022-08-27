@@ -255,6 +255,8 @@ void Interval::apply_possible_range(DB::Cell::Key& key, bool ending,
           case Condition::PF:
           case Condition::GT:
           case Condition::GE:
+          case Condition::FIP:
+          case Condition::FI:
             if(ending)
               continue;
             break;

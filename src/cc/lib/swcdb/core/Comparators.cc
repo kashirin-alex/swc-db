@@ -12,7 +12,7 @@ namespace SWC { namespace Condition {
 
 
 
-Comp from(const char** buf, uint32_t* remainp, bool extended)  noexcept {
+Comp from(const char** buf, uint32_t* remainp, uint8_t extended)  noexcept {
   Comp comp = Comp::NONE;
 
   if(*remainp > 7) {
@@ -68,16 +68,22 @@ Comp from(const char** buf, uint32_t* remainp, bool extended)  noexcept {
     } else if(str_case_eq(*buf, "sps", 3)) {
       comp = Comp::SPS;
     } else if(extended) {
-      if(str_case_eq(*buf, COMP_VGE, 3) ||
-         str_case_eq(*buf, "vge", 3))
-        comp = Comp::VGE;
-      else if(str_case_eq(*buf, COMP_VLE, 3) ||
-              str_case_eq(*buf, "vle", 3))
-        comp = Comp::VLE;
-      else if(str_case_eq(*buf, "vgt", 3))
-        comp = Comp::VGT;
-      else if(str_case_eq(*buf, "vlt", 3))
-        comp = Comp::VLT;
+      if (extended & COMP_EXTENDED_VALUE) {
+        if(str_case_eq(*buf, COMP_VGE, 3) ||
+          str_case_eq(*buf, "vge", 3))
+          comp = Comp::VGE;
+        else if(str_case_eq(*buf, COMP_VLE, 3) ||
+                str_case_eq(*buf, "vle", 3))
+          comp = Comp::VLE;
+        else if(str_case_eq(*buf, "vgt", 3))
+          comp = Comp::VGT;
+        else if(str_case_eq(*buf, "vlt", 3))
+          comp = Comp::VLT;
+      }
+      if(extended & COMP_EXTENDED_KEY) {
+        if(str_case_eq(*buf, "fip", 3))
+          comp = Comp::FIP;
+      }
     }
     if(comp != Comp::NONE) {
       *buf += 3;
@@ -118,14 +124,21 @@ Comp from(const char** buf, uint32_t* remainp, bool extended)  noexcept {
       comp = Comp::POSPS;
     else if(str_case_eq(*buf, COMP_FOSBS, 2))
       comp = Comp::FOSBS;
-    else if(str_case_eq(*buf, COMP_FOSPS, 2))
+    else if(str_case_eq(*buf, COMP_FOSPS, 2)) {
       comp = Comp::FOSPS;
-
-    if(extended) {
-      if(str_case_eq(*buf, COMP_VGT, 2))
-        comp = Comp::VGT;
-      else if(str_case_eq(*buf, COMP_VLT, 2))
-        comp = Comp::VLT;
+    } else if(extended) {
+      if(extended & COMP_EXTENDED_VALUE) {
+        if(str_case_eq(*buf, COMP_VGT, 2))
+          comp = Comp::VGT;
+        else if(str_case_eq(*buf, COMP_VLT, 2))
+          comp = Comp::VLT;
+      }
+      if(extended & COMP_EXTENDED_KEY) {
+        if(str_case_eq(*buf, COMP_FIP, 2))
+          comp = Comp::FIP;
+        else if(str_case_eq(*buf, "fi", 2))
+          comp = Comp::FI;
+      }
     }
 
     if(comp != Comp::NONE) {
@@ -142,6 +155,8 @@ Comp from(const char** buf, uint32_t* remainp, bool extended)  noexcept {
       comp = Comp::LT;
     else if(**buf == '=')
       comp = Comp::EQ;
+    else if(extended & COMP_EXTENDED_KEY && **buf == ':')
+      comp = Comp::FI;
     else if(**buf == 'r' || **buf == 'R')
       comp = Comp::RE;
 
@@ -156,19 +171,29 @@ Comp from(const char** buf, uint32_t* remainp, bool extended)  noexcept {
 }
 
 
-const char* to_string(Comp comp, bool extended) noexcept {
+const char* to_string(Comp comp, uint8_t extended) noexcept {
 
-  if(extended) switch (comp) {
-    case Comp::VGT:
-      return COMP_VGT;
-    case Comp::VGE:
-      return COMP_VGE;
-    case Comp::VLE:
-      return COMP_VLE;
-    case Comp::VLT:
-      return COMP_VLT;
-    default:
-      break;
+  if(extended) {
+    if(extended & COMP_EXTENDED_VALUE) switch (comp) {
+      case Comp::VGT:
+        return COMP_VGT;
+      case Comp::VGE:
+        return COMP_VGE;
+      case Comp::VLE:
+        return COMP_VLE;
+      case Comp::VLT:
+        return COMP_VLT;
+      default:
+        break;
+    }
+    if(extended & COMP_EXTENDED_KEY) switch (comp) {
+      case Comp::FIP:
+        return COMP_FIP;
+      case Comp::FI:
+        return COMP_FI;
+      default:
+        break; 
+    } 
   }
 
   switch (comp) {

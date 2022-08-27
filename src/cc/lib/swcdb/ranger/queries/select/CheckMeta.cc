@@ -26,7 +26,7 @@ CheckMeta::CheckMeta(const RangePtr& a_range,
     auto& key_intval = spec.key_intervals.add();
     key_intval.start.reserve(2);
     key_intval.start.add(std::to_string(range->cfg->cid), Condition::EQ);
-    key_intval.start.add("", Condition::GE);
+    key_intval.start.add("", Condition::FIP);
 
     DB::Specs::Serial::Value::Fields fields;
     fields.add(

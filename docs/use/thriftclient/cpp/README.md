@@ -162,7 +162,7 @@ int main() {
   key_intval.start[0].__set_f("");
   key_intval.start[1].__set_comp(SWC::Thrift::Comp::EQ);
   key_intval.start[1].__set_f("b");
-  key_intval.start[2].__set_comp(SWC::Thrift::Comp::GE);
+  key_intval.start[2].__set_comp(SWC::Thrift::Comp::FIP);
   key_intval.start[2].__set_f(""); // all on the depth
 
   specs.printTo(std::cout << " Select SpecScan='");

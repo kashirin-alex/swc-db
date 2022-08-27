@@ -76,7 +76,7 @@ cells with key ```[>F(), F(2nd)]``` returning the cells with second fraction equ
 
 
 #### The Comparators in SWC-DB
-The [Comparators]({{ site.baseurl }}/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF ,GT, GE, EQ, LE, LT, NE, RE and domain-object(Fully/Partially sub/sup set) SBS, SPS, POSBS, POSPS, FOSBS and FOSPS, while some Comparators have limitations for range-locator as regexp is evaluated as
+The [Comparators]({{ site.baseurl }}/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF ,GT, GE, EQ, LE, LT, NE, RE, FIP, FI and domain-object(Fully/Partially sub/sup set) SBS, SPS, POSBS, POSPS, FOSBS and FOSPS, while some Comparators have limitations for range-locator as regexp is evaluated as
 NONE being anything-match. Additionally the conditions of comparators applied on the corresponding [“ key-sequence ”]({{ site.baseurl }}/use/thriftclient/#enumeration-keyseq) by column's schema that include
 LEXIC, VOLUME, FC_LEXIC, FC_VOLUME that define the sequence of cells in a range. If a prefix (PF) is desired than the choice will be the LEXIC or with
 FC_LEXIC as VOLUME (volumetric) will not correspond to the char-byte sequence while if desired to have for example a decimal sequence of 0, 1, 2 .. 11

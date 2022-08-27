@@ -473,7 +473,7 @@ void MngdColumns::remove(const DB::Schema::Ptr& schema,
   auto& key_intval = spec.key_intervals.add();
   key_intval.start.reserve(2);
   key_intval.start.add(std::to_string(schema->cid), Condition::EQ);
-  key_intval.start.add("", Condition::GE);
+  key_intval.start.add("", Condition::FIP);
 
   cid_t meta_cid = DB::Types::SystemColumn::get_sys_cid(
     schema->col_seq, DB::Types::SystemColumn::get_range_type(schema->cid));

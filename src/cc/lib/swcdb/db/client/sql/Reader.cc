@@ -64,7 +64,7 @@ bool Reader::found_token(const char* token, uint8_t token_len) {
   return false;
 }
 
-bool Reader::found_comparator(Condition::Comp& comp, bool extended) {
+bool Reader::found_comparator(Condition::Comp& comp, uint8_t extended) {
   while(remain) {
     if(found_space())
       continue;
@@ -90,7 +90,7 @@ void Reader::expect_comma(bool& comma) {
   expect_token(",", 1, comma);
 }
 
-void Reader::expect_comparator(Condition::Comp& comp, bool extended) {
+void Reader::expect_comparator(Condition::Comp& comp, uint8_t extended) {
   if(found_comparator(comp, extended) && comp != Condition::NONE)
     return;
   error_msg(Error::SQL_PARSE_ERROR, "missing 'comparator'");
@@ -416,7 +416,7 @@ bool Reader::is_numeric_comparator(Condition::Comp& comp, bool _double) {
 void Reader::read_column_tags(DB::Schemas::TagsPattern& tags) {
   Condition::Comp comp = Condition::NONE;
   seek_space();
-  found_comparator(comp, false);
+  found_comparator(comp);
   if(comp != Condition::NONE &&
      comp != Condition::NE &&
      comp != Condition::GT &&
@@ -451,7 +451,7 @@ void Reader::read_column_tags(DB::Schemas::TagsPattern& tags) {
       }
       return;
     }
-    found_comparator(comp = Condition::NONE, true);
+    found_comparator(comp = Condition::NONE, Condition::COMP_EXTENDED_VALUE);
     seek_space();
     read(buff, ",]", comp == Condition::RE);
     if(!buff.empty() || comp != Condition::NONE) {
@@ -468,7 +468,7 @@ void Reader::read_column(const char* stop,
                          std::string& col_name,
                          DB::Schemas::NamePatterns& names) {
   Condition::Comp comp = Condition::NONE;
-  found_comparator(comp, true);
+  found_comparator(comp, Condition::COMP_EXTENDED_VALUE);
   read(col_name, stop, comp == Condition::RE);
   if(comp != Condition::NONE && comp != Condition::EQ) {
     if(col_name.empty()) {
@@ -740,7 +740,7 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
                       ufield.add_item(0).set_op(&ptr, &remain, err, true);
                     } else if(ufield.is_op_by_cond()) {
                       Condition::Comp comp;
-                      expect_comparator(comp, true);
+                      expect_comparator(comp, Condition::COMP_EXTENDED_VALUE);
                       auto& uitem = ufield.add_item(comp);
                       seek_space();
                       uitem.set_op(&ptr, &remain, err, true);

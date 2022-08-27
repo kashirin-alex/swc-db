@@ -151,7 +151,17 @@ Statistics:
 ```
 
 ```text
-SWC-DB(client)> select where col(load_generator-1)=(cells=([0000099999, >=""]<=key<=[0000099999, >=""] ONLY_KEYS)) DISPLAY_STATS;
+SWC-DB(client)> select where col(load_generator-1)=(cells=([>=0000099998, :<""]<=key<=[<=0000099999, :<""] ONLY_KEYS)) DISPLAY_STATS;
+["0000099998"]
+["0000099998","0000099998"]
+["0000099998","0000099998","0000099998"]
+["0000099998","0000099998","0000099998","0000099998"]
+["0000099998","0000099998","0000099998","0000099998","0000099998"]
+["0000099998","0000099998","0000099998","0000099998","0000099998","0000099998"]
+["0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998"]
+["0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998"]
+["0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998"]
+["0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998","0000099998"]
 ["0000099999"]
 ["0000099999","0000099999"]
 ["0000099999","0000099999","0000099999"]
@@ -165,16 +175,16 @@ SWC-DB(client)> select where col(load_generator-1)=(cells=([0000099999, >=""]<=k
 
 
 Statistics:
- Total Time Took:        2233.94 milliseconds
- Total Cells Count:      10
- Total Cells Size:       725 B
- Average Transfer Rate:  0.324538 B/millisecond
- Average Cells Rate:     0.00447639 cell/millisecond
- Mngr Locate:            2416714ns/2(1)
- Mngr Resolve:           2638030ns/2(0)
- Rgr Locate Master:      1783559ns/2(1)
- Rgr Locate Meta:        1741122ns/2(1)
- Rgr Data:               2222805492ns/1(0)
+ Total Time Took:        1648.25 microseconds
+ Total Cells Count:      20
+ Total Cells Size:       1450 B
+ Average Transfer Rate:  0.879721 B/microsecond
+ Average Cells Rate:     0.0121341 cell/microsecond
+ Mngr Locate:            192659ns 2/1/1
+ Mngr Resolve:           2566ns 2/2/0
+ Rgr Locate Master:      464269ns 2/0/1
+ Rgr Locate Meta:        236872ns 2/0/1
+ Rgr Data:               671630ns 1/0/0
 
 SWC-DB(client)>
 ```

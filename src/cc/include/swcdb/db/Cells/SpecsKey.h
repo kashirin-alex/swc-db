@@ -329,6 +329,9 @@ SWC_CAN_INLINE
 bool
 Fraction::is_matching(const uint8_t* ptr, uint32_t len) const {
   switch(comp) {
+    case Condition::FIP:
+    case Condition::FI:
+      return true;
     case Condition::RE: {
       if(empty())
         return !ptr|| !len;
@@ -384,25 +387,17 @@ Key::is_matching(const Cell::Key &key) const {
       return false;
     comp = it->comp;
   }
-  if(size() == key.count || // [,,>=''] spec incl. prior-match
-     (size() == key.count + 1 && it->empty() && it->comp == Condition::GE))
+  if(size() == key.count)
     return true;
 
   switch(comp) {
-    case Condition::LT:
-    case Condition::LE:
-      return empty() || size() > key.count;
-    case Condition::GT:
-      return empty() || size() < key.count;
-    case Condition::GE:
-      return empty() || size() < key.count;
-    case Condition::PF:
-    case Condition::RE:
-      return size() < key.count;
-    case Condition::NE:
+    case Condition::FIP:
+      return size() <= key.count + 1;
+    case Condition::FI:
+      return size() <= key.count;
     case Condition::NONE:
       return true;
-    default: // Condition::EQ:
+    default:
       return false;
   }
 }

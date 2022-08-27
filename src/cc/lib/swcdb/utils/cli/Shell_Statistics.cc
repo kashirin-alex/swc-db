@@ -279,7 +279,7 @@ bool Statistics::read(std::string& cmd, bool extended) {
         it_set = it;
         continue;
       }
-      it->comp = Condition::GE;
+      it->comp = Condition::FIP;
     }
     if(it == g.key.cbegin()) {
       g.key.clear();
@@ -460,7 +460,7 @@ void Statistics::set_definitions(DB::Specs::Scan& specs) {
       Condition::EQ
     );
     if(g.key.empty())
-      key_intval.start.add("", Condition::GE);
+      key_intval.start.add("", Condition::FIP);
   }
 
   auto hdlr = client::Query::Select::Handlers::Common::make(
@@ -665,7 +665,7 @@ bool Statistics::show() {
       if(g.last) {
         key_intval.finish.add(
           std::to_string(g.since + g.last), Condition::LT);
-        key_intval.finish.add("", Condition::GE);
+        key_intval.finish.add("", Condition::FIP);
       }
     } else {
       int64_t secs = ::time(nullptr);
@@ -675,7 +675,7 @@ bool Statistics::show() {
         Condition::GE);
     }
     if(empty && !key_intval.start.empty())
-      key_intval.start.add("", Condition::GE);
+      key_intval.start.add("", Condition::FIP);
 
     SWC_LOG_OUT(
       LOG_DEBUG,
@@ -823,7 +823,7 @@ bool Statistics::truncate() {
       if(g.last) {
         key_intval.finish.add(
           std::to_string(g.since + g.last), Condition::LT);
-        key_intval.finish.add("", Condition::GE);
+        key_intval.finish.add("", Condition::FIP);
       }
     } else {
       int64_t secs = ::time(nullptr);
@@ -833,7 +833,7 @@ bool Statistics::truncate() {
         Condition::GE);
     }
     if(empty && !key_intval.start.empty())
-      key_intval.start.add("", Condition::GE);
+      key_intval.start.add("", Condition::FIP);
   }
 
   SWC_LOG_OUT(

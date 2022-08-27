@@ -11,6 +11,13 @@
 
     added Thrift Service method 'update_by_types' update with one call
     added Thrift Service constants TIMESTAMP_NULL & TIMESTAMP_AUTO
+    added Condition::Comp::{FIP,FI} fraction include {prior}
+    added consts uint8_t Condition::COMP_EXTENDED_{KEY,VALUE}
+    added enum Thrift::Comp::{FIP,FI} fraction include {prior}
+    changed use case of Condition::GE "" to Condition::FIP
+    added SQL support for FI/P condition literals ":<")FIP) & ":"(FI)
+    fixed ambiguous -GE/T(">=") condition purposing for inner-fraction scan
+
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...master)
 ******
