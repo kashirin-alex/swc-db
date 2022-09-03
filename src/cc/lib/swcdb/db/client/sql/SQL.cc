@@ -154,10 +154,12 @@ void parse_dump(int& err, const Clients::Ptr& clients,
     parser.parse_display_flags(display_flags);
 }
 
-void parse_load(int& err, const std::string& sql,
+void parse_load(int& err,
+                const std::string& sql,
+                const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
                 std::string& fs, std::string& filepath, cid_t& cid,
                 uint8_t& display_flags, std::string& message) {
-  QueryUpdate parser(sql, nullptr, message);
+  QueryUpdate parser(sql, hdlr, message);
   err = parser.parse_load(fs, filepath, cid);
   if(!err)
     parser.parse_display_flags(display_flags);

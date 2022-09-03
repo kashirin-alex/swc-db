@@ -288,7 +288,7 @@ class FileWriter {
 
 class FileReader {
   public:
-  client::Clients::Ptr clients;
+  client::Query::Update::Handlers::Common::Ptr hdlr;
   FS::Interface::Ptr   interface;
   int             err = Error::CANCELLED;
   cid_t           cid = DB::Schema::NO_CID;
@@ -299,8 +299,12 @@ class FileReader {
   size_t          resend_cells = 0;
   size_t          cells_bytes = 0;
 
-  FileReader(const client::Clients::Ptr& a_clients)
-            : clients(a_clients) {
+  FileReader(const client::Clients::Ptr& clients,
+             const client::Clients::Flag flag)
+            : hdlr(
+                client::Query::Update::Handlers::Common::make(
+                  clients, nullptr, nullptr, flag
+                )) {
   }
 
   ~FileReader() noexcept {
@@ -346,21 +350,18 @@ class FileReader {
     if(fds.empty()) {
       err = ENOENT;
     } else {
-      schema = clients->get_schema(err, cid);
+      schema = hdlr->clients->get_schema(err, cid);
     }
   }
 
-  client::Query::Update::Handlers::Common::Ptr
-  read_and_load(client::Clients::Flag flag) {
+  void read_and_load() {
     if(err)
-      return nullptr;
+      return;
 
-    auto hdlr = client::Query::Update::Handlers::Common::make(
-      clients, nullptr, nullptr, flag);
     hdlr->create(schema);
 
     for(auto& fd : fds) {
-      read(hdlr, fd);
+      read(fd);
       if(err)
         break;
     }
@@ -368,11 +369,9 @@ class FileReader {
     hdlr->commit_if_need();
     hdlr->wait();
     resend_cells += hdlr->get_resend_count();
-    return hdlr;
   }
 
-  void read(const client::Query::Update::Handlers::Common::Ptr& hdlr,
-            FS::SmartFd::Ptr smartfd) {
+  void read(FS::SmartFd::Ptr& smartfd) {
     size_t length = interface->get_fs()->length(err, smartfd->filepath());
     if(err)
       return;

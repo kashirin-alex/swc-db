@@ -17,6 +17,10 @@
     changed use case of Condition::GE "" to Condition::FIP
     added SQL support for FI/P condition literals ":<"(FIP) & ":"(FI)
     fixed ambiguous -GE/T(">=") condition purposing for inner-fraction scan
+    changed TSV::FileReader::clients to Update::Handlers::Common::Ptr hdlr
+    fixed requirement of intialized update-handler in client::SQL::parse_load
+    fixed 'load' command in shell SWC-DB(client)>
+    fixed Utils::shell::Interface::run() early CLI::QUIT_CLI at errno EAGAIN
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...master)
 ******

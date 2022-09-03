@@ -89,6 +89,7 @@ void parse_dump(int& err, const Clients::Ptr& clients,
                 std::string& message);
 
 void parse_load(int& err, const std::string& sql,
+                const Query::Update::Handlers::BaseUnorderedMap::Ptr& hdlr,
                 std::string& fs, std::string& filepath, cid_t& cid,
                 uint8_t& display_flags, std::string& message);
 

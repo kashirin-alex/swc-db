@@ -410,12 +410,19 @@ bool DbClient::update(std::string& cmd) {
 // LOAD
 bool DbClient::load(std::string& cmd) {
   Time::Measure_ns t_measure;
-  DB::Cells::TSV::FileReader reader(clients);
+  DB::Cells::TSV::FileReader reader(
+    clients,
+    with_broker
+      ? client::Clients::BROKER
+      : client::Clients::DEFAULT
+  );
 
   std::string fs;
   uint8_t display_flags = 0;
   client::SQL::parse_load(
-    err, cmd,
+    err,
+    cmd,
+    reader.hdlr,
     fs, reader.base_path, reader.cid,
     display_flags, reader.message);
   if(err)
@@ -436,16 +443,12 @@ bool DbClient::load(std::string& cmd) {
   if(err)
     return error(reader.message);
 
-  auto hdlr = reader.read_and_load(
-    with_broker
-      ? client::Clients::BROKER
-      : client::Clients::DEFAULT
-  );
+  reader.read_and_load();
 
   if(display_flags & DB::DisplayFlag::STATS) {
     client::Query::Profiling tmp;
     display_stats(
-      hdlr ? hdlr->profile : tmp,
+      reader.hdlr ? reader.hdlr->profile : tmp,
       t_measure.elapsed(),
       reader.cells_bytes,
       reader.cells_count,
@@ -455,7 +458,7 @@ bool DbClient::load(std::string& cmd) {
 
   reader.interface->stop();
 
-  if(err || (err = reader.err) || (err = hdlr->error())) {
+  if(err || (err = reader.err) || (err = reader.hdlr->error())) {
     if(reader.message.empty()) {
       reader.message.append(Error::get_text(err));
       reader.message.append("\n");

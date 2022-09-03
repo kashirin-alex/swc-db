@@ -46,9 +46,17 @@ Usage Help:  'command' [options];
                            'TS-begin' <= timestamp <= 'TS-finish'          AND
                            offset_key = [F] offset_rev='TS'                AND
                            value COMP 'DATA'
-                           LIMIT=NUM OFFSET=NUM MAX_VERSIONS=NUM ONLY_KEYS ONLY_DELETES)
+                           LIMIT=NUM OFFSET=NUM MAX_VERSIONS=NUM ONLY_KEYS ONLY_DELETES
+                           update[OP](TIMESTAMP, VALUE, ENC) |OR| DELETE_MATCHING )
                          ) DISPLAY_* TIMESTAMP, DATETIME, SPECS, STATS, BINARY, COLUMN;
                     * DATA-value: PLAN, COUNTER, SERIAL([ID:TYPE:COMP "VALUE", ..])
+                    * [OP] of update:
+                        REPLACE (=)
+                        APPEND (+=)
+                        PREPEND (=+)
+                        INSERT (+:#)
+                        OVERWRITE (=:#)
+                        SERIAL (~=): [ID:TYPE:[FIELD-OP]val, ..]
   update            update cell(FLAG, CID|NAME, KEY, TIMESTAMP, VALUE, ENC), CELL(..) ;
                     -> UPDATE cell(DELETE_LE,  CID, ['K','E','Y']              ),
                               cell(DELETE_EQ,  CID, ['K','E','Y'], TS          ),

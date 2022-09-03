@@ -149,6 +149,7 @@ CLI Interface::run() {
   std::queue<std::string> queue;
 
   #if defined(USE_REPLXX)
+  errno = 0;
   while(!stop && ((ptr = line = rx.input(prompt_state ? prompt : std::string())) ||
                   errno == EAGAIN )) {
   #else
@@ -160,8 +161,11 @@ CLI Interface::run() {
 
       #if defined(USE_REPLXX)
       if(errno) {
-        stop = _state == CLI::QUIT_CLI;
-        break;
+        if(errno != EAGAIN) {
+          stop = _state == CLI::QUIT_CLI;
+          break;
+        }
+        errno = 0;
       }
       #endif
 

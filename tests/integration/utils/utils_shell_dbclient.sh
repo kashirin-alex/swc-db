@@ -56,6 +56,8 @@ do_test echo "dump col='test-shell-dbclient_load' into path='dumps/dbclient_afte
 
 
 ## COMPARE 1st with 2nd sample
+
+do_test ls -l ${SWCDB_DATA_PATH}/dumps/dbclient_afterload/1.tsv
 diff -u ${SWCDB_DATA_PATH}/dumps/dbclient/1.tsv ${SWCDB_DATA_PATH}/dumps/dbclient_afterload/1.tsv;
 
 
