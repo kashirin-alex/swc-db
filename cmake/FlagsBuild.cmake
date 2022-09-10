@@ -96,8 +96,8 @@ else()
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 
     if (O_LEVEL STREQUAL "2")
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto=1")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto=1")
 
       if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-linker-plugin -ffat-lto-objects")
@@ -127,8 +127,8 @@ else()
     endif()
 
     if(O_LEVEL MATCHES "[4-7]")
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto=1")
+      SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto=1")
 
       if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-linker-plugin -ffat-lto-objects")

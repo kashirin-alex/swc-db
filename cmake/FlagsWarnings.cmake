@@ -48,4 +48,9 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtsan")
   endif()
 
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12.0.0)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wbidi-chars=any")
+  endif()
+
+
 endif()

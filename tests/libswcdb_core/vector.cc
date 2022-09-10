@@ -96,8 +96,11 @@ void test_vector(const typename VecT::size_type _sz) {
   {
   Time::Measure_ns track;
   VecT vec;
-  for(T n=0; n < sz; )
+  SWC_ASSERT(sz <= vec.max_size());
+  for(T n=0; n < sz; ) {
+    SWC_ASSERT(vec.size() < vec.max_size());
     vec.insert(vec.cbegin(), ++n);
+  }
   SWC_ASSERT(sz == vec.size());
   uint64_t took = track.elapsed();
   std::cout << typeid(VecT).name() << " cp insert it: elapse=" <<  took << " avg=" << (took/sz) << std::endl;
@@ -110,6 +113,7 @@ void test_vector(const typename VecT::size_type _sz) {
   VecT vec;
   for(T n=0; n < sz; ) {
     T v(++n);
+    SWC_ASSERT(vec.size() < vec.max_size());
     vec.insert(vec.cbegin(), std::move(v));
     //std::cout << n << " ?= " << vec.front() << std::endl;
   }
@@ -122,11 +126,15 @@ void test_vector(const typename VecT::size_type _sz) {
 
   // insert range at it
   {
-  VecT vec1(sz);
+  VecT vec1;
+  vec1.resize(sz);
   SWC_ASSERT(sz == vec1.size());
-  auto it = vec1.begin();
-  for(T n=sz; n; --n, ++it)
-    *it = n;
+  {
+    auto it = vec1.begin();
+    for(T n=sz; n && it != vec1.cend(); --n, ++it) {
+      *it = n;
+    }
+  }
 
   Time::Measure_ns track;
   {
@@ -155,6 +163,7 @@ void test_vector(const typename VecT::size_type _sz) {
   vec.resize(1);
   SWC_ASSERT(1 == vec.size());
   *vec.begin() = sz;
+  SWC_ASSERT(vec.size() < vec1.size());
   vec.insert(vec.begin() + 1, vec1.cbegin() + 1, vec1.cend());
   SWC_ASSERT(sz == vec.size());
   test_check_eq(vec, sz);
@@ -164,9 +173,13 @@ void test_vector(const typename VecT::size_type _sz) {
   VecT vec;
   vec.resize(2);
   SWC_ASSERT(2 == vec.size());
-  *vec.begin() = sz;
-  *(vec.begin() + 1) = 1;
-  vec.insert(vec.begin() + 1, vec1.cbegin() + 1, vec1.cend() - 1);
+  typename VecT::iterator it = vec.begin();
+  *it++ = sz;
+  *it = 1;
+  auto b_it = vec1.cbegin() + 1;
+  auto e_it = vec1.cend() - 1;
+  SWC_ASSERT(vec1.size() - 2 <= vec.max_size());
+  vec.insert(vec.cbegin() + 1, b_it, e_it);
   SWC_ASSERT(sz == vec.size());
   test_check_eq(vec, sz);
   }

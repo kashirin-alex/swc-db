@@ -21,6 +21,8 @@
     fixed requirement of intialized update-handler in client::SQL::parse_load
     fixed 'load' command in shell SWC-DB(client)>
     fixed Utils::shell::Interface::run() early CLI::QUIT_CLI at errno EAGAIN
+    changed default to -flto=1
+    updated for gcc-12.2 gperftools-2.10 asio-1.24.0 openssl-3.0.5
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...master)
 ******

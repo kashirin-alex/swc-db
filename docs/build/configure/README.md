@@ -11,7 +11,7 @@ sort: 3
 
 | CONFIG OPTION | DESCRIPTION | VALUE OPTIONS | DEFAULT VALUE |
 | ---  | --- | --- | --- |
-|O_LEVEL| Level of optimizations: <br/>  0: = -Os <br/>  1: = -O2s <br/>  2: += -floop-interchange -flto -fuse-linker-plugin -ffat-lto-objects <br/>  3: = -O3 <br/>  4: += -flto -fuse-linker-plugin -ffat-lto-objects<br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
+|O_LEVEL| Level of optimizations: <br/>  0: = -Os <br/>  1: = -O2s <br/>  2: += -floop-interchange -flto=1 -fuse-linker-plugin -ffat-lto-objects <br/>  3: = -O3 <br/>  4: += -flto=1 -fuse-linker-plugin -ffat-lto-objects<br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
 |SWC_IMPL_SOURCE| when possible implement SWC-DB source-code | ON/OFF | OFF |
 |USE_REPLXX| whether to use Libreplxx | ON/OFF | OFF(ON if found) |
 |USE_GNU_READLINE| whether to use GNU libreadline | ON/OFF | OFF(ON if EDITLINE not found) |
