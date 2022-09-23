@@ -18,83 +18,116 @@ extern "C" {
 namespace SWC { namespace Time {
 
 SWC_CAN_INLINE
-int32_t parse_digit(int& err, const char** bufp,
-                   const char delimitter) noexcept {
+int64_t parse_digit(int& err, const char** bufp,
+                    int8_t default_v = 0) noexcept {
   errno = 0;
-  char* last = nullptr;
-  int32_t v = strtol(*bufp, &last, 0);
-  if(errno) {
-    err = errno;
-  } else {
-    if(**bufp && *bufp != last && (!delimitter || *last == delimitter)) {
-      *bufp = last + bool(delimitter);
-    } else {
-      err = EINVAL;
-    }
+  while(**bufp && **bufp == '0') ++*bufp;
+  if(**bufp) {
+    char* last = nullptr;
+    int64_t v = strtoll(*bufp, &last, 0);
+    if(errno)
+      err = errno;
+    else
+      *bufp = last;
+    return v;
   }
-  return v;
+  return default_v;
 }
 
 int64_t parse_ns(int& err, const std::string& buf) {
-  const char* ptr = buf.c_str();
-  if(buf.find("/") == std::string::npos) {
-    while(*ptr && *ptr == '0') ++ptr;
-    char *last;
-    errno = 0;
-    int64_t ns = strtoll(ptr, &last, 0);
-    if(errno || (*ptr && ptr == last))
-      err = errno ? errno : EINVAL;
-    return ns;
-  }
-
-  int64_t ns = 0;
-
-  struct tm info;
   /*if(!strptime(ptr, "%Y/%m/%d %H:%M:%S", &info)) {
     err = EINVAL;
     return ns;
   }*/
+
+  const char* ptr = buf.c_str();
+  int64_t ns = parse_digit(err, &ptr);
+  if(err)
+    return 0;
+  if(!*ptr)
+    return ns;
+  if(*ptr != '/') {
+    err = EINVAL;
+    return 0;
+  }
+
+  struct tm info;
   info.tm_yday = info.tm_wday = 0;
   info.tm_isdst = -1;
-  info.tm_year = parse_digit(err, &ptr, '/') - 1900;
-  if(!err) {
-    info.tm_mon = parse_digit(err, &ptr, '/') - 1;
-    if(!err) {
-      info.tm_mday = parse_digit(err, &ptr, ' ');
-      if(!err) {
-        info.tm_hour = parse_digit(err, &ptr, ':');
-        if(!err) {
-          info.tm_min = parse_digit(err, &ptr, ':');
-          if(!err) {
-            info.tm_sec = parse_digit(err, &ptr, 0);
+  info.tm_year = ns - 1900;
+  info.tm_mon = parse_digit(err, &++ptr, 1);
+  if(err)
+    return 0;
+  if(info.tm_mon < 1 || info.tm_mon > 12) {
+    err = EINVAL;
+    return 0;
+  }
+  info.tm_mon -= 1;
+  info.tm_mday = 1;
+  info.tm_hour = 0;
+  info.tm_min = 0;
+  info.tm_sec = 0;
+
+  if(*ptr == '/') {
+    info.tm_mday = parse_digit(err, &++ptr, 1);
+    if(err)
+      return 0;
+    if(info.tm_mday < 1 || info.tm_mday > 31) {
+      err = EINVAL;
+      return 0;
+    }
+    if(*ptr == ' ') {
+      info.tm_hour = parse_digit(err, &++ptr);
+      if(err)
+        return 0;
+      if(info.tm_hour < 0 || info.tm_hour > 23) {
+        err = EINVAL;
+        return 0;
+      }
+      if(*ptr == ':') {
+        info.tm_min = parse_digit(err, &++ptr);
+        if(err)
+          return 0;
+        if(info.tm_min < 0 || info.tm_min > 59) {
+          err = EINVAL;
+          return 0;
+        }
+        if(*ptr == ':') {
+          info.tm_sec = parse_digit(err, &++ptr);
+          if(err)
+            return 0;
+          if(info.tm_sec < 0 || info.tm_sec > 59) {
+            err = EINVAL;
+            return 0;
+          }
+          if(*ptr == '.') {
+            ns = mktime(&info) * 1000000000;
+            ++ptr;
+            uint32_t res = 0;
+            for(int places = 100000000;
+                *ptr && std::isdigit(*ptr) && places >= 1;
+                places/=10, ++ptr) {
+              res += (*ptr - 48) * places;
+            }
+            if(*ptr) {
+              err = EINVAL;
+              return 0;
+            }
+            if(res) {
+              if(ns < 0) {
+                (ns -= 1000000000 - res) += 1000000000;
+              } else {
+                (ns += res + 1000000000) -= 1000000000;
+              }
+            }
+            return ns;
           }
         }
       }
     }
   }
-  if(err)
-    return ns;
 
-  ns += mktime(&info) * 1000000000;
-
-  while(*ptr && *ptr++ != '.');
-
-  uint32_t res = 0;
-  for(int places = 100000000;
-      *ptr && std::isdigit(*ptr) && places >= 1;
-      places/=10, ++ptr) {
-    res += (*ptr - 48) * places;
-  }
-  if(res) {
-    if(ns < 0) {
-      (ns -= 1000000000 - res) += 1000000000;
-    } else {
-      (ns += res + 1000000000) -= 1000000000;
-    }
-  }
-  if(*ptr)
-    err = EINVAL;
-  return ns;
+  return mktime(&info) * 1000000000;
 }
 
 std::string fmt_ns(int64_t ns) {
