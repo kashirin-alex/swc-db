@@ -24,7 +24,7 @@
     changed default to -flto=1
     fixed numbers begin with zero Core::Time::parse_ns(..)
     added Core::Time::parse_ns(..) support for date-format in short-form
-    updated for gcc-12.2 gperftools-2.10 asio-1.24.0 openssl-3.0.5
+    updated for thrift-0.17.0 asio-1.24.0 openssl-3.0.5
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...master)
 ******
