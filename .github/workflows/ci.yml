@@ -24,7 +24,7 @@ jobs:
         build_type:   ['Release']
         O_LEVEL:      ['0', '1', '2', '3', '4', '5', '6']
         IMPL_SOURCE:  ['OFF', 'ON']
-        THRIFT:       ['0.16.0']
+        THRIFT:       ['0.17.0']
         TEST:         [1]
         exclude:
           - compiler: clang++-10
