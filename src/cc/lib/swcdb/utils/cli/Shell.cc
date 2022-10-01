@@ -95,8 +95,8 @@ struct Interface::Option final {
 
 
 
-Interface::Interface(std::string&& a_prompt, std::string&& a_history)
-                    : err(Error::OK), _state(CLI::QUIT_CLI),
+Interface::Interface(std::string&& a_prompt, std::string&& a_history, CLI state)
+                    : err(Error::OK), _state(state),
                       prompt(std::move(a_prompt)),
                       history(std::move(a_history)) {
   init();
@@ -126,12 +126,12 @@ CLI Interface::run() {
         return rx.invoke(replxx::Replxx::ACTION::ABORT_LINE, c);
       }
     );
-    const char* line;
-    const char* ptr;
+    const char* line = nullptr;
+    const char* ptr = nullptr;
   #else
     read_history(history.c_str());
-    char* line;
-    char* ptr;
+    char* line = nullptr;
+    char* ptr = nullptr;
   #endif
 
   bool prompt_state = true;
@@ -151,7 +151,7 @@ CLI Interface::run() {
   #if defined(USE_REPLXX)
   errno = 0;
   while(!stop && ((ptr = line = rx.input(prompt_state ? prompt : std::string())) ||
-                  errno == EAGAIN )) {
+          errno == EAGAIN) && _state != CLI::QUIT_CLI) {
   #else
   while(!stop && (ptr = line = readline(prompt_state ? prompt.c_str() : ""))) {
   #endif
@@ -163,6 +163,9 @@ CLI Interface::run() {
       if(errno) {
         if(errno != EAGAIN) {
           stop = _state == CLI::QUIT_CLI;
+          SWC_PRINT << "\033[31mERROR\033[00m: CLI is exiting"
+                    << " error=" << errno << '(' << Error::get_text(errno) << ')'
+                    << SWC_PRINT_CLOSE;
           break;
         }
         errno = 0;

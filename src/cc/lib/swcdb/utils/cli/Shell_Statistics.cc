@@ -25,7 +25,8 @@ static const Core::Vector<std::string> default_stat_names = {
 
 Statistics::Statistics()
   : Interface("\033[32mSWC-DB(\033[36mstatistics\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-statistics-history"),
+              "/tmp/.swc-cli-statistics-history",
+              CLI::STATISTICS),
     with_broker(Env::Config::settings()->get_bool("with-broker")),
     clients(
       (with_broker

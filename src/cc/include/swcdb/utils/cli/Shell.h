@@ -42,7 +42,8 @@ class Interface {
   public:
 
   Interface(std::string&& prompt="CLI>",
-            std::string&& history="/tmp/.swc-cli-history");
+            std::string&& history="/tmp/.swc-cli-history",
+            CLI state=CLI::QUIT_CLI);
 
   virtual ~Interface();
 

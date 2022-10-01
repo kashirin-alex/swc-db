@@ -15,7 +15,8 @@ namespace SWC { namespace Utils { namespace shell {
 
 Rgr::Rgr()
   : Interface("\033[32mSWC-DB(\033[36mrgr\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-ranger-history"),
+              "/tmp/.swc-cli-ranger-history",
+              CLI::RANGER),
     clients(client::Clients::make(
       *Env::Config::settings(),
       Comm::IoContext::make("Rgr", 8),

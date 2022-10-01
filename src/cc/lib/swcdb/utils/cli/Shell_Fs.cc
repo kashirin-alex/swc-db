@@ -17,7 +17,8 @@ Fs::Fs()
               Env::Config::settings()->get_str("swc.fs") +
               "\033[32m)\033[33m> \033[00m",
               "/tmp/.swc-cli-fs-" +
-              Env::Config::settings()->get_str("swc.fs") + "-history") {
+              Env::Config::settings()->get_str("swc.fs") + "-history",
+              CLI::FILESYSTEM) {
 
   Env::FsInterface::init(
     Env::Config::settings(),

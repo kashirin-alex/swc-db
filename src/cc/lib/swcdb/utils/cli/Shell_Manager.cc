@@ -15,7 +15,8 @@ namespace SWC { namespace Utils { namespace shell {
 
 Mngr::Mngr()
   : Interface("\033[32mSWC-DB(\033[36mmngr\033[32m)\033[33m> \033[00m",
-              "/tmp/.swc-cli-manager-history"),
+              "/tmp/.swc-cli-manager-history",
+              CLI::MANAGER),
     clients(client::Clients::make(
       *Env::Config::settings(),
       Comm::IoContext::make("Mngr", 8),
