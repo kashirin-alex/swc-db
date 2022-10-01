@@ -62,7 +62,8 @@ class Interface {
 
   bool error(const std::string& message);
 
-  virtual bool quit(std::string&) const {
+  virtual bool quit(std::string&) {
+    _state.store(CLI::QUIT_CLI);
     return false;
   }
 

@@ -148,29 +148,27 @@ CLI Interface::run() {
   std::string cmd;
   std::queue<std::string> queue;
 
-  #if defined(USE_REPLXX)
   errno = 0;
-  while(!stop && ((ptr = line = rx.input(prompt_state ? prompt : std::string())) ||
-          errno == EAGAIN) && _state != CLI::QUIT_CLI) {
+  while(!stop && _state != CLI::QUIT_CLI &&
+  #if defined(USE_REPLXX)
+        (ptr = line = rx.input(prompt_state ? prompt : std::string()))
   #else
-  while(!stop && (ptr = line = readline(prompt_state ? prompt.c_str() : ""))) {
+        (ptr = line = readline(prompt_state ? prompt.c_str() : ""))
   #endif
+        && _state != CLI::QUIT_CLI) {
 
     prompt_state = false;
     do {
 
-      #if defined(USE_REPLXX)
       if(errno) {
         if(errno != EAGAIN) {
-          stop = _state == CLI::QUIT_CLI;
-          SWC_PRINT << "\033[31mERROR\033[00m: CLI is exiting"
-                    << " error=" << errno << '(' << Error::get_text(errno) << ')'
+          SWC_PRINT << "\033[31mERROR\033[00m: unexpected error="
+                    << errno << '(' << Error::get_text(errno) << ')'
                     << SWC_PRINT_CLOSE;
-          break;
         }
         errno = 0;
+        break;
       }
-      #endif
 
       c = *ptr;
       ++ptr;

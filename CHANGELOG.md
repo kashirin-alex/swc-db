@@ -9,6 +9,15 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+    
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.10...master)
+******
+
+
+
+### [SWC-DB v0.5.10](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.10) (2022-10-01)
+
     added Thrift Service method 'update_by_types' update with one call
     added Thrift Service constants TIMESTAMP_NULL & TIMESTAMP_AUTO
     added Condition::Comp::{FIP,FI} fraction include {prior}
@@ -17,16 +26,22 @@
     changed use case of Condition::GE "" to Condition::FIP
     added SQL support for FI/P condition literals ":<"(FIP) & ":"(FI)
     fixed ambiguous -GE/T(">=") condition purposing for inner-fraction scan
+    resolved issue #11
     changed TSV::FileReader::clients to Update::Handlers::Common::Ptr hdlr
     fixed requirement of intialized update-handler in client::SQL::parse_load
     fixed 'load' command in shell SWC-DB(client)>
     fixed Utils::shell::Interface::run() early CLI::QUIT_CLI at errno EAGAIN
+    added shell::CLI state argument to Utils::shell::Interface constructor
     changed default to -flto=1
     fixed numbers begin with zero Core::Time::parse_ns(..)
     added Core::Time::parse_ns(..) support for date-format in short-form
     updated for thrift-0.17.0 asio-1.24.0 openssl-3.0.5
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...master)
+    notes:
+        * older releases are incompatible with the SQL query
+          of an inner-level fractions select by GT/E empty-string
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...v0.5.10)
 ******
 
 
