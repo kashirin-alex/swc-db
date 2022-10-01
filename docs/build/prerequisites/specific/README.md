@@ -9,12 +9,12 @@ sort: 2
 
 ## ASIO VERSION
 
-_**if libasio-dev under version asio-1.22.1**_
+_**if libasio-dev under version asio-1.24.0**_
 _use latest version from [https://www.think-async.com/Asio/Download.html](https://www.think-async.com/Asio/Download.html)
 ```bash
 
 mkdir asio; cd asio;
-ASIO_VERSION="1.22.1";
+ASIO_VERSION="1.24.0";
 wget https://sourceforge.net/projects/asio/files/asio/${ASIO_VERSION}%20%28Stable%29/asio-${ASIO_VERSION}.tar.gz/download \
  -O asio-${ASIO_VERSION}.tar.gz;
 tar -xf asio-${ASIO_VERSION}.tar.gz;

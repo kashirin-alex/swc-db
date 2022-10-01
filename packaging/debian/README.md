@@ -11,7 +11,7 @@ Fill the details:
 * PKG_RECOMMENDS="";
 * PKG_SUGGESTS="";
 
-**_The Described details are of the SWC-DB package [`swcdb-0.5.10.Ubuntu_20_04_4_LTS.amd64.deb`](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.10/swcdb-0.5.10.Ubuntu_20_04_4_LTS.amd64.deb)._**
+**_The Described details are of the SWC-DB package [`swcdb-0.5.10.Ubuntu_20_04_5_LTS.amd64.deb`](https://github.com/kashirin-alex/swc-db/releases/download/v0.5.10/swcdb-0.5.10.Ubuntu_20_04_5_LTS.amd64.deb)._**
 
 
 ```bash
@@ -44,4 +44,4 @@ mv packages/swcdb_1-${SWCDB_VERSION}_amd64.deb packages/swcdb-${SWCDB_VERSION}.$
 ```
 > The package will be ready at `packages` folder.
 * Remove with `dpkg -r swcdb;`
-* Install with `dpkg -i swcdb-0.5.10.Ubuntu_20_04_4_LTS.amd64.deb;`
+* Install with `dpkg -i swcdb-0.5.10.Ubuntu_20_04_5_LTS.amd64.deb;`

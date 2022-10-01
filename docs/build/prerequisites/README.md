@@ -29,7 +29,7 @@ mkdir swcdb;
     | 
     [clang 9+](https://llvm.org/)
 
-  * [ASIO 1.22.1+](https://github.com/chriskohlhoff/asio)
+  * [ASIO 1.24.0+](https://github.com/chriskohlhoff/asio)
 
   * [libre2](https://github.com/google/re2)
 
