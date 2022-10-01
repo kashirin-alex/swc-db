@@ -38,8 +38,10 @@
     updated for thrift-0.17.0 asio-1.24.0 openssl-3.0.5
 
     notes:
-        * older releases are incompatible with the SQL query
-          of an inner-level fractions select by GT/E empty-string
+        * older releases are incompatible with
+          the Condition-Key select SQL syntax and the DB::Specs::Key
+          of an inner-level fractions select by the GT/E empty-string
+          requires a change of comparators from -GT to -FI and -GE to -FIP
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.9...v0.5.10)
 ******
