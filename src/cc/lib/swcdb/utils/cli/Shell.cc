@@ -161,13 +161,16 @@ CLI Interface::run() {
     do {
 
       if(errno) {
-        if(errno != EAGAIN) {
-          SWC_PRINT << "\033[31mERROR\033[00m: unexpected error="
-                    << errno << '(' << Error::get_text(errno) << ')'
-                    << SWC_PRINT_CLOSE;
-        }
+        auto errtmp = errno;
         errno = 0;
-        break;
+        if(errtmp != ENOTTY) {
+          if(errtmp != EAGAIN) {
+            SWC_PRINT << "\033[31mERROR\033[00m: unexpected error="
+                      << errtmp << '(' << Error::get_text(errtmp) << ')'
+                      << SWC_PRINT_CLOSE;
+          }
+          break;
+        }
       }
 
       c = *ptr;
