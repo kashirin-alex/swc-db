@@ -22,7 +22,7 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   /**
    * The Cells, defined as Cell items in a list-container
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<Cell> cells; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<CellPlain> cells; // required
   /**
    * The Serial Cells, defined as CellSerial items in a list-container
    */
@@ -104,11 +104,9 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.CELLS, new org.apache.thrift.meta_data.FieldMetaData("cells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Cell.class))));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "CellsPlain")));
     tmpMap.put(_Fields.SERIAL_CELLS, new org.apache.thrift.meta_data.FieldMetaData("serial_cells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CellSerial.class))));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "CellsSerial")));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Cells.class, metaDataMap);
   }
@@ -117,7 +115,7 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   }
 
   public Cells(
-    java.util.List<Cell> cells,
+    java.util.List<CellPlain> cells,
     java.util.List<CellSerial> serial_cells)
   {
     this();
@@ -130,9 +128,9 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
    */
   public Cells(Cells other) {
     if (other.isSetCells()) {
-      java.util.List<Cell> __this__cells = new java.util.ArrayList<Cell>(other.cells.size());
-      for (Cell other_element : other.cells) {
-        __this__cells.add(new Cell(other_element));
+      java.util.List<CellPlain> __this__cells = new java.util.ArrayList<CellPlain>(other.cells.size());
+      for (CellPlain other_element : other.cells) {
+        __this__cells.add(new CellPlain(other_element));
       }
       this.cells = __this__cells;
     }
@@ -161,13 +159,13 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<Cell> getCellsIterator() {
+  public java.util.Iterator<CellPlain> getCellsIterator() {
     return (this.cells == null) ? null : this.cells.iterator();
   }
 
-  public void addToCells(Cell elem) {
+  public void addToCells(CellPlain elem) {
     if (this.cells == null) {
-      this.cells = new java.util.ArrayList<Cell>();
+      this.cells = new java.util.ArrayList<CellPlain>();
     }
     this.cells.add(elem);
   }
@@ -176,14 +174,14 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
    * The Cells, defined as Cell items in a list-container
    */
   @org.apache.thrift.annotation.Nullable
-  public java.util.List<Cell> getCells() {
+  public java.util.List<CellPlain> getCells() {
     return this.cells;
   }
 
   /**
    * The Cells, defined as Cell items in a list-container
    */
-  public Cells setCells(@org.apache.thrift.annotation.Nullable java.util.List<Cell> cells) {
+  public Cells setCells(@org.apache.thrift.annotation.Nullable java.util.List<CellPlain> cells) {
     this.cells = cells;
     return this;
   }
@@ -257,7 +255,7 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
       if (value == null) {
         unsetCells();
       } else {
-        setCells((java.util.List<Cell>)value);
+        setCells((java.util.List<CellPlain>)value);
       }
       break;
 
@@ -466,14 +464,14 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
           case 1: // CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list312 = iprot.readListBegin();
-                struct.cells = new java.util.ArrayList<Cell>(_list312.size);
-                @org.apache.thrift.annotation.Nullable Cell _elem313;
-                for (int _i314 = 0; _i314 < _list312.size; ++_i314)
+                org.apache.thrift.protocol.TList _list328 = iprot.readListBegin();
+                struct.cells = new java.util.ArrayList<CellPlain>(_list328.size);
+                @org.apache.thrift.annotation.Nullable CellPlain _elem329;
+                for (int _i330 = 0; _i330 < _list328.size; ++_i330)
                 {
-                  _elem313 = new Cell();
-                  _elem313.read(iprot);
-                  struct.cells.add(_elem313);
+                  _elem329 = new CellPlain();
+                  _elem329.read(iprot);
+                  struct.cells.add(_elem329);
                 }
                 iprot.readListEnd();
               }
@@ -485,14 +483,14 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
           case 2: // SERIAL_CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list315 = iprot.readListBegin();
-                struct.serial_cells = new java.util.ArrayList<CellSerial>(_list315.size);
-                @org.apache.thrift.annotation.Nullable CellSerial _elem316;
-                for (int _i317 = 0; _i317 < _list315.size; ++_i317)
+                org.apache.thrift.protocol.TList _list331 = iprot.readListBegin();
+                struct.serial_cells = new java.util.ArrayList<CellSerial>(_list331.size);
+                @org.apache.thrift.annotation.Nullable CellSerial _elem332;
+                for (int _i333 = 0; _i333 < _list331.size; ++_i333)
                 {
-                  _elem316 = new CellSerial();
-                  _elem316.read(iprot);
-                  struct.serial_cells.add(_elem316);
+                  _elem332 = new CellSerial();
+                  _elem332.read(iprot);
+                  struct.serial_cells.add(_elem332);
                 }
                 iprot.readListEnd();
               }
@@ -521,9 +519,9 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
         oprot.writeFieldBegin(CELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cells.size()));
-          for (Cell _iter318 : struct.cells)
+          for (CellPlain _iter334 : struct.cells)
           {
-            _iter318.write(oprot);
+            _iter334.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -533,9 +531,9 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
         oprot.writeFieldBegin(SERIAL_CELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.serial_cells.size()));
-          for (CellSerial _iter319 : struct.serial_cells)
+          for (CellSerial _iter335 : struct.serial_cells)
           {
-            _iter319.write(oprot);
+            _iter335.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -570,18 +568,18 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
       if (struct.isSetCells()) {
         {
           oprot.writeI32(struct.cells.size());
-          for (Cell _iter320 : struct.cells)
+          for (CellPlain _iter336 : struct.cells)
           {
-            _iter320.write(oprot);
+            _iter336.write(oprot);
           }
         }
       }
       if (struct.isSetSerial_cells()) {
         {
           oprot.writeI32(struct.serial_cells.size());
-          for (CellSerial _iter321 : struct.serial_cells)
+          for (CellSerial _iter337 : struct.serial_cells)
           {
-            _iter321.write(oprot);
+            _iter337.write(oprot);
           }
         }
       }
@@ -593,28 +591,28 @@ public class Cells implements org.apache.thrift.TBase<Cells, Cells._Fields>, jav
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list322 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.cells = new java.util.ArrayList<Cell>(_list322.size);
-          @org.apache.thrift.annotation.Nullable Cell _elem323;
-          for (int _i324 = 0; _i324 < _list322.size; ++_i324)
+          org.apache.thrift.protocol.TList _list338 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.cells = new java.util.ArrayList<CellPlain>(_list338.size);
+          @org.apache.thrift.annotation.Nullable CellPlain _elem339;
+          for (int _i340 = 0; _i340 < _list338.size; ++_i340)
           {
-            _elem323 = new Cell();
-            _elem323.read(iprot);
-            struct.cells.add(_elem323);
+            _elem339 = new CellPlain();
+            _elem339.read(iprot);
+            struct.cells.add(_elem339);
           }
         }
         struct.setCellsIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list325 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.serial_cells = new java.util.ArrayList<CellSerial>(_list325.size);
-          @org.apache.thrift.annotation.Nullable CellSerial _elem326;
-          for (int _i327 = 0; _i327 < _list325.size; ++_i327)
+          org.apache.thrift.protocol.TList _list341 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.serial_cells = new java.util.ArrayList<CellSerial>(_list341.size);
+          @org.apache.thrift.annotation.Nullable CellSerial _elem342;
+          for (int _i343 = 0; _i343 < _list341.size; ++_i343)
           {
-            _elem326 = new CellSerial();
-            _elem326.read(iprot);
-            struct.serial_cells.add(_elem326);
+            _elem342 = new CellSerial();
+            _elem342.read(iprot);
+            struct.serial_cells.add(_elem342);
           }
         }
         struct.setSerial_cellsIsSet(true);

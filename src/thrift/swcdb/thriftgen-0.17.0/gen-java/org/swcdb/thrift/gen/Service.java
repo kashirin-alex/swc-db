@@ -43,6 +43,27 @@ public class Service {
     public Cells sql_select(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
+     * The direct SQL method to select cells with result in CellsPlain.
+     * 
+     * @param sql The SQL string to Execute
+     */
+    public java.util.List<CellPlain> sql_select_plain(java.lang.String sql) throws Exception, org.apache.thrift.TException;
+
+    /**
+     * The direct SQL method to select cells with result in CellsCounter.
+     * 
+     * @param sql The SQL string to Execute
+     */
+    public java.util.List<CellCounter> sql_select_counter(java.lang.String sql) throws Exception, org.apache.thrift.TException;
+
+    /**
+     * The direct SQL method to select cells with result in CellsSerial.
+     * 
+     * @param sql The SQL string to Execute
+     */
+    public java.util.List<CellSerial> sql_select_serial(java.lang.String sql) throws Exception, org.apache.thrift.TException;
+
+    /**
      * The direct SQL method to select cells with result in Columns Cells map.
      * 
      * @param sql The SQL string to Execute
@@ -110,7 +131,17 @@ public class Service {
      * 
      * @param updater_id The Updater ID to use for write
      */
-    public void update(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id) throws Exception, org.apache.thrift.TException;
+    public void update(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells, long updater_id) throws Exception, org.apache.thrift.TException;
+
+    /**
+     * The direct method to update cells with cell in Update-Columns-Cells-Counter,
+     * optionally to work with updater-id.
+     * 
+     * @param cells The Counter Cells to update
+     * 
+     * @param updater_id The Updater ID to use for write
+     */
+    public void update_counter(java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells, long updater_id) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to update cells with cell in Update-Columns-Cells-Serial,
@@ -128,11 +159,13 @@ public class Service {
      * 
      * @param plain The PLAIN Cells to update
      * 
+     * @param counter The COUNTER Cells to update
+     * 
      * @param serial The SERIAL Cells to update
      * 
      * @param updater_id The Updater ID to use for write
      */
-    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCell>> plain, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id) throws Exception, org.apache.thrift.TException;
+    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain, java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to Manage Column
@@ -206,6 +239,12 @@ public class Service {
 
     public void sql_select(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<Cells> resultHandler) throws org.apache.thrift.TException;
 
+    public void sql_select_plain(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellPlain>> resultHandler) throws org.apache.thrift.TException;
+
+    public void sql_select_counter(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellCounter>> resultHandler) throws org.apache.thrift.TException;
+
+    public void sql_select_serial(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellSerial>> resultHandler) throws org.apache.thrift.TException;
+
     public void sql_select_rslt_on_column(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException;
 
     public void sql_select_rslt_on_key(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<kCells>> resultHandler) throws org.apache.thrift.TException;
@@ -222,11 +261,13 @@ public class Service {
 
     public void updater_close(long id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
-    public void update(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void update(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+
+    public void update_counter(java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
     public void update_serial(java.util.Map<java.lang.Long,java.util.List<UCellSerial>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
-    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCell>> plain, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain, java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
     public void mng_column(SchemaFunc func, Schema schema, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
@@ -371,6 +412,87 @@ public class Service {
         throw result.e;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "sql_select failed: unknown result");
+    }
+
+    @Override
+    public java.util.List<CellPlain> sql_select_plain(java.lang.String sql) throws Exception, org.apache.thrift.TException
+    {
+      send_sql_select_plain(sql);
+      return recv_sql_select_plain();
+    }
+
+    public void send_sql_select_plain(java.lang.String sql) throws org.apache.thrift.TException
+    {
+      sql_select_plain_args args = new sql_select_plain_args();
+      args.setSql(sql);
+      sendBase("sql_select_plain", args);
+    }
+
+    public java.util.List<CellPlain> recv_sql_select_plain() throws Exception, org.apache.thrift.TException
+    {
+      sql_select_plain_result result = new sql_select_plain_result();
+      receiveBase(result, "sql_select_plain");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.e != null) {
+        throw result.e;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "sql_select_plain failed: unknown result");
+    }
+
+    @Override
+    public java.util.List<CellCounter> sql_select_counter(java.lang.String sql) throws Exception, org.apache.thrift.TException
+    {
+      send_sql_select_counter(sql);
+      return recv_sql_select_counter();
+    }
+
+    public void send_sql_select_counter(java.lang.String sql) throws org.apache.thrift.TException
+    {
+      sql_select_counter_args args = new sql_select_counter_args();
+      args.setSql(sql);
+      sendBase("sql_select_counter", args);
+    }
+
+    public java.util.List<CellCounter> recv_sql_select_counter() throws Exception, org.apache.thrift.TException
+    {
+      sql_select_counter_result result = new sql_select_counter_result();
+      receiveBase(result, "sql_select_counter");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.e != null) {
+        throw result.e;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "sql_select_counter failed: unknown result");
+    }
+
+    @Override
+    public java.util.List<CellSerial> sql_select_serial(java.lang.String sql) throws Exception, org.apache.thrift.TException
+    {
+      send_sql_select_serial(sql);
+      return recv_sql_select_serial();
+    }
+
+    public void send_sql_select_serial(java.lang.String sql) throws org.apache.thrift.TException
+    {
+      sql_select_serial_args args = new sql_select_serial_args();
+      args.setSql(sql);
+      sendBase("sql_select_serial", args);
+    }
+
+    public java.util.List<CellSerial> recv_sql_select_serial() throws Exception, org.apache.thrift.TException
+    {
+      sql_select_serial_result result = new sql_select_serial_result();
+      receiveBase(result, "sql_select_serial");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.e != null) {
+        throw result.e;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "sql_select_serial failed: unknown result");
     }
 
     @Override
@@ -586,13 +708,13 @@ public class Service {
     }
 
     @Override
-    public void update(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id) throws Exception, org.apache.thrift.TException
+    public void update(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells, long updater_id) throws Exception, org.apache.thrift.TException
     {
       send_update(cells, updater_id);
       recv_update();
     }
 
-    public void send_update(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id) throws org.apache.thrift.TException
+    public void send_update(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells, long updater_id) throws org.apache.thrift.TException
     {
       update_args args = new update_args();
       args.setCells(cells);
@@ -604,6 +726,31 @@ public class Service {
     {
       update_result result = new update_result();
       receiveBase(result, "update");
+      if (result.e != null) {
+        throw result.e;
+      }
+      return;
+    }
+
+    @Override
+    public void update_counter(java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells, long updater_id) throws Exception, org.apache.thrift.TException
+    {
+      send_update_counter(cells, updater_id);
+      recv_update_counter();
+    }
+
+    public void send_update_counter(java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells, long updater_id) throws org.apache.thrift.TException
+    {
+      update_counter_args args = new update_counter_args();
+      args.setCells(cells);
+      args.setUpdater_id(updater_id);
+      sendBase("update_counter", args);
+    }
+
+    public void recv_update_counter() throws Exception, org.apache.thrift.TException
+    {
+      update_counter_result result = new update_counter_result();
+      receiveBase(result, "update_counter");
       if (result.e != null) {
         throw result.e;
       }
@@ -636,16 +783,17 @@ public class Service {
     }
 
     @Override
-    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCell>> plain, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id) throws Exception, org.apache.thrift.TException
+    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain, java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id) throws Exception, org.apache.thrift.TException
     {
-      send_update_by_types(plain, serial, updater_id);
+      send_update_by_types(plain, counter, serial, updater_id);
       recv_update_by_types();
     }
 
-    public void send_update_by_types(java.util.Map<java.lang.Long,java.util.List<UCell>> plain, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id) throws org.apache.thrift.TException
+    public void send_update_by_types(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain, java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id) throws org.apache.thrift.TException
     {
       update_by_types_args args = new update_by_types_args();
       args.setPlain(plain);
+      args.setCounter(counter);
       args.setSerial(serial);
       args.setUpdater_id(updater_id);
       sendBase("update_by_types", args);
@@ -1037,6 +1185,111 @@ public class Service {
     }
 
     @Override
+    public void sql_select_plain(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellPlain>> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      sql_select_plain_call method_call = new sql_select_plain_call(sql, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class sql_select_plain_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.List<CellPlain>> {
+      private java.lang.String sql;
+      public sql_select_plain_call(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellPlain>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.sql = sql;
+      }
+
+      @Override
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("sql_select_plain", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        sql_select_plain_args args = new sql_select_plain_args();
+        args.setSql(sql);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      @Override
+      public java.util.List<CellPlain> getResult() throws Exception, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new java.lang.IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_sql_select_plain();
+      }
+    }
+
+    @Override
+    public void sql_select_counter(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellCounter>> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      sql_select_counter_call method_call = new sql_select_counter_call(sql, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class sql_select_counter_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.List<CellCounter>> {
+      private java.lang.String sql;
+      public sql_select_counter_call(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellCounter>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.sql = sql;
+      }
+
+      @Override
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("sql_select_counter", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        sql_select_counter_args args = new sql_select_counter_args();
+        args.setSql(sql);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      @Override
+      public java.util.List<CellCounter> getResult() throws Exception, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new java.lang.IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_sql_select_counter();
+      }
+    }
+
+    @Override
+    public void sql_select_serial(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellSerial>> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      sql_select_serial_call method_call = new sql_select_serial_call(sql, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class sql_select_serial_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.List<CellSerial>> {
+      private java.lang.String sql;
+      public sql_select_serial_call(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellSerial>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.sql = sql;
+      }
+
+      @Override
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("sql_select_serial", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        sql_select_serial_args args = new sql_select_serial_args();
+        args.setSql(sql);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      @Override
+      public java.util.List<CellSerial> getResult() throws Exception, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new java.lang.IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_sql_select_serial();
+      }
+    }
+
+    @Override
     public void sql_select_rslt_on_column(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       sql_select_rslt_on_column_call method_call = new sql_select_rslt_on_column_call(sql, resultHandler, this, ___protocolFactory, ___transport);
@@ -1325,7 +1578,7 @@ public class Service {
     }
 
     @Override
-    public void update(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void update(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       update_call method_call = new update_call(cells, updater_id, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -1333,9 +1586,9 @@ public class Service {
     }
 
     public static class update_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
-      private java.util.Map<java.lang.Long,java.util.List<UCell>> cells;
+      private java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells;
       private long updater_id;
-      public update_call(java.util.Map<java.lang.Long,java.util.List<UCell>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public update_call(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.cells = cells;
         this.updater_id = updater_id;
@@ -1359,6 +1612,45 @@ public class Service {
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
         (new Client(prot)).recv_update();
+        return null;
+      }
+    }
+
+    @Override
+    public void update_counter(java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      update_counter_call method_call = new update_counter_call(cells, updater_id, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class update_counter_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
+      private java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells;
+      private long updater_id;
+      public update_counter_call(java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.cells = cells;
+        this.updater_id = updater_id;
+      }
+
+      @Override
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("update_counter", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        update_counter_args args = new update_counter_args();
+        args.setCells(cells);
+        args.setUpdater_id(updater_id);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      @Override
+      public Void getResult() throws Exception, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new java.lang.IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_update_counter();
         return null;
       }
     }
@@ -1403,20 +1695,22 @@ public class Service {
     }
 
     @Override
-    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCell>> plain, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void update_by_types(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain, java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      update_by_types_call method_call = new update_by_types_call(plain, serial, updater_id, resultHandler, this, ___protocolFactory, ___transport);
+      update_by_types_call method_call = new update_by_types_call(plain, counter, serial, updater_id, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class update_by_types_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
-      private java.util.Map<java.lang.Long,java.util.List<UCell>> plain;
+      private java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain;
+      private java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter;
       private java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial;
       private long updater_id;
-      public update_by_types_call(java.util.Map<java.lang.Long,java.util.List<UCell>> plain, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public update_by_types_call(java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain, java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter, java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial, long updater_id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.plain = plain;
+        this.counter = counter;
         this.serial = serial;
         this.updater_id = updater_id;
       }
@@ -1426,6 +1720,7 @@ public class Service {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("update_by_types", org.apache.thrift.protocol.TMessageType.CALL, 0));
         update_by_types_args args = new update_by_types_args();
         args.setPlain(plain);
+        args.setCounter(counter);
         args.setSerial(serial);
         args.setUpdater_id(updater_id);
         args.write(prot);
@@ -1748,6 +2043,9 @@ public class Service {
       processMap.put("sql_list_columns", new sql_list_columns());
       processMap.put("sql_compact_columns", new sql_compact_columns());
       processMap.put("sql_select", new sql_select());
+      processMap.put("sql_select_plain", new sql_select_plain());
+      processMap.put("sql_select_counter", new sql_select_counter());
+      processMap.put("sql_select_serial", new sql_select_serial());
       processMap.put("sql_select_rslt_on_column", new sql_select_rslt_on_column());
       processMap.put("sql_select_rslt_on_key", new sql_select_rslt_on_key());
       processMap.put("sql_select_rslt_on_fraction", new sql_select_rslt_on_fraction());
@@ -1757,6 +2055,7 @@ public class Service {
       processMap.put("updater_create", new updater_create());
       processMap.put("updater_close", new updater_close());
       processMap.put("update", new update());
+      processMap.put("update_counter", new update_counter());
       processMap.put("update_serial", new update_serial());
       processMap.put("update_by_types", new update_by_types());
       processMap.put("mng_column", new mng_column());
@@ -1891,6 +2190,102 @@ public class Service {
         sql_select_result result = new sql_select_result();
         try {
           result.success = iface.sql_select(args.sql);
+        } catch (Exception e) {
+          result.e = e;
+        }
+        return result;
+      }
+    }
+
+    public static class sql_select_plain<I extends Iface> extends org.apache.thrift.ProcessFunction<I, sql_select_plain_args> {
+      public sql_select_plain() {
+        super("sql_select_plain");
+      }
+
+      @Override
+      public sql_select_plain_args getEmptyArgsInstance() {
+        return new sql_select_plain_args();
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      protected boolean rethrowUnhandledExceptions() {
+        return false;
+      }
+
+      @Override
+      public sql_select_plain_result getResult(I iface, sql_select_plain_args args) throws org.apache.thrift.TException {
+        sql_select_plain_result result = new sql_select_plain_result();
+        try {
+          result.success = iface.sql_select_plain(args.sql);
+        } catch (Exception e) {
+          result.e = e;
+        }
+        return result;
+      }
+    }
+
+    public static class sql_select_counter<I extends Iface> extends org.apache.thrift.ProcessFunction<I, sql_select_counter_args> {
+      public sql_select_counter() {
+        super("sql_select_counter");
+      }
+
+      @Override
+      public sql_select_counter_args getEmptyArgsInstance() {
+        return new sql_select_counter_args();
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      protected boolean rethrowUnhandledExceptions() {
+        return false;
+      }
+
+      @Override
+      public sql_select_counter_result getResult(I iface, sql_select_counter_args args) throws org.apache.thrift.TException {
+        sql_select_counter_result result = new sql_select_counter_result();
+        try {
+          result.success = iface.sql_select_counter(args.sql);
+        } catch (Exception e) {
+          result.e = e;
+        }
+        return result;
+      }
+    }
+
+    public static class sql_select_serial<I extends Iface> extends org.apache.thrift.ProcessFunction<I, sql_select_serial_args> {
+      public sql_select_serial() {
+        super("sql_select_serial");
+      }
+
+      @Override
+      public sql_select_serial_args getEmptyArgsInstance() {
+        return new sql_select_serial_args();
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      protected boolean rethrowUnhandledExceptions() {
+        return false;
+      }
+
+      @Override
+      public sql_select_serial_result getResult(I iface, sql_select_serial_args args) throws org.apache.thrift.TException {
+        sql_select_serial_result result = new sql_select_serial_result();
+        try {
+          result.success = iface.sql_select_serial(args.sql);
         } catch (Exception e) {
           result.e = e;
         }
@@ -2187,6 +2582,38 @@ public class Service {
       }
     }
 
+    public static class update_counter<I extends Iface> extends org.apache.thrift.ProcessFunction<I, update_counter_args> {
+      public update_counter() {
+        super("update_counter");
+      }
+
+      @Override
+      public update_counter_args getEmptyArgsInstance() {
+        return new update_counter_args();
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      protected boolean rethrowUnhandledExceptions() {
+        return false;
+      }
+
+      @Override
+      public update_counter_result getResult(I iface, update_counter_args args) throws org.apache.thrift.TException {
+        update_counter_result result = new update_counter_result();
+        try {
+          iface.update_counter(args.cells, args.updater_id);
+        } catch (Exception e) {
+          result.e = e;
+        }
+        return result;
+      }
+    }
+
     public static class update_serial<I extends Iface> extends org.apache.thrift.ProcessFunction<I, update_serial_args> {
       public update_serial() {
         super("update_serial");
@@ -2243,7 +2670,7 @@ public class Service {
       public update_by_types_result getResult(I iface, update_by_types_args args) throws org.apache.thrift.TException {
         update_by_types_result result = new update_by_types_result();
         try {
-          iface.update_by_types(args.plain, args.serial, args.updater_id);
+          iface.update_by_types(args.plain, args.counter, args.serial, args.updater_id);
         } catch (Exception e) {
           result.e = e;
         }
@@ -2524,6 +2951,9 @@ public class Service {
       processMap.put("sql_list_columns", new sql_list_columns());
       processMap.put("sql_compact_columns", new sql_compact_columns());
       processMap.put("sql_select", new sql_select());
+      processMap.put("sql_select_plain", new sql_select_plain());
+      processMap.put("sql_select_counter", new sql_select_counter());
+      processMap.put("sql_select_serial", new sql_select_serial());
       processMap.put("sql_select_rslt_on_column", new sql_select_rslt_on_column());
       processMap.put("sql_select_rslt_on_key", new sql_select_rslt_on_key());
       processMap.put("sql_select_rslt_on_fraction", new sql_select_rslt_on_fraction());
@@ -2533,6 +2963,7 @@ public class Service {
       processMap.put("updater_create", new updater_create());
       processMap.put("updater_close", new updater_close());
       processMap.put("update", new update());
+      processMap.put("update_counter", new update_counter());
       processMap.put("update_serial", new update_serial());
       processMap.put("update_by_types", new update_by_types());
       processMap.put("mng_column", new mng_column());
@@ -2826,6 +3257,219 @@ public class Service {
       @Override
       public void start(I iface, sql_select_args args, org.apache.thrift.async.AsyncMethodCallback<Cells> resultHandler) throws org.apache.thrift.TException {
         iface.sql_select(args.sql,resultHandler);
+      }
+    }
+
+    public static class sql_select_plain<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, sql_select_plain_args, java.util.List<CellPlain>> {
+      public sql_select_plain() {
+        super("sql_select_plain");
+      }
+
+      @Override
+      public sql_select_plain_args getEmptyArgsInstance() {
+        return new sql_select_plain_args();
+      }
+
+      @Override
+      public org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellPlain>> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellPlain>>() { 
+          @Override
+          public void onComplete(java.util.List<CellPlain> o) {
+            sql_select_plain_result result = new sql_select_plain_result();
+            result.success = o;
+            try {
+              fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+            } catch (org.apache.thrift.transport.TTransportException e) {
+              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              fb.close();
+            } catch (java.lang.Exception e) {
+              _LOGGER.error("Exception writing to internal frame buffer", e);
+              onError(e);
+            }
+          }
+          @Override
+          public void onError(java.lang.Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TSerializable msg;
+            sql_select_plain_result result = new sql_select_plain_result();
+            if (e instanceof Exception) {
+              result.e = (Exception) e;
+              result.setEIsSet(true);
+              msg = result;
+            } else if (e instanceof org.apache.thrift.transport.TTransportException) {
+              _LOGGER.error("TTransportException inside handler", e);
+              fb.close();
+              return;
+            } else if (e instanceof org.apache.thrift.TApplicationException) {
+              _LOGGER.error("TApplicationException inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TApplicationException)e;
+            } else {
+              _LOGGER.error("Exception inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+            } catch (java.lang.Exception ex) {
+              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              fb.close();
+            }
+          }
+        };
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      public void start(I iface, sql_select_plain_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellPlain>> resultHandler) throws org.apache.thrift.TException {
+        iface.sql_select_plain(args.sql,resultHandler);
+      }
+    }
+
+    public static class sql_select_counter<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, sql_select_counter_args, java.util.List<CellCounter>> {
+      public sql_select_counter() {
+        super("sql_select_counter");
+      }
+
+      @Override
+      public sql_select_counter_args getEmptyArgsInstance() {
+        return new sql_select_counter_args();
+      }
+
+      @Override
+      public org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellCounter>> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellCounter>>() { 
+          @Override
+          public void onComplete(java.util.List<CellCounter> o) {
+            sql_select_counter_result result = new sql_select_counter_result();
+            result.success = o;
+            try {
+              fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+            } catch (org.apache.thrift.transport.TTransportException e) {
+              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              fb.close();
+            } catch (java.lang.Exception e) {
+              _LOGGER.error("Exception writing to internal frame buffer", e);
+              onError(e);
+            }
+          }
+          @Override
+          public void onError(java.lang.Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TSerializable msg;
+            sql_select_counter_result result = new sql_select_counter_result();
+            if (e instanceof Exception) {
+              result.e = (Exception) e;
+              result.setEIsSet(true);
+              msg = result;
+            } else if (e instanceof org.apache.thrift.transport.TTransportException) {
+              _LOGGER.error("TTransportException inside handler", e);
+              fb.close();
+              return;
+            } else if (e instanceof org.apache.thrift.TApplicationException) {
+              _LOGGER.error("TApplicationException inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TApplicationException)e;
+            } else {
+              _LOGGER.error("Exception inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+            } catch (java.lang.Exception ex) {
+              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              fb.close();
+            }
+          }
+        };
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      public void start(I iface, sql_select_counter_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellCounter>> resultHandler) throws org.apache.thrift.TException {
+        iface.sql_select_counter(args.sql,resultHandler);
+      }
+    }
+
+    public static class sql_select_serial<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, sql_select_serial_args, java.util.List<CellSerial>> {
+      public sql_select_serial() {
+        super("sql_select_serial");
+      }
+
+      @Override
+      public sql_select_serial_args getEmptyArgsInstance() {
+        return new sql_select_serial_args();
+      }
+
+      @Override
+      public org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellSerial>> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellSerial>>() { 
+          @Override
+          public void onComplete(java.util.List<CellSerial> o) {
+            sql_select_serial_result result = new sql_select_serial_result();
+            result.success = o;
+            try {
+              fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+            } catch (org.apache.thrift.transport.TTransportException e) {
+              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              fb.close();
+            } catch (java.lang.Exception e) {
+              _LOGGER.error("Exception writing to internal frame buffer", e);
+              onError(e);
+            }
+          }
+          @Override
+          public void onError(java.lang.Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TSerializable msg;
+            sql_select_serial_result result = new sql_select_serial_result();
+            if (e instanceof Exception) {
+              result.e = (Exception) e;
+              result.setEIsSet(true);
+              msg = result;
+            } else if (e instanceof org.apache.thrift.transport.TTransportException) {
+              _LOGGER.error("TTransportException inside handler", e);
+              fb.close();
+              return;
+            } else if (e instanceof org.apache.thrift.TApplicationException) {
+              _LOGGER.error("TApplicationException inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TApplicationException)e;
+            } else {
+              _LOGGER.error("Exception inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+            } catch (java.lang.Exception ex) {
+              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              fb.close();
+            }
+          }
+        };
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      public void start(I iface, sql_select_serial_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.List<CellSerial>> resultHandler) throws org.apache.thrift.TException {
+        iface.sql_select_serial(args.sql,resultHandler);
       }
     }
 
@@ -3466,6 +4110,76 @@ public class Service {
       }
     }
 
+    public static class update_counter<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, update_counter_args, Void> {
+      public update_counter() {
+        super("update_counter");
+      }
+
+      @Override
+      public update_counter_args getEmptyArgsInstance() {
+        return new update_counter_args();
+      }
+
+      @Override
+      public org.apache.thrift.async.AsyncMethodCallback<Void> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new org.apache.thrift.async.AsyncMethodCallback<Void>() { 
+          @Override
+          public void onComplete(Void o) {
+            update_counter_result result = new update_counter_result();
+            try {
+              fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+            } catch (org.apache.thrift.transport.TTransportException e) {
+              _LOGGER.error("TTransportException writing to internal frame buffer", e);
+              fb.close();
+            } catch (java.lang.Exception e) {
+              _LOGGER.error("Exception writing to internal frame buffer", e);
+              onError(e);
+            }
+          }
+          @Override
+          public void onError(java.lang.Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TSerializable msg;
+            update_counter_result result = new update_counter_result();
+            if (e instanceof Exception) {
+              result.e = (Exception) e;
+              result.setEIsSet(true);
+              msg = result;
+            } else if (e instanceof org.apache.thrift.transport.TTransportException) {
+              _LOGGER.error("TTransportException inside handler", e);
+              fb.close();
+              return;
+            } else if (e instanceof org.apache.thrift.TApplicationException) {
+              _LOGGER.error("TApplicationException inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TApplicationException)e;
+            } else {
+              _LOGGER.error("Exception inside handler", e);
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+            } catch (java.lang.Exception ex) {
+              _LOGGER.error("Exception writing to internal frame buffer", ex);
+              fb.close();
+            }
+          }
+        };
+      }
+
+      @Override
+      protected boolean isOneway() {
+        return false;
+      }
+
+      @Override
+      public void start(I iface, update_counter_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+        iface.update_counter(args.cells, args.updater_id,resultHandler);
+      }
+    }
+
     public static class update_serial<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, update_serial_args, Void> {
       public update_serial() {
         super("update_serial");
@@ -3602,7 +4316,7 @@ public class Service {
 
       @Override
       public void start(I iface, update_by_types_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
-        iface.update_by_types(args.plain, args.serial, args.updater_id,resultHandler);
+        iface.update_by_types(args.plain, args.counter, args.serial, args.updater_id,resultHandler);
       }
     }
 
@@ -5747,14 +6461,14 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list468 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<Schema>(_list468.size);
-                  @org.apache.thrift.annotation.Nullable Schema _elem469;
-                  for (int _i470 = 0; _i470 < _list468.size; ++_i470)
+                  org.apache.thrift.protocol.TList _list484 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<Schema>(_list484.size);
+                  @org.apache.thrift.annotation.Nullable Schema _elem485;
+                  for (int _i486 = 0; _i486 < _list484.size; ++_i486)
                   {
-                    _elem469 = new Schema();
-                    _elem469.read(iprot);
-                    struct.success.add(_elem469);
+                    _elem485 = new Schema();
+                    _elem485.read(iprot);
+                    struct.success.add(_elem485);
                   }
                   iprot.readListEnd();
                 }
@@ -5792,9 +6506,9 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (Schema _iter471 : struct.success)
+            for (Schema _iter487 : struct.success)
             {
-              _iter471.write(oprot);
+              _iter487.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -5834,9 +6548,9 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Schema _iter472 : struct.success)
+            for (Schema _iter488 : struct.success)
             {
-              _iter472.write(oprot);
+              _iter488.write(oprot);
             }
           }
         }
@@ -5851,14 +6565,14 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list473 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-            struct.success = new java.util.ArrayList<Schema>(_list473.size);
-            @org.apache.thrift.annotation.Nullable Schema _elem474;
-            for (int _i475 = 0; _i475 < _list473.size; ++_i475)
+            org.apache.thrift.protocol.TList _list489 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<Schema>(_list489.size);
+            @org.apache.thrift.annotation.Nullable Schema _elem490;
+            for (int _i491 = 0; _i491 < _list489.size; ++_i491)
             {
-              _elem474 = new Schema();
-              _elem474.read(iprot);
-              struct.success.add(_elem474);
+              _elem490 = new Schema();
+              _elem490.read(iprot);
+              struct.success.add(_elem490);
             }
           }
           struct.setSuccessIsSet(true);
@@ -6677,14 +7391,14 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list476 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<CompactResult>(_list476.size);
-                  @org.apache.thrift.annotation.Nullable CompactResult _elem477;
-                  for (int _i478 = 0; _i478 < _list476.size; ++_i478)
+                  org.apache.thrift.protocol.TList _list492 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<CompactResult>(_list492.size);
+                  @org.apache.thrift.annotation.Nullable CompactResult _elem493;
+                  for (int _i494 = 0; _i494 < _list492.size; ++_i494)
                   {
-                    _elem477 = new CompactResult();
-                    _elem477.read(iprot);
-                    struct.success.add(_elem477);
+                    _elem493 = new CompactResult();
+                    _elem493.read(iprot);
+                    struct.success.add(_elem493);
                   }
                   iprot.readListEnd();
                 }
@@ -6722,9 +7436,9 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (CompactResult _iter479 : struct.success)
+            for (CompactResult _iter495 : struct.success)
             {
-              _iter479.write(oprot);
+              _iter495.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -6764,9 +7478,9 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (CompactResult _iter480 : struct.success)
+            for (CompactResult _iter496 : struct.success)
             {
-              _iter480.write(oprot);
+              _iter496.write(oprot);
             }
           }
         }
@@ -6781,14 +7495,14 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list481 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-            struct.success = new java.util.ArrayList<CompactResult>(_list481.size);
-            @org.apache.thrift.annotation.Nullable CompactResult _elem482;
-            for (int _i483 = 0; _i483 < _list481.size; ++_i483)
+            org.apache.thrift.protocol.TList _list497 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<CompactResult>(_list497.size);
+            @org.apache.thrift.annotation.Nullable CompactResult _elem498;
+            for (int _i499 = 0; _i499 < _list497.size; ++_i499)
             {
-              _elem482 = new CompactResult();
-              _elem482.read(iprot);
-              struct.success.add(_elem482);
+              _elem498 = new CompactResult();
+              _elem498.read(iprot);
+              struct.success.add(_elem498);
             }
           }
           struct.setSuccessIsSet(true);
@@ -7688,6 +8402,2796 @@ public class Service {
   }
 
   @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class sql_select_plain_args implements org.apache.thrift.TBase<sql_select_plain_args, sql_select_plain_args._Fields>, java.io.Serializable, Cloneable, Comparable<sql_select_plain_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sql_select_plain_args");
+
+    private static final org.apache.thrift.protocol.TField SQL_FIELD_DESC = new org.apache.thrift.protocol.TField("sql", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_plain_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_plain_argsTupleSchemeFactory();
+
+    /**
+     * The SQL string to Execute
+     */
+    public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
+      SQL((short)1, "sql");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // SQL
+            return SQL;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SQL, new org.apache.thrift.meta_data.FieldMetaData("sql", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sql_select_plain_args.class, metaDataMap);
+    }
+
+    public sql_select_plain_args() {
+    }
+
+    public sql_select_plain_args(
+      java.lang.String sql)
+    {
+      this();
+      this.sql = sql;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public sql_select_plain_args(sql_select_plain_args other) {
+      if (other.isSetSql()) {
+        this.sql = other.sql;
+      }
+    }
+
+    @Override
+    public sql_select_plain_args deepCopy() {
+      return new sql_select_plain_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.sql = null;
+    }
+
+    /**
+     * The SQL string to Execute
+     */
+    @org.apache.thrift.annotation.Nullable
+    public java.lang.String getSql() {
+      return this.sql;
+    }
+
+    /**
+     * The SQL string to Execute
+     */
+    public sql_select_plain_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
+      this.sql = sql;
+      return this;
+    }
+
+    public void unsetSql() {
+      this.sql = null;
+    }
+
+    /** Returns true if field sql is set (has been assigned a value) and false otherwise */
+    public boolean isSetSql() {
+      return this.sql != null;
+    }
+
+    public void setSqlIsSet(boolean value) {
+      if (!value) {
+        this.sql = null;
+      }
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case SQL:
+        if (value == null) {
+          unsetSql();
+        } else {
+          setSql((java.lang.String)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SQL:
+        return getSql();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SQL:
+        return isSetSql();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof sql_select_plain_args)
+        return this.equals((sql_select_plain_args)that);
+      return false;
+    }
+
+    public boolean equals(sql_select_plain_args that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_sql = true && this.isSetSql();
+      boolean that_present_sql = true && that.isSetSql();
+      if (this_present_sql || that_present_sql) {
+        if (!(this_present_sql && that_present_sql))
+          return false;
+        if (!this.sql.equals(that.sql))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSql()) ? 131071 : 524287);
+      if (isSetSql())
+        hashCode = hashCode * 8191 + sql.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(sql_select_plain_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetSql(), other.isSetSql());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSql()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sql, other.sql);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    @Override
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+    }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("sql_select_plain_args(");
+      boolean first = true;
+
+      sb.append("sql:");
+      if (this.sql == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.sql);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class sql_select_plain_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_plain_argsStandardScheme getScheme() {
+        return new sql_select_plain_argsStandardScheme();
+      }
+    }
+
+    private static class sql_select_plain_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<sql_select_plain_args> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, sql_select_plain_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // SQL
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.sql = iprot.readString();
+                struct.setSqlIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, sql_select_plain_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.sql != null) {
+          oprot.writeFieldBegin(SQL_FIELD_DESC);
+          oprot.writeString(struct.sql);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class sql_select_plain_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_plain_argsTupleScheme getScheme() {
+        return new sql_select_plain_argsTupleScheme();
+      }
+    }
+
+    private static class sql_select_plain_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<sql_select_plain_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, sql_select_plain_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSql()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSql()) {
+          oprot.writeString(struct.sql);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, sql_select_plain_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.sql = iprot.readString();
+          struct.setSqlIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class sql_select_plain_result implements org.apache.thrift.TBase<sql_select_plain_result, sql_select_plain_result._Fields>, java.io.Serializable, Cloneable, Comparable<sql_select_plain_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sql_select_plain_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_plain_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_plain_resultTupleSchemeFactory();
+
+    public @org.apache.thrift.annotation.Nullable java.util.List<CellPlain> success; // required
+    public @org.apache.thrift.annotation.Nullable Exception e; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      E((short)1, "e");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST          , "CellsPlain")));
+      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Exception.class)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sql_select_plain_result.class, metaDataMap);
+    }
+
+    public sql_select_plain_result() {
+    }
+
+    public sql_select_plain_result(
+      java.util.List<CellPlain> success,
+      Exception e)
+    {
+      this();
+      this.success = success;
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public sql_select_plain_result(sql_select_plain_result other) {
+      if (other.isSetSuccess()) {
+        java.util.List<CellPlain> __this__success = new java.util.ArrayList<CellPlain>(other.success.size());
+        for (CellPlain other_element : other.success) {
+          __this__success.add(new CellPlain(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetE()) {
+        this.e = new Exception(other.e);
+      }
+    }
+
+    @Override
+    public sql_select_plain_result deepCopy() {
+      return new sql_select_plain_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.e = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public java.util.Iterator<CellPlain> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(CellPlain elem) {
+      if (this.success == null) {
+        this.success = new java.util.ArrayList<CellPlain>();
+      }
+      this.success.add(elem);
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public java.util.List<CellPlain> getSuccess() {
+      return this.success;
+    }
+
+    public sql_select_plain_result setSuccess(@org.apache.thrift.annotation.Nullable java.util.List<CellPlain> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public Exception getE() {
+      return this.e;
+    }
+
+    public sql_select_plain_result setE(@org.apache.thrift.annotation.Nullable Exception e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((java.util.List<CellPlain>)value);
+        }
+        break;
+
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((Exception)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case E:
+        return getE();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case E:
+        return isSetE();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof sql_select_plain_result)
+        return this.equals((sql_select_plain_result)that);
+      return false;
+    }
+
+    public boolean equals(sql_select_plain_result that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSuccess()) ? 131071 : 524287);
+      if (isSetSuccess())
+        hashCode = hashCode * 8191 + success.hashCode();
+
+      hashCode = hashCode * 8191 + ((isSetE()) ? 131071 : 524287);
+      if (isSetE())
+        hashCode = hashCode * 8191 + e.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(sql_select_plain_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetSuccess(), other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.compare(isSetE(), other.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, other.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+      }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("sql_select_plain_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class sql_select_plain_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_plain_resultStandardScheme getScheme() {
+        return new sql_select_plain_resultStandardScheme();
+      }
+    }
+
+    private static class sql_select_plain_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<sql_select_plain_result> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, sql_select_plain_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+                {
+                  org.apache.thrift.protocol.TList _list500 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<CellPlain>(_list500.size);
+                  @org.apache.thrift.annotation.Nullable CellPlain _elem501;
+                  for (int _i502 = 0; _i502 < _list500.size; ++_i502)
+                  {
+                    _elem501 = new CellPlain();
+                    _elem501.read(iprot);
+                    struct.success.add(_elem501);
+                  }
+                  iprot.readListEnd();
+                }
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // E
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.e = new Exception();
+                struct.e.read(iprot);
+                struct.setEIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, sql_select_plain_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
+            for (CellPlain _iter503 : struct.success)
+            {
+              _iter503.write(oprot);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+        if (struct.e != null) {
+          oprot.writeFieldBegin(E_FIELD_DESC);
+          struct.e.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class sql_select_plain_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_plain_resultTupleScheme getScheme() {
+        return new sql_select_plain_resultTupleScheme();
+      }
+    }
+
+    private static class sql_select_plain_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<sql_select_plain_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, sql_select_plain_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetE()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          {
+            oprot.writeI32(struct.success.size());
+            for (CellPlain _iter504 : struct.success)
+            {
+              _iter504.write(oprot);
+            }
+          }
+        }
+        if (struct.isSetE()) {
+          struct.e.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, sql_select_plain_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          {
+            org.apache.thrift.protocol.TList _list505 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<CellPlain>(_list505.size);
+            @org.apache.thrift.annotation.Nullable CellPlain _elem506;
+            for (int _i507 = 0; _i507 < _list505.size; ++_i507)
+            {
+              _elem506 = new CellPlain();
+              _elem506.read(iprot);
+              struct.success.add(_elem506);
+            }
+          }
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.e = new Exception();
+          struct.e.read(iprot);
+          struct.setEIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class sql_select_counter_args implements org.apache.thrift.TBase<sql_select_counter_args, sql_select_counter_args._Fields>, java.io.Serializable, Cloneable, Comparable<sql_select_counter_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sql_select_counter_args");
+
+    private static final org.apache.thrift.protocol.TField SQL_FIELD_DESC = new org.apache.thrift.protocol.TField("sql", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_counter_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_counter_argsTupleSchemeFactory();
+
+    /**
+     * The SQL string to Execute
+     */
+    public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
+      SQL((short)1, "sql");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // SQL
+            return SQL;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SQL, new org.apache.thrift.meta_data.FieldMetaData("sql", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sql_select_counter_args.class, metaDataMap);
+    }
+
+    public sql_select_counter_args() {
+    }
+
+    public sql_select_counter_args(
+      java.lang.String sql)
+    {
+      this();
+      this.sql = sql;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public sql_select_counter_args(sql_select_counter_args other) {
+      if (other.isSetSql()) {
+        this.sql = other.sql;
+      }
+    }
+
+    @Override
+    public sql_select_counter_args deepCopy() {
+      return new sql_select_counter_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.sql = null;
+    }
+
+    /**
+     * The SQL string to Execute
+     */
+    @org.apache.thrift.annotation.Nullable
+    public java.lang.String getSql() {
+      return this.sql;
+    }
+
+    /**
+     * The SQL string to Execute
+     */
+    public sql_select_counter_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
+      this.sql = sql;
+      return this;
+    }
+
+    public void unsetSql() {
+      this.sql = null;
+    }
+
+    /** Returns true if field sql is set (has been assigned a value) and false otherwise */
+    public boolean isSetSql() {
+      return this.sql != null;
+    }
+
+    public void setSqlIsSet(boolean value) {
+      if (!value) {
+        this.sql = null;
+      }
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case SQL:
+        if (value == null) {
+          unsetSql();
+        } else {
+          setSql((java.lang.String)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SQL:
+        return getSql();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SQL:
+        return isSetSql();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof sql_select_counter_args)
+        return this.equals((sql_select_counter_args)that);
+      return false;
+    }
+
+    public boolean equals(sql_select_counter_args that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_sql = true && this.isSetSql();
+      boolean that_present_sql = true && that.isSetSql();
+      if (this_present_sql || that_present_sql) {
+        if (!(this_present_sql && that_present_sql))
+          return false;
+        if (!this.sql.equals(that.sql))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSql()) ? 131071 : 524287);
+      if (isSetSql())
+        hashCode = hashCode * 8191 + sql.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(sql_select_counter_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetSql(), other.isSetSql());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSql()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sql, other.sql);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    @Override
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+    }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("sql_select_counter_args(");
+      boolean first = true;
+
+      sb.append("sql:");
+      if (this.sql == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.sql);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class sql_select_counter_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_counter_argsStandardScheme getScheme() {
+        return new sql_select_counter_argsStandardScheme();
+      }
+    }
+
+    private static class sql_select_counter_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<sql_select_counter_args> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, sql_select_counter_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // SQL
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.sql = iprot.readString();
+                struct.setSqlIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, sql_select_counter_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.sql != null) {
+          oprot.writeFieldBegin(SQL_FIELD_DESC);
+          oprot.writeString(struct.sql);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class sql_select_counter_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_counter_argsTupleScheme getScheme() {
+        return new sql_select_counter_argsTupleScheme();
+      }
+    }
+
+    private static class sql_select_counter_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<sql_select_counter_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, sql_select_counter_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSql()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSql()) {
+          oprot.writeString(struct.sql);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, sql_select_counter_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.sql = iprot.readString();
+          struct.setSqlIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class sql_select_counter_result implements org.apache.thrift.TBase<sql_select_counter_result, sql_select_counter_result._Fields>, java.io.Serializable, Cloneable, Comparable<sql_select_counter_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sql_select_counter_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_counter_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_counter_resultTupleSchemeFactory();
+
+    public @org.apache.thrift.annotation.Nullable java.util.List<CellCounter> success; // required
+    public @org.apache.thrift.annotation.Nullable Exception e; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      E((short)1, "e");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST          , "CellsCounter")));
+      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Exception.class)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sql_select_counter_result.class, metaDataMap);
+    }
+
+    public sql_select_counter_result() {
+    }
+
+    public sql_select_counter_result(
+      java.util.List<CellCounter> success,
+      Exception e)
+    {
+      this();
+      this.success = success;
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public sql_select_counter_result(sql_select_counter_result other) {
+      if (other.isSetSuccess()) {
+        java.util.List<CellCounter> __this__success = new java.util.ArrayList<CellCounter>(other.success.size());
+        for (CellCounter other_element : other.success) {
+          __this__success.add(new CellCounter(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetE()) {
+        this.e = new Exception(other.e);
+      }
+    }
+
+    @Override
+    public sql_select_counter_result deepCopy() {
+      return new sql_select_counter_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.e = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public java.util.Iterator<CellCounter> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(CellCounter elem) {
+      if (this.success == null) {
+        this.success = new java.util.ArrayList<CellCounter>();
+      }
+      this.success.add(elem);
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public java.util.List<CellCounter> getSuccess() {
+      return this.success;
+    }
+
+    public sql_select_counter_result setSuccess(@org.apache.thrift.annotation.Nullable java.util.List<CellCounter> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public Exception getE() {
+      return this.e;
+    }
+
+    public sql_select_counter_result setE(@org.apache.thrift.annotation.Nullable Exception e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((java.util.List<CellCounter>)value);
+        }
+        break;
+
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((Exception)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case E:
+        return getE();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case E:
+        return isSetE();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof sql_select_counter_result)
+        return this.equals((sql_select_counter_result)that);
+      return false;
+    }
+
+    public boolean equals(sql_select_counter_result that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSuccess()) ? 131071 : 524287);
+      if (isSetSuccess())
+        hashCode = hashCode * 8191 + success.hashCode();
+
+      hashCode = hashCode * 8191 + ((isSetE()) ? 131071 : 524287);
+      if (isSetE())
+        hashCode = hashCode * 8191 + e.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(sql_select_counter_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetSuccess(), other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.compare(isSetE(), other.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, other.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+      }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("sql_select_counter_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class sql_select_counter_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_counter_resultStandardScheme getScheme() {
+        return new sql_select_counter_resultStandardScheme();
+      }
+    }
+
+    private static class sql_select_counter_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<sql_select_counter_result> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, sql_select_counter_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+                {
+                  org.apache.thrift.protocol.TList _list508 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<CellCounter>(_list508.size);
+                  @org.apache.thrift.annotation.Nullable CellCounter _elem509;
+                  for (int _i510 = 0; _i510 < _list508.size; ++_i510)
+                  {
+                    _elem509 = new CellCounter();
+                    _elem509.read(iprot);
+                    struct.success.add(_elem509);
+                  }
+                  iprot.readListEnd();
+                }
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // E
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.e = new Exception();
+                struct.e.read(iprot);
+                struct.setEIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, sql_select_counter_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
+            for (CellCounter _iter511 : struct.success)
+            {
+              _iter511.write(oprot);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+        if (struct.e != null) {
+          oprot.writeFieldBegin(E_FIELD_DESC);
+          struct.e.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class sql_select_counter_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_counter_resultTupleScheme getScheme() {
+        return new sql_select_counter_resultTupleScheme();
+      }
+    }
+
+    private static class sql_select_counter_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<sql_select_counter_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, sql_select_counter_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetE()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          {
+            oprot.writeI32(struct.success.size());
+            for (CellCounter _iter512 : struct.success)
+            {
+              _iter512.write(oprot);
+            }
+          }
+        }
+        if (struct.isSetE()) {
+          struct.e.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, sql_select_counter_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          {
+            org.apache.thrift.protocol.TList _list513 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<CellCounter>(_list513.size);
+            @org.apache.thrift.annotation.Nullable CellCounter _elem514;
+            for (int _i515 = 0; _i515 < _list513.size; ++_i515)
+            {
+              _elem514 = new CellCounter();
+              _elem514.read(iprot);
+              struct.success.add(_elem514);
+            }
+          }
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.e = new Exception();
+          struct.e.read(iprot);
+          struct.setEIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class sql_select_serial_args implements org.apache.thrift.TBase<sql_select_serial_args, sql_select_serial_args._Fields>, java.io.Serializable, Cloneable, Comparable<sql_select_serial_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sql_select_serial_args");
+
+    private static final org.apache.thrift.protocol.TField SQL_FIELD_DESC = new org.apache.thrift.protocol.TField("sql", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_serial_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_serial_argsTupleSchemeFactory();
+
+    /**
+     * The SQL string to Execute
+     */
+    public @org.apache.thrift.annotation.Nullable java.lang.String sql; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The SQL string to Execute
+       */
+      SQL((short)1, "sql");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // SQL
+            return SQL;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SQL, new org.apache.thrift.meta_data.FieldMetaData("sql", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sql_select_serial_args.class, metaDataMap);
+    }
+
+    public sql_select_serial_args() {
+    }
+
+    public sql_select_serial_args(
+      java.lang.String sql)
+    {
+      this();
+      this.sql = sql;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public sql_select_serial_args(sql_select_serial_args other) {
+      if (other.isSetSql()) {
+        this.sql = other.sql;
+      }
+    }
+
+    @Override
+    public sql_select_serial_args deepCopy() {
+      return new sql_select_serial_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.sql = null;
+    }
+
+    /**
+     * The SQL string to Execute
+     */
+    @org.apache.thrift.annotation.Nullable
+    public java.lang.String getSql() {
+      return this.sql;
+    }
+
+    /**
+     * The SQL string to Execute
+     */
+    public sql_select_serial_args setSql(@org.apache.thrift.annotation.Nullable java.lang.String sql) {
+      this.sql = sql;
+      return this;
+    }
+
+    public void unsetSql() {
+      this.sql = null;
+    }
+
+    /** Returns true if field sql is set (has been assigned a value) and false otherwise */
+    public boolean isSetSql() {
+      return this.sql != null;
+    }
+
+    public void setSqlIsSet(boolean value) {
+      if (!value) {
+        this.sql = null;
+      }
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case SQL:
+        if (value == null) {
+          unsetSql();
+        } else {
+          setSql((java.lang.String)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SQL:
+        return getSql();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SQL:
+        return isSetSql();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof sql_select_serial_args)
+        return this.equals((sql_select_serial_args)that);
+      return false;
+    }
+
+    public boolean equals(sql_select_serial_args that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_sql = true && this.isSetSql();
+      boolean that_present_sql = true && that.isSetSql();
+      if (this_present_sql || that_present_sql) {
+        if (!(this_present_sql && that_present_sql))
+          return false;
+        if (!this.sql.equals(that.sql))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSql()) ? 131071 : 524287);
+      if (isSetSql())
+        hashCode = hashCode * 8191 + sql.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(sql_select_serial_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetSql(), other.isSetSql());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSql()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sql, other.sql);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    @Override
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+    }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("sql_select_serial_args(");
+      boolean first = true;
+
+      sb.append("sql:");
+      if (this.sql == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.sql);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class sql_select_serial_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_serial_argsStandardScheme getScheme() {
+        return new sql_select_serial_argsStandardScheme();
+      }
+    }
+
+    private static class sql_select_serial_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<sql_select_serial_args> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, sql_select_serial_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // SQL
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.sql = iprot.readString();
+                struct.setSqlIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, sql_select_serial_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.sql != null) {
+          oprot.writeFieldBegin(SQL_FIELD_DESC);
+          oprot.writeString(struct.sql);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class sql_select_serial_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_serial_argsTupleScheme getScheme() {
+        return new sql_select_serial_argsTupleScheme();
+      }
+    }
+
+    private static class sql_select_serial_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<sql_select_serial_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, sql_select_serial_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSql()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSql()) {
+          oprot.writeString(struct.sql);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, sql_select_serial_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.sql = iprot.readString();
+          struct.setSqlIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class sql_select_serial_result implements org.apache.thrift.TBase<sql_select_serial_result, sql_select_serial_result._Fields>, java.io.Serializable, Cloneable, Comparable<sql_select_serial_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sql_select_serial_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_serial_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_serial_resultTupleSchemeFactory();
+
+    public @org.apache.thrift.annotation.Nullable java.util.List<CellSerial> success; // required
+    public @org.apache.thrift.annotation.Nullable Exception e; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      E((short)1, "e");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST          , "CellsSerial")));
+      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Exception.class)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sql_select_serial_result.class, metaDataMap);
+    }
+
+    public sql_select_serial_result() {
+    }
+
+    public sql_select_serial_result(
+      java.util.List<CellSerial> success,
+      Exception e)
+    {
+      this();
+      this.success = success;
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public sql_select_serial_result(sql_select_serial_result other) {
+      if (other.isSetSuccess()) {
+        java.util.List<CellSerial> __this__success = new java.util.ArrayList<CellSerial>(other.success.size());
+        for (CellSerial other_element : other.success) {
+          __this__success.add(new CellSerial(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetE()) {
+        this.e = new Exception(other.e);
+      }
+    }
+
+    @Override
+    public sql_select_serial_result deepCopy() {
+      return new sql_select_serial_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.e = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public java.util.Iterator<CellSerial> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(CellSerial elem) {
+      if (this.success == null) {
+        this.success = new java.util.ArrayList<CellSerial>();
+      }
+      this.success.add(elem);
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public java.util.List<CellSerial> getSuccess() {
+      return this.success;
+    }
+
+    public sql_select_serial_result setSuccess(@org.apache.thrift.annotation.Nullable java.util.List<CellSerial> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public Exception getE() {
+      return this.e;
+    }
+
+    public sql_select_serial_result setE(@org.apache.thrift.annotation.Nullable Exception e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((java.util.List<CellSerial>)value);
+        }
+        break;
+
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((Exception)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case E:
+        return getE();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case E:
+        return isSetE();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof sql_select_serial_result)
+        return this.equals((sql_select_serial_result)that);
+      return false;
+    }
+
+    public boolean equals(sql_select_serial_result that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetSuccess()) ? 131071 : 524287);
+      if (isSetSuccess())
+        hashCode = hashCode * 8191 + success.hashCode();
+
+      hashCode = hashCode * 8191 + ((isSetE()) ? 131071 : 524287);
+      if (isSetE())
+        hashCode = hashCode * 8191 + e.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(sql_select_serial_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetSuccess(), other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.compare(isSetE(), other.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, other.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+      }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("sql_select_serial_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class sql_select_serial_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_serial_resultStandardScheme getScheme() {
+        return new sql_select_serial_resultStandardScheme();
+      }
+    }
+
+    private static class sql_select_serial_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<sql_select_serial_result> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, sql_select_serial_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+                {
+                  org.apache.thrift.protocol.TList _list516 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<CellSerial>(_list516.size);
+                  @org.apache.thrift.annotation.Nullable CellSerial _elem517;
+                  for (int _i518 = 0; _i518 < _list516.size; ++_i518)
+                  {
+                    _elem517 = new CellSerial();
+                    _elem517.read(iprot);
+                    struct.success.add(_elem517);
+                  }
+                  iprot.readListEnd();
+                }
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // E
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.e = new Exception();
+                struct.e.read(iprot);
+                struct.setEIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, sql_select_serial_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
+            for (CellSerial _iter519 : struct.success)
+            {
+              _iter519.write(oprot);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+        if (struct.e != null) {
+          oprot.writeFieldBegin(E_FIELD_DESC);
+          struct.e.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class sql_select_serial_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public sql_select_serial_resultTupleScheme getScheme() {
+        return new sql_select_serial_resultTupleScheme();
+      }
+    }
+
+    private static class sql_select_serial_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<sql_select_serial_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, sql_select_serial_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetE()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          {
+            oprot.writeI32(struct.success.size());
+            for (CellSerial _iter520 : struct.success)
+            {
+              _iter520.write(oprot);
+            }
+          }
+        }
+        if (struct.isSetE()) {
+          struct.e.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, sql_select_serial_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          {
+            org.apache.thrift.protocol.TList _list521 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<CellSerial>(_list521.size);
+            @org.apache.thrift.annotation.Nullable CellSerial _elem522;
+            for (int _i523 = 0; _i523 < _list521.size; ++_i523)
+            {
+              _elem522 = new CellSerial();
+              _elem522.read(iprot);
+              struct.success.add(_elem522);
+            }
+          }
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.e = new Exception();
+          struct.e.read(iprot);
+          struct.setEIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
   public static class sql_select_rslt_on_column_args implements org.apache.thrift.TBase<sql_select_rslt_on_column_args, sql_select_rslt_on_column_args._Fields>, java.io.Serializable, Cloneable, Comparable<sql_select_rslt_on_column_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sql_select_rslt_on_column_args");
 
@@ -8491,16 +11995,16 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TMap _map484 = iprot.readMapBegin();
-                  struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map484.size);
-                  @org.apache.thrift.annotation.Nullable java.lang.String _key485;
-                  @org.apache.thrift.annotation.Nullable ColCells _val486;
-                  for (int _i487 = 0; _i487 < _map484.size; ++_i487)
+                  org.apache.thrift.protocol.TMap _map524 = iprot.readMapBegin();
+                  struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map524.size);
+                  @org.apache.thrift.annotation.Nullable java.lang.String _key525;
+                  @org.apache.thrift.annotation.Nullable ColCells _val526;
+                  for (int _i527 = 0; _i527 < _map524.size; ++_i527)
                   {
-                    _key485 = iprot.readString();
-                    _val486 = new ColCells();
-                    _val486.read(iprot);
-                    struct.success.put(_key485, _val486);
+                    _key525 = iprot.readString();
+                    _val526 = new ColCells();
+                    _val526.read(iprot);
+                    struct.success.put(_key525, _val526);
                   }
                   iprot.readMapEnd();
                 }
@@ -8538,10 +12042,10 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter488 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, ColCells> _iter528 : struct.success.entrySet())
             {
-              oprot.writeString(_iter488.getKey());
-              _iter488.getValue().write(oprot);
+              oprot.writeString(_iter528.getKey());
+              _iter528.getValue().write(oprot);
             }
             oprot.writeMapEnd();
           }
@@ -8581,10 +12085,10 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter489 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, ColCells> _iter529 : struct.success.entrySet())
             {
-              oprot.writeString(_iter489.getKey());
-              _iter489.getValue().write(oprot);
+              oprot.writeString(_iter529.getKey());
+              _iter529.getValue().write(oprot);
             }
           }
         }
@@ -8599,16 +12103,16 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TMap _map490 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-            struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map490.size);
-            @org.apache.thrift.annotation.Nullable java.lang.String _key491;
-            @org.apache.thrift.annotation.Nullable ColCells _val492;
-            for (int _i493 = 0; _i493 < _map490.size; ++_i493)
+            org.apache.thrift.protocol.TMap _map530 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
+            struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map530.size);
+            @org.apache.thrift.annotation.Nullable java.lang.String _key531;
+            @org.apache.thrift.annotation.Nullable ColCells _val532;
+            for (int _i533 = 0; _i533 < _map530.size; ++_i533)
             {
-              _key491 = iprot.readString();
-              _val492 = new ColCells();
-              _val492.read(iprot);
-              struct.success.put(_key491, _val492);
+              _key531 = iprot.readString();
+              _val532 = new ColCells();
+              _val532.read(iprot);
+              struct.success.put(_key531, _val532);
             }
           }
           struct.setSuccessIsSet(true);
@@ -9427,14 +12931,14 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list494 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<kCells>(_list494.size);
-                  @org.apache.thrift.annotation.Nullable kCells _elem495;
-                  for (int _i496 = 0; _i496 < _list494.size; ++_i496)
+                  org.apache.thrift.protocol.TList _list534 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<kCells>(_list534.size);
+                  @org.apache.thrift.annotation.Nullable kCells _elem535;
+                  for (int _i536 = 0; _i536 < _list534.size; ++_i536)
                   {
-                    _elem495 = new kCells();
-                    _elem495.read(iprot);
-                    struct.success.add(_elem495);
+                    _elem535 = new kCells();
+                    _elem535.read(iprot);
+                    struct.success.add(_elem535);
                   }
                   iprot.readListEnd();
                 }
@@ -9472,9 +12976,9 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (kCells _iter497 : struct.success)
+            for (kCells _iter537 : struct.success)
             {
-              _iter497.write(oprot);
+              _iter537.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -9514,9 +13018,9 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (kCells _iter498 : struct.success)
+            for (kCells _iter538 : struct.success)
             {
-              _iter498.write(oprot);
+              _iter538.write(oprot);
             }
           }
         }
@@ -9531,14 +13035,14 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list499 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-            struct.success = new java.util.ArrayList<kCells>(_list499.size);
-            @org.apache.thrift.annotation.Nullable kCells _elem500;
-            for (int _i501 = 0; _i501 < _list499.size; ++_i501)
+            org.apache.thrift.protocol.TList _list539 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<kCells>(_list539.size);
+            @org.apache.thrift.annotation.Nullable kCells _elem540;
+            for (int _i541 = 0; _i541 < _list539.size; ++_i541)
             {
-              _elem500 = new kCells();
-              _elem500.read(iprot);
-              struct.success.add(_elem500);
+              _elem540 = new kCells();
+              _elem540.read(iprot);
+              struct.success.add(_elem540);
             }
           }
           struct.setSuccessIsSet(true);
@@ -14856,7 +18360,7 @@ public class Service {
     /**
      * The Cells to update
      */
-    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCell>> cells; // required
+    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells; // required
     /**
      * The Updater ID to use for write
      */
@@ -14940,7 +18444,7 @@ public class Service {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.CELLS, new org.apache.thrift.meta_data.FieldMetaData("cells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.MAP          , "UCCells")));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.MAP          , "UCCellsPlain")));
       tmpMap.put(_Fields.UPDATER_ID, new org.apache.thrift.meta_data.FieldMetaData("updater_id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -14953,7 +18457,7 @@ public class Service {
     }
 
     public update_args(
-      java.util.Map<java.lang.Long,java.util.List<UCell>> cells,
+      java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells,
       long updater_id)
     {
       this();
@@ -14968,15 +18472,15 @@ public class Service {
     public update_args(update_args other) {
       __isset_bitfield = other.__isset_bitfield;
       if (other.isSetCells()) {
-        java.util.Map<java.lang.Long,java.util.List<UCell>> __this__cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(other.cells.size());
-        for (java.util.Map.Entry<java.lang.Long, java.util.List<UCell>> other_element : other.cells.entrySet()) {
+        java.util.Map<java.lang.Long,java.util.List<UCellPlain>> __this__cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>(other.cells.size());
+        for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellPlain>> other_element : other.cells.entrySet()) {
 
           java.lang.Long other_element_key = other_element.getKey();
-          java.util.List<UCell> other_element_value = other_element.getValue();
+          java.util.List<UCellPlain> other_element_value = other_element.getValue();
 
           java.lang.Long __this__cells_copy_key = other_element_key;
 
-          java.util.List<UCell> __this__cells_copy_value = new java.util.ArrayList<UCell>(other_element_value);
+          java.util.List<UCellPlain> __this__cells_copy_value = new java.util.ArrayList<UCellPlain>(other_element_value);
 
           __this__cells.put(__this__cells_copy_key, __this__cells_copy_value);
         }
@@ -15001,9 +18505,9 @@ public class Service {
       return (this.cells == null) ? 0 : this.cells.size();
     }
 
-    public void putToCells(long key, java.util.List<UCell> val) {
+    public void putToCells(long key, java.util.List<UCellPlain> val) {
       if (this.cells == null) {
-        this.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>();
+        this.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>();
       }
       this.cells.put(key, val);
     }
@@ -15012,14 +18516,14 @@ public class Service {
      * The Cells to update
      */
     @org.apache.thrift.annotation.Nullable
-    public java.util.Map<java.lang.Long,java.util.List<UCell>> getCells() {
+    public java.util.Map<java.lang.Long,java.util.List<UCellPlain>> getCells() {
       return this.cells;
     }
 
     /**
      * The Cells to update
      */
-    public update_args setCells(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCell>> cells) {
+    public update_args setCells(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellPlain>> cells) {
       this.cells = cells;
       return this;
     }
@@ -15075,7 +18579,7 @@ public class Service {
         if (value == null) {
           unsetCells();
         } else {
-          setCells((java.util.Map<java.lang.Long,java.util.List<UCell>>)value);
+          setCells((java.util.Map<java.lang.Long,java.util.List<UCellPlain>>)value);
         }
         break;
 
@@ -15280,26 +18784,26 @@ public class Service {
             case 1: // CELLS
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TMap _map502 = iprot.readMapBegin();
-                  struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(2*_map502.size);
-                  long _key503;
-                  @org.apache.thrift.annotation.Nullable java.util.List<UCell> _val504;
-                  for (int _i505 = 0; _i505 < _map502.size; ++_i505)
+                  org.apache.thrift.protocol.TMap _map542 = iprot.readMapBegin();
+                  struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>(2*_map542.size);
+                  long _key543;
+                  @org.apache.thrift.annotation.Nullable java.util.List<UCellPlain> _val544;
+                  for (int _i545 = 0; _i545 < _map542.size; ++_i545)
                   {
-                    _key503 = iprot.readI64();
+                    _key543 = iprot.readI64();
                     {
-                      org.apache.thrift.protocol.TList _list506 = iprot.readListBegin();
-                      _val504 = new java.util.ArrayList<UCell>(_list506.size);
-                      @org.apache.thrift.annotation.Nullable UCell _elem507;
-                      for (int _i508 = 0; _i508 < _list506.size; ++_i508)
+                      org.apache.thrift.protocol.TList _list546 = iprot.readListBegin();
+                      _val544 = new java.util.ArrayList<UCellPlain>(_list546.size);
+                      @org.apache.thrift.annotation.Nullable UCellPlain _elem547;
+                      for (int _i548 = 0; _i548 < _list546.size; ++_i548)
                       {
-                        _elem507 = new UCell();
-                        _elem507.read(iprot);
-                        _val504.add(_elem507);
+                        _elem547 = new UCellPlain();
+                        _elem547.read(iprot);
+                        _val544.add(_elem547);
                       }
                       iprot.readListEnd();
                     }
-                    struct.cells.put(_key503, _val504);
+                    struct.cells.put(_key543, _val544);
                   }
                   iprot.readMapEnd();
                 }
@@ -15336,14 +18840,14 @@ public class Service {
           oprot.writeFieldBegin(CELLS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST, struct.cells.size()));
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCell>> _iter509 : struct.cells.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellPlain>> _iter549 : struct.cells.entrySet())
             {
-              oprot.writeI64(_iter509.getKey());
+              oprot.writeI64(_iter549.getKey());
               {
-                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter509.getValue().size()));
-                for (UCell _iter510 : _iter509.getValue())
+                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter549.getValue().size()));
+                for (UCellPlain _iter550 : _iter549.getValue())
                 {
-                  _iter510.write(oprot);
+                  _iter550.write(oprot);
                 }
                 oprot.writeListEnd();
               }
@@ -15384,14 +18888,14 @@ public class Service {
         if (struct.isSetCells()) {
           {
             oprot.writeI32(struct.cells.size());
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCell>> _iter511 : struct.cells.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellPlain>> _iter551 : struct.cells.entrySet())
             {
-              oprot.writeI64(_iter511.getKey());
+              oprot.writeI64(_iter551.getKey());
               {
-                oprot.writeI32(_iter511.getValue().size());
-                for (UCell _iter512 : _iter511.getValue())
+                oprot.writeI32(_iter551.getValue().size());
+                for (UCellPlain _iter552 : _iter551.getValue())
                 {
-                  _iter512.write(oprot);
+                  _iter552.write(oprot);
                 }
               }
             }
@@ -15408,25 +18912,25 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TMap _map513 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
-            struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(2*_map513.size);
-            long _key514;
-            @org.apache.thrift.annotation.Nullable java.util.List<UCell> _val515;
-            for (int _i516 = 0; _i516 < _map513.size; ++_i516)
+            org.apache.thrift.protocol.TMap _map553 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
+            struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>(2*_map553.size);
+            long _key554;
+            @org.apache.thrift.annotation.Nullable java.util.List<UCellPlain> _val555;
+            for (int _i556 = 0; _i556 < _map553.size; ++_i556)
             {
-              _key514 = iprot.readI64();
+              _key554 = iprot.readI64();
               {
-                org.apache.thrift.protocol.TList _list517 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-                _val515 = new java.util.ArrayList<UCell>(_list517.size);
-                @org.apache.thrift.annotation.Nullable UCell _elem518;
-                for (int _i519 = 0; _i519 < _list517.size; ++_i519)
+                org.apache.thrift.protocol.TList _list557 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+                _val555 = new java.util.ArrayList<UCellPlain>(_list557.size);
+                @org.apache.thrift.annotation.Nullable UCellPlain _elem558;
+                for (int _i559 = 0; _i559 < _list557.size; ++_i559)
                 {
-                  _elem518 = new UCell();
-                  _elem518.read(iprot);
-                  _val515.add(_elem518);
+                  _elem558 = new UCellPlain();
+                  _elem558.read(iprot);
+                  _val555.add(_elem558);
                 }
               }
-              struct.cells.put(_key514, _val515);
+              struct.cells.put(_key554, _val555);
             }
           }
           struct.setCellsIsSet(true);
@@ -15808,6 +19312,986 @@ public class Service {
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, update_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.e = new Exception();
+          struct.e.read(iprot);
+          struct.setEIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class update_counter_args implements org.apache.thrift.TBase<update_counter_args, update_counter_args._Fields>, java.io.Serializable, Cloneable, Comparable<update_counter_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("update_counter_args");
+
+    private static final org.apache.thrift.protocol.TField CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("cells", org.apache.thrift.protocol.TType.MAP, (short)1);
+    private static final org.apache.thrift.protocol.TField UPDATER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("updater_id", org.apache.thrift.protocol.TType.I64, (short)2);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new update_counter_argsStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new update_counter_argsTupleSchemeFactory();
+
+    /**
+     * The Counter Cells to update
+     */
+    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells; // required
+    /**
+     * The Updater ID to use for write
+     */
+    public long updater_id; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      /**
+       * The Counter Cells to update
+       */
+      CELLS((short)1, "cells"),
+      /**
+       * The Updater ID to use for write
+       */
+      UPDATER_ID((short)2, "updater_id");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // CELLS
+            return CELLS;
+          case 2: // UPDATER_ID
+            return UPDATER_ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __UPDATER_ID_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.CELLS, new org.apache.thrift.meta_data.FieldMetaData("cells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.MAP          , "UCCellsCounter")));
+      tmpMap.put(_Fields.UPDATER_ID, new org.apache.thrift.meta_data.FieldMetaData("updater_id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(update_counter_args.class, metaDataMap);
+    }
+
+    public update_counter_args() {
+      this.updater_id = 0L;
+
+    }
+
+    public update_counter_args(
+      java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells,
+      long updater_id)
+    {
+      this();
+      this.cells = cells;
+      this.updater_id = updater_id;
+      setUpdater_idIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public update_counter_args(update_counter_args other) {
+      __isset_bitfield = other.__isset_bitfield;
+      if (other.isSetCells()) {
+        java.util.Map<java.lang.Long,java.util.List<UCellCounter>> __this__cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>(other.cells.size());
+        for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellCounter>> other_element : other.cells.entrySet()) {
+
+          java.lang.Long other_element_key = other_element.getKey();
+          java.util.List<UCellCounter> other_element_value = other_element.getValue();
+
+          java.lang.Long __this__cells_copy_key = other_element_key;
+
+          java.util.List<UCellCounter> __this__cells_copy_value = new java.util.ArrayList<UCellCounter>(other_element_value);
+
+          __this__cells.put(__this__cells_copy_key, __this__cells_copy_value);
+        }
+        this.cells = __this__cells;
+      }
+      this.updater_id = other.updater_id;
+    }
+
+    @Override
+    public update_counter_args deepCopy() {
+      return new update_counter_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.cells = null;
+      this.updater_id = 0L;
+
+    }
+
+    public int getCellsSize() {
+      return (this.cells == null) ? 0 : this.cells.size();
+    }
+
+    public void putToCells(long key, java.util.List<UCellCounter> val) {
+      if (this.cells == null) {
+        this.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>();
+      }
+      this.cells.put(key, val);
+    }
+
+    /**
+     * The Counter Cells to update
+     */
+    @org.apache.thrift.annotation.Nullable
+    public java.util.Map<java.lang.Long,java.util.List<UCellCounter>> getCells() {
+      return this.cells;
+    }
+
+    /**
+     * The Counter Cells to update
+     */
+    public update_counter_args setCells(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellCounter>> cells) {
+      this.cells = cells;
+      return this;
+    }
+
+    public void unsetCells() {
+      this.cells = null;
+    }
+
+    /** Returns true if field cells is set (has been assigned a value) and false otherwise */
+    public boolean isSetCells() {
+      return this.cells != null;
+    }
+
+    public void setCellsIsSet(boolean value) {
+      if (!value) {
+        this.cells = null;
+      }
+    }
+
+    /**
+     * The Updater ID to use for write
+     */
+    public long getUpdater_id() {
+      return this.updater_id;
+    }
+
+    /**
+     * The Updater ID to use for write
+     */
+    public update_counter_args setUpdater_id(long updater_id) {
+      this.updater_id = updater_id;
+      setUpdater_idIsSet(true);
+      return this;
+    }
+
+    public void unsetUpdater_id() {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __UPDATER_ID_ISSET_ID);
+    }
+
+    /** Returns true if field updater_id is set (has been assigned a value) and false otherwise */
+    public boolean isSetUpdater_id() {
+      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __UPDATER_ID_ISSET_ID);
+    }
+
+    public void setUpdater_idIsSet(boolean value) {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __UPDATER_ID_ISSET_ID, value);
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case CELLS:
+        if (value == null) {
+          unsetCells();
+        } else {
+          setCells((java.util.Map<java.lang.Long,java.util.List<UCellCounter>>)value);
+        }
+        break;
+
+      case UPDATER_ID:
+        if (value == null) {
+          unsetUpdater_id();
+        } else {
+          setUpdater_id((java.lang.Long)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case CELLS:
+        return getCells();
+
+      case UPDATER_ID:
+        return getUpdater_id();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case CELLS:
+        return isSetCells();
+      case UPDATER_ID:
+        return isSetUpdater_id();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof update_counter_args)
+        return this.equals((update_counter_args)that);
+      return false;
+    }
+
+    public boolean equals(update_counter_args that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_cells = true && this.isSetCells();
+      boolean that_present_cells = true && that.isSetCells();
+      if (this_present_cells || that_present_cells) {
+        if (!(this_present_cells && that_present_cells))
+          return false;
+        if (!this.cells.equals(that.cells))
+          return false;
+      }
+
+      boolean this_present_updater_id = true;
+      boolean that_present_updater_id = true;
+      if (this_present_updater_id || that_present_updater_id) {
+        if (!(this_present_updater_id && that_present_updater_id))
+          return false;
+        if (this.updater_id != that.updater_id)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetCells()) ? 131071 : 524287);
+      if (isSetCells())
+        hashCode = hashCode * 8191 + cells.hashCode();
+
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(updater_id);
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(update_counter_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetCells(), other.isSetCells());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCells()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cells, other.cells);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.compare(isSetUpdater_id(), other.isSetUpdater_id());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUpdater_id()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.updater_id, other.updater_id);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    @Override
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+    }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("update_counter_args(");
+      boolean first = true;
+
+      sb.append("cells:");
+      if (this.cells == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.cells);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("updater_id:");
+      sb.append(this.updater_id);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class update_counter_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public update_counter_argsStandardScheme getScheme() {
+        return new update_counter_argsStandardScheme();
+      }
+    }
+
+    private static class update_counter_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<update_counter_args> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, update_counter_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // CELLS
+              if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+                {
+                  org.apache.thrift.protocol.TMap _map560 = iprot.readMapBegin();
+                  struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>(2*_map560.size);
+                  long _key561;
+                  @org.apache.thrift.annotation.Nullable java.util.List<UCellCounter> _val562;
+                  for (int _i563 = 0; _i563 < _map560.size; ++_i563)
+                  {
+                    _key561 = iprot.readI64();
+                    {
+                      org.apache.thrift.protocol.TList _list564 = iprot.readListBegin();
+                      _val562 = new java.util.ArrayList<UCellCounter>(_list564.size);
+                      @org.apache.thrift.annotation.Nullable UCellCounter _elem565;
+                      for (int _i566 = 0; _i566 < _list564.size; ++_i566)
+                      {
+                        _elem565 = new UCellCounter();
+                        _elem565.read(iprot);
+                        _val562.add(_elem565);
+                      }
+                      iprot.readListEnd();
+                    }
+                    struct.cells.put(_key561, _val562);
+                  }
+                  iprot.readMapEnd();
+                }
+                struct.setCellsIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // UPDATER_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+                struct.updater_id = iprot.readI64();
+                struct.setUpdater_idIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, update_counter_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.cells != null) {
+          oprot.writeFieldBegin(CELLS_FIELD_DESC);
+          {
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST, struct.cells.size()));
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellCounter>> _iter567 : struct.cells.entrySet())
+            {
+              oprot.writeI64(_iter567.getKey());
+              {
+                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter567.getValue().size()));
+                for (UCellCounter _iter568 : _iter567.getValue())
+                {
+                  _iter568.write(oprot);
+                }
+                oprot.writeListEnd();
+              }
+            }
+            oprot.writeMapEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldBegin(UPDATER_ID_FIELD_DESC);
+        oprot.writeI64(struct.updater_id);
+        oprot.writeFieldEnd();
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class update_counter_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public update_counter_argsTupleScheme getScheme() {
+        return new update_counter_argsTupleScheme();
+      }
+    }
+
+    private static class update_counter_argsTupleScheme extends org.apache.thrift.scheme.TupleScheme<update_counter_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, update_counter_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetCells()) {
+          optionals.set(0);
+        }
+        if (struct.isSetUpdater_id()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetCells()) {
+          {
+            oprot.writeI32(struct.cells.size());
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellCounter>> _iter569 : struct.cells.entrySet())
+            {
+              oprot.writeI64(_iter569.getKey());
+              {
+                oprot.writeI32(_iter569.getValue().size());
+                for (UCellCounter _iter570 : _iter569.getValue())
+                {
+                  _iter570.write(oprot);
+                }
+              }
+            }
+          }
+        }
+        if (struct.isSetUpdater_id()) {
+          oprot.writeI64(struct.updater_id);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, update_counter_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          {
+            org.apache.thrift.protocol.TMap _map571 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
+            struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>(2*_map571.size);
+            long _key572;
+            @org.apache.thrift.annotation.Nullable java.util.List<UCellCounter> _val573;
+            for (int _i574 = 0; _i574 < _map571.size; ++_i574)
+            {
+              _key572 = iprot.readI64();
+              {
+                org.apache.thrift.protocol.TList _list575 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+                _val573 = new java.util.ArrayList<UCellCounter>(_list575.size);
+                @org.apache.thrift.annotation.Nullable UCellCounter _elem576;
+                for (int _i577 = 0; _i577 < _list575.size; ++_i577)
+                {
+                  _elem576 = new UCellCounter();
+                  _elem576.read(iprot);
+                  _val573.add(_elem576);
+                }
+              }
+              struct.cells.put(_key572, _val573);
+            }
+          }
+          struct.setCellsIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.updater_id = iprot.readI64();
+          struct.setUpdater_idIsSet(true);
+        }
+      }
+    }
+
+    private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
+      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    }
+  }
+
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+  public static class update_counter_result implements org.apache.thrift.TBase<update_counter_result, update_counter_result._Fields>, java.io.Serializable, Cloneable, Comparable<update_counter_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("update_counter_result");
+
+    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new update_counter_resultStandardSchemeFactory();
+    private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new update_counter_resultTupleSchemeFactory();
+
+    public @org.apache.thrift.annotation.Nullable Exception e; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      E((short)1, "e");
+
+      private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+      static {
+        for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      @org.apache.thrift.annotation.Nullable
+      public static _Fields findByName(java.lang.String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final java.lang.String _fieldName;
+
+      _Fields(short thriftId, java.lang.String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      @Override
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      @Override
+      public java.lang.String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Exception.class)));
+      metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(update_counter_result.class, metaDataMap);
+    }
+
+    public update_counter_result() {
+    }
+
+    public update_counter_result(
+      Exception e)
+    {
+      this();
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public update_counter_result(update_counter_result other) {
+      if (other.isSetE()) {
+        this.e = new Exception(other.e);
+      }
+    }
+
+    @Override
+    public update_counter_result deepCopy() {
+      return new update_counter_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.e = null;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    public Exception getE() {
+      return this.e;
+    }
+
+    public update_counter_result setE(@org.apache.thrift.annotation.Nullable Exception e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    @Override
+    public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
+      switch (field) {
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((Exception)value);
+        }
+        break;
+
+      }
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public java.lang.Object getFieldValue(_Fields field) {
+      switch (field) {
+      case E:
+        return getE();
+
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new java.lang.IllegalArgumentException();
+      }
+
+      switch (field) {
+      case E:
+        return isSetE();
+      }
+      throw new java.lang.IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(java.lang.Object that) {
+      if (that instanceof update_counter_result)
+        return this.equals((update_counter_result)that);
+      return false;
+    }
+
+    public boolean equals(update_counter_result that) {
+      if (that == null)
+        return false;
+      if (this == that)
+        return true;
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+
+      hashCode = hashCode * 8191 + ((isSetE()) ? 131071 : 524287);
+      if (isSetE())
+        hashCode = hashCode * 8191 + e.hashCode();
+
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(update_counter_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = java.lang.Boolean.compare(isSetE(), other.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, other.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    @org.apache.thrift.annotation.Nullable
+    @Override
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      scheme(iprot).read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      scheme(oprot).write(oprot, this);
+      }
+
+    @Override
+    public java.lang.String toString() {
+      java.lang.StringBuilder sb = new java.lang.StringBuilder("update_counter_result(");
+      boolean first = true;
+
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class update_counter_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public update_counter_resultStandardScheme getScheme() {
+        return new update_counter_resultStandardScheme();
+      }
+    }
+
+    private static class update_counter_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<update_counter_result> {
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol iprot, update_counter_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // E
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.e = new Exception();
+                struct.e.read(iprot);
+                struct.setEIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol oprot, update_counter_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.e != null) {
+          oprot.writeFieldBegin(E_FIELD_DESC);
+          struct.e.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class update_counter_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
+      public update_counter_resultTupleScheme getScheme() {
+        return new update_counter_resultTupleScheme();
+      }
+    }
+
+    private static class update_counter_resultTupleScheme extends org.apache.thrift.scheme.TupleScheme<update_counter_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, update_counter_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        java.util.BitSet optionals = new java.util.BitSet();
+        if (struct.isSetE()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetE()) {
+          struct.e.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, update_counter_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -16260,26 +20744,26 @@ public class Service {
             case 1: // CELLS
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TMap _map520 = iprot.readMapBegin();
-                  struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map520.size);
-                  long _key521;
-                  @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val522;
-                  for (int _i523 = 0; _i523 < _map520.size; ++_i523)
+                  org.apache.thrift.protocol.TMap _map578 = iprot.readMapBegin();
+                  struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map578.size);
+                  long _key579;
+                  @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val580;
+                  for (int _i581 = 0; _i581 < _map578.size; ++_i581)
                   {
-                    _key521 = iprot.readI64();
+                    _key579 = iprot.readI64();
                     {
-                      org.apache.thrift.protocol.TList _list524 = iprot.readListBegin();
-                      _val522 = new java.util.ArrayList<UCellSerial>(_list524.size);
-                      @org.apache.thrift.annotation.Nullable UCellSerial _elem525;
-                      for (int _i526 = 0; _i526 < _list524.size; ++_i526)
+                      org.apache.thrift.protocol.TList _list582 = iprot.readListBegin();
+                      _val580 = new java.util.ArrayList<UCellSerial>(_list582.size);
+                      @org.apache.thrift.annotation.Nullable UCellSerial _elem583;
+                      for (int _i584 = 0; _i584 < _list582.size; ++_i584)
                       {
-                        _elem525 = new UCellSerial();
-                        _elem525.read(iprot);
-                        _val522.add(_elem525);
+                        _elem583 = new UCellSerial();
+                        _elem583.read(iprot);
+                        _val580.add(_elem583);
                       }
                       iprot.readListEnd();
                     }
-                    struct.cells.put(_key521, _val522);
+                    struct.cells.put(_key579, _val580);
                   }
                   iprot.readMapEnd();
                 }
@@ -16316,14 +20800,14 @@ public class Service {
           oprot.writeFieldBegin(CELLS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST, struct.cells.size()));
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter527 : struct.cells.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter585 : struct.cells.entrySet())
             {
-              oprot.writeI64(_iter527.getKey());
+              oprot.writeI64(_iter585.getKey());
               {
-                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter527.getValue().size()));
-                for (UCellSerial _iter528 : _iter527.getValue())
+                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter585.getValue().size()));
+                for (UCellSerial _iter586 : _iter585.getValue())
                 {
-                  _iter528.write(oprot);
+                  _iter586.write(oprot);
                 }
                 oprot.writeListEnd();
               }
@@ -16364,14 +20848,14 @@ public class Service {
         if (struct.isSetCells()) {
           {
             oprot.writeI32(struct.cells.size());
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter529 : struct.cells.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter587 : struct.cells.entrySet())
             {
-              oprot.writeI64(_iter529.getKey());
+              oprot.writeI64(_iter587.getKey());
               {
-                oprot.writeI32(_iter529.getValue().size());
-                for (UCellSerial _iter530 : _iter529.getValue())
+                oprot.writeI32(_iter587.getValue().size());
+                for (UCellSerial _iter588 : _iter587.getValue())
                 {
-                  _iter530.write(oprot);
+                  _iter588.write(oprot);
                 }
               }
             }
@@ -16388,25 +20872,25 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TMap _map531 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
-            struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map531.size);
-            long _key532;
-            @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val533;
-            for (int _i534 = 0; _i534 < _map531.size; ++_i534)
+            org.apache.thrift.protocol.TMap _map589 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
+            struct.cells = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map589.size);
+            long _key590;
+            @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val591;
+            for (int _i592 = 0; _i592 < _map589.size; ++_i592)
             {
-              _key532 = iprot.readI64();
+              _key590 = iprot.readI64();
               {
-                org.apache.thrift.protocol.TList _list535 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-                _val533 = new java.util.ArrayList<UCellSerial>(_list535.size);
-                @org.apache.thrift.annotation.Nullable UCellSerial _elem536;
-                for (int _i537 = 0; _i537 < _list535.size; ++_i537)
+                org.apache.thrift.protocol.TList _list593 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+                _val591 = new java.util.ArrayList<UCellSerial>(_list593.size);
+                @org.apache.thrift.annotation.Nullable UCellSerial _elem594;
+                for (int _i595 = 0; _i595 < _list593.size; ++_i595)
                 {
-                  _elem536 = new UCellSerial();
-                  _elem536.read(iprot);
-                  _val533.add(_elem536);
+                  _elem594 = new UCellSerial();
+                  _elem594.read(iprot);
+                  _val591.add(_elem594);
                 }
               }
-              struct.cells.put(_key532, _val533);
+              struct.cells.put(_key590, _val591);
             }
           }
           struct.setCellsIsSet(true);
@@ -16808,8 +21292,9 @@ public class Service {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("update_by_types_args");
 
     private static final org.apache.thrift.protocol.TField PLAIN_FIELD_DESC = new org.apache.thrift.protocol.TField("plain", org.apache.thrift.protocol.TType.MAP, (short)1);
-    private static final org.apache.thrift.protocol.TField SERIAL_FIELD_DESC = new org.apache.thrift.protocol.TField("serial", org.apache.thrift.protocol.TType.MAP, (short)2);
-    private static final org.apache.thrift.protocol.TField UPDATER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("updater_id", org.apache.thrift.protocol.TType.I64, (short)3);
+    private static final org.apache.thrift.protocol.TField COUNTER_FIELD_DESC = new org.apache.thrift.protocol.TField("counter", org.apache.thrift.protocol.TType.MAP, (short)2);
+    private static final org.apache.thrift.protocol.TField SERIAL_FIELD_DESC = new org.apache.thrift.protocol.TField("serial", org.apache.thrift.protocol.TType.MAP, (short)3);
+    private static final org.apache.thrift.protocol.TField UPDATER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("updater_id", org.apache.thrift.protocol.TType.I64, (short)4);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new update_by_types_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new update_by_types_argsTupleSchemeFactory();
@@ -16817,7 +21302,11 @@ public class Service {
     /**
      * The PLAIN Cells to update
      */
-    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCell>> plain; // required
+    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain; // required
+    /**
+     * The COUNTER Cells to update
+     */
+    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter; // required
     /**
      * The SERIAL Cells to update
      */
@@ -16834,13 +21323,17 @@ public class Service {
        */
       PLAIN((short)1, "plain"),
       /**
+       * The COUNTER Cells to update
+       */
+      COUNTER((short)2, "counter"),
+      /**
        * The SERIAL Cells to update
        */
-      SERIAL((short)2, "serial"),
+      SERIAL((short)3, "serial"),
       /**
        * The Updater ID to use for write
        */
-      UPDATER_ID((short)3, "updater_id");
+      UPDATER_ID((short)4, "updater_id");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -16858,9 +21351,11 @@ public class Service {
         switch(fieldId) {
           case 1: // PLAIN
             return PLAIN;
-          case 2: // SERIAL
+          case 2: // COUNTER
+            return COUNTER;
+          case 3: // SERIAL
             return SERIAL;
-          case 3: // UPDATER_ID
+          case 4: // UPDATER_ID
             return UPDATER_ID;
           default:
             return null;
@@ -16911,7 +21406,9 @@ public class Service {
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.PLAIN, new org.apache.thrift.meta_data.FieldMetaData("plain", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.MAP          , "UCCells")));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.MAP          , "UCCellsPlain")));
+      tmpMap.put(_Fields.COUNTER, new org.apache.thrift.meta_data.FieldMetaData("counter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.MAP          , "UCCellsCounter")));
       tmpMap.put(_Fields.SERIAL, new org.apache.thrift.meta_data.FieldMetaData("serial", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.MAP          , "UCCellsSerial")));
       tmpMap.put(_Fields.UPDATER_ID, new org.apache.thrift.meta_data.FieldMetaData("updater_id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -16926,12 +21423,14 @@ public class Service {
     }
 
     public update_by_types_args(
-      java.util.Map<java.lang.Long,java.util.List<UCell>> plain,
+      java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain,
+      java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter,
       java.util.Map<java.lang.Long,java.util.List<UCellSerial>> serial,
       long updater_id)
     {
       this();
       this.plain = plain;
+      this.counter = counter;
       this.serial = serial;
       this.updater_id = updater_id;
       setUpdater_idIsSet(true);
@@ -16943,19 +21442,34 @@ public class Service {
     public update_by_types_args(update_by_types_args other) {
       __isset_bitfield = other.__isset_bitfield;
       if (other.isSetPlain()) {
-        java.util.Map<java.lang.Long,java.util.List<UCell>> __this__plain = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(other.plain.size());
-        for (java.util.Map.Entry<java.lang.Long, java.util.List<UCell>> other_element : other.plain.entrySet()) {
+        java.util.Map<java.lang.Long,java.util.List<UCellPlain>> __this__plain = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>(other.plain.size());
+        for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellPlain>> other_element : other.plain.entrySet()) {
 
           java.lang.Long other_element_key = other_element.getKey();
-          java.util.List<UCell> other_element_value = other_element.getValue();
+          java.util.List<UCellPlain> other_element_value = other_element.getValue();
 
           java.lang.Long __this__plain_copy_key = other_element_key;
 
-          java.util.List<UCell> __this__plain_copy_value = new java.util.ArrayList<UCell>(other_element_value);
+          java.util.List<UCellPlain> __this__plain_copy_value = new java.util.ArrayList<UCellPlain>(other_element_value);
 
           __this__plain.put(__this__plain_copy_key, __this__plain_copy_value);
         }
         this.plain = __this__plain;
+      }
+      if (other.isSetCounter()) {
+        java.util.Map<java.lang.Long,java.util.List<UCellCounter>> __this__counter = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>(other.counter.size());
+        for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellCounter>> other_element : other.counter.entrySet()) {
+
+          java.lang.Long other_element_key = other_element.getKey();
+          java.util.List<UCellCounter> other_element_value = other_element.getValue();
+
+          java.lang.Long __this__counter_copy_key = other_element_key;
+
+          java.util.List<UCellCounter> __this__counter_copy_value = new java.util.ArrayList<UCellCounter>(other_element_value);
+
+          __this__counter.put(__this__counter_copy_key, __this__counter_copy_value);
+        }
+        this.counter = __this__counter;
       }
       if (other.isSetSerial()) {
         java.util.Map<java.lang.Long,java.util.List<UCellSerial>> __this__serial = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(other.serial.size());
@@ -16983,6 +21497,7 @@ public class Service {
     @Override
     public void clear() {
       this.plain = null;
+      this.counter = null;
       this.serial = null;
       this.updater_id = 0L;
 
@@ -16992,9 +21507,9 @@ public class Service {
       return (this.plain == null) ? 0 : this.plain.size();
     }
 
-    public void putToPlain(long key, java.util.List<UCell> val) {
+    public void putToPlain(long key, java.util.List<UCellPlain> val) {
       if (this.plain == null) {
-        this.plain = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>();
+        this.plain = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>();
       }
       this.plain.put(key, val);
     }
@@ -17003,14 +21518,14 @@ public class Service {
      * The PLAIN Cells to update
      */
     @org.apache.thrift.annotation.Nullable
-    public java.util.Map<java.lang.Long,java.util.List<UCell>> getPlain() {
+    public java.util.Map<java.lang.Long,java.util.List<UCellPlain>> getPlain() {
       return this.plain;
     }
 
     /**
      * The PLAIN Cells to update
      */
-    public update_by_types_args setPlain(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCell>> plain) {
+    public update_by_types_args setPlain(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellPlain>> plain) {
       this.plain = plain;
       return this;
     }
@@ -17027,6 +21542,48 @@ public class Service {
     public void setPlainIsSet(boolean value) {
       if (!value) {
         this.plain = null;
+      }
+    }
+
+    public int getCounterSize() {
+      return (this.counter == null) ? 0 : this.counter.size();
+    }
+
+    public void putToCounter(long key, java.util.List<UCellCounter> val) {
+      if (this.counter == null) {
+        this.counter = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>();
+      }
+      this.counter.put(key, val);
+    }
+
+    /**
+     * The COUNTER Cells to update
+     */
+    @org.apache.thrift.annotation.Nullable
+    public java.util.Map<java.lang.Long,java.util.List<UCellCounter>> getCounter() {
+      return this.counter;
+    }
+
+    /**
+     * The COUNTER Cells to update
+     */
+    public update_by_types_args setCounter(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.Long,java.util.List<UCellCounter>> counter) {
+      this.counter = counter;
+      return this;
+    }
+
+    public void unsetCounter() {
+      this.counter = null;
+    }
+
+    /** Returns true if field counter is set (has been assigned a value) and false otherwise */
+    public boolean isSetCounter() {
+      return this.counter != null;
+    }
+
+    public void setCounterIsSet(boolean value) {
+      if (!value) {
+        this.counter = null;
       }
     }
 
@@ -17108,7 +21665,15 @@ public class Service {
         if (value == null) {
           unsetPlain();
         } else {
-          setPlain((java.util.Map<java.lang.Long,java.util.List<UCell>>)value);
+          setPlain((java.util.Map<java.lang.Long,java.util.List<UCellPlain>>)value);
+        }
+        break;
+
+      case COUNTER:
+        if (value == null) {
+          unsetCounter();
+        } else {
+          setCounter((java.util.Map<java.lang.Long,java.util.List<UCellCounter>>)value);
         }
         break;
 
@@ -17138,6 +21703,9 @@ public class Service {
       case PLAIN:
         return getPlain();
 
+      case COUNTER:
+        return getCounter();
+
       case SERIAL:
         return getSerial();
 
@@ -17158,6 +21726,8 @@ public class Service {
       switch (field) {
       case PLAIN:
         return isSetPlain();
+      case COUNTER:
+        return isSetCounter();
       case SERIAL:
         return isSetSerial();
       case UPDATER_ID:
@@ -17185,6 +21755,15 @@ public class Service {
         if (!(this_present_plain && that_present_plain))
           return false;
         if (!this.plain.equals(that.plain))
+          return false;
+      }
+
+      boolean this_present_counter = true && this.isSetCounter();
+      boolean that_present_counter = true && that.isSetCounter();
+      if (this_present_counter || that_present_counter) {
+        if (!(this_present_counter && that_present_counter))
+          return false;
+        if (!this.counter.equals(that.counter))
           return false;
       }
 
@@ -17217,6 +21796,10 @@ public class Service {
       if (isSetPlain())
         hashCode = hashCode * 8191 + plain.hashCode();
 
+      hashCode = hashCode * 8191 + ((isSetCounter()) ? 131071 : 524287);
+      if (isSetCounter())
+        hashCode = hashCode * 8191 + counter.hashCode();
+
       hashCode = hashCode * 8191 + ((isSetSerial()) ? 131071 : 524287);
       if (isSetSerial())
         hashCode = hashCode * 8191 + serial.hashCode();
@@ -17240,6 +21823,16 @@ public class Service {
       }
       if (isSetPlain()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.plain, other.plain);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.compare(isSetCounter(), other.isSetCounter());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCounter()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.counter, other.counter);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -17293,6 +21886,14 @@ public class Service {
         sb.append("null");
       } else {
         sb.append(this.plain);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("counter:");
+      if (this.counter == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.counter);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -17357,26 +21958,26 @@ public class Service {
             case 1: // PLAIN
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TMap _map538 = iprot.readMapBegin();
-                  struct.plain = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(2*_map538.size);
-                  long _key539;
-                  @org.apache.thrift.annotation.Nullable java.util.List<UCell> _val540;
-                  for (int _i541 = 0; _i541 < _map538.size; ++_i541)
+                  org.apache.thrift.protocol.TMap _map596 = iprot.readMapBegin();
+                  struct.plain = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>(2*_map596.size);
+                  long _key597;
+                  @org.apache.thrift.annotation.Nullable java.util.List<UCellPlain> _val598;
+                  for (int _i599 = 0; _i599 < _map596.size; ++_i599)
                   {
-                    _key539 = iprot.readI64();
+                    _key597 = iprot.readI64();
                     {
-                      org.apache.thrift.protocol.TList _list542 = iprot.readListBegin();
-                      _val540 = new java.util.ArrayList<UCell>(_list542.size);
-                      @org.apache.thrift.annotation.Nullable UCell _elem543;
-                      for (int _i544 = 0; _i544 < _list542.size; ++_i544)
+                      org.apache.thrift.protocol.TList _list600 = iprot.readListBegin();
+                      _val598 = new java.util.ArrayList<UCellPlain>(_list600.size);
+                      @org.apache.thrift.annotation.Nullable UCellPlain _elem601;
+                      for (int _i602 = 0; _i602 < _list600.size; ++_i602)
                       {
-                        _elem543 = new UCell();
-                        _elem543.read(iprot);
-                        _val540.add(_elem543);
+                        _elem601 = new UCellPlain();
+                        _elem601.read(iprot);
+                        _val598.add(_elem601);
                       }
                       iprot.readListEnd();
                     }
-                    struct.plain.put(_key539, _val540);
+                    struct.plain.put(_key597, _val598);
                   }
                   iprot.readMapEnd();
                 }
@@ -17385,29 +21986,60 @@ public class Service {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // SERIAL
+            case 2: // COUNTER
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TMap _map545 = iprot.readMapBegin();
-                  struct.serial = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map545.size);
-                  long _key546;
-                  @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val547;
-                  for (int _i548 = 0; _i548 < _map545.size; ++_i548)
+                  org.apache.thrift.protocol.TMap _map603 = iprot.readMapBegin();
+                  struct.counter = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>(2*_map603.size);
+                  long _key604;
+                  @org.apache.thrift.annotation.Nullable java.util.List<UCellCounter> _val605;
+                  for (int _i606 = 0; _i606 < _map603.size; ++_i606)
                   {
-                    _key546 = iprot.readI64();
+                    _key604 = iprot.readI64();
                     {
-                      org.apache.thrift.protocol.TList _list549 = iprot.readListBegin();
-                      _val547 = new java.util.ArrayList<UCellSerial>(_list549.size);
-                      @org.apache.thrift.annotation.Nullable UCellSerial _elem550;
-                      for (int _i551 = 0; _i551 < _list549.size; ++_i551)
+                      org.apache.thrift.protocol.TList _list607 = iprot.readListBegin();
+                      _val605 = new java.util.ArrayList<UCellCounter>(_list607.size);
+                      @org.apache.thrift.annotation.Nullable UCellCounter _elem608;
+                      for (int _i609 = 0; _i609 < _list607.size; ++_i609)
                       {
-                        _elem550 = new UCellSerial();
-                        _elem550.read(iprot);
-                        _val547.add(_elem550);
+                        _elem608 = new UCellCounter();
+                        _elem608.read(iprot);
+                        _val605.add(_elem608);
                       }
                       iprot.readListEnd();
                     }
-                    struct.serial.put(_key546, _val547);
+                    struct.counter.put(_key604, _val605);
+                  }
+                  iprot.readMapEnd();
+                }
+                struct.setCounterIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // SERIAL
+              if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+                {
+                  org.apache.thrift.protocol.TMap _map610 = iprot.readMapBegin();
+                  struct.serial = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map610.size);
+                  long _key611;
+                  @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val612;
+                  for (int _i613 = 0; _i613 < _map610.size; ++_i613)
+                  {
+                    _key611 = iprot.readI64();
+                    {
+                      org.apache.thrift.protocol.TList _list614 = iprot.readListBegin();
+                      _val612 = new java.util.ArrayList<UCellSerial>(_list614.size);
+                      @org.apache.thrift.annotation.Nullable UCellSerial _elem615;
+                      for (int _i616 = 0; _i616 < _list614.size; ++_i616)
+                      {
+                        _elem615 = new UCellSerial();
+                        _elem615.read(iprot);
+                        _val612.add(_elem615);
+                      }
+                      iprot.readListEnd();
+                    }
+                    struct.serial.put(_key611, _val612);
                   }
                   iprot.readMapEnd();
                 }
@@ -17416,7 +22048,7 @@ public class Service {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // UPDATER_ID
+            case 4: // UPDATER_ID
               if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
                 struct.updater_id = iprot.readI64();
                 struct.setUpdater_idIsSet(true);
@@ -17444,14 +22076,34 @@ public class Service {
           oprot.writeFieldBegin(PLAIN_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST, struct.plain.size()));
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCell>> _iter552 : struct.plain.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellPlain>> _iter617 : struct.plain.entrySet())
             {
-              oprot.writeI64(_iter552.getKey());
+              oprot.writeI64(_iter617.getKey());
               {
-                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter552.getValue().size()));
-                for (UCell _iter553 : _iter552.getValue())
+                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter617.getValue().size()));
+                for (UCellPlain _iter618 : _iter617.getValue())
                 {
-                  _iter553.write(oprot);
+                  _iter618.write(oprot);
+                }
+                oprot.writeListEnd();
+              }
+            }
+            oprot.writeMapEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+        if (struct.counter != null) {
+          oprot.writeFieldBegin(COUNTER_FIELD_DESC);
+          {
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST, struct.counter.size()));
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellCounter>> _iter619 : struct.counter.entrySet())
+            {
+              oprot.writeI64(_iter619.getKey());
+              {
+                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter619.getValue().size()));
+                for (UCellCounter _iter620 : _iter619.getValue())
+                {
+                  _iter620.write(oprot);
                 }
                 oprot.writeListEnd();
               }
@@ -17464,14 +22116,14 @@ public class Service {
           oprot.writeFieldBegin(SERIAL_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST, struct.serial.size()));
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter554 : struct.serial.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter621 : struct.serial.entrySet())
             {
-              oprot.writeI64(_iter554.getKey());
+              oprot.writeI64(_iter621.getKey());
               {
-                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter554.getValue().size()));
-                for (UCellSerial _iter555 : _iter554.getValue())
+                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter621.getValue().size()));
+                for (UCellSerial _iter622 : _iter621.getValue())
                 {
-                  _iter555.write(oprot);
+                  _iter622.write(oprot);
                 }
                 oprot.writeListEnd();
               }
@@ -17505,24 +22157,43 @@ public class Service {
         if (struct.isSetPlain()) {
           optionals.set(0);
         }
-        if (struct.isSetSerial()) {
+        if (struct.isSetCounter()) {
           optionals.set(1);
         }
-        if (struct.isSetUpdater_id()) {
+        if (struct.isSetSerial()) {
           optionals.set(2);
         }
-        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetUpdater_id()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
         if (struct.isSetPlain()) {
           {
             oprot.writeI32(struct.plain.size());
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCell>> _iter556 : struct.plain.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellPlain>> _iter623 : struct.plain.entrySet())
             {
-              oprot.writeI64(_iter556.getKey());
+              oprot.writeI64(_iter623.getKey());
               {
-                oprot.writeI32(_iter556.getValue().size());
-                for (UCell _iter557 : _iter556.getValue())
+                oprot.writeI32(_iter623.getValue().size());
+                for (UCellPlain _iter624 : _iter623.getValue())
                 {
-                  _iter557.write(oprot);
+                  _iter624.write(oprot);
+                }
+              }
+            }
+          }
+        }
+        if (struct.isSetCounter()) {
+          {
+            oprot.writeI32(struct.counter.size());
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellCounter>> _iter625 : struct.counter.entrySet())
+            {
+              oprot.writeI64(_iter625.getKey());
+              {
+                oprot.writeI32(_iter625.getValue().size());
+                for (UCellCounter _iter626 : _iter625.getValue())
+                {
+                  _iter626.write(oprot);
                 }
               }
             }
@@ -17531,14 +22202,14 @@ public class Service {
         if (struct.isSetSerial()) {
           {
             oprot.writeI32(struct.serial.size());
-            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter558 : struct.serial.entrySet())
+            for (java.util.Map.Entry<java.lang.Long, java.util.List<UCellSerial>> _iter627 : struct.serial.entrySet())
             {
-              oprot.writeI64(_iter558.getKey());
+              oprot.writeI64(_iter627.getKey());
               {
-                oprot.writeI32(_iter558.getValue().size());
-                for (UCellSerial _iter559 : _iter558.getValue())
+                oprot.writeI32(_iter627.getValue().size());
+                for (UCellSerial _iter628 : _iter627.getValue())
                 {
-                  _iter559.write(oprot);
+                  _iter628.write(oprot);
                 }
               }
             }
@@ -17552,58 +22223,83 @@ public class Service {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, update_by_types_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(3);
+        java.util.BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TMap _map560 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
-            struct.plain = new java.util.HashMap<java.lang.Long,java.util.List<UCell>>(2*_map560.size);
-            long _key561;
-            @org.apache.thrift.annotation.Nullable java.util.List<UCell> _val562;
-            for (int _i563 = 0; _i563 < _map560.size; ++_i563)
+            org.apache.thrift.protocol.TMap _map629 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
+            struct.plain = new java.util.HashMap<java.lang.Long,java.util.List<UCellPlain>>(2*_map629.size);
+            long _key630;
+            @org.apache.thrift.annotation.Nullable java.util.List<UCellPlain> _val631;
+            for (int _i632 = 0; _i632 < _map629.size; ++_i632)
             {
-              _key561 = iprot.readI64();
+              _key630 = iprot.readI64();
               {
-                org.apache.thrift.protocol.TList _list564 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-                _val562 = new java.util.ArrayList<UCell>(_list564.size);
-                @org.apache.thrift.annotation.Nullable UCell _elem565;
-                for (int _i566 = 0; _i566 < _list564.size; ++_i566)
+                org.apache.thrift.protocol.TList _list633 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+                _val631 = new java.util.ArrayList<UCellPlain>(_list633.size);
+                @org.apache.thrift.annotation.Nullable UCellPlain _elem634;
+                for (int _i635 = 0; _i635 < _list633.size; ++_i635)
                 {
-                  _elem565 = new UCell();
-                  _elem565.read(iprot);
-                  _val562.add(_elem565);
+                  _elem634 = new UCellPlain();
+                  _elem634.read(iprot);
+                  _val631.add(_elem634);
                 }
               }
-              struct.plain.put(_key561, _val562);
+              struct.plain.put(_key630, _val631);
             }
           }
           struct.setPlainIsSet(true);
         }
         if (incoming.get(1)) {
           {
-            org.apache.thrift.protocol.TMap _map567 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
-            struct.serial = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map567.size);
-            long _key568;
-            @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val569;
-            for (int _i570 = 0; _i570 < _map567.size; ++_i570)
+            org.apache.thrift.protocol.TMap _map636 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
+            struct.counter = new java.util.HashMap<java.lang.Long,java.util.List<UCellCounter>>(2*_map636.size);
+            long _key637;
+            @org.apache.thrift.annotation.Nullable java.util.List<UCellCounter> _val638;
+            for (int _i639 = 0; _i639 < _map636.size; ++_i639)
             {
-              _key568 = iprot.readI64();
+              _key637 = iprot.readI64();
               {
-                org.apache.thrift.protocol.TList _list571 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-                _val569 = new java.util.ArrayList<UCellSerial>(_list571.size);
-                @org.apache.thrift.annotation.Nullable UCellSerial _elem572;
-                for (int _i573 = 0; _i573 < _list571.size; ++_i573)
+                org.apache.thrift.protocol.TList _list640 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+                _val638 = new java.util.ArrayList<UCellCounter>(_list640.size);
+                @org.apache.thrift.annotation.Nullable UCellCounter _elem641;
+                for (int _i642 = 0; _i642 < _list640.size; ++_i642)
                 {
-                  _elem572 = new UCellSerial();
-                  _elem572.read(iprot);
-                  _val569.add(_elem572);
+                  _elem641 = new UCellCounter();
+                  _elem641.read(iprot);
+                  _val638.add(_elem641);
                 }
               }
-              struct.serial.put(_key568, _val569);
+              struct.counter.put(_key637, _val638);
+            }
+          }
+          struct.setCounterIsSet(true);
+        }
+        if (incoming.get(2)) {
+          {
+            org.apache.thrift.protocol.TMap _map643 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.LIST); 
+            struct.serial = new java.util.HashMap<java.lang.Long,java.util.List<UCellSerial>>(2*_map643.size);
+            long _key644;
+            @org.apache.thrift.annotation.Nullable java.util.List<UCellSerial> _val645;
+            for (int _i646 = 0; _i646 < _map643.size; ++_i646)
+            {
+              _key644 = iprot.readI64();
+              {
+                org.apache.thrift.protocol.TList _list647 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+                _val645 = new java.util.ArrayList<UCellSerial>(_list647.size);
+                @org.apache.thrift.annotation.Nullable UCellSerial _elem648;
+                for (int _i649 = 0; _i649 < _list647.size; ++_i649)
+                {
+                  _elem648 = new UCellSerial();
+                  _elem648.read(iprot);
+                  _val645.add(_elem648);
+                }
+              }
+              struct.serial.put(_key644, _val645);
             }
           }
           struct.setSerialIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(3)) {
           struct.updater_id = iprot.readI64();
           struct.setUpdater_idIsSet(true);
         }
@@ -19702,14 +24398,14 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list574 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<Schema>(_list574.size);
-                  @org.apache.thrift.annotation.Nullable Schema _elem575;
-                  for (int _i576 = 0; _i576 < _list574.size; ++_i576)
+                  org.apache.thrift.protocol.TList _list650 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<Schema>(_list650.size);
+                  @org.apache.thrift.annotation.Nullable Schema _elem651;
+                  for (int _i652 = 0; _i652 < _list650.size; ++_i652)
                   {
-                    _elem575 = new Schema();
-                    _elem575.read(iprot);
-                    struct.success.add(_elem575);
+                    _elem651 = new Schema();
+                    _elem651.read(iprot);
+                    struct.success.add(_elem651);
                   }
                   iprot.readListEnd();
                 }
@@ -19747,9 +24443,9 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (Schema _iter577 : struct.success)
+            for (Schema _iter653 : struct.success)
             {
-              _iter577.write(oprot);
+              _iter653.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -19789,9 +24485,9 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Schema _iter578 : struct.success)
+            for (Schema _iter654 : struct.success)
             {
-              _iter578.write(oprot);
+              _iter654.write(oprot);
             }
           }
         }
@@ -19806,14 +24502,14 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list579 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-            struct.success = new java.util.ArrayList<Schema>(_list579.size);
-            @org.apache.thrift.annotation.Nullable Schema _elem580;
-            for (int _i581 = 0; _i581 < _list579.size; ++_i581)
+            org.apache.thrift.protocol.TList _list655 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<Schema>(_list655.size);
+            @org.apache.thrift.annotation.Nullable Schema _elem656;
+            for (int _i657 = 0; _i657 < _list655.size; ++_i657)
             {
-              _elem580 = new Schema();
-              _elem580.read(iprot);
-              struct.success.add(_elem580);
+              _elem656 = new Schema();
+              _elem656.read(iprot);
+              struct.success.add(_elem656);
             }
           }
           struct.setSuccessIsSet(true);
@@ -20637,14 +25333,14 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list582 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<CompactResult>(_list582.size);
-                  @org.apache.thrift.annotation.Nullable CompactResult _elem583;
-                  for (int _i584 = 0; _i584 < _list582.size; ++_i584)
+                  org.apache.thrift.protocol.TList _list658 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<CompactResult>(_list658.size);
+                  @org.apache.thrift.annotation.Nullable CompactResult _elem659;
+                  for (int _i660 = 0; _i660 < _list658.size; ++_i660)
                   {
-                    _elem583 = new CompactResult();
-                    _elem583.read(iprot);
-                    struct.success.add(_elem583);
+                    _elem659 = new CompactResult();
+                    _elem659.read(iprot);
+                    struct.success.add(_elem659);
                   }
                   iprot.readListEnd();
                 }
@@ -20682,9 +25378,9 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (CompactResult _iter585 : struct.success)
+            for (CompactResult _iter661 : struct.success)
             {
-              _iter585.write(oprot);
+              _iter661.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -20724,9 +25420,9 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (CompactResult _iter586 : struct.success)
+            for (CompactResult _iter662 : struct.success)
             {
-              _iter586.write(oprot);
+              _iter662.write(oprot);
             }
           }
         }
@@ -20741,14 +25437,14 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list587 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-            struct.success = new java.util.ArrayList<CompactResult>(_list587.size);
-            @org.apache.thrift.annotation.Nullable CompactResult _elem588;
-            for (int _i589 = 0; _i589 < _list587.size; ++_i589)
+            org.apache.thrift.protocol.TList _list663 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<CompactResult>(_list663.size);
+            @org.apache.thrift.annotation.Nullable CompactResult _elem664;
+            for (int _i665 = 0; _i665 < _list663.size; ++_i665)
             {
-              _elem588 = new CompactResult();
-              _elem588.read(iprot);
-              struct.success.add(_elem588);
+              _elem664 = new CompactResult();
+              _elem664.read(iprot);
+              struct.success.add(_elem664);
             }
           }
           struct.setSuccessIsSet(true);
@@ -22461,16 +27157,16 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
-                  org.apache.thrift.protocol.TMap _map590 = iprot.readMapBegin();
-                  struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map590.size);
-                  @org.apache.thrift.annotation.Nullable java.lang.String _key591;
-                  @org.apache.thrift.annotation.Nullable ColCells _val592;
-                  for (int _i593 = 0; _i593 < _map590.size; ++_i593)
+                  org.apache.thrift.protocol.TMap _map666 = iprot.readMapBegin();
+                  struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map666.size);
+                  @org.apache.thrift.annotation.Nullable java.lang.String _key667;
+                  @org.apache.thrift.annotation.Nullable ColCells _val668;
+                  for (int _i669 = 0; _i669 < _map666.size; ++_i669)
                   {
-                    _key591 = iprot.readString();
-                    _val592 = new ColCells();
-                    _val592.read(iprot);
-                    struct.success.put(_key591, _val592);
+                    _key667 = iprot.readString();
+                    _val668 = new ColCells();
+                    _val668.read(iprot);
+                    struct.success.put(_key667, _val668);
                   }
                   iprot.readMapEnd();
                 }
@@ -22508,10 +27204,10 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter594 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, ColCells> _iter670 : struct.success.entrySet())
             {
-              oprot.writeString(_iter594.getKey());
-              _iter594.getValue().write(oprot);
+              oprot.writeString(_iter670.getKey());
+              _iter670.getValue().write(oprot);
             }
             oprot.writeMapEnd();
           }
@@ -22551,10 +27247,10 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter595 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, ColCells> _iter671 : struct.success.entrySet())
             {
-              oprot.writeString(_iter595.getKey());
-              _iter595.getValue().write(oprot);
+              oprot.writeString(_iter671.getKey());
+              _iter671.getValue().write(oprot);
             }
           }
         }
@@ -22569,16 +27265,16 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TMap _map596 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-            struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map596.size);
-            @org.apache.thrift.annotation.Nullable java.lang.String _key597;
-            @org.apache.thrift.annotation.Nullable ColCells _val598;
-            for (int _i599 = 0; _i599 < _map596.size; ++_i599)
+            org.apache.thrift.protocol.TMap _map672 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
+            struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map672.size);
+            @org.apache.thrift.annotation.Nullable java.lang.String _key673;
+            @org.apache.thrift.annotation.Nullable ColCells _val674;
+            for (int _i675 = 0; _i675 < _map672.size; ++_i675)
             {
-              _key597 = iprot.readString();
-              _val598 = new ColCells();
-              _val598.read(iprot);
-              struct.success.put(_key597, _val598);
+              _key673 = iprot.readString();
+              _val674 = new ColCells();
+              _val674.read(iprot);
+              struct.success.put(_key673, _val674);
             }
           }
           struct.setSuccessIsSet(true);
@@ -23402,14 +28098,14 @@ public class Service {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list600 = iprot.readListBegin();
-                  struct.success = new java.util.ArrayList<kCells>(_list600.size);
-                  @org.apache.thrift.annotation.Nullable kCells _elem601;
-                  for (int _i602 = 0; _i602 < _list600.size; ++_i602)
+                  org.apache.thrift.protocol.TList _list676 = iprot.readListBegin();
+                  struct.success = new java.util.ArrayList<kCells>(_list676.size);
+                  @org.apache.thrift.annotation.Nullable kCells _elem677;
+                  for (int _i678 = 0; _i678 < _list676.size; ++_i678)
                   {
-                    _elem601 = new kCells();
-                    _elem601.read(iprot);
-                    struct.success.add(_elem601);
+                    _elem677 = new kCells();
+                    _elem677.read(iprot);
+                    struct.success.add(_elem677);
                   }
                   iprot.readListEnd();
                 }
@@ -23447,9 +28143,9 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (kCells _iter603 : struct.success)
+            for (kCells _iter679 : struct.success)
             {
-              _iter603.write(oprot);
+              _iter679.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -23489,9 +28185,9 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (kCells _iter604 : struct.success)
+            for (kCells _iter680 : struct.success)
             {
-              _iter604.write(oprot);
+              _iter680.write(oprot);
             }
           }
         }
@@ -23506,14 +28202,14 @@ public class Service {
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list605 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-            struct.success = new java.util.ArrayList<kCells>(_list605.size);
-            @org.apache.thrift.annotation.Nullable kCells _elem606;
-            for (int _i607 = 0; _i607 < _list605.size; ++_i607)
+            org.apache.thrift.protocol.TList _list681 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+            struct.success = new java.util.ArrayList<kCells>(_list681.size);
+            @org.apache.thrift.annotation.Nullable kCells _elem682;
+            for (int _i683 = 0; _i683 < _list681.size; ++_i683)
             {
-              _elem606 = new kCells();
-              _elem606.read(iprot);
-              struct.success.add(_elem606);
+              _elem682 = new kCells();
+              _elem682.read(iprot);
+              struct.success.add(_elem682);
             }
           }
           struct.setSuccessIsSet(true);

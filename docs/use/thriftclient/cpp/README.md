@@ -114,7 +114,7 @@ int main() {
   for(uint8_t n=0; n <= 255; ++n)
     value += char(n);
 
-  SWC::Thrift::UCCells ucells;
+  SWC::Thrift::UCCellsPlain ucells;
   auto& col = ucells[schema.cid];
   col.resize(n_cells);
 
@@ -139,7 +139,7 @@ int main() {
   assert(col.size() == n_cells);
 
   size_t updater_id = 0; // without an updater
-  client.update(ucells, updater_id);
+  client.update_plain(ucells, updater_id);
 
 
 
@@ -171,8 +171,8 @@ int main() {
   SWC::Thrift::Cells container;
   client.scan(container, specs);
 
-  std::cout << "Select cells.size()=" << container.cells.size()  << "\n";
-  assert(container.cells.size() == n_cells);
+  std::cout << "Select cells.size()=" << container.plain_cells.size()  << "\n";
+  assert(container.plain_cells.size() == n_cells);
   for(auto& cell : container.cells)
     assert(value.compare(cell.v) == 0);
 

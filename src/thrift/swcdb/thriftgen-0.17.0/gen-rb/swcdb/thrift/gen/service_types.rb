@@ -277,7 +277,9 @@ module Swcdb
 
       class SpecScan; end
 
-      class UCell; end
+      class UCellPlain; end
+
+      class UCellCounter; end
 
       class CellValueSerial; end
 
@@ -295,7 +297,9 @@ module Swcdb
 
       class UCellSerial; end
 
-      class Cell; end
+      class CellPlain; end
+
+      class CellCounter; end
 
       class CellSerial; end
 
@@ -1098,8 +1102,8 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Cell data for using with Update
-      class UCell
+      # The Cell data for using with Update of PLAIN Column Type
+      class UCellPlain
         include ::Thrift::Struct, ::Thrift::Struct_Union
         F = 1
         K = 2
@@ -1131,6 +1135,42 @@ module Swcdb
           end
           unless @encoder.nil? || ::Swcdb::Thrift::Gen::EncodingType::VALID_VALUES.include?(@encoder)
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field encoder!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Cell data for using with Update of COUNTER Column Type
+      class UCellCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        F = 1
+        K = 2
+        TS = 3
+        TS_DESC = 4
+        OP = 5
+        V = 6
+
+        FIELDS = {
+          # The Cell Flag
+          F => {:type => ::Thrift::Types::I32, :name => 'f', :enum_class => ::Swcdb::Thrift::Gen::Flag},
+          # The Cell Key
+          K => {:type => ::Thrift::Types::LIST, :name => 'k', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # The Cell Timestamp in nanoseconds
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts', :optional => true},
+          # The Cell Version is in timestamp descending
+          TS_DESC => {:type => ::Thrift::Types::BOOL, :name => 'ts_desc', :optional => true},
+          # The Cell Counter Operation
+          OP => {:type => ::Thrift::Types::BYTE, :name => 'op', :default => 0},
+          # The Cell Counter Value
+          V => {:type => ::Thrift::Types::I64, :name => 'v', :default => 0}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @f.nil? || ::Swcdb::Thrift::Gen::Flag::VALID_VALUES.include?(@f)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field f!')
           end
         end
 
@@ -1394,7 +1434,7 @@ module Swcdb
       end
 
       # The Cell for results list of scan
-      class Cell
+      class CellPlain
         include ::Thrift::Struct, ::Thrift::Struct_Union
         C = 1
         K = 2
@@ -1410,6 +1450,36 @@ module Swcdb
           TS => {:type => ::Thrift::Types::I64, :name => 'ts'},
           # The Cell Value
           V => {:type => ::Thrift::Types::STRING, :name => 'v', :binary => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Counter Cell for results list of scan
+      class CellCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        C = 1
+        K = 2
+        TS = 3
+        V = 4
+        EQ = 5
+
+        FIELDS = {
+          # The Column Name
+          C => {:type => ::Thrift::Types::STRING, :name => 'c'},
+          # The Cell Key
+          K => {:type => ::Thrift::Types::LIST, :name => 'k', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # The Cell Timestamp
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts'},
+          # The Cell Counter Value
+          V => {:type => ::Thrift::Types::I64, :name => 'v'},
+          # The Counter EQ since ts
+          EQ => {:type => ::Thrift::Types::I64, :name => 'eq', :optional => true}
         }
 
         def struct_fields; FIELDS; end
@@ -1455,7 +1525,7 @@ module Swcdb
 
         FIELDS = {
           # The Cells, defined as Cell items in a list-container
-          CELLS => {:type => ::Thrift::Types::LIST, :name => 'cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::Cell}},
+          CELLS => {:type => ::Thrift::Types::LIST, :name => 'cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellPlain}},
           # The Serial Cells, defined as CellSerial items in a list-container
           SERIAL_CELLS => {:type => ::Thrift::Types::LIST, :name => 'serial_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellSerial}}
         }

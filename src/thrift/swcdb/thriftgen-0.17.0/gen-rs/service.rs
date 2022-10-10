@@ -898,9 +898,13 @@ pub type SpecValueSerialFields = Vec<SpecValueSerialField>;
 
 pub type SpecValuesSerial = Vec<SpecValueSerial>;
 
-pub type UCells = Vec<UCell>;
+pub type UCellsPlain = Vec<UCellPlain>;
 
-pub type UCCells = BTreeMap<i64, UCells>;
+pub type UCCellsPlain = BTreeMap<i64, UCellsPlain>;
+
+pub type UCellsCounter = Vec<UCellCounter>;
+
+pub type UCCellsCounter = BTreeMap<i64, UCellsCounter>;
 
 pub type CellValuesSerial = Vec<CellValueSerial>;
 
@@ -909,6 +913,12 @@ pub type CellValuesSerialOp = Vec<CellValueSerialOp>;
 pub type UCellsSerial = Vec<UCellSerial>;
 
 pub type UCCellsSerial = BTreeMap<i64, UCellsSerial>;
+
+pub type CellsPlain = Vec<CellPlain>;
+
+pub type CellsCounter = Vec<CellCounter>;
+
+pub type CellsSerial = Vec<CellSerial>;
 
 pub type CCells = BTreeMap<String, ColCells>;
 
@@ -4149,12 +4159,12 @@ impl Default for SpecScan {
 }
 
 //
-// UCell
+// UCellPlain
 //
 
-/// The Cell data for using with Update
+/// The Cell data for using with Update of PLAIN Column Type
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct UCell {
+pub struct UCellPlain {
   /// The Cell Flag
   pub f: Option<Flag>,
   /// The Cell Key
@@ -4169,9 +4179,9 @@ pub struct UCell {
   pub encoder: Option<EncodingType>,
 }
 
-impl UCell {
-  pub fn new<F1, F2, F3, F4, F5, F6>(f: F1, k: F2, ts: F3, ts_desc: F4, v: F5, encoder: F6) -> UCell where F1: Into<Option<Flag>>, F2: Into<Option<Key>>, F3: Into<Option<i64>>, F4: Into<Option<bool>>, F5: Into<Option<Vec<u8>>>, F6: Into<Option<EncodingType>> {
-    UCell {
+impl UCellPlain {
+  pub fn new<F1, F2, F3, F4, F5, F6>(f: F1, k: F2, ts: F3, ts_desc: F4, v: F5, encoder: F6) -> UCellPlain where F1: Into<Option<Flag>>, F2: Into<Option<Key>>, F3: Into<Option<i64>>, F4: Into<Option<bool>>, F5: Into<Option<Vec<u8>>>, F6: Into<Option<EncodingType>> {
+    UCellPlain {
       f: f.into(),
       k: k.into(),
       ts: ts.into(),
@@ -4182,8 +4192,8 @@ impl UCell {
   }
 }
 
-impl TSerializable for UCell {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<UCell> {
+impl TSerializable for UCellPlain {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<UCellPlain> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<Flag> = None;
     let mut f_2: Option<Key> = Some(Vec::new());
@@ -4235,7 +4245,7 @@ impl TSerializable for UCell {
       i_prot.read_field_end()?;
     }
     i_prot.read_struct_end()?;
-    let ret = UCell {
+    let ret = UCellPlain {
       f: f_1,
       k: f_2,
       ts: f_3,
@@ -4246,7 +4256,7 @@ impl TSerializable for UCell {
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("UCell");
+    let struct_ident = TStructIdentifier::new("UCellPlain");
     o_prot.write_struct_begin(&struct_ident)?;
     if let Some(ref fld_var) = self.f {
       o_prot.write_field_begin(&TFieldIdentifier::new("f", TType::I32, 1))?;
@@ -4287,15 +4297,167 @@ impl TSerializable for UCell {
   }
 }
 
-impl Default for UCell {
+impl Default for UCellPlain {
   fn default() -> Self {
-    UCell{
+    UCellPlain{
       f: None,
       k: Some(Vec::new()),
       ts: Some(0),
       ts_desc: Some(false),
       v: Some(Vec::new()),
       encoder: None,
+    }
+  }
+}
+
+//
+// UCellCounter
+//
+
+/// The Cell data for using with Update of COUNTER Column Type
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct UCellCounter {
+  /// The Cell Flag
+  pub f: Option<Flag>,
+  /// The Cell Key
+  pub k: Option<Key>,
+  /// The Cell Timestamp in nanoseconds
+  pub ts: Option<i64>,
+  /// The Cell Version is in timestamp descending
+  pub ts_desc: Option<bool>,
+  /// The Cell Counter Operation
+  pub op: Option<i8>,
+  /// The Cell Counter Value
+  pub v: Option<i64>,
+}
+
+impl UCellCounter {
+  pub fn new<F1, F2, F3, F4, F5, F6>(f: F1, k: F2, ts: F3, ts_desc: F4, op: F5, v: F6) -> UCellCounter where F1: Into<Option<Flag>>, F2: Into<Option<Key>>, F3: Into<Option<i64>>, F4: Into<Option<bool>>, F5: Into<Option<i8>>, F6: Into<Option<i64>> {
+    UCellCounter {
+      f: f.into(),
+      k: k.into(),
+      ts: ts.into(),
+      ts_desc: ts_desc.into(),
+      op: op.into(),
+      v: v.into(),
+    }
+  }
+}
+
+impl TSerializable for UCellCounter {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<UCellCounter> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Flag> = None;
+    let mut f_2: Option<Key> = Some(Vec::new());
+    let mut f_3: Option<i64> = None;
+    let mut f_4: Option<bool> = None;
+    let mut f_5: Option<i8> = Some(0);
+    let mut f_6: Option<i64> = Some(0);
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = Flag::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_28 = i_prot.read_bytes()?;
+            val.push(list_elem_28);
+          }
+          i_prot.read_list_end()?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i64()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = i_prot.read_bool()?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let val = i_prot.read_i8()?;
+          f_5 = Some(val);
+        },
+        6 => {
+          let val = i_prot.read_i64()?;
+          f_6 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = UCellCounter {
+      f: f_1,
+      k: f_2,
+      ts: f_3,
+      ts_desc: f_4,
+      op: f_5,
+      v: f_6,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("UCellCounter");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.f {
+      o_prot.write_field_begin(&TFieldIdentifier::new("f", TType::I32, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.k {
+      o_prot.write_field_begin(&TFieldIdentifier::new("k", TType::List, 2))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.ts {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts", TType::I64, 3))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.ts_desc {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts_desc", TType::Bool, 4))?;
+      o_prot.write_bool(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I08, 5))?;
+      o_prot.write_i8(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::I64, 6))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for UCellCounter {
+  fn default() -> Self {
+    UCellCounter{
+      f: None,
+      k: Some(Vec::new()),
+      ts: Some(0),
+      ts_desc: Some(false),
+      op: Some(0),
+      v: Some(0),
     }
   }
 }
@@ -4374,8 +4536,8 @@ impl TSerializable for CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_28 = i_prot.read_bytes()?;
-            val.push(list_elem_28);
+            let list_elem_29 = i_prot.read_bytes()?;
+            val.push(list_elem_29);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -4384,8 +4546,8 @@ impl TSerializable for CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<i64> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_29 = i_prot.read_i64()?;
-            val.push(list_elem_29);
+            let list_elem_30 = i_prot.read_i64()?;
+            val.push(list_elem_30);
           }
           i_prot.read_list_end()?;
           f_6 = Some(val);
@@ -4394,8 +4556,8 @@ impl TSerializable for CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_30 = i_prot.read_bytes()?;
-            val.push(list_elem_30);
+            let list_elem_31 = i_prot.read_bytes()?;
+            val.push(list_elem_31);
           }
           i_prot.read_list_end()?;
           f_7 = Some(val);
@@ -4907,8 +5069,8 @@ impl TSerializable for FULI {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FUINT64> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_31 = FUINT64::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_31);
+            let list_elem_32 = FUINT64::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_32);
           }
           i_prot.read_list_end()?;
           f_4 = Some(val);
@@ -5025,8 +5187,8 @@ impl TSerializable for FULB {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FUBYTES> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_32 = FUBYTES::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_32);
+            let list_elem_33 = FUBYTES::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_33);
           }
           i_prot.read_list_end()?;
           f_4 = Some(val);
@@ -5163,8 +5325,8 @@ impl TSerializable for CellValueSerialOp {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_33 = i_prot.read_bytes()?;
-            val.push(list_elem_33);
+            let list_elem_34 = i_prot.read_bytes()?;
+            val.push(list_elem_34);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -5314,8 +5476,8 @@ impl TSerializable for UCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_34 = i_prot.read_bytes()?;
-            val.push(list_elem_34);
+            let list_elem_35 = i_prot.read_bytes()?;
+            val.push(list_elem_35);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5332,8 +5494,8 @@ impl TSerializable for UCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_35 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_35);
+            let list_elem_36 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_36);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -5419,12 +5581,12 @@ impl Default for UCellSerial {
 }
 
 //
-// Cell
+// CellPlain
 //
 
 /// The Cell for results list of scan
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Cell {
+pub struct CellPlain {
   /// The Column Name
   pub c: Option<String>,
   /// The Cell Key
@@ -5435,9 +5597,9 @@ pub struct Cell {
   pub v: Option<Vec<u8>>,
 }
 
-impl Cell {
-  pub fn new<F1, F2, F3, F4>(c: F1, k: F2, ts: F3, v: F4) -> Cell where F1: Into<Option<String>>, F2: Into<Option<Key>>, F3: Into<Option<i64>>, F4: Into<Option<Vec<u8>>> {
-    Cell {
+impl CellPlain {
+  pub fn new<F1, F2, F3, F4>(c: F1, k: F2, ts: F3, v: F4) -> CellPlain where F1: Into<Option<String>>, F2: Into<Option<Key>>, F3: Into<Option<i64>>, F4: Into<Option<Vec<u8>>> {
+    CellPlain {
       c: c.into(),
       k: k.into(),
       ts: ts.into(),
@@ -5446,8 +5608,8 @@ impl Cell {
   }
 }
 
-impl TSerializable for Cell {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<Cell> {
+impl TSerializable for CellPlain {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<CellPlain> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<String> = Some("".to_owned());
     let mut f_2: Option<Key> = Some(Vec::new());
@@ -5468,8 +5630,8 @@ impl TSerializable for Cell {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_36 = i_prot.read_bytes()?;
-            val.push(list_elem_36);
+            let list_elem_37 = i_prot.read_bytes()?;
+            val.push(list_elem_37);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5489,7 +5651,7 @@ impl TSerializable for Cell {
       i_prot.read_field_end()?;
     }
     i_prot.read_struct_end()?;
-    let ret = Cell {
+    let ret = CellPlain {
       c: f_1,
       k: f_2,
       ts: f_3,
@@ -5498,7 +5660,7 @@ impl TSerializable for Cell {
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("Cell");
+    let struct_ident = TStructIdentifier::new("CellPlain");
     o_prot.write_struct_begin(&struct_ident)?;
     if let Some(ref fld_var) = self.c {
       o_prot.write_field_begin(&TFieldIdentifier::new("c", TType::String, 1))?;
@@ -5529,13 +5691,150 @@ impl TSerializable for Cell {
   }
 }
 
-impl Default for Cell {
+impl Default for CellPlain {
   fn default() -> Self {
-    Cell{
+    CellPlain{
       c: Some("".to_owned()),
       k: Some(Vec::new()),
       ts: Some(0),
       v: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// CellCounter
+//
+
+/// The Counter Cell for results list of scan
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct CellCounter {
+  /// The Column Name
+  pub c: Option<String>,
+  /// The Cell Key
+  pub k: Option<Key>,
+  /// The Cell Timestamp
+  pub ts: Option<i64>,
+  /// The Cell Counter Value
+  pub v: Option<i64>,
+  /// The Counter EQ since ts
+  pub eq: Option<i64>,
+}
+
+impl CellCounter {
+  pub fn new<F1, F2, F3, F4, F5>(c: F1, k: F2, ts: F3, v: F4, eq: F5) -> CellCounter where F1: Into<Option<String>>, F2: Into<Option<Key>>, F3: Into<Option<i64>>, F4: Into<Option<i64>>, F5: Into<Option<i64>> {
+    CellCounter {
+      c: c.into(),
+      k: k.into(),
+      ts: ts.into(),
+      v: v.into(),
+      eq: eq.into(),
+    }
+  }
+}
+
+impl TSerializable for CellCounter {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<CellCounter> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<String> = Some("".to_owned());
+    let mut f_2: Option<Key> = Some(Vec::new());
+    let mut f_3: Option<i64> = Some(0);
+    let mut f_4: Option<i64> = Some(0);
+    let mut f_5: Option<i64> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_string()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_38 = i_prot.read_bytes()?;
+            val.push(list_elem_38);
+          }
+          i_prot.read_list_end()?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i64()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = i_prot.read_i64()?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let val = i_prot.read_i64()?;
+          f_5 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = CellCounter {
+      c: f_1,
+      k: f_2,
+      ts: f_3,
+      v: f_4,
+      eq: f_5,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("CellCounter");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.c {
+      o_prot.write_field_begin(&TFieldIdentifier::new("c", TType::String, 1))?;
+      o_prot.write_string(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.k {
+      o_prot.write_field_begin(&TFieldIdentifier::new("k", TType::List, 2))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.ts {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts", TType::I64, 3))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::I64, 4))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.eq {
+      o_prot.write_field_begin(&TFieldIdentifier::new("eq", TType::I64, 5))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for CellCounter {
+  fn default() -> Self {
+    CellCounter{
+      c: Some("".to_owned()),
+      k: Some(Vec::new()),
+      ts: Some(0),
+      v: Some(0),
+      eq: Some(0),
     }
   }
 }
@@ -5590,8 +5889,8 @@ impl TSerializable for CellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_37 = i_prot.read_bytes()?;
-            val.push(list_elem_37);
+            let list_elem_39 = i_prot.read_bytes()?;
+            val.push(list_elem_39);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5604,8 +5903,8 @@ impl TSerializable for CellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_38 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_38);
+            let list_elem_40 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_40);
           }
           i_prot.read_list_end()?;
           f_4 = Some(val);
@@ -5680,13 +5979,13 @@ impl Default for CellSerial {
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Cells {
   /// The Cells, defined as Cell items in a list-container
-  pub cells: Option<Vec<Cell>>,
+  pub cells: Option<CellsPlain>,
   /// The Serial Cells, defined as CellSerial items in a list-container
-  pub serial_cells: Option<Vec<CellSerial>>,
+  pub serial_cells: Option<CellsSerial>,
 }
 
 impl Cells {
-  pub fn new<F1, F2>(cells: F1, serial_cells: F2) -> Cells where F1: Into<Option<Vec<Cell>>>, F2: Into<Option<Vec<CellSerial>>> {
+  pub fn new<F1, F2>(cells: F1, serial_cells: F2) -> Cells where F1: Into<Option<CellsPlain>>, F2: Into<Option<CellsSerial>> {
     Cells {
       cells: cells.into(),
       serial_cells: serial_cells.into(),
@@ -5697,8 +5996,8 @@ impl Cells {
 impl TSerializable for Cells {
   fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<Cells> {
     i_prot.read_struct_begin()?;
-    let mut f_1: Option<Vec<Cell>> = Some(Vec::new());
-    let mut f_2: Option<Vec<CellSerial>> = Some(Vec::new());
+    let mut f_1: Option<CellsPlain> = Some(Vec::new());
+    let mut f_2: Option<CellsSerial> = Some(Vec::new());
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -5708,10 +6007,10 @@ impl TSerializable for Cells {
       match field_id {
         1 => {
           let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<Cell> = Vec::with_capacity(list_ident.size as usize);
+          let mut val: Vec<CellPlain> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_39 = Cell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_39);
+            let list_elem_41 = CellPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_41);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -5720,8 +6019,8 @@ impl TSerializable for Cells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_40 = CellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_40);
+            let list_elem_42 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_42);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5816,8 +6115,8 @@ impl TSerializable for CCell {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_41 = i_prot.read_bytes()?;
-            val.push(list_elem_41);
+            let list_elem_43 = i_prot.read_bytes()?;
+            val.push(list_elem_43);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -5923,8 +6222,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_42 = i_prot.read_bytes()?;
-            val.push(list_elem_42);
+            let list_elem_44 = i_prot.read_bytes()?;
+            val.push(list_elem_44);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -5937,8 +6236,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_43 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_43);
+            let list_elem_45 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_45);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6036,8 +6335,8 @@ impl TSerializable for ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_44 = CCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_44);
+            let list_elem_46 = CCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_46);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6046,8 +6345,8 @@ impl TSerializable for ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_45 = CCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_45);
+            let list_elem_47 = CCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_47);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6247,8 +6546,8 @@ impl TSerializable for KCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_46 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_46);
+            let list_elem_48 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_48);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6346,8 +6645,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_47 = i_prot.read_bytes()?;
-            val.push(list_elem_47);
+            let list_elem_49 = i_prot.read_bytes()?;
+            val.push(list_elem_49);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6356,8 +6655,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_48 = KCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_48);
+            let list_elem_50 = KCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_50);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6366,8 +6665,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_49 = KCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_49);
+            let list_elem_51 = KCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_51);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6578,8 +6877,8 @@ impl TSerializable for FCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_50 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_50);
+            let list_elem_52 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_52);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6677,9 +6976,9 @@ impl TSerializable for FCells {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<Vec<u8>, Box<FCells>> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_51 = i_prot.read_bytes()?;
-            let map_val_52 = Box::new(FCells::read_from_in_protocol(i_prot)?);
-            val.insert(map_key_51, map_val_52);
+            let map_key_53 = i_prot.read_bytes()?;
+            let map_val_54 = Box::new(FCells::read_from_in_protocol(i_prot)?);
+            val.insert(map_key_53, map_val_54);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -6688,8 +6987,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_53 = FCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_53);
+            let list_elem_55 = FCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_55);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6698,8 +6997,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_54 = FCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_54);
+            let list_elem_56 = FCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_56);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6814,9 +7113,9 @@ impl TSerializable for CellsGroup {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_55 = i_prot.read_string()?;
-            let map_val_56 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_55, map_val_56);
+            let map_key_57 = i_prot.read_string()?;
+            let map_val_58 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_57, map_val_58);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -6825,8 +7124,8 @@ impl TSerializable for CellsGroup {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_57 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_57);
+            let list_elem_59 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_59);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7022,8 +7321,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_58 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_58);
+            let list_elem_60 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_60);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -7036,8 +7335,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_59 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_59);
+            let list_elem_61 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_61);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7101,6 +7400,8 @@ pub const TIMESTAMP_NULL: i64 = -9223372036854775807;
 
 pub const TIMESTAMP_AUTO: i64 = -9223372036854775806;
 
+pub const COUNTER_OP_EQUAL: i8 = 1;
+
 pub const FU_CTRL_DEFAULT: i8 = 0;
 
 pub const FU_CTRL_NO_ADD_FIELD: i8 = 1;
@@ -7125,6 +7426,12 @@ pub trait TServiceSyncClient {
   fn sql_compact_columns(&mut self, sql: String) -> thrift::Result<CompactResults>;
   /// The direct SQL method to select cells with result in Cells List.
   fn sql_select(&mut self, sql: String) -> thrift::Result<Cells>;
+  /// The direct SQL method to select cells with result in CellsPlain.
+  fn sql_select_plain(&mut self, sql: String) -> thrift::Result<CellsPlain>;
+  /// The direct SQL method to select cells with result in CellsCounter.
+  fn sql_select_counter(&mut self, sql: String) -> thrift::Result<CellsCounter>;
+  /// The direct SQL method to select cells with result in CellsSerial.
+  fn sql_select_serial(&mut self, sql: String) -> thrift::Result<CellsSerial>;
   /// The direct SQL method to select cells with result in Columns Cells map.
   fn sql_select_rslt_on_column(&mut self, sql: String) -> thrift::Result<CCells>;
   /// The direct SQL method to select cells with result in Key Cells list.
@@ -7143,13 +7450,16 @@ pub trait TServiceSyncClient {
   fn updater_close(&mut self, id: i64) -> thrift::Result<()>;
   /// The direct method to update cells with cell in Update-Columns-Cells,
   /// optionally to work with updater-id.
-  fn update(&mut self, cells: UCCells, updater_id: i64) -> thrift::Result<()>;
+  fn update(&mut self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()>;
+  /// The direct method to update cells with cell in Update-Columns-Cells-Counter,
+  /// optionally to work with updater-id.
+  fn update_counter(&mut self, cells: UCCellsCounter, updater_id: i64) -> thrift::Result<()>;
   /// The direct method to update cells with cell in Update-Columns-Cells-Serial,
   /// optionally to work with updater-id.
   fn update_serial(&mut self, cells: UCCellsSerial, updater_id: i64) -> thrift::Result<()>;
   /// The method is to update cells by several Column-Types,
   /// optionally to work with updater-id.
-  fn update_by_types(&mut self, plain: UCCells, serial: UCCellsSerial, updater_id: i64) -> thrift::Result<()>;
+  fn update_by_types(&mut self, plain: UCCellsPlain, counter: UCCellsCounter, serial: UCCellsSerial, updater_id: i64) -> thrift::Result<()>;
   /// The direct method to Manage Column
   fn mng_column(&mut self, func: SchemaFunc, schema: Schema) -> thrift::Result<()>;
   /// The direct method to List Columns
@@ -7296,6 +7606,87 @@ impl <C: TThriftClient + TServiceSyncClientMarker> TServiceSyncClient for C {
       }
       verify_expected_message_type(TMessageType::Reply, message_ident.message_type)?;
       let result = ServiceSqlSelectResult::read_from_in_protocol(self.i_prot_mut())?;
+      self.i_prot_mut().read_message_end()?;
+      result.ok_or()
+    }
+  }
+  fn sql_select_plain(&mut self, sql: String) -> thrift::Result<CellsPlain> {
+    (
+      {
+        self.increment_sequence_number();
+        let message_ident = TMessageIdentifier::new("sql_select_plain", TMessageType::Call, self.sequence_number());
+        let call_args = ServiceSqlSelectPlainArgs { sql };
+        self.o_prot_mut().write_message_begin(&message_ident)?;
+        call_args.write_to_out_protocol(self.o_prot_mut())?;
+        self.o_prot_mut().write_message_end()?;
+        self.o_prot_mut().flush()
+      }
+    )?;
+    {
+      let message_ident = self.i_prot_mut().read_message_begin()?;
+      verify_expected_sequence_number(self.sequence_number(), message_ident.sequence_number)?;
+      verify_expected_service_call("sql_select_plain", &message_ident.name)?;
+      if message_ident.message_type == TMessageType::Exception {
+        let remote_error = thrift::Error::read_application_error_from_in_protocol(self.i_prot_mut())?;
+        self.i_prot_mut().read_message_end()?;
+        return Err(thrift::Error::Application(remote_error))
+      }
+      verify_expected_message_type(TMessageType::Reply, message_ident.message_type)?;
+      let result = ServiceSqlSelectPlainResult::read_from_in_protocol(self.i_prot_mut())?;
+      self.i_prot_mut().read_message_end()?;
+      result.ok_or()
+    }
+  }
+  fn sql_select_counter(&mut self, sql: String) -> thrift::Result<CellsCounter> {
+    (
+      {
+        self.increment_sequence_number();
+        let message_ident = TMessageIdentifier::new("sql_select_counter", TMessageType::Call, self.sequence_number());
+        let call_args = ServiceSqlSelectCounterArgs { sql };
+        self.o_prot_mut().write_message_begin(&message_ident)?;
+        call_args.write_to_out_protocol(self.o_prot_mut())?;
+        self.o_prot_mut().write_message_end()?;
+        self.o_prot_mut().flush()
+      }
+    )?;
+    {
+      let message_ident = self.i_prot_mut().read_message_begin()?;
+      verify_expected_sequence_number(self.sequence_number(), message_ident.sequence_number)?;
+      verify_expected_service_call("sql_select_counter", &message_ident.name)?;
+      if message_ident.message_type == TMessageType::Exception {
+        let remote_error = thrift::Error::read_application_error_from_in_protocol(self.i_prot_mut())?;
+        self.i_prot_mut().read_message_end()?;
+        return Err(thrift::Error::Application(remote_error))
+      }
+      verify_expected_message_type(TMessageType::Reply, message_ident.message_type)?;
+      let result = ServiceSqlSelectCounterResult::read_from_in_protocol(self.i_prot_mut())?;
+      self.i_prot_mut().read_message_end()?;
+      result.ok_or()
+    }
+  }
+  fn sql_select_serial(&mut self, sql: String) -> thrift::Result<CellsSerial> {
+    (
+      {
+        self.increment_sequence_number();
+        let message_ident = TMessageIdentifier::new("sql_select_serial", TMessageType::Call, self.sequence_number());
+        let call_args = ServiceSqlSelectSerialArgs { sql };
+        self.o_prot_mut().write_message_begin(&message_ident)?;
+        call_args.write_to_out_protocol(self.o_prot_mut())?;
+        self.o_prot_mut().write_message_end()?;
+        self.o_prot_mut().flush()
+      }
+    )?;
+    {
+      let message_ident = self.i_prot_mut().read_message_begin()?;
+      verify_expected_sequence_number(self.sequence_number(), message_ident.sequence_number)?;
+      verify_expected_service_call("sql_select_serial", &message_ident.name)?;
+      if message_ident.message_type == TMessageType::Exception {
+        let remote_error = thrift::Error::read_application_error_from_in_protocol(self.i_prot_mut())?;
+        self.i_prot_mut().read_message_end()?;
+        return Err(thrift::Error::Application(remote_error))
+      }
+      verify_expected_message_type(TMessageType::Reply, message_ident.message_type)?;
+      let result = ServiceSqlSelectSerialResult::read_from_in_protocol(self.i_prot_mut())?;
       self.i_prot_mut().read_message_end()?;
       result.ok_or()
     }
@@ -7516,7 +7907,7 @@ impl <C: TThriftClient + TServiceSyncClientMarker> TServiceSyncClient for C {
       result.ok_or()
     }
   }
-  fn update(&mut self, cells: UCCells, updater_id: i64) -> thrift::Result<()> {
+  fn update(&mut self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()> {
     (
       {
         self.increment_sequence_number();
@@ -7539,6 +7930,33 @@ impl <C: TThriftClient + TServiceSyncClientMarker> TServiceSyncClient for C {
       }
       verify_expected_message_type(TMessageType::Reply, message_ident.message_type)?;
       let result = ServiceUpdateResult::read_from_in_protocol(self.i_prot_mut())?;
+      self.i_prot_mut().read_message_end()?;
+      result.ok_or()
+    }
+  }
+  fn update_counter(&mut self, cells: UCCellsCounter, updater_id: i64) -> thrift::Result<()> {
+    (
+      {
+        self.increment_sequence_number();
+        let message_ident = TMessageIdentifier::new("update_counter", TMessageType::Call, self.sequence_number());
+        let call_args = ServiceUpdateCounterArgs { cells, updater_id };
+        self.o_prot_mut().write_message_begin(&message_ident)?;
+        call_args.write_to_out_protocol(self.o_prot_mut())?;
+        self.o_prot_mut().write_message_end()?;
+        self.o_prot_mut().flush()
+      }
+    )?;
+    {
+      let message_ident = self.i_prot_mut().read_message_begin()?;
+      verify_expected_sequence_number(self.sequence_number(), message_ident.sequence_number)?;
+      verify_expected_service_call("update_counter", &message_ident.name)?;
+      if message_ident.message_type == TMessageType::Exception {
+        let remote_error = thrift::Error::read_application_error_from_in_protocol(self.i_prot_mut())?;
+        self.i_prot_mut().read_message_end()?;
+        return Err(thrift::Error::Application(remote_error))
+      }
+      verify_expected_message_type(TMessageType::Reply, message_ident.message_type)?;
+      let result = ServiceUpdateCounterResult::read_from_in_protocol(self.i_prot_mut())?;
       self.i_prot_mut().read_message_end()?;
       result.ok_or()
     }
@@ -7570,12 +7988,12 @@ impl <C: TThriftClient + TServiceSyncClientMarker> TServiceSyncClient for C {
       result.ok_or()
     }
   }
-  fn update_by_types(&mut self, plain: UCCells, serial: UCCellsSerial, updater_id: i64) -> thrift::Result<()> {
+  fn update_by_types(&mut self, plain: UCCellsPlain, counter: UCCellsCounter, serial: UCCellsSerial, updater_id: i64) -> thrift::Result<()> {
     (
       {
         self.increment_sequence_number();
         let message_ident = TMessageIdentifier::new("update_by_types", TMessageType::Call, self.sequence_number());
-        let call_args = ServiceUpdateByTypesArgs { plain, serial, updater_id };
+        let call_args = ServiceUpdateByTypesArgs { plain, counter, serial, updater_id };
         self.o_prot_mut().write_message_begin(&message_ident)?;
         call_args.write_to_out_protocol(self.o_prot_mut())?;
         self.o_prot_mut().write_message_end()?;
@@ -7829,6 +8247,12 @@ pub trait ServiceSyncHandler {
   fn handle_sql_compact_columns(&self, sql: String) -> thrift::Result<CompactResults>;
   /// The direct SQL method to select cells with result in Cells List.
   fn handle_sql_select(&self, sql: String) -> thrift::Result<Cells>;
+  /// The direct SQL method to select cells with result in CellsPlain.
+  fn handle_sql_select_plain(&self, sql: String) -> thrift::Result<CellsPlain>;
+  /// The direct SQL method to select cells with result in CellsCounter.
+  fn handle_sql_select_counter(&self, sql: String) -> thrift::Result<CellsCounter>;
+  /// The direct SQL method to select cells with result in CellsSerial.
+  fn handle_sql_select_serial(&self, sql: String) -> thrift::Result<CellsSerial>;
   /// The direct SQL method to select cells with result in Columns Cells map.
   fn handle_sql_select_rslt_on_column(&self, sql: String) -> thrift::Result<CCells>;
   /// The direct SQL method to select cells with result in Key Cells list.
@@ -7847,13 +8271,16 @@ pub trait ServiceSyncHandler {
   fn handle_updater_close(&self, id: i64) -> thrift::Result<()>;
   /// The direct method to update cells with cell in Update-Columns-Cells,
   /// optionally to work with updater-id.
-  fn handle_update(&self, cells: UCCells, updater_id: i64) -> thrift::Result<()>;
+  fn handle_update(&self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()>;
+  /// The direct method to update cells with cell in Update-Columns-Cells-Counter,
+  /// optionally to work with updater-id.
+  fn handle_update_counter(&self, cells: UCCellsCounter, updater_id: i64) -> thrift::Result<()>;
   /// The direct method to update cells with cell in Update-Columns-Cells-Serial,
   /// optionally to work with updater-id.
   fn handle_update_serial(&self, cells: UCCellsSerial, updater_id: i64) -> thrift::Result<()>;
   /// The method is to update cells by several Column-Types,
   /// optionally to work with updater-id.
-  fn handle_update_by_types(&self, plain: UCCells, serial: UCCellsSerial, updater_id: i64) -> thrift::Result<()>;
+  fn handle_update_by_types(&self, plain: UCCellsPlain, counter: UCCellsCounter, serial: UCCellsSerial, updater_id: i64) -> thrift::Result<()>;
   /// The direct method to Manage Column
   fn handle_mng_column(&self, func: SchemaFunc, schema: Schema) -> thrift::Result<()>;
   /// The direct method to List Columns
@@ -7894,6 +8321,15 @@ impl <H: ServiceSyncHandler> ServiceSyncProcessor<H> {
   fn process_sql_select(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     TServiceProcessFunctions::process_sql_select(&self.handler, incoming_sequence_number, i_prot, o_prot)
   }
+  fn process_sql_select_plain(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    TServiceProcessFunctions::process_sql_select_plain(&self.handler, incoming_sequence_number, i_prot, o_prot)
+  }
+  fn process_sql_select_counter(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    TServiceProcessFunctions::process_sql_select_counter(&self.handler, incoming_sequence_number, i_prot, o_prot)
+  }
+  fn process_sql_select_serial(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    TServiceProcessFunctions::process_sql_select_serial(&self.handler, incoming_sequence_number, i_prot, o_prot)
+  }
   fn process_sql_select_rslt_on_column(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     TServiceProcessFunctions::process_sql_select_rslt_on_column(&self.handler, incoming_sequence_number, i_prot, o_prot)
   }
@@ -7920,6 +8356,9 @@ impl <H: ServiceSyncHandler> ServiceSyncProcessor<H> {
   }
   fn process_update(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     TServiceProcessFunctions::process_update(&self.handler, incoming_sequence_number, i_prot, o_prot)
+  }
+  fn process_update_counter(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    TServiceProcessFunctions::process_update_counter(&self.handler, incoming_sequence_number, i_prot, o_prot)
   }
   fn process_update_serial(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     TServiceProcessFunctions::process_update_serial(&self.handler, incoming_sequence_number, i_prot, o_prot)
@@ -8187,6 +8626,186 @@ impl TServiceProcessFunctions {
               )
             };
             let message_ident = TMessageIdentifier::new("sql_select", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+        }
+      },
+    }
+  }
+  pub fn process_sql_select_plain<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let args = ServiceSqlSelectPlainArgs::read_from_in_protocol(i_prot)?;
+    match handler.handle_sql_select_plain(args.sql) {
+      Ok(handler_return) => {
+        let message_ident = TMessageIdentifier::new("sql_select_plain", TMessageType::Reply, incoming_sequence_number);
+        o_prot.write_message_begin(&message_ident)?;
+        let ret = ServiceSqlSelectPlainResult { result_value: Some(handler_return), e: None };
+        ret.write_to_out_protocol(o_prot)?;
+        o_prot.write_message_end()?;
+        o_prot.flush()
+      },
+      Err(e) => {
+        match e {
+          thrift::Error::User(usr_err) => {
+            if usr_err.downcast_ref::<Exception>().is_some() {
+              let err = usr_err.downcast::<Exception>().expect("downcast already checked");
+              let ret_err = ServiceSqlSelectPlainResult{ result_value: None, e: Some(*err) };
+              let message_ident = TMessageIdentifier::new("sql_select_plain", TMessageType::Reply, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              ret_err.write_to_out_protocol(o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            } else {
+              let ret_err = {
+                ApplicationError::new(
+                  ApplicationErrorKind::Unknown,
+                  usr_err.to_string()
+                )
+              };
+              let message_ident = TMessageIdentifier::new("sql_select_plain", TMessageType::Exception, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            }
+          },
+          thrift::Error::Application(app_err) => {
+            let message_ident = TMessageIdentifier::new("sql_select_plain", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&app_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+          _ => {
+            let ret_err = {
+              ApplicationError::new(
+                ApplicationErrorKind::Unknown,
+                e.to_string()
+              )
+            };
+            let message_ident = TMessageIdentifier::new("sql_select_plain", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+        }
+      },
+    }
+  }
+  pub fn process_sql_select_counter<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let args = ServiceSqlSelectCounterArgs::read_from_in_protocol(i_prot)?;
+    match handler.handle_sql_select_counter(args.sql) {
+      Ok(handler_return) => {
+        let message_ident = TMessageIdentifier::new("sql_select_counter", TMessageType::Reply, incoming_sequence_number);
+        o_prot.write_message_begin(&message_ident)?;
+        let ret = ServiceSqlSelectCounterResult { result_value: Some(handler_return), e: None };
+        ret.write_to_out_protocol(o_prot)?;
+        o_prot.write_message_end()?;
+        o_prot.flush()
+      },
+      Err(e) => {
+        match e {
+          thrift::Error::User(usr_err) => {
+            if usr_err.downcast_ref::<Exception>().is_some() {
+              let err = usr_err.downcast::<Exception>().expect("downcast already checked");
+              let ret_err = ServiceSqlSelectCounterResult{ result_value: None, e: Some(*err) };
+              let message_ident = TMessageIdentifier::new("sql_select_counter", TMessageType::Reply, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              ret_err.write_to_out_protocol(o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            } else {
+              let ret_err = {
+                ApplicationError::new(
+                  ApplicationErrorKind::Unknown,
+                  usr_err.to_string()
+                )
+              };
+              let message_ident = TMessageIdentifier::new("sql_select_counter", TMessageType::Exception, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            }
+          },
+          thrift::Error::Application(app_err) => {
+            let message_ident = TMessageIdentifier::new("sql_select_counter", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&app_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+          _ => {
+            let ret_err = {
+              ApplicationError::new(
+                ApplicationErrorKind::Unknown,
+                e.to_string()
+              )
+            };
+            let message_ident = TMessageIdentifier::new("sql_select_counter", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+        }
+      },
+    }
+  }
+  pub fn process_sql_select_serial<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let args = ServiceSqlSelectSerialArgs::read_from_in_protocol(i_prot)?;
+    match handler.handle_sql_select_serial(args.sql) {
+      Ok(handler_return) => {
+        let message_ident = TMessageIdentifier::new("sql_select_serial", TMessageType::Reply, incoming_sequence_number);
+        o_prot.write_message_begin(&message_ident)?;
+        let ret = ServiceSqlSelectSerialResult { result_value: Some(handler_return), e: None };
+        ret.write_to_out_protocol(o_prot)?;
+        o_prot.write_message_end()?;
+        o_prot.flush()
+      },
+      Err(e) => {
+        match e {
+          thrift::Error::User(usr_err) => {
+            if usr_err.downcast_ref::<Exception>().is_some() {
+              let err = usr_err.downcast::<Exception>().expect("downcast already checked");
+              let ret_err = ServiceSqlSelectSerialResult{ result_value: None, e: Some(*err) };
+              let message_ident = TMessageIdentifier::new("sql_select_serial", TMessageType::Reply, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              ret_err.write_to_out_protocol(o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            } else {
+              let ret_err = {
+                ApplicationError::new(
+                  ApplicationErrorKind::Unknown,
+                  usr_err.to_string()
+                )
+              };
+              let message_ident = TMessageIdentifier::new("sql_select_serial", TMessageType::Exception, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            }
+          },
+          thrift::Error::Application(app_err) => {
+            let message_ident = TMessageIdentifier::new("sql_select_serial", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&app_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+          _ => {
+            let ret_err = {
+              ApplicationError::new(
+                ApplicationErrorKind::Unknown,
+                e.to_string()
+              )
+            };
+            let message_ident = TMessageIdentifier::new("sql_select_serial", TMessageType::Exception, incoming_sequence_number);
             o_prot.write_message_begin(&message_ident)?;
             thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
             o_prot.write_message_end()?;
@@ -8736,6 +9355,66 @@ impl TServiceProcessFunctions {
       },
     }
   }
+  pub fn process_update_counter<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let args = ServiceUpdateCounterArgs::read_from_in_protocol(i_prot)?;
+    match handler.handle_update_counter(args.cells, args.updater_id) {
+      Ok(_) => {
+        let message_ident = TMessageIdentifier::new("update_counter", TMessageType::Reply, incoming_sequence_number);
+        o_prot.write_message_begin(&message_ident)?;
+        let ret = ServiceUpdateCounterResult { e: None };
+        ret.write_to_out_protocol(o_prot)?;
+        o_prot.write_message_end()?;
+        o_prot.flush()
+      },
+      Err(e) => {
+        match e {
+          thrift::Error::User(usr_err) => {
+            if usr_err.downcast_ref::<Exception>().is_some() {
+              let err = usr_err.downcast::<Exception>().expect("downcast already checked");
+              let ret_err = ServiceUpdateCounterResult{ e: Some(*err) };
+              let message_ident = TMessageIdentifier::new("update_counter", TMessageType::Reply, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              ret_err.write_to_out_protocol(o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            } else {
+              let ret_err = {
+                ApplicationError::new(
+                  ApplicationErrorKind::Unknown,
+                  usr_err.to_string()
+                )
+              };
+              let message_ident = TMessageIdentifier::new("update_counter", TMessageType::Exception, incoming_sequence_number);
+              o_prot.write_message_begin(&message_ident)?;
+              thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+              o_prot.write_message_end()?;
+              o_prot.flush()
+            }
+          },
+          thrift::Error::Application(app_err) => {
+            let message_ident = TMessageIdentifier::new("update_counter", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&app_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+          _ => {
+            let ret_err = {
+              ApplicationError::new(
+                ApplicationErrorKind::Unknown,
+                e.to_string()
+              )
+            };
+            let message_ident = TMessageIdentifier::new("update_counter", TMessageType::Exception, incoming_sequence_number);
+            o_prot.write_message_begin(&message_ident)?;
+            thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
+            o_prot.write_message_end()?;
+            o_prot.flush()
+          },
+        }
+      },
+    }
+  }
   pub fn process_update_serial<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     let args = ServiceUpdateSerialArgs::read_from_in_protocol(i_prot)?;
     match handler.handle_update_serial(args.cells, args.updater_id) {
@@ -8798,7 +9477,7 @@ impl TServiceProcessFunctions {
   }
   pub fn process_update_by_types<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     let args = ServiceUpdateByTypesArgs::read_from_in_protocol(i_prot)?;
-    match handler.handle_update_by_types(args.plain, args.serial, args.updater_id) {
+    match handler.handle_update_by_types(args.plain, args.counter, args.serial, args.updater_id) {
       Ok(_) => {
         let message_ident = TMessageIdentifier::new("update_by_types", TMessageType::Reply, incoming_sequence_number);
         o_prot.write_message_begin(&message_ident)?;
@@ -9354,6 +10033,15 @@ impl <H: ServiceSyncHandler> TProcessor for ServiceSyncProcessor<H> {
       "sql_select" => {
         self.process_sql_select(message_ident.sequence_number, i_prot, o_prot)
       },
+      "sql_select_plain" => {
+        self.process_sql_select_plain(message_ident.sequence_number, i_prot, o_prot)
+      },
+      "sql_select_counter" => {
+        self.process_sql_select_counter(message_ident.sequence_number, i_prot, o_prot)
+      },
+      "sql_select_serial" => {
+        self.process_sql_select_serial(message_ident.sequence_number, i_prot, o_prot)
+      },
       "sql_select_rslt_on_column" => {
         self.process_sql_select_rslt_on_column(message_ident.sequence_number, i_prot, o_prot)
       },
@@ -9380,6 +10068,9 @@ impl <H: ServiceSyncHandler> TProcessor for ServiceSyncProcessor<H> {
       },
       "update" => {
         self.process_update(message_ident.sequence_number, i_prot, o_prot)
+      },
+      "update_counter" => {
+        self.process_update_counter(message_ident.sequence_number, i_prot, o_prot)
       },
       "update_serial" => {
         self.process_update_serial(message_ident.sequence_number, i_prot, o_prot)
@@ -9622,8 +10313,8 @@ impl ServiceSqlListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_60 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_60);
+            let list_elem_62 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_62);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -9758,8 +10449,8 @@ impl ServiceSqlCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_61 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_61);
+            let list_elem_63 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_63);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -9930,6 +10621,414 @@ impl ServiceSqlSelectResult {
 }
 
 //
+// ServiceSqlSelectPlainArgs
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceSqlSelectPlainArgs {
+  /// The SQL string to Execute
+  sql: String,
+}
+
+impl ServiceSqlSelectPlainArgs {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceSqlSelectPlainArgs> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<String> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_string()?;
+          f_1 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    verify_required_field_exists("ServiceSqlSelectPlainArgs.sql", &f_1)?;
+    let ret = ServiceSqlSelectPlainArgs {
+      sql: f_1.expect("auto-generated code should have checked for presence of required fields"),
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("sql_select_plain_args");
+    o_prot.write_struct_begin(&struct_ident)?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("sql", TType::String, 1))?;
+    o_prot.write_string(&self.sql)?;
+    o_prot.write_field_end()?;
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
+// ServiceSqlSelectPlainResult
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceSqlSelectPlainResult {
+  result_value: Option<CellsPlain>,
+  e: Option<Exception>,
+}
+
+impl ServiceSqlSelectPlainResult {
+  fn ok_or(self) -> thrift::Result<CellsPlain> {
+    if self.e.is_some() {
+      Err(thrift::Error::User(Box::new(self.e.unwrap())))
+    } else if self.result_value.is_some() {
+      Ok(self.result_value.unwrap())
+    } else {
+      Err(
+        thrift::Error::Application(
+          ApplicationError::new(
+            ApplicationErrorKind::MissingResult,
+            "no result received for ServiceSqlSelectPlain"
+          )
+        )
+      )
+    }
+  }
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceSqlSelectPlainResult> {
+    i_prot.read_struct_begin()?;
+    let mut f_0: Option<CellsPlain> = None;
+    let mut f_1: Option<Exception> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        0 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<CellPlain> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_64 = CellPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_64);
+          }
+          i_prot.read_list_end()?;
+          f_0 = Some(val);
+        },
+        1 => {
+          let val = Exception::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = ServiceSqlSelectPlainResult {
+      result_value: f_0,
+      e: f_1,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("ServiceSqlSelectPlainResult");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.result_value {
+      o_prot.write_field_begin(&TFieldIdentifier::new("result_value", TType::List, 0))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.e {
+      o_prot.write_field_begin(&TFieldIdentifier::new("e", TType::Struct, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
+// ServiceSqlSelectCounterArgs
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceSqlSelectCounterArgs {
+  /// The SQL string to Execute
+  sql: String,
+}
+
+impl ServiceSqlSelectCounterArgs {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceSqlSelectCounterArgs> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<String> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_string()?;
+          f_1 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    verify_required_field_exists("ServiceSqlSelectCounterArgs.sql", &f_1)?;
+    let ret = ServiceSqlSelectCounterArgs {
+      sql: f_1.expect("auto-generated code should have checked for presence of required fields"),
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("sql_select_counter_args");
+    o_prot.write_struct_begin(&struct_ident)?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("sql", TType::String, 1))?;
+    o_prot.write_string(&self.sql)?;
+    o_prot.write_field_end()?;
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
+// ServiceSqlSelectCounterResult
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceSqlSelectCounterResult {
+  result_value: Option<CellsCounter>,
+  e: Option<Exception>,
+}
+
+impl ServiceSqlSelectCounterResult {
+  fn ok_or(self) -> thrift::Result<CellsCounter> {
+    if self.e.is_some() {
+      Err(thrift::Error::User(Box::new(self.e.unwrap())))
+    } else if self.result_value.is_some() {
+      Ok(self.result_value.unwrap())
+    } else {
+      Err(
+        thrift::Error::Application(
+          ApplicationError::new(
+            ApplicationErrorKind::MissingResult,
+            "no result received for ServiceSqlSelectCounter"
+          )
+        )
+      )
+    }
+  }
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceSqlSelectCounterResult> {
+    i_prot.read_struct_begin()?;
+    let mut f_0: Option<CellsCounter> = None;
+    let mut f_1: Option<Exception> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        0 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<CellCounter> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_65 = CellCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_65);
+          }
+          i_prot.read_list_end()?;
+          f_0 = Some(val);
+        },
+        1 => {
+          let val = Exception::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = ServiceSqlSelectCounterResult {
+      result_value: f_0,
+      e: f_1,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("ServiceSqlSelectCounterResult");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.result_value {
+      o_prot.write_field_begin(&TFieldIdentifier::new("result_value", TType::List, 0))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.e {
+      o_prot.write_field_begin(&TFieldIdentifier::new("e", TType::Struct, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
+// ServiceSqlSelectSerialArgs
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceSqlSelectSerialArgs {
+  /// The SQL string to Execute
+  sql: String,
+}
+
+impl ServiceSqlSelectSerialArgs {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceSqlSelectSerialArgs> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<String> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_string()?;
+          f_1 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    verify_required_field_exists("ServiceSqlSelectSerialArgs.sql", &f_1)?;
+    let ret = ServiceSqlSelectSerialArgs {
+      sql: f_1.expect("auto-generated code should have checked for presence of required fields"),
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("sql_select_serial_args");
+    o_prot.write_struct_begin(&struct_ident)?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("sql", TType::String, 1))?;
+    o_prot.write_string(&self.sql)?;
+    o_prot.write_field_end()?;
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
+// ServiceSqlSelectSerialResult
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceSqlSelectSerialResult {
+  result_value: Option<CellsSerial>,
+  e: Option<Exception>,
+}
+
+impl ServiceSqlSelectSerialResult {
+  fn ok_or(self) -> thrift::Result<CellsSerial> {
+    if self.e.is_some() {
+      Err(thrift::Error::User(Box::new(self.e.unwrap())))
+    } else if self.result_value.is_some() {
+      Ok(self.result_value.unwrap())
+    } else {
+      Err(
+        thrift::Error::Application(
+          ApplicationError::new(
+            ApplicationErrorKind::MissingResult,
+            "no result received for ServiceSqlSelectSerial"
+          )
+        )
+      )
+    }
+  }
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceSqlSelectSerialResult> {
+    i_prot.read_struct_begin()?;
+    let mut f_0: Option<CellsSerial> = None;
+    let mut f_1: Option<Exception> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        0 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_66 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_66);
+          }
+          i_prot.read_list_end()?;
+          f_0 = Some(val);
+        },
+        1 => {
+          let val = Exception::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = ServiceSqlSelectSerialResult {
+      result_value: f_0,
+      e: f_1,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("ServiceSqlSelectSerialResult");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.result_value {
+      o_prot.write_field_begin(&TFieldIdentifier::new("result_value", TType::List, 0))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.e {
+      o_prot.write_field_begin(&TFieldIdentifier::new("e", TType::Struct, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
 // ServiceSqlSelectRsltOnColumnArgs
 //
 
@@ -10020,9 +11119,9 @@ impl ServiceSqlSelectRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_62 = i_prot.read_string()?;
-            let map_val_63 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_62, map_val_63);
+            let map_key_67 = i_prot.read_string()?;
+            let map_val_68 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_67, map_val_68);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -10158,8 +11257,8 @@ impl ServiceSqlSelectRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_64 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_64);
+            let list_elem_69 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_69);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10948,7 +12047,7 @@ impl ServiceUpdaterCloseResult {
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct ServiceUpdateArgs {
   /// The Cells to update
-  cells: UCCells,
+  cells: UCCellsPlain,
   /// The Updater ID to use for write
   updater_id: i64,
 }
@@ -10956,7 +12055,7 @@ struct ServiceUpdateArgs {
 impl ServiceUpdateArgs {
   fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdateArgs> {
     i_prot.read_struct_begin()?;
-    let mut f_1: Option<UCCells> = None;
+    let mut f_1: Option<UCCellsPlain> = None;
     let mut f_2: Option<i64> = None;
     loop {
       let field_ident = i_prot.read_field_begin()?;
@@ -10967,17 +12066,17 @@ impl ServiceUpdateArgs {
       match field_id {
         1 => {
           let map_ident = i_prot.read_map_begin()?;
-          let mut val: BTreeMap<i64, UCells> = BTreeMap::new();
+          let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_65 = i_prot.read_i64()?;
+            let map_key_70 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_66: Vec<UCell> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_71: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_67 = UCell::read_from_in_protocol(i_prot)?;
-              map_val_66.push(list_elem_67);
+              let list_elem_72 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_71.push(list_elem_72);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_65, map_val_66);
+            val.insert(map_key_70, map_val_71);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -11081,6 +12180,145 @@ impl ServiceUpdateResult {
 }
 
 //
+// ServiceUpdateCounterArgs
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceUpdateCounterArgs {
+  /// The Counter Cells to update
+  cells: UCCellsCounter,
+  /// The Updater ID to use for write
+  updater_id: i64,
+}
+
+impl ServiceUpdateCounterArgs {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdateCounterArgs> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<UCCellsCounter> = None;
+    let mut f_2: Option<i64> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let map_ident = i_prot.read_map_begin()?;
+          let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
+          for _ in 0..map_ident.size {
+            let map_key_73 = i_prot.read_i64()?;
+            let list_ident = i_prot.read_list_begin()?;
+            let mut map_val_74: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
+            for _ in 0..list_ident.size {
+              let list_elem_75 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_74.push(list_elem_75);
+            }
+            i_prot.read_list_end()?;
+            val.insert(map_key_73, map_val_74);
+          }
+          i_prot.read_map_end()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_i64()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    verify_required_field_exists("ServiceUpdateCounterArgs.cells", &f_1)?;
+    verify_required_field_exists("ServiceUpdateCounterArgs.updater_id", &f_2)?;
+    let ret = ServiceUpdateCounterArgs {
+      cells: f_1.expect("auto-generated code should have checked for presence of required fields"),
+      updater_id: f_2.expect("auto-generated code should have checked for presence of required fields"),
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("update_counter_args");
+    o_prot.write_struct_begin(&struct_ident)?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("cells", TType::Map, 1))?;
+    o_prot.write_map_begin(&TMapIdentifier::new(TType::I64, TType::List, self.cells.len() as i32))?;
+    for (k, v) in &self.cells {
+      o_prot.write_i64(*k)?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, v.len() as i32))?;
+      for e in v {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+    }
+    o_prot.write_map_end()?;
+    o_prot.write_field_end()?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("updater_id", TType::I64, 2))?;
+    o_prot.write_i64(self.updater_id)?;
+    o_prot.write_field_end()?;
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
+// ServiceUpdateCounterResult
+//
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ServiceUpdateCounterResult {
+  e: Option<Exception>,
+}
+
+impl ServiceUpdateCounterResult {
+  fn ok_or(self) -> thrift::Result<()> {
+    if self.e.is_some() {
+      Err(thrift::Error::User(Box::new(self.e.unwrap())))
+    } else {
+      Ok(())
+    }
+  }
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdateCounterResult> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Exception> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = Exception::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = ServiceUpdateCounterResult {
+      e: f_1,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("ServiceUpdateCounterResult");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.e {
+      o_prot.write_field_begin(&TFieldIdentifier::new("e", TType::Struct, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+//
 // ServiceUpdateSerialArgs
 //
 
@@ -11108,15 +12346,15 @@ impl ServiceUpdateSerialArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_68 = i_prot.read_i64()?;
+            let map_key_76 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_69: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_77: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_70 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_69.push(list_elem_70);
+              let list_elem_78 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_77.push(list_elem_78);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_68, map_val_69);
+            val.insert(map_key_76, map_val_77);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -11226,7 +12464,9 @@ impl ServiceUpdateSerialResult {
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct ServiceUpdateByTypesArgs {
   /// The PLAIN Cells to update
-  plain: UCCells,
+  plain: UCCellsPlain,
+  /// The COUNTER Cells to update
+  counter: UCCellsCounter,
   /// The SERIAL Cells to update
   serial: UCCellsSerial,
   /// The Updater ID to use for write
@@ -11236,9 +12476,10 @@ struct ServiceUpdateByTypesArgs {
 impl ServiceUpdateByTypesArgs {
   fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdateByTypesArgs> {
     i_prot.read_struct_begin()?;
-    let mut f_1: Option<UCCells> = None;
-    let mut f_2: Option<UCCellsSerial> = None;
-    let mut f_3: Option<i64> = None;
+    let mut f_1: Option<UCCellsPlain> = None;
+    let mut f_2: Option<UCCellsCounter> = None;
+    let mut f_3: Option<UCCellsSerial> = None;
+    let mut f_4: Option<i64> = None;
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -11248,41 +12489,58 @@ impl ServiceUpdateByTypesArgs {
       match field_id {
         1 => {
           let map_ident = i_prot.read_map_begin()?;
-          let mut val: BTreeMap<i64, UCells> = BTreeMap::new();
+          let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_71 = i_prot.read_i64()?;
+            let map_key_79 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_72: Vec<UCell> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_80: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_73 = UCell::read_from_in_protocol(i_prot)?;
-              map_val_72.push(list_elem_73);
+              let list_elem_81 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_80.push(list_elem_81);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_71, map_val_72);
+            val.insert(map_key_79, map_val_80);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
         },
         2 => {
           let map_ident = i_prot.read_map_begin()?;
-          let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
+          let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_74 = i_prot.read_i64()?;
+            let map_key_82 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_75: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_83: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_76 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_75.push(list_elem_76);
+              let list_elem_84 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_83.push(list_elem_84);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_74, map_val_75);
+            val.insert(map_key_82, map_val_83);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
         },
         3 => {
-          let val = i_prot.read_i64()?;
+          let map_ident = i_prot.read_map_begin()?;
+          let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
+          for _ in 0..map_ident.size {
+            let map_key_85 = i_prot.read_i64()?;
+            let list_ident = i_prot.read_list_begin()?;
+            let mut map_val_86: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            for _ in 0..list_ident.size {
+              let list_elem_87 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_86.push(list_elem_87);
+            }
+            i_prot.read_list_end()?;
+            val.insert(map_key_85, map_val_86);
+          }
+          i_prot.read_map_end()?;
           f_3 = Some(val);
+        },
+        4 => {
+          let val = i_prot.read_i64()?;
+          f_4 = Some(val);
         },
         _ => {
           i_prot.skip(field_ident.field_type)?;
@@ -11292,12 +12550,14 @@ impl ServiceUpdateByTypesArgs {
     }
     i_prot.read_struct_end()?;
     verify_required_field_exists("ServiceUpdateByTypesArgs.plain", &f_1)?;
-    verify_required_field_exists("ServiceUpdateByTypesArgs.serial", &f_2)?;
-    verify_required_field_exists("ServiceUpdateByTypesArgs.updater_id", &f_3)?;
+    verify_required_field_exists("ServiceUpdateByTypesArgs.counter", &f_2)?;
+    verify_required_field_exists("ServiceUpdateByTypesArgs.serial", &f_3)?;
+    verify_required_field_exists("ServiceUpdateByTypesArgs.updater_id", &f_4)?;
     let ret = ServiceUpdateByTypesArgs {
       plain: f_1.expect("auto-generated code should have checked for presence of required fields"),
-      serial: f_2.expect("auto-generated code should have checked for presence of required fields"),
-      updater_id: f_3.expect("auto-generated code should have checked for presence of required fields"),
+      counter: f_2.expect("auto-generated code should have checked for presence of required fields"),
+      serial: f_3.expect("auto-generated code should have checked for presence of required fields"),
+      updater_id: f_4.expect("auto-generated code should have checked for presence of required fields"),
     };
     Ok(ret)
   }
@@ -11316,7 +12576,19 @@ impl ServiceUpdateByTypesArgs {
     }
     o_prot.write_map_end()?;
     o_prot.write_field_end()?;
-    o_prot.write_field_begin(&TFieldIdentifier::new("serial", TType::Map, 2))?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("counter", TType::Map, 2))?;
+    o_prot.write_map_begin(&TMapIdentifier::new(TType::I64, TType::List, self.counter.len() as i32))?;
+    for (k, v) in &self.counter {
+      o_prot.write_i64(*k)?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, v.len() as i32))?;
+      for e in v {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+    }
+    o_prot.write_map_end()?;
+    o_prot.write_field_end()?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("serial", TType::Map, 3))?;
     o_prot.write_map_begin(&TMapIdentifier::new(TType::I64, TType::List, self.serial.len() as i32))?;
     for (k, v) in &self.serial {
       o_prot.write_i64(*k)?;
@@ -11328,7 +12600,7 @@ impl ServiceUpdateByTypesArgs {
     }
     o_prot.write_map_end()?;
     o_prot.write_field_end()?;
-    o_prot.write_field_begin(&TFieldIdentifier::new("updater_id", TType::I64, 3))?;
+    o_prot.write_field_begin(&TFieldIdentifier::new("updater_id", TType::I64, 4))?;
     o_prot.write_i64(self.updater_id)?;
     o_prot.write_field_end()?;
     o_prot.write_field_stop()?;
@@ -11600,8 +12872,8 @@ impl ServiceListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_77 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_77);
+            let list_elem_88 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_88);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11736,8 +13008,8 @@ impl ServiceCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_78 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_78);
+            let list_elem_89 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_89);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11998,9 +13270,9 @@ impl ServiceScanRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_79 = i_prot.read_string()?;
-            let map_val_80 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_79, map_val_80);
+            let map_key_90 = i_prot.read_string()?;
+            let map_val_91 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_90, map_val_91);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -12136,8 +13408,8 @@ impl ServiceScanRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_81 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_81);
+            let list_elem_92 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_92);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);

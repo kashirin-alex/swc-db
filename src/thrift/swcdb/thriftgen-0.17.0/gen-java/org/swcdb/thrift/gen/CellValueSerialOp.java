@@ -959,13 +959,13 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
           case 5: // V_KEY
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list264 = iprot.readListBegin();
-                struct.v_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list264.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem265;
-                for (int _i266 = 0; _i266 < _list264.size; ++_i266)
+                org.apache.thrift.protocol.TList _list272 = iprot.readListBegin();
+                struct.v_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list272.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem273;
+                for (int _i274 = 0; _i274 < _list272.size; ++_i274)
                 {
-                  _elem265 = iprot.readBinary();
-                  struct.v_key.add(_elem265);
+                  _elem273 = iprot.readBinary();
+                  struct.v_key.add(_elem273);
                 }
                 iprot.readListEnd();
               }
@@ -1036,9 +1036,9 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
         oprot.writeFieldBegin(V_KEY_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.v_key.size()));
-          for (java.nio.ByteBuffer _iter267 : struct.v_key)
+          for (java.nio.ByteBuffer _iter275 : struct.v_key)
           {
-            oprot.writeBinary(_iter267);
+            oprot.writeBinary(_iter275);
           }
           oprot.writeListEnd();
         }
@@ -1114,9 +1114,9 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
       if (struct.isSetV_key()) {
         {
           oprot.writeI32(struct.v_key.size());
-          for (java.nio.ByteBuffer _iter268 : struct.v_key)
+          for (java.nio.ByteBuffer _iter276 : struct.v_key)
           {
-            oprot.writeBinary(_iter268);
+            oprot.writeBinary(_iter276);
           }
         }
       }
@@ -1153,13 +1153,13 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list269 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.v_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list269.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem270;
-          for (int _i271 = 0; _i271 < _list269.size; ++_i271)
+          org.apache.thrift.protocol.TList _list277 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.v_key = new java.util.ArrayList<java.nio.ByteBuffer>(_list277.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem278;
+          for (int _i279 = 0; _i279 < _list277.size; ++_i279)
           {
-            _elem270 = iprot.readBinary();
-            struct.v_key.add(_elem270);
+            _elem278 = iprot.readBinary();
+            struct.v_key.add(_elem278);
           }
         }
         struct.setV_keyIsSet(true);

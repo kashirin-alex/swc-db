@@ -530,14 +530,24 @@ typedef std::vector<class SpecValueSerialField>  SpecValueSerialFields;
 typedef std::vector<class SpecValueSerial>  SpecValuesSerial;
 
 /**
- * The Cells for Update defined as UCell items in a list-container
+ * The Cells for Update defined as UCellPlain items in a list-container
  */
-typedef std::vector<class UCell>  UCells;
+typedef std::vector<class UCellPlain>  UCellsPlain;
 
 /**
- * The Cells for Update for a Column Id defined as UCells items in a map-container by CID
+ * The Cells for Update for a Column Id defined as UCellsPlain items in a map-container by CID
  */
-typedef std::map<int64_t, UCells>  UCCells;
+typedef std::map<int64_t, UCellsPlain>  UCCellsPlain;
+
+/**
+ * The Cells for Update defined as UCellCounter items in a list-container
+ */
+typedef std::vector<class UCellCounter>  UCellsCounter;
+
+/**
+ * The Cells for Update for a Column Id defined as UCellsCounter items in a map-container by CID
+ */
+typedef std::map<int64_t, UCellsCounter>  UCCellsCounter;
 
 /**
  * The Serial Cell Value Fields defined as CellValueSerial items in a list-container
@@ -558,6 +568,21 @@ typedef std::vector<class UCellSerial>  UCellsSerial;
  * The Cells for Update for a Column Id defined as UCellsSerial items in a map-container by CID
  */
 typedef std::map<int64_t, UCellsSerial>  UCCellsSerial;
+
+/**
+ * A list-container of Plain Cells
+ */
+typedef std::vector<class CellPlain>  CellsPlain;
+
+/**
+ * A list-container of Counter Cells
+ */
+typedef std::vector<class CellCounter>  CellsCounter;
+
+/**
+ * A list-container of Serial Cells
+ */
+typedef std::vector<class CellSerial>  CellsSerial;
 
 /**
  * The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name
@@ -628,7 +653,9 @@ class SpecColumnSerial;
 
 class SpecScan;
 
-class UCell;
+class UCellPlain;
+
+class UCellCounter;
 
 class CellValueSerial;
 
@@ -646,7 +673,9 @@ class CellValueSerialOp;
 
 class UCellSerial;
 
-class Cell;
+class CellPlain;
+
+class CellCounter;
 
 class CellSerial;
 
@@ -2890,35 +2919,35 @@ void swap(SpecScan &a, SpecScan &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecScan& obj);
 
-typedef struct _UCell__isset {
-  _UCell__isset() : f(false), k(false), ts(false), ts_desc(false), v(false), encoder(false) {}
+typedef struct _UCellPlain__isset {
+  _UCellPlain__isset() : f(false), k(false), ts(false), ts_desc(false), v(false), encoder(false) {}
   bool f :1;
   bool k :1;
   bool ts :1;
   bool ts_desc :1;
   bool v :1;
   bool encoder :1;
-} _UCell__isset;
+} _UCellPlain__isset;
 
 /**
- * The Cell data for using with Update
+ * The Cell data for using with Update of PLAIN Column Type
  */
-class UCell : public virtual ::apache::thrift::TBase {
+class UCellPlain : public virtual ::apache::thrift::TBase {
  public:
 
-  UCell(const UCell&);
-  UCell(UCell&&) noexcept;
-  UCell& operator=(const UCell&);
-  UCell& operator=(UCell&&) noexcept;
-  UCell() noexcept
-        : f(static_cast<Flag::type>(0)),
-          ts(0),
-          ts_desc(0),
-          v(),
-          encoder(static_cast<EncodingType::type>(0)) {
+  UCellPlain(const UCellPlain&);
+  UCellPlain(UCellPlain&&) noexcept;
+  UCellPlain& operator=(const UCellPlain&);
+  UCellPlain& operator=(UCellPlain&&) noexcept;
+  UCellPlain() noexcept
+             : f(static_cast<Flag::type>(0)),
+               ts(0),
+               ts_desc(0),
+               v(),
+               encoder(static_cast<EncodingType::type>(0)) {
   }
 
-  virtual ~UCell() noexcept;
+  virtual ~UCellPlain() noexcept;
   /**
    * The Cell Flag
    * 
@@ -2948,7 +2977,7 @@ class UCell : public virtual ::apache::thrift::TBase {
    */
   EncodingType::type encoder;
 
-  _UCell__isset __isset;
+  _UCellPlain__isset __isset;
 
   void __set_f(const Flag::type val);
 
@@ -2962,7 +2991,7 @@ class UCell : public virtual ::apache::thrift::TBase {
 
   void __set_encoder(const EncodingType::type val);
 
-  bool operator == (const UCell & rhs) const
+  bool operator == (const UCellPlain & rhs) const
   {
     if (!(f == rhs.f))
       return false;
@@ -2984,11 +3013,11 @@ class UCell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const UCell &rhs) const {
+  bool operator != (const UCellPlain &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const UCell & ) const;
+  bool operator < (const UCellPlain & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
@@ -2996,9 +3025,115 @@ class UCell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(UCell &a, UCell &b);
+void swap(UCellPlain &a, UCellPlain &b);
 
-std::ostream& operator<<(std::ostream& out, const UCell& obj);
+std::ostream& operator<<(std::ostream& out, const UCellPlain& obj);
+
+typedef struct _UCellCounter__isset {
+  _UCellCounter__isset() : f(false), k(false), ts(false), ts_desc(false), op(true), v(true) {}
+  bool f :1;
+  bool k :1;
+  bool ts :1;
+  bool ts_desc :1;
+  bool op :1;
+  bool v :1;
+} _UCellCounter__isset;
+
+/**
+ * The Cell data for using with Update of COUNTER Column Type
+ */
+class UCellCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  UCellCounter(const UCellCounter&);
+  UCellCounter(UCellCounter&&) noexcept;
+  UCellCounter& operator=(const UCellCounter&);
+  UCellCounter& operator=(UCellCounter&&) noexcept;
+  UCellCounter() noexcept
+               : f(static_cast<Flag::type>(0)),
+                 ts(0),
+                 ts_desc(0),
+                 op(0),
+                 v(0LL) {
+  }
+
+  virtual ~UCellCounter() noexcept;
+  /**
+   * The Cell Flag
+   * 
+   * @see Flag
+   */
+  Flag::type f;
+  /**
+   * The Cell Key
+   */
+  Key k;
+  /**
+   * The Cell Timestamp in nanoseconds
+   */
+  int64_t ts;
+  /**
+   * The Cell Version is in timestamp descending
+   */
+  bool ts_desc;
+  /**
+   * The Cell Counter Operation
+   */
+  int8_t op;
+  /**
+   * The Cell Counter Value
+   */
+  int64_t v;
+
+  _UCellCounter__isset __isset;
+
+  void __set_f(const Flag::type val);
+
+  void __set_k(const Key& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_ts_desc(const bool val);
+
+  void __set_op(const int8_t val);
+
+  void __set_v(const int64_t val);
+
+  bool operator == (const UCellCounter & rhs) const
+  {
+    if (!(f == rhs.f))
+      return false;
+    if (!(k == rhs.k))
+      return false;
+    if (__isset.ts != rhs.__isset.ts)
+      return false;
+    else if (__isset.ts && !(ts == rhs.ts))
+      return false;
+    if (__isset.ts_desc != rhs.__isset.ts_desc)
+      return false;
+    else if (__isset.ts_desc && !(ts_desc == rhs.ts_desc))
+      return false;
+    if (!(op == rhs.op))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const UCellCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const UCellCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(UCellCounter &a, UCellCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const UCellCounter& obj);
 
 typedef struct _CellValueSerial__isset {
   _CellValueSerial__isset() : field_id(false), v_int64(false), v_double(false), v_bytes(false), v_key(false), v_li(false), v_lb(false) {}
@@ -3748,31 +3883,31 @@ void swap(UCellSerial &a, UCellSerial &b);
 
 std::ostream& operator<<(std::ostream& out, const UCellSerial& obj);
 
-typedef struct _Cell__isset {
-  _Cell__isset() : c(false), k(false), ts(false), v(false) {}
+typedef struct _CellPlain__isset {
+  _CellPlain__isset() : c(false), k(false), ts(false), v(false) {}
   bool c :1;
   bool k :1;
   bool ts :1;
   bool v :1;
-} _Cell__isset;
+} _CellPlain__isset;
 
 /**
  * The Cell for results list of scan
  */
-class Cell : public virtual ::apache::thrift::TBase {
+class CellPlain : public virtual ::apache::thrift::TBase {
  public:
 
-  Cell(const Cell&);
-  Cell(Cell&&) noexcept;
-  Cell& operator=(const Cell&);
-  Cell& operator=(Cell&&) noexcept;
-  Cell() noexcept
-       : c(),
-         ts(0),
-         v() {
+  CellPlain(const CellPlain&);
+  CellPlain(CellPlain&&) noexcept;
+  CellPlain& operator=(const CellPlain&);
+  CellPlain& operator=(CellPlain&&) noexcept;
+  CellPlain() noexcept
+            : c(),
+              ts(0),
+              v() {
   }
 
-  virtual ~Cell() noexcept;
+  virtual ~CellPlain() noexcept;
   /**
    * The Column Name
    */
@@ -3790,7 +3925,7 @@ class Cell : public virtual ::apache::thrift::TBase {
    */
   std::string v;
 
-  _Cell__isset __isset;
+  _CellPlain__isset __isset;
 
   void __set_c(const std::string& val);
 
@@ -3800,7 +3935,7 @@ class Cell : public virtual ::apache::thrift::TBase {
 
   void __set_v(const std::string& val);
 
-  bool operator == (const Cell & rhs) const
+  bool operator == (const CellPlain & rhs) const
   {
     if (!(c == rhs.c))
       return false;
@@ -3812,11 +3947,11 @@ class Cell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const Cell &rhs) const {
+  bool operator != (const CellPlain &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Cell & ) const;
+  bool operator < (const CellPlain & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
@@ -3824,9 +3959,101 @@ class Cell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(Cell &a, Cell &b);
+void swap(CellPlain &a, CellPlain &b);
 
-std::ostream& operator<<(std::ostream& out, const Cell& obj);
+std::ostream& operator<<(std::ostream& out, const CellPlain& obj);
+
+typedef struct _CellCounter__isset {
+  _CellCounter__isset() : c(false), k(false), ts(false), v(false), eq(false) {}
+  bool c :1;
+  bool k :1;
+  bool ts :1;
+  bool v :1;
+  bool eq :1;
+} _CellCounter__isset;
+
+/**
+ * The Counter Cell for results list of scan
+ */
+class CellCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  CellCounter(const CellCounter&);
+  CellCounter(CellCounter&&) noexcept;
+  CellCounter& operator=(const CellCounter&);
+  CellCounter& operator=(CellCounter&&) noexcept;
+  CellCounter() noexcept
+              : c(),
+                ts(0),
+                v(0),
+                eq(0) {
+  }
+
+  virtual ~CellCounter() noexcept;
+  /**
+   * The Column Name
+   */
+  std::string c;
+  /**
+   * The Cell Key
+   */
+  Key k;
+  /**
+   * The Cell Timestamp
+   */
+  int64_t ts;
+  /**
+   * The Cell Counter Value
+   */
+  int64_t v;
+  /**
+   * The Counter EQ since ts
+   */
+  int64_t eq;
+
+  _CellCounter__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_k(const Key& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const int64_t val);
+
+  void __set_eq(const int64_t val);
+
+  bool operator == (const CellCounter & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(k == rhs.k))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    if (__isset.eq != rhs.__isset.eq)
+      return false;
+    else if (__isset.eq && !(eq == rhs.eq))
+      return false;
+    return true;
+  }
+  bool operator != (const CellCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CellCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CellCounter &a, CellCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const CellCounter& obj);
 
 typedef struct _CellSerial__isset {
   _CellSerial__isset() : c(false), k(false), ts(false), v(false) {}
@@ -3930,17 +4157,17 @@ class Cells : public virtual ::apache::thrift::TBase {
   /**
    * The Cells, defined as Cell items in a list-container
    */
-  std::vector<Cell>  cells;
+  CellsPlain cells;
   /**
    * The Serial Cells, defined as CellSerial items in a list-container
    */
-  std::vector<CellSerial>  serial_cells;
+  CellsSerial serial_cells;
 
   _Cells__isset __isset;
 
-  void __set_cells(const std::vector<Cell> & val);
+  void __set_cells(const CellsPlain& val);
 
-  void __set_serial_cells(const std::vector<CellSerial> & val);
+  void __set_serial_cells(const CellsSerial& val);
 
   bool operator == (const Cells & rhs) const
   {

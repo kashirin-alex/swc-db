@@ -51,6 +51,9 @@ const i64 TIMESTAMP_NULL = -9223372036854775807
 /** The TIMESTAMP AUTO value */
 const i64 TIMESTAMP_AUTO = -9223372036854775806
 
+/** The COUNTER equal operation */
+const i8  COUNTER_OP_EQUAL = 1
+
 
 
 /** Column Key Sequences */
@@ -705,8 +708,8 @@ enum Flag {
 
 
 
-/** The Cell data for using with Update */
-struct UCell {
+/** The Cell data for using with Update of PLAIN Column Type */
+struct UCellPlain {
   /** The Cell Flag */
   1: Flag                   f
 
@@ -726,11 +729,39 @@ struct UCell {
   6: optional EncodingType  encoder
 }
 
-/** The Cells for Update defined as UCell items in a list-container */
-typedef list<UCell> UCells
+/** The Cells for Update defined as UCellPlain items in a list-container */
+typedef list<UCellPlain> UCellsPlain
 
-/** The Cells for Update for a Column Id defined as UCells items in a map-container by CID */
-typedef map<i64, UCells> UCCells
+/** The Cells for Update for a Column Id defined as UCellsPlain items in a map-container by CID */
+typedef map<i64, UCellsPlain> UCCellsPlain
+
+
+/** The Cell data for using with Update of COUNTER Column Type */
+struct UCellCounter {
+  /** The Cell Flag */
+  1: Flag                   f
+
+  /** The Cell Key */
+  2: Key                    k
+
+  /** The Cell Timestamp in nanoseconds */
+  3: optional i64           ts
+
+  /** The Cell Version is in timestamp descending */
+  4: optional bool          ts_desc
+
+  /** The Cell Counter Operation */
+  5: i8                     op = 0
+
+  /** The Cell Counter Value */
+  6: i64                    v = 0
+}
+
+/** The Cells for Update defined as UCellCounter items in a list-container */
+typedef list<UCellCounter> UCellsCounter
+
+/** The Cells for Update for a Column Id defined as UCellsCounter items in a map-container by CID */
+typedef map<i64, UCellsCounter> UCCellsCounter
 
 
 
@@ -925,7 +956,7 @@ typedef map<i64, UCellsSerial> UCCellsSerial
 
 
 /** The Cell for results list of scan */
-struct Cell {
+struct CellPlain {
   /** The Column Name */
   1: string           c
 
@@ -938,6 +969,30 @@ struct Cell {
   /** The Cell Value */
   4: binary           v
 }
+/** A list-container of Plain Cells */
+typedef list<CellPlain>   CellsPlain
+
+
+
+/** The Counter Cell for results list of scan */
+struct CellCounter {
+  /** The Column Name */
+  1: string           c
+
+  /** The Cell Key */
+  2: Key              k
+
+  /** The Cell Timestamp */
+  3: i64              ts
+
+  /** The Cell Counter Value */
+  4: i64              v
+
+  /** The Counter EQ since ts */
+  5: optional i64     eq
+}
+/** A list-container of Counter Cells */
+typedef list<CellCounter> CellsCounter
 
 /** The Serial Cell for results list of scan */
 struct CellSerial {
@@ -953,14 +1008,20 @@ struct CellSerial {
   /** The Cell Serial Value */
   4: CellValuesSerial v
 }
+/** A list-container of Serial Cells */
+typedef list<CellSerial>  CellsSerial
+
 
 /** The Cells for results list of scan */
 struct Cells {
   /** The Cells, defined as Cell items in a list-container */
-  1: list<Cell>        cells
+  1: CellsPlain     plain_cells
+
+  /** The Cells, defined as Cell items in a list-container */
+  2: CellsCounter   counter_cells
 
   /** The Serial Cells, defined as CellSerial items in a list-container */
-  2: list<CellSerial>  serial_cells
+  3: CellsSerial    serial_cells
 }
 
 
@@ -1196,6 +1257,35 @@ service Service {
   ) throws (1:Exception e),
 
 
+
+  /** The direct SQL method to select cells with result in CellsPlain. */
+  CellsPlain sql_select_plain(
+
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
+
+
+  /** The direct SQL method to select cells with result in CellsCounter. */
+  CellsCounter sql_select_counter(
+
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
+
+
+  /** The direct SQL method to select cells with result in CellsSerial. */
+  CellsSerial sql_select_serial(
+
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
+
+
+
   /** The direct SQL method to select cells with result in Columns Cells map. */
   CCells sql_select_rslt_on_column(
 
@@ -1276,13 +1366,27 @@ service Service {
 
 
 
-  /** The direct method to update cells with cell in Update-Columns-Cells,
+  /** The direct method to update cells with cell in Update-Columns-Cells-Plain,
     * optionally to work with updater-id.
     */
-  void update(
+  void update_plain(
 
     /** The Cells to update  */
-    1:UCCells cells,
+    1:UCCellsPlain cells,
+
+    /** The Updater ID to use for write */
+    2:i64 updater_id = 0
+
+  ) throws (1:Exception e),
+
+
+  /** The direct method to update cells with cell in Update-Columns-Cells-Counter,
+    * optionally to work with updater-id.
+    */
+  void update_counter(
+
+    /** The Counter Cells to update  */
+    1:UCCellsCounter cells,
 
     /** The Updater ID to use for write */
     2:i64 updater_id = 0
@@ -1310,13 +1414,16 @@ service Service {
   void update_by_types(
 
     /** The PLAIN Cells to update  */
-    1:UCCells       plain,
+    1:UCCellsPlain    plain,
+
+    /** The COUNTER Cells to update  */
+    2:UCCellsCounter  counter,
 
     /** The SERIAL Cells to update  */
-    2:UCCellsSerial serial,
+    3:UCCellsSerial   serial,
 
     /** The Updater ID to use for write */
-    3:i64 updater_id = 0
+    4:i64 updater_id = 0
 
   ) throws (1:Exception e),
 

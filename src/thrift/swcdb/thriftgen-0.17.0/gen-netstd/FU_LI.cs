@@ -118,28 +118,28 @@ public partial class FU_LI : TBase
 
   public FU_LI DeepCopy()
   {
-    var tmp284 = new FU_LI();
+    var tmp293 = new FU_LI();
     if(__isset.ctrl)
     {
-      tmp284.Ctrl = this.Ctrl;
+      tmp293.Ctrl = this.Ctrl;
     }
-    tmp284.__isset.ctrl = this.__isset.ctrl;
+    tmp293.__isset.ctrl = this.__isset.ctrl;
     if(__isset.op)
     {
-      tmp284.Op = this.Op;
+      tmp293.Op = this.Op;
     }
-    tmp284.__isset.op = this.__isset.op;
+    tmp293.__isset.op = this.__isset.op;
     if(__isset.pos)
     {
-      tmp284.Pos = this.Pos;
+      tmp293.Pos = this.Pos;
     }
-    tmp284.__isset.pos = this.__isset.pos;
+    tmp293.__isset.pos = this.__isset.pos;
     if((V != null) && __isset.v)
     {
-      tmp284.V = this.V.DeepCopy();
+      tmp293.V = this.V.DeepCopy();
     }
-    tmp284.__isset.v = this.__isset.v;
-    return tmp284;
+    tmp293.__isset.v = this.__isset.v;
+    return tmp293;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -193,14 +193,14 @@ public partial class FU_LI : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list285 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<FU_INT64>(_list285.Count);
-                for(int _i286 = 0; _i286 < _list285.Count; ++_i286)
+                var _list294 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<FU_INT64>(_list294.Count);
+                for(int _i295 = 0; _i295 < _list294.Count; ++_i295)
                 {
-                  FU_INT64 _elem287;
-                  _elem287 = new FU_INT64();
-                  await _elem287.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem287);
+                  FU_INT64 _elem296;
+                  _elem296 = new FU_INT64();
+                  await _elem296.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem296);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -231,46 +231,46 @@ public partial class FU_LI : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp288 = new TStruct("FU_LI");
-      await oprot.WriteStructBeginAsync(tmp288, cancellationToken);
-      var tmp289 = new TField();
+      var tmp297 = new TStruct("FU_LI");
+      await oprot.WriteStructBeginAsync(tmp297, cancellationToken);
+      var tmp298 = new TField();
       if(__isset.ctrl)
       {
-        tmp289.Name = "ctrl";
-        tmp289.Type = TType.Byte;
-        tmp289.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp289, cancellationToken);
+        tmp298.Name = "ctrl";
+        tmp298.Type = TType.Byte;
+        tmp298.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp298, cancellationToken);
         await oprot.WriteByteAsync(Ctrl, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.op)
       {
-        tmp289.Name = "op";
-        tmp289.Type = TType.I32;
-        tmp289.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp289, cancellationToken);
+        tmp298.Name = "op";
+        tmp298.Type = TType.I32;
+        tmp298.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp298, cancellationToken);
         await oprot.WriteI32Async((int)Op, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.pos)
       {
-        tmp289.Name = "pos";
-        tmp289.Type = TType.I32;
-        tmp289.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp289, cancellationToken);
+        tmp298.Name = "pos";
+        tmp298.Type = TType.I32;
+        tmp298.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp298, cancellationToken);
         await oprot.WriteI32Async(Pos, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp289.Name = "v";
-        tmp289.Type = TType.List;
-        tmp289.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp289, cancellationToken);
+        tmp298.Name = "v";
+        tmp298.Type = TType.List;
+        tmp298.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp298, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-        foreach (FU_INT64 _iter290 in V)
+        foreach (FU_INT64 _iter299 in V)
         {
-          await _iter290.WriteAsync(oprot, cancellationToken);
+          await _iter299.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -319,34 +319,34 @@ public partial class FU_LI : TBase
 
   public override string ToString()
   {
-    var tmp291 = new StringBuilder("FU_LI(");
-    int tmp292 = 0;
+    var tmp300 = new StringBuilder("FU_LI(");
+    int tmp301 = 0;
     if(__isset.ctrl)
     {
-      if(0 < tmp292++) { tmp291.Append(", "); }
-      tmp291.Append("Ctrl: ");
-      Ctrl.ToString(tmp291);
+      if(0 < tmp301++) { tmp300.Append(", "); }
+      tmp300.Append("Ctrl: ");
+      Ctrl.ToString(tmp300);
     }
     if(__isset.op)
     {
-      if(0 < tmp292++) { tmp291.Append(", "); }
-      tmp291.Append("Op: ");
-      Op.ToString(tmp291);
+      if(0 < tmp301++) { tmp300.Append(", "); }
+      tmp300.Append("Op: ");
+      Op.ToString(tmp300);
     }
     if(__isset.pos)
     {
-      if(0 < tmp292++) { tmp291.Append(", "); }
-      tmp291.Append("Pos: ");
-      Pos.ToString(tmp291);
+      if(0 < tmp301++) { tmp300.Append(", "); }
+      tmp300.Append("Pos: ");
+      Pos.ToString(tmp300);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp292++) { tmp291.Append(", "); }
-      tmp291.Append("V: ");
-      V.ToString(tmp291);
+      if(0 < tmp301++) { tmp300.Append(", "); }
+      tmp300.Append("V: ");
+      V.ToString(tmp300);
     }
-    tmp291.Append(')');
-    return tmp291.ToString();
+    tmp300.Append(')');
+    return tmp300.ToString();
   }
 }
 

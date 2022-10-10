@@ -61,6 +61,36 @@ class ServiceHandler : virtual public ServiceIf {
   }
 
   /**
+   * The direct SQL method to select cells with result in CellsPlain.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_plain(CellsPlain& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("sql_select_plain\n");
+  }
+
+  /**
+   * The direct SQL method to select cells with result in CellsCounter.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_counter(CellsCounter& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("sql_select_counter\n");
+  }
+
+  /**
+   * The direct SQL method to select cells with result in CellsSerial.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_serial(CellsSerial& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("sql_select_serial\n");
+  }
+
+  /**
    * The direct SQL method to select cells with result in Columns Cells map.
    * 
    * @param sql The SQL string to Execute
@@ -152,9 +182,22 @@ class ServiceHandler : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCells& cells, const int64_t updater_id) {
+  void update(const UCCellsPlain& cells, const int64_t updater_id) {
     // Your implementation goes here
     printf("update\n");
+  }
+
+  /**
+   * The direct method to update cells with cell in Update-Columns-Cells-Counter,
+   * optionally to work with updater-id.
+   * 
+   * @param cells The Counter Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_counter(const UCCellsCounter& cells, const int64_t updater_id) {
+    // Your implementation goes here
+    printf("update_counter\n");
   }
 
   /**
@@ -176,11 +219,13 @@ class ServiceHandler : virtual public ServiceIf {
    * 
    * @param plain The PLAIN Cells to update
    * 
+   * @param counter The COUNTER Cells to update
+   * 
    * @param serial The SERIAL Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) {
+  void update_by_types(const UCCellsPlain& plain, const UCCellsCounter& counter, const UCCellsSerial& serial, const int64_t updater_id) {
     // Your implementation goes here
     printf("update_by_types\n");
   }

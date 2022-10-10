@@ -14,6 +14,8 @@ module Swcdb
 
       TIMESTAMP_AUTO = -9223372036854775806
 
+      COUNTER_OP_EQUAL = 1
+
       FU_CTRL_DEFAULT = 0
 
       FU_CTRL_NO_ADD_FIELD = 1

@@ -201,6 +201,17 @@ class AppHandler final : virtual public BrokerIf {
       Converter::exception(err);
   }
 
+  void sql_select_plain(CellsPlain& _return, const std::string& sql) override {
+    Processing process(this);
+
+    auto hdlr = sync_select(sql);
+
+    int err = Error::OK;
+    process_results(err, hdlr, _return);
+    if(err)
+      Converter::exception(err);
+  }
+
   void sql_select_rslt_on_column(CCells& _return,
                                  const std::string& sql) override {
     Processing process(this);
@@ -236,6 +247,31 @@ class AppHandler final : virtual public BrokerIf {
     if(err)
       Converter::exception(err);
   }
+
+
+  void sql_select_counter(CellsCounter& _return, const std::string& sql) override {
+    Processing process(this);
+
+    auto hdlr = sync_select(sql);
+
+    int err = Error::OK;
+    process_results(err, hdlr, _return);
+    if(err)
+      Converter::exception(err);
+  }
+
+
+  void sql_select_serial(CellsSerial& _return, const std::string& sql) override {
+    Processing process(this);
+
+    auto hdlr = sync_select(sql);
+
+    int err = Error::OK;
+    process_results(err, hdlr, _return);
+    if(err)
+      Converter::exception(err);
+  }
+
 
   /* SQL UPDATE */
   void sql_update(const std::string& sql, const int64_t updater_id) override {
@@ -454,8 +490,33 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   /* UPDATE-PLAIN */
-  void update(const UCCells& cells,
-              const int64_t updater_id) override  {
+  void update_plain(const UCCellsPlain& cells,
+                    const int64_t updater_id) override  {
+    Processing process(this);
+
+    client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
+    if(updater_id)
+      updater(updater_id, hdlr);
+    else
+      hdlr = client::Query::Update::Handlers::Common::make(
+        Env::Clients::get());
+
+    set_cols(cells, hdlr);
+    set(cells, hdlr);
+
+    if(updater_id) {
+      hdlr->commit_or_wait();
+    } else {
+      hdlr->commit_if_need();
+      hdlr->wait();
+    }
+    if(int err = hdlr->error())
+      Converter::exception(err);
+  }
+
+  /* UPDATE-COUNTER */
+  void update_counter(const UCCellsCounter& cells,
+                     const int64_t updater_id) override {
     Processing process(this);
 
     client::Query::Update::Handlers::Common::Ptr hdlr = nullptr;
@@ -504,7 +565,8 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   /* UPDATE-MODELS */
-  virtual void update_by_types(const UCCells& plain,
+  virtual void update_by_types(const UCCellsPlain& plain,
+                               const UCCellsCounter& counter,
                                const UCCellsSerial& serial,
                                const int64_t updater_id) override {
     Processing process(this);
@@ -517,9 +579,11 @@ class AppHandler final : virtual public BrokerIf {
         Env::Clients::get());
 
     set_cols(plain, hdlr);
+    set_cols(counter, hdlr);
     set_cols(serial, hdlr);
 
     set(plain, hdlr);
+    set(counter, hdlr);
     set(serial, hdlr);
 
     if(updater_id) {
@@ -559,8 +623,9 @@ class AppHandler final : virtual public BrokerIf {
 
   private:
 
+  template <typename UCCellsT>
   SWC_CAN_INLINE
-  static void set_cols(const UCCells& cells,
+  static void set_cols(const UCCellsT& cells,
                        client::Query::Update::Handlers::Common::Ptr& hdlr) {
     int err = Error::OK;
     for(auto& col_cells : cells) {
@@ -574,7 +639,7 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   SWC_CAN_INLINE
-  static void set(const UCCells& cells,
+  static void set(const UCCellsPlain& cells,
                   client::Query::Update::Handlers::Common::Ptr& hdlr) {
     DB::Cells::Cell dbcell;
     for(auto& col_cells : cells) {
@@ -600,15 +665,24 @@ class AppHandler final : virtual public BrokerIf {
   }
 
   SWC_CAN_INLINE
-  static void set_cols(const UCCellsSerial& cells,
-                       client::Query::Update::Handlers::Common::Ptr& hdlr) {
-    int err = Error::OK;
+  static void set(const UCCellsCounter& cells,
+                  client::Query::Update::Handlers::Common::Ptr& hdlr) {
+    DB::Cells::Cell dbcell;
     for(auto& col_cells : cells) {
-      if(!hdlr->get(col_cells.first)) {
-        auto schema = hdlr->clients->get_schema(err, col_cells.first);
-        if(err)
-          Converter::exception(err);
-        hdlr->create(schema);
+      auto col = hdlr->get(col_cells.first);
+      for(auto& cell : col_cells.second) {
+        dbcell.flag = uint8_t(cell.f);
+        dbcell.key.read(cell.k);
+        dbcell.control = 0;
+        if(cell.__isset.ts)
+          dbcell.set_timestamp(cell.ts);
+        if(cell.__isset.ts_desc)
+          dbcell.set_time_order_desc(cell.ts_desc);
+
+        dbcell.set_counter(cell.op, cell.v);
+
+        col->add(dbcell);
+        hdlr->commit_or_wait(col.get());
       }
     }
   }
@@ -834,8 +908,26 @@ class AppHandler final : virtual public BrokerIf {
           }
           break;
         }
+        case DB::Types::Column::COUNTER_I64:
+        case DB::Types::Column::COUNTER_I32:
+        case DB::Types::Column::COUNTER_I16:
+        case DB::Types::Column::COUNTER_I8: {
+          auto& rcells = _return.counter_cells;
+          size_t c = rcells.size();
+          rcells.resize(c + cells.size());
+          for(auto dbcell : cells) {
+            auto& cell = rcells[c++];
+            cell.c = schema->col_name;
+            dbcell->key.convert_to(cell.k);
+            cell.ts = dbcell->get_timestamp();
+            uint8_t op = 0;
+            cell.v = dbcell->get_counter(op, cell.eq);
+            cell.__isset.eq = op == DB::Cells::OP_EQUAL;
+          }
+          break;
+        }
         default: {
-          auto& rcells = _return.cells;
+          auto& rcells = _return.plain_cells;
           size_t c = rcells.size();
           rcells.resize(c + cells.size());
           for(auto dbcell : cells) {
@@ -846,6 +938,84 @@ class AppHandler final : virtual public BrokerIf {
             dbcell->get_value(cell.v);
           }
         }
+      }
+    }
+  }
+
+  static void process_results(
+          int& err, const client::Query::Select::Handlers::Common::Ptr& hdlr,
+          CellsPlain& _return) {
+    DB::Schema::Ptr schema;
+    DB::Cells::Result cells;
+    auto clients = Env::Clients::get();
+    for(cid_t cid : hdlr->get_cids()) {
+      cells.free();
+      hdlr->get_cells(cid, cells);
+      schema = clients->get_schema(err, cid);
+      if(err)
+        return;
+
+      size_t c = _return.size();
+      _return.resize(c + cells.size());
+      for(auto dbcell : cells) {
+        auto& cell = _return[c++];
+        cell.c = schema->col_name;
+        dbcell->key.convert_to(cell.k);
+        cell.ts = dbcell->get_timestamp();
+        dbcell->get_value(cell.v);
+      }
+    }
+  }
+
+  static void process_results(
+          int& err, const client::Query::Select::Handlers::Common::Ptr& hdlr,
+          CellsCounter& _return) {
+    DB::Schema::Ptr schema;
+    DB::Cells::Result cells;
+    auto clients = Env::Clients::get();
+    for(cid_t cid : hdlr->get_cids()) {
+      cells.free();
+      hdlr->get_cells(cid, cells);
+      schema = clients->get_schema(err, cid);
+      if(err)
+        return;
+
+      size_t c = _return.size();
+      _return.resize(c + cells.size());
+      for(auto dbcell : cells) {
+        auto& cell = _return[c++];
+        cell.c = schema->col_name;
+        dbcell->key.convert_to(cell.k);
+        cell.ts = dbcell->get_timestamp();
+        uint8_t op = 0;
+        cell.v = dbcell->get_counter(op, cell.eq);
+        cell.__isset.eq = op == DB::Cells::OP_EQUAL;
+      }
+    }
+  }
+
+  static void process_results(
+          int& err, const client::Query::Select::Handlers::Common::Ptr& hdlr,
+          CellsSerial& _return) {
+    DB::Schema::Ptr schema;
+    DB::Cells::Result cells;
+    auto clients = Env::Clients::get();
+    for(cid_t cid : hdlr->get_cids()) {
+      cells.free();
+      hdlr->get_cells(cid, cells);
+      schema = clients->get_schema(err, cid);
+      if(err)
+        return;
+
+      size_t c = _return.size();
+      _return.resize(c + cells.size());
+      for(auto dbcell : cells) {
+        auto& cell = _return[c++];
+        cell.c = schema->col_name;
+        dbcell->key.convert_to(cell.k);
+        cell.ts = dbcell->get_timestamp();
+        if(dbcell->vlen)
+          Converter::set(*dbcell, cell.v);
       }
     }
   }

@@ -77,6 +77,54 @@ module Swcdb
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_select failed: unknown result')
           end
 
+          def sql_select_plain(sql)
+            send_sql_select_plain(sql)
+            return recv_sql_select_plain()
+          end
+
+          def send_sql_select_plain(sql)
+            send_message('sql_select_plain', Sql_select_plain_args, :sql => sql)
+          end
+
+          def recv_sql_select_plain()
+            result = receive_message(Sql_select_plain_result)
+            return result.success unless result.success.nil?
+            raise result.e unless result.e.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_select_plain failed: unknown result')
+          end
+
+          def sql_select_counter(sql)
+            send_sql_select_counter(sql)
+            return recv_sql_select_counter()
+          end
+
+          def send_sql_select_counter(sql)
+            send_message('sql_select_counter', Sql_select_counter_args, :sql => sql)
+          end
+
+          def recv_sql_select_counter()
+            result = receive_message(Sql_select_counter_result)
+            return result.success unless result.success.nil?
+            raise result.e unless result.e.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_select_counter failed: unknown result')
+          end
+
+          def sql_select_serial(sql)
+            send_sql_select_serial(sql)
+            return recv_sql_select_serial()
+          end
+
+          def send_sql_select_serial(sql)
+            send_message('sql_select_serial', Sql_select_serial_args, :sql => sql)
+          end
+
+          def recv_sql_select_serial()
+            result = receive_message(Sql_select_serial_result)
+            return result.success unless result.success.nil?
+            raise result.e unless result.e.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_select_serial failed: unknown result')
+          end
+
           def sql_select_rslt_on_column(sql)
             send_sql_select_rslt_on_column(sql)
             return recv_sql_select_rslt_on_column()
@@ -218,6 +266,21 @@ module Swcdb
             return
           end
 
+          def update_counter(cells, updater_id)
+            send_update_counter(cells, updater_id)
+            recv_update_counter()
+          end
+
+          def send_update_counter(cells, updater_id)
+            send_message('update_counter', Update_counter_args, :cells => cells, :updater_id => updater_id)
+          end
+
+          def recv_update_counter()
+            result = receive_message(Update_counter_result)
+            raise result.e unless result.e.nil?
+            return
+          end
+
           def update_serial(cells, updater_id)
             send_update_serial(cells, updater_id)
             recv_update_serial()
@@ -233,13 +296,13 @@ module Swcdb
             return
           end
 
-          def update_by_types(plain, serial, updater_id)
-            send_update_by_types(plain, serial, updater_id)
+          def update_by_types(plain, counter, serial, updater_id)
+            send_update_by_types(plain, counter, serial, updater_id)
             recv_update_by_types()
           end
 
-          def send_update_by_types(plain, serial, updater_id)
-            send_message('update_by_types', Update_by_types_args, :plain => plain, :serial => serial, :updater_id => updater_id)
+          def send_update_by_types(plain, counter, serial, updater_id)
+            send_message('update_by_types', Update_by_types_args, :plain => plain, :counter => counter, :serial => serial, :updater_id => updater_id)
           end
 
           def recv_update_by_types()
@@ -424,6 +487,39 @@ module Swcdb
             write_result(result, oprot, 'sql_select', seqid)
           end
 
+          def process_sql_select_plain(seqid, iprot, oprot)
+            args = read_args(iprot, Sql_select_plain_args)
+            result = Sql_select_plain_result.new()
+            begin
+              result.success = @handler.sql_select_plain(args.sql)
+            rescue ::Swcdb::Thrift::Gen::Exception => e
+              result.e = e
+            end
+            write_result(result, oprot, 'sql_select_plain', seqid)
+          end
+
+          def process_sql_select_counter(seqid, iprot, oprot)
+            args = read_args(iprot, Sql_select_counter_args)
+            result = Sql_select_counter_result.new()
+            begin
+              result.success = @handler.sql_select_counter(args.sql)
+            rescue ::Swcdb::Thrift::Gen::Exception => e
+              result.e = e
+            end
+            write_result(result, oprot, 'sql_select_counter', seqid)
+          end
+
+          def process_sql_select_serial(seqid, iprot, oprot)
+            args = read_args(iprot, Sql_select_serial_args)
+            result = Sql_select_serial_result.new()
+            begin
+              result.success = @handler.sql_select_serial(args.sql)
+            rescue ::Swcdb::Thrift::Gen::Exception => e
+              result.e = e
+            end
+            write_result(result, oprot, 'sql_select_serial', seqid)
+          end
+
           def process_sql_select_rslt_on_column(seqid, iprot, oprot)
             args = read_args(iprot, Sql_select_rslt_on_column_args)
             result = Sql_select_rslt_on_column_result.new()
@@ -523,6 +619,17 @@ module Swcdb
             write_result(result, oprot, 'update', seqid)
           end
 
+          def process_update_counter(seqid, iprot, oprot)
+            args = read_args(iprot, Update_counter_args)
+            result = Update_counter_result.new()
+            begin
+              @handler.update_counter(args.cells, args.updater_id)
+            rescue ::Swcdb::Thrift::Gen::Exception => e
+              result.e = e
+            end
+            write_result(result, oprot, 'update_counter', seqid)
+          end
+
           def process_update_serial(seqid, iprot, oprot)
             args = read_args(iprot, Update_serial_args)
             result = Update_serial_result.new()
@@ -538,7 +645,7 @@ module Swcdb
             args = read_args(iprot, Update_by_types_args)
             result = Update_by_types_result.new()
             begin
-              @handler.update_by_types(args.plain, args.serial, args.updater_id)
+              @handler.update_by_types(args.plain, args.counter, args.serial, args.updater_id)
             rescue ::Swcdb::Thrift::Gen::Exception => e
               result.e = e
             end
@@ -764,6 +871,111 @@ module Swcdb
 
           FIELDS = {
             SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Swcdb::Thrift::Gen::Cells},
+            E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_plain_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SQL = 1
+
+          FIELDS = {
+            # The SQL string to Execute
+            SQL => {:type => ::Thrift::Types::STRING, :name => 'sql'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_plain_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          E = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellPlain}},
+            E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_counter_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SQL = 1
+
+          FIELDS = {
+            # The SQL string to Execute
+            SQL => {:type => ::Thrift::Types::STRING, :name => 'sql'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_counter_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          E = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellCounter}},
+            E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_serial_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SQL = 1
+
+          FIELDS = {
+            # The SQL string to Execute
+            SQL => {:type => ::Thrift::Types::STRING, :name => 'sql'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_serial_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          E = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellSerial}},
             E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
           }
 
@@ -1067,7 +1279,7 @@ module Swcdb
 
           FIELDS = {
             # The Cells to update
-            CELLS => {:type => ::Thrift::Types::MAP, :name => 'cells', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCell}}},
+            CELLS => {:type => ::Thrift::Types::MAP, :name => 'cells', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCellPlain}}},
             # The Updater ID to use for write
             UPDATER_ID => {:type => ::Thrift::Types::I64, :name => 'updater_id', :default => 0}
           }
@@ -1081,6 +1293,42 @@ module Swcdb
         end
 
         class Update_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          E = 1
+
+          FIELDS = {
+            E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Update_counter_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          CELLS = 1
+          UPDATER_ID = 2
+
+          FIELDS = {
+            # The Counter Cells to update
+            CELLS => {:type => ::Thrift::Types::MAP, :name => 'cells', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCellCounter}}},
+            # The Updater ID to use for write
+            UPDATER_ID => {:type => ::Thrift::Types::I64, :name => 'updater_id', :default => 0}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Update_counter_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           E = 1
 
@@ -1135,12 +1383,15 @@ module Swcdb
         class Update_by_types_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           PLAIN = 1
-          SERIAL = 2
-          UPDATER_ID = 3
+          COUNTER = 2
+          SERIAL = 3
+          UPDATER_ID = 4
 
           FIELDS = {
             # The PLAIN Cells to update
-            PLAIN => {:type => ::Thrift::Types::MAP, :name => 'plain', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCell}}},
+            PLAIN => {:type => ::Thrift::Types::MAP, :name => 'plain', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCellPlain}}},
+            # The COUNTER Cells to update
+            COUNTER => {:type => ::Thrift::Types::MAP, :name => 'counter', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCellCounter}}},
             # The SERIAL Cells to update
             SERIAL => {:type => ::Thrift::Types::MAP, :name => 'serial', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::UCellSerial}}},
             # The Updater ID to use for write

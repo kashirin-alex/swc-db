@@ -7,19 +7,20 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Cell for results list of scan
+ * The Counter Cell for results list of scan
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.io.Serializable, Cloneable, Comparable<Cell> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Cell");
+public class CellCounter implements org.apache.thrift.TBase<CellCounter, CellCounter._Fields>, java.io.Serializable, Cloneable, Comparable<CellCounter> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CellCounter");
 
   private static final org.apache.thrift.protocol.TField C_FIELD_DESC = new org.apache.thrift.protocol.TField("c", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField K_FIELD_DESC = new org.apache.thrift.protocol.TField("k", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField EQ_FIELD_DESC = new org.apache.thrift.protocol.TField("eq", org.apache.thrift.protocol.TType.I64, (short)5);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CellStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CellTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CellCounterStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CellCounterTupleSchemeFactory();
 
   /**
    * The Column Name
@@ -34,9 +35,13 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
    */
   public long ts; // required
   /**
-   * The Cell Value
+   * The Cell Counter Value
    */
-  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // required
+  public long v; // required
+  /**
+   * The Counter EQ since ts
+   */
+  public long eq; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -53,9 +58,13 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
      */
     TS((short)3, "ts"),
     /**
-     * The Cell Value
+     * The Cell Counter Value
      */
-    V((short)4, "v");
+    V((short)4, "v"),
+    /**
+     * The Counter EQ since ts
+     */
+    EQ((short)5, "eq");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -79,6 +88,8 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
           return TS;
         case 4: // V
           return V;
+        case 5: // EQ
+          return EQ;
         default:
           return null;
       }
@@ -123,7 +134,10 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
 
   // isset id assignments
   private static final int __TS_ISSET_ID = 0;
+  private static final int __V_ISSET_ID = 1;
+  private static final int __EQ_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.EQ};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -134,32 +148,35 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
     tmpMap.put(_Fields.TS, new org.apache.thrift.meta_data.FieldMetaData("ts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.EQ, new org.apache.thrift.meta_data.FieldMetaData("eq", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Cell.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CellCounter.class, metaDataMap);
   }
 
-  public Cell() {
+  public CellCounter() {
   }
 
-  public Cell(
+  public CellCounter(
     java.lang.String c,
     java.util.List<java.nio.ByteBuffer> k,
     long ts,
-    java.nio.ByteBuffer v)
+    long v)
   {
     this();
     this.c = c;
     this.k = k;
     this.ts = ts;
     setTsIsSet(true);
-    this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
+    this.v = v;
+    setVIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Cell(Cell other) {
+  public CellCounter(CellCounter other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetC()) {
       this.c = other.c;
@@ -169,14 +186,13 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
       this.k = __this__k;
     }
     this.ts = other.ts;
-    if (other.isSetV()) {
-      this.v = org.apache.thrift.TBaseHelper.copyBinary(other.v);
-    }
+    this.v = other.v;
+    this.eq = other.eq;
   }
 
   @Override
-  public Cell deepCopy() {
-    return new Cell(this);
+  public CellCounter deepCopy() {
+    return new CellCounter(this);
   }
 
   @Override
@@ -185,7 +201,10 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
     this.k = null;
     setTsIsSet(false);
     this.ts = 0;
-    this.v = null;
+    setVIsSet(false);
+    this.v = 0;
+    setEqIsSet(false);
+    this.eq = 0;
   }
 
   /**
@@ -199,7 +218,7 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
   /**
    * The Column Name
    */
-  public Cell setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
+  public CellCounter setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
     this.c = c;
     return this;
   }
@@ -246,7 +265,7 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
   /**
    * The Cell Key
    */
-  public Cell setK(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k) {
+  public CellCounter setK(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k) {
     this.k = k;
     return this;
   }
@@ -276,7 +295,7 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
   /**
    * The Cell Timestamp
    */
-  public Cell setTs(long ts) {
+  public CellCounter setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
     return this;
@@ -296,43 +315,61 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
   }
 
   /**
-   * The Cell Value
+   * The Cell Counter Value
    */
-  public byte[] getV() {
-    setV(org.apache.thrift.TBaseHelper.rightSize(v));
-    return v == null ? null : v.array();
-  }
-
-  public java.nio.ByteBuffer bufferForV() {
-    return org.apache.thrift.TBaseHelper.copyBinary(v);
+  public long getV() {
+    return this.v;
   }
 
   /**
-   * The Cell Value
+   * The Cell Counter Value
    */
-  public Cell setV(byte[] v) {
-    this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
-    return this;
-  }
-
-  public Cell setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
-    this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
+  public CellCounter setV(long v) {
+    this.v = v;
+    setVIsSet(true);
     return this;
   }
 
   public void unsetV() {
-    this.v = null;
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __V_ISSET_ID);
   }
 
   /** Returns true if field v is set (has been assigned a value) and false otherwise */
   public boolean isSetV() {
-    return this.v != null;
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __V_ISSET_ID);
   }
 
   public void setVIsSet(boolean value) {
-    if (!value) {
-      this.v = null;
-    }
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __V_ISSET_ID, value);
+  }
+
+  /**
+   * The Counter EQ since ts
+   */
+  public long getEq() {
+    return this.eq;
+  }
+
+  /**
+   * The Counter EQ since ts
+   */
+  public CellCounter setEq(long eq) {
+    this.eq = eq;
+    setEqIsSet(true);
+    return this;
+  }
+
+  public void unsetEq() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __EQ_ISSET_ID);
+  }
+
+  /** Returns true if field eq is set (has been assigned a value) and false otherwise */
+  public boolean isSetEq() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __EQ_ISSET_ID);
+  }
+
+  public void setEqIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __EQ_ISSET_ID, value);
   }
 
   @Override
@@ -366,11 +403,15 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
       if (value == null) {
         unsetV();
       } else {
-        if (value instanceof byte[]) {
-          setV((byte[])value);
-        } else {
-          setV((java.nio.ByteBuffer)value);
-        }
+        setV((java.lang.Long)value);
+      }
+      break;
+
+    case EQ:
+      if (value == null) {
+        unsetEq();
+      } else {
+        setEq((java.lang.Long)value);
       }
       break;
 
@@ -393,6 +434,9 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
     case V:
       return getV();
 
+    case EQ:
+      return getEq();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -413,18 +457,20 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
       return isSetTs();
     case V:
       return isSetV();
+    case EQ:
+      return isSetEq();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof Cell)
-      return this.equals((Cell)that);
+    if (that instanceof CellCounter)
+      return this.equals((CellCounter)that);
     return false;
   }
 
-  public boolean equals(Cell that) {
+  public boolean equals(CellCounter that) {
     if (that == null)
       return false;
     if (this == that)
@@ -457,12 +503,21 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
         return false;
     }
 
-    boolean this_present_v = true && this.isSetV();
-    boolean that_present_v = true && that.isSetV();
+    boolean this_present_v = true;
+    boolean that_present_v = true;
     if (this_present_v || that_present_v) {
       if (!(this_present_v && that_present_v))
         return false;
-      if (!this.v.equals(that.v))
+      if (this.v != that.v)
+        return false;
+    }
+
+    boolean this_present_eq = true && this.isSetEq();
+    boolean that_present_eq = true && that.isSetEq();
+    if (this_present_eq || that_present_eq) {
+      if (!(this_present_eq && that_present_eq))
+        return false;
+      if (this.eq != that.eq)
         return false;
     }
 
@@ -483,15 +538,17 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(ts);
 
-    hashCode = hashCode * 8191 + ((isSetV()) ? 131071 : 524287);
-    if (isSetV())
-      hashCode = hashCode * 8191 + v.hashCode();
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(v);
+
+    hashCode = hashCode * 8191 + ((isSetEq()) ? 131071 : 524287);
+    if (isSetEq())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(eq);
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(Cell other) {
+  public int compareTo(CellCounter other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -538,6 +595,16 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetEq(), other.isSetEq());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEq()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.eq, other.eq);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -559,7 +626,7 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("Cell(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("CellCounter(");
     boolean first = true;
 
     sb.append("c:");
@@ -583,12 +650,14 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
     first = false;
     if (!first) sb.append(", ");
     sb.append("v:");
-    if (this.v == null) {
-      sb.append("null");
-    } else {
-      org.apache.thrift.TBaseHelper.toString(this.v, sb);
-    }
+    sb.append(this.v);
     first = false;
+    if (isSetEq()) {
+      if (!first) sb.append(", ");
+      sb.append("eq:");
+      sb.append(this.eq);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -616,17 +685,17 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
     }
   }
 
-  private static class CellStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class CellCounterStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public CellStandardScheme getScheme() {
-      return new CellStandardScheme();
+    public CellCounterStandardScheme getScheme() {
+      return new CellCounterStandardScheme();
     }
   }
 
-  private static class CellStandardScheme extends org.apache.thrift.scheme.StandardScheme<Cell> {
+  private static class CellCounterStandardScheme extends org.apache.thrift.scheme.StandardScheme<CellCounter> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Cell struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, CellCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -647,13 +716,13 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
           case 2: // K
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list288 = iprot.readListBegin();
-                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list288.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem289;
-                for (int _i290 = 0; _i290 < _list288.size; ++_i290)
+                org.apache.thrift.protocol.TList _list304 = iprot.readListBegin();
+                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list304.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem305;
+                for (int _i306 = 0; _i306 < _list304.size; ++_i306)
                 {
-                  _elem289 = iprot.readBinary();
-                  struct.k.add(_elem289);
+                  _elem305 = iprot.readBinary();
+                  struct.k.add(_elem305);
                 }
                 iprot.readListEnd();
               }
@@ -671,9 +740,17 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
             }
             break;
           case 4: // V
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.v = iprot.readBinary();
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.v = iprot.readI64();
               struct.setVIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // EQ
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.eq = iprot.readI64();
+              struct.setEqIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -690,7 +767,7 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Cell struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, CellCounter struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -703,9 +780,9 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
         oprot.writeFieldBegin(K_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.k.size()));
-          for (java.nio.ByteBuffer _iter291 : struct.k)
+          for (java.nio.ByteBuffer _iter307 : struct.k)
           {
-            oprot.writeBinary(_iter291);
+            oprot.writeBinary(_iter307);
           }
           oprot.writeListEnd();
         }
@@ -714,9 +791,12 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
       oprot.writeFieldBegin(TS_FIELD_DESC);
       oprot.writeI64(struct.ts);
       oprot.writeFieldEnd();
-      if (struct.v != null) {
-        oprot.writeFieldBegin(V_FIELD_DESC);
-        oprot.writeBinary(struct.v);
+      oprot.writeFieldBegin(V_FIELD_DESC);
+      oprot.writeI64(struct.v);
+      oprot.writeFieldEnd();
+      if (struct.isSetEq()) {
+        oprot.writeFieldBegin(EQ_FIELD_DESC);
+        oprot.writeI64(struct.eq);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -725,17 +805,17 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
 
   }
 
-  private static class CellTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class CellCounterTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public CellTupleScheme getScheme() {
-      return new CellTupleScheme();
+    public CellCounterTupleScheme getScheme() {
+      return new CellCounterTupleScheme();
     }
   }
 
-  private static class CellTupleScheme extends org.apache.thrift.scheme.TupleScheme<Cell> {
+  private static class CellCounterTupleScheme extends org.apache.thrift.scheme.TupleScheme<CellCounter> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Cell struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, CellCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetC()) {
@@ -750,16 +830,19 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
       if (struct.isSetV()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetEq()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetC()) {
         oprot.writeString(struct.c);
       }
       if (struct.isSetK()) {
         {
           oprot.writeI32(struct.k.size());
-          for (java.nio.ByteBuffer _iter292 : struct.k)
+          for (java.nio.ByteBuffer _iter308 : struct.k)
           {
-            oprot.writeBinary(_iter292);
+            oprot.writeBinary(_iter308);
           }
         }
       }
@@ -767,27 +850,30 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
         oprot.writeI64(struct.ts);
       }
       if (struct.isSetV()) {
-        oprot.writeBinary(struct.v);
+        oprot.writeI64(struct.v);
+      }
+      if (struct.isSetEq()) {
+        oprot.writeI64(struct.eq);
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Cell struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, CellCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(4);
+      java.util.BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.c = iprot.readString();
         struct.setCIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list293 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list293.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem294;
-          for (int _i295 = 0; _i295 < _list293.size; ++_i295)
+          org.apache.thrift.protocol.TList _list309 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list309.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem310;
+          for (int _i311 = 0; _i311 < _list309.size; ++_i311)
           {
-            _elem294 = iprot.readBinary();
-            struct.k.add(_elem294);
+            _elem310 = iprot.readBinary();
+            struct.k.add(_elem310);
           }
         }
         struct.setKIsSet(true);
@@ -797,8 +883,12 @@ public class Cell implements org.apache.thrift.TBase<Cell, Cell._Fields>, java.i
         struct.setTsIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.v = iprot.readBinary();
+        struct.v = iprot.readI64();
         struct.setVIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.eq = iprot.readI64();
+        struct.setEqIsSet(true);
       }
     }
   }

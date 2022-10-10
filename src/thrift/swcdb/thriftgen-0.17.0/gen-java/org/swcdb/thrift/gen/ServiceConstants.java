@@ -20,6 +20,11 @@ public class ServiceConstants {
   public static final long TIMESTAMP_AUTO = -9223372036854775806L;
 
   /**
+   * The COUNTER equal operation
+   */
+  public static final byte COUNTER_OP_EQUAL = (byte)1;
+
+  /**
    * A control bit of default-state
    */
   public static final byte FU_CTRL_DEFAULT = (byte)0;

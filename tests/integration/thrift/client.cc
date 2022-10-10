@@ -72,7 +72,7 @@ std::string cell_value(int c, int i, int f, int batch) {
 
 /* OUTPUT */
 void print(const Cells& container) {
-  std::cout << "cells.size=" << container.cells.size() << std::endl;
+  std::cout << "cells.size=" << container.plain_cells.size() << std::endl;
   container.printTo(std::cout << " ");
   std::cout << std::endl;
 }
@@ -347,9 +347,9 @@ void sql_select(Client& client) {
 
   print(container);
 
-  std::cout << " cells.size()=" << container.cells.size()
+  std::cout << " cells.size()=" << container.plain_cells.size()
             << " expected=" << total_cells*batches << "\n";
-  assert(container.cells.size() == total_cells*batches);
+  assert(container.plain_cells.size() == total_cells*batches);
 }
 
 void sql_select_rslt_on_column(Client& client) {
@@ -422,7 +422,7 @@ void sql_query(Client& client, CellsResult::type rslt) {
     }
     default : {
       print(group.cells);
-      assert(group.cells.cells.size() == total_cells);
+      assert(group.cells.plain_cells.size() == total_cells);
       break;
     }
   }
@@ -535,7 +535,7 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   }
   client.sql_list_columns(schemas, sql);
 
-  UCCells cells;
+  UCCellsPlain cells;
   auto c=0;
   for(auto& schema : schemas) {
     ++c;
@@ -552,7 +552,7 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
     }
   }
   //std::cout << cells << "\n";
-  client.update(cells, updater_id);
+  client.update_plain(cells, updater_id);
 }
 
 void spec_update_serial(Client& client, size_t updater_id=0, int batch=0) {
@@ -644,10 +644,10 @@ void spec_select(Client& client) {
   client.scan(container, specs);
 
   print(container);
-  std::cout << " cells.size()=" << container.cells.size()
+  std::cout << " cells.size()=" << container.plain_cells.size()
             << " serial_cells.size()=" << container.serial_cells.size()
             << " expected=" << num_fractions*num_columns << "\n";
-  assert(container.cells.size() + container.serial_cells.size()
+  assert(container.plain_cells.size() + container.serial_cells.size()
          == num_fractions*num_columns);
 
   for(auto rslt_typ : {
@@ -697,10 +697,10 @@ void spec_select(Client& client) {
       }
       default: { // IN_LIST
         std::cout << rslt_typ
-                  << " cells.size()=" << gcells.cells.cells.size()
+                  << " plain_cells.size()=" << gcells.cells.plain_cells.size()
                   << " serial_cells.size()=" << gcells.cells.serial_cells.size()
                   << " expected=" << num_fractions*num_columns << "\n";
-        assert(gcells.cells.cells.size() + gcells.cells.serial_cells.size()
+        assert(gcells.cells.plain_cells.size() + gcells.cells.serial_cells.size()
                 == num_fractions*num_columns);
         break;
       }

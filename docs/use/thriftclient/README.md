@@ -44,29 +44,34 @@ _**Some of use cases can be found at**_:
 | --- | --- | --- | --- |
 |Service|[Service](#service-service)|[KeySeq](#enumeration-keyseq)|[TIMESTAMP_NULL](#constant-timestamp_null)|
 ||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)|[TIMESTAMP_AUTO](#constant-timestamp_auto)|
-||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)|[FU_CTRL_DEFAULT](#constant-fu_ctrl_default)|
-||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
-||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
-||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[SpecFlagsOpt](#enumeration-specflagsopt)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
-||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[SpecIntervalOptions](#enumeration-specintervaloptions)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
-||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[UpdateOP](#enumeration-updateop)||
-||	[ &bull; sql_query](#function-servicesql_query)|[Flag](#enumeration-flag)||
-||	[ &bull; sql_update](#function-servicesql_update)|[FU_MATH_OP](#enumeration-fu_math_op)||
-||	[ &bull; exec_sql](#function-serviceexec_sql)|[FU_LIST_OP](#enumeration-fu_list_op)||
-||	[ &bull; updater_create](#function-serviceupdater_create)|[CellsResult](#enumeration-cellsresult)||
-||	[ &bull; updater_close](#function-serviceupdater_close)|[Schemas](#typedef-schemas)||
-||	[ &bull; update](#function-serviceupdate)|[Key](#typedef-key)||
-||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecKey](#typedef-speckey)||
-||	[ &bull; update_by_types](#function-serviceupdate_by_types)|[SpecKeyIntervals](#typedef-speckeyintervals)||
-||	[ &bull; mng_column](#function-servicemng_column)|[SpecValues](#typedef-specvalues)||
-||	[ &bull; list_columns](#function-servicelist_columns)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
-||	[ &bull; compact_columns](#function-servicecompact_columns)|[SpecValuesSerial](#typedef-specvaluesserial)||
-||	[ &bull; scan](#function-servicescan)|[UCells](#typedef-ucells)||
-||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[UCCells](#typedef-uccells)||
-||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[CellValuesSerial](#typedef-cellvaluesserial)||
-||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[CellValuesSerialOp](#typedef-cellvaluesserialop)||
-||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[UCellsSerial](#typedef-ucellsserial)||
-|||[UCCellsSerial](#typedef-uccellsserial)||
+||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)|[COUNTER_OP_EQUAL](#constant-counter_op_equal)|
+||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)|[FU_CTRL_DEFAULT](#constant-fu_ctrl_default)|
+||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
+||	[ &bull; sql_select_plain](#function-servicesql_select_plain)|[SpecFlagsOpt](#enumeration-specflagsopt)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
+||	[ &bull; sql_select_counter](#function-servicesql_select_counter)|[SpecIntervalOptions](#enumeration-specintervaloptions)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
+||	[ &bull; sql_select_serial](#function-servicesql_select_serial)|[UpdateOP](#enumeration-updateop)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
+||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[Flag](#enumeration-flag)||
+||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[FU_MATH_OP](#enumeration-fu_math_op)||
+||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[FU_LIST_OP](#enumeration-fu_list_op)||
+||	[ &bull; sql_query](#function-servicesql_query)|[CellsResult](#enumeration-cellsresult)||
+||	[ &bull; sql_update](#function-servicesql_update)|[Schemas](#typedef-schemas)||
+||	[ &bull; exec_sql](#function-serviceexec_sql)|[Key](#typedef-key)||
+||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecKey](#typedef-speckey)||
+||	[ &bull; updater_close](#function-serviceupdater_close)|[SpecKeyIntervals](#typedef-speckeyintervals)||
+||	[ &bull; update_plain](#function-serviceupdate_plain)|[SpecValues](#typedef-specvalues)||
+||	[ &bull; update_counter](#function-serviceupdate_counter)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
+||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecValuesSerial](#typedef-specvaluesserial)||
+||	[ &bull; update_by_types](#function-serviceupdate_by_types)|[UCellsPlain](#typedef-ucellsplain)||
+||	[ &bull; mng_column](#function-servicemng_column)|[UCCellsPlain](#typedef-uccellsplain)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[UCellsCounter](#typedef-ucellscounter)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[UCCellsCounter](#typedef-uccellscounter)||
+||	[ &bull; scan](#function-servicescan)|[CellValuesSerial](#typedef-cellvaluesserial)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[CellValuesSerialOp](#typedef-cellvaluesserialop)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[UCellsSerial](#typedef-ucellsserial)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[UCCellsSerial](#typedef-uccellsserial)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[CellsPlain](#typedef-cellsplain)||
+|||[CellsCounter](#typedef-cellscounter)||
+|||[CellsSerial](#typedef-cellsserial)||
 |||[CCells](#typedef-ccells)||
 |||[KCells](#typedef-kcells)||
 |||[CompactResults](#typedef-compactresults)||
@@ -97,7 +102,8 @@ _**Some of use cases can be found at**_:
 |||[SpecIntervalSerial](#struct-specintervalserial)||
 |||[SpecColumnSerial](#struct-speccolumnserial)||
 |||[SpecScan](#struct-specscan)||
-|||[UCell](#struct-ucell)||
+|||[UCellPlain](#struct-ucellplain)||
+|||[UCellCounter](#struct-ucellcounter)||
 |||[CellValueSerial](#struct-cellvalueserial)||
 |||[FU_INT64](#struct-fu_int64)||
 |||[FU_DOUBLE](#struct-fu_double)||
@@ -106,7 +112,8 @@ _**Some of use cases can be found at**_:
 |||[FU_LB](#struct-fu_lb)||
 |||[CellValueSerialOp](#struct-cellvalueserialop)||
 |||[UCellSerial](#struct-ucellserial)||
-|||[Cell](#struct-cell)||
+|||[CellPlain](#struct-cellplain)||
+|||[CellCounter](#struct-cellcounter)||
 |||[CellSerial](#struct-cellserial)||
 |||[Cells](#struct-cells)||
 |||[CCell](#struct-ccell)||
@@ -130,6 +137,7 @@ _**Some of use cases can be found at**_:
 |---|---|---|---|
 | ```TIMESTAMP_NULL``` | ```i64```| ``````-9223372036854775807`````` |The TIMESTAMP NULL value |
 | ```TIMESTAMP_AUTO``` | ```i64```| ``````-9223372036854775806`````` |The TIMESTAMP AUTO value |
+| ```COUNTER_OP_EQUAL``` | ```i8```| ``````1`````` |The COUNTER equal operation |
 | ```FU_CTRL_DEFAULT``` | ```i8```| ``````0`````` |A control bit of default-state |
 | ```FU_CTRL_NO_ADD_FIELD``` | ```i8```| ``````1`````` |A control bit to not add a new field in case a field for update does not exist (Except for BY_INDEX OP) |
 | ```FU_CTRL_DELETE_FIELD``` | ```i8```| ``````2`````` |A control bit to delete the given field |
@@ -333,16 +341,28 @@ The Cell Value Specifications defined as SpecValueSerial items in a list-contain
 _Base type_: **list&lt;[```SpecValueSerial```](#struct-specvalueserial)&gt;**
 
 
-### Typedef: UCells
-The Cells for Update defined as UCell items in a list-container 
+### Typedef: UCellsPlain
+The Cells for Update defined as UCellPlain items in a list-container 
 
-_Base type_: **list&lt;[```UCell```](#struct-ucell)&gt;**
+_Base type_: **list&lt;[```UCellPlain```](#struct-ucellplain)&gt;**
 
 
-### Typedef: UCCells
-The Cells for Update for a Column Id defined as UCells items in a map-container by CID 
+### Typedef: UCCellsPlain
+The Cells for Update for a Column Id defined as UCellsPlain items in a map-container by CID 
 
-_Base type_: **map&lt;```i64```, [```UCells```](#typedef-ucells)&gt;**
+_Base type_: **map&lt;```i64```, [```UCellsPlain```](#typedef-ucellsplain)&gt;**
+
+
+### Typedef: UCellsCounter
+The Cells for Update defined as UCellCounter items in a list-container 
+
+_Base type_: **list&lt;[```UCellCounter```](#struct-ucellcounter)&gt;**
+
+
+### Typedef: UCCellsCounter
+The Cells for Update for a Column Id defined as UCellsCounter items in a map-container by CID 
+
+_Base type_: **map&lt;```i64```, [```UCellsCounter```](#typedef-ucellscounter)&gt;**
 
 
 ### Typedef: CellValuesSerial
@@ -367,6 +387,24 @@ _Base type_: **list&lt;[```UCellSerial```](#struct-ucellserial)&gt;**
 The Cells for Update for a Column Id defined as UCellsSerial items in a map-container by CID 
 
 _Base type_: **map&lt;```i64```, [```UCellsSerial```](#typedef-ucellsserial)&gt;**
+
+
+### Typedef: CellsPlain
+A list-container of Plain Cells 
+
+_Base type_: **list&lt;[```CellPlain```](#struct-cellplain)&gt;**
+
+
+### Typedef: CellsCounter
+A list-container of Counter Cells 
+
+_Base type_: **list&lt;[```CellCounter```](#struct-cellcounter)&gt;**
+
+
+### Typedef: CellsSerial
+A list-container of Serial Cells 
+
+_Base type_: **list&lt;[```CellSerial```](#struct-cellserial)&gt;**
 
 
 ### Typedef: CCells
@@ -655,8 +693,8 @@ The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope F
 |2|columns_serial|list&lt;[```SpecColumnSerial```](#struct-speccolumnserial)&gt;|The Serial Column Intervals(SpecColumnSerial) in a list-container |default||
 |3|flags|[```SpecFlags```](#struct-specflags)|The Global Flags Specification |optional||
 
-### Struct: UCell
-The Cell data for using with Update 
+### Struct: UCellPlain
+The Cell data for using with Update of PLAIN Column Type 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -666,6 +704,18 @@ The Cell data for using with Update
 |4|ts_desc|```bool```|The Cell Version is in timestamp descending |optional||
 |5|v|```binary```|The Cell Value |default||
 |6|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
+
+### Struct: UCellCounter
+The Cell data for using with Update of COUNTER Column Type 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|f|[```Flag```](#enumeration-flag)|The Cell Flag |default||
+|2|k|[```Key```](#typedef-key)|The Cell Key |default||
+|3|ts|```i64```|The Cell Timestamp in nanoseconds |optional||
+|4|ts_desc|```bool```|The Cell Version is in timestamp descending |optional||
+|5|op|```i8```|The Cell Counter Operation |default|``````0``````|
+|6|v|```i64```|The Cell Counter Value |default|``````0``````|
 
 ### Struct: CellValueSerial
 The Serial Value Cell field 
@@ -758,7 +808,7 @@ The Cell data for using with Update of SERIAL Column Type
 |5|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Serial Cell Value fields |default||
 |6|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
 
-### Struct: Cell
+### Struct: CellPlain
 The Cell for results list of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
@@ -767,6 +817,17 @@ The Cell for results list of scan
 |2|k|[```Key```](#typedef-key)|The Cell Key |default||
 |3|ts|```i64```|The Cell Timestamp |default||
 |4|v|```binary```|The Cell Value |default||
+
+### Struct: CellCounter
+The Counter Cell for results list of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|k|[```Key```](#typedef-key)|The Cell Key |default||
+|3|ts|```i64```|The Cell Timestamp |default||
+|4|v|```i64```|The Cell Counter Value |default||
+|5|eq|```i64```|The Counter EQ since ts |optional||
 
 ### Struct: CellSerial
 The Serial Cell for results list of scan 
@@ -783,8 +844,9 @@ The Cells for results list of scan
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|cells|list&lt;[```Cell```](#struct-cell)&gt;|The Cells, defined as Cell items in a list-container |default||
-|2|serial_cells|list&lt;[```CellSerial```](#struct-cellserial)&gt;|The Serial Cells, defined as CellSerial items in a list-container |default||
+|1|plain_cells|[```CellsPlain```](#typedef-cellsplain)|The Cells, defined as Cell items in a list-container |default||
+|2|counter_cells|[```CellsCounter```](#typedef-cellscounter)|The Cells, defined as Cell items in a list-container |default||
+|3|serial_cells|[```CellsSerial```](#typedef-cellsserial)|The Serial Cells, defined as CellSerial items in a list-container |default||
 
 ### Struct: CCell
 The Column Cell for results on Columns of scan 
@@ -942,6 +1004,39 @@ The direct SQL method to select cells with result in Cells List.
 1. sql - The SQL string to Execute 
 
 
+#### Function: Service.sql_select_plain
+The direct SQL method to select cells with result in CellsPlain. 
+
+[```CellsPlain```](#typedef-cellsplain)
+ _sql_select_plain_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
+
+#### Function: Service.sql_select_counter
+The direct SQL method to select cells with result in CellsCounter. 
+
+[```CellsCounter```](#typedef-cellscounter)
+ _sql_select_counter_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
+
+#### Function: Service.sql_select_serial
+The direct SQL method to select cells with result in CellsSerial. 
+
+[```CellsSerial```](#typedef-cellsserial)
+ _sql_select_serial_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
+
 #### Function: Service.sql_select_rslt_on_column
 The direct SQL method to select cells with result in Columns Cells map. 
 
@@ -1034,16 +1129,29 @@ The method to Close an Updater ID.
 1. id - The Updater ID to close 
 
 
-#### Function: Service.update
-The direct method to update cells with cell in Update-Columns-Cells, optionally to work with updater-id. 
+#### Function: Service.update_plain
+The direct method to update cells with cell in Update-Columns-Cells-Plain, optionally to work with updater-id. 
 
 ```void```
- _update_([```UCCells```](#typedef-uccells) cells,
+ _update_plain_([```UCCellsPlain```](#typedef-uccellsplain) cells,
 ```i64``` updater_id = ```0```)
 > throws [```Exception```](#exception-exception)
 
 * parameters:
 1. cells - The Cells to update 
+2. updater_id - The Updater ID to use for write 
+
+
+#### Function: Service.update_counter
+The direct method to update cells with cell in Update-Columns-Cells-Counter, optionally to work with updater-id. 
+
+```void```
+ _update_counter_([```UCCellsCounter```](#typedef-uccellscounter) cells,
+```i64``` updater_id = ```0```)
+> throws [```Exception```](#exception-exception)
+
+* parameters:
+1. cells - The Counter Cells to update 
 2. updater_id - The Updater ID to use for write 
 
 
@@ -1064,15 +1172,17 @@ The direct method to update cells with cell in Update-Columns-Cells-Serial, opti
 The method is to update cells by several Column-Types, optionally to work with updater-id. 
 
 ```void```
- _update_by_types_([```UCCells```](#typedef-uccells) plain,
+ _update_by_types_([```UCCellsPlain```](#typedef-uccellsplain) plain,
+[```UCCellsCounter```](#typedef-uccellscounter) counter,
 [```UCCellsSerial```](#typedef-uccellsserial) serial,
 ```i64``` updater_id = ```0```)
 > throws [```Exception```](#exception-exception)
 
 * parameters:
 1. plain - The PLAIN Cells to update 
-2. serial - The SERIAL Cells to update 
-3. updater_id - The Updater ID to use for write 
+2. counter - The COUNTER Cells to update 
+3. serial - The SERIAL Cells to update 
+4. updater_id - The Updater ID to use for write 
 
 
 #### Function: Service.mng_column

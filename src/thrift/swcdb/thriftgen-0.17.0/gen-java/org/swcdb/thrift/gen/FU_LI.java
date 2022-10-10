@@ -622,14 +622,14 @@ public class FU_LI implements org.apache.thrift.TBase<FU_LI, FU_LI._Fields>, jav
           case 4: // V
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list248 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<FU_INT64>(_list248.size);
-                @org.apache.thrift.annotation.Nullable FU_INT64 _elem249;
-                for (int _i250 = 0; _i250 < _list248.size; ++_i250)
+                org.apache.thrift.protocol.TList _list256 = iprot.readListBegin();
+                struct.v = new java.util.ArrayList<FU_INT64>(_list256.size);
+                @org.apache.thrift.annotation.Nullable FU_INT64 _elem257;
+                for (int _i258 = 0; _i258 < _list256.size; ++_i258)
                 {
-                  _elem249 = new FU_INT64();
-                  _elem249.read(iprot);
-                  struct.v.add(_elem249);
+                  _elem257 = new FU_INT64();
+                  _elem257.read(iprot);
+                  struct.v.add(_elem257);
                 }
                 iprot.readListEnd();
               }
@@ -671,9 +671,9 @@ public class FU_LI implements org.apache.thrift.TBase<FU_LI, FU_LI._Fields>, jav
         oprot.writeFieldBegin(V_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (FU_INT64 _iter251 : struct.v)
+          for (FU_INT64 _iter259 : struct.v)
           {
-            _iter251.write(oprot);
+            _iter259.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -723,9 +723,9 @@ public class FU_LI implements org.apache.thrift.TBase<FU_LI, FU_LI._Fields>, jav
       if (struct.isSetV()) {
         {
           oprot.writeI32(struct.v.size());
-          for (FU_INT64 _iter252 : struct.v)
+          for (FU_INT64 _iter260 : struct.v)
           {
-            _iter252.write(oprot);
+            _iter260.write(oprot);
           }
         }
       }
@@ -749,14 +749,14 @@ public class FU_LI implements org.apache.thrift.TBase<FU_LI, FU_LI._Fields>, jav
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list253 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<FU_INT64>(_list253.size);
-          @org.apache.thrift.annotation.Nullable FU_INT64 _elem254;
-          for (int _i255 = 0; _i255 < _list253.size; ++_i255)
+          org.apache.thrift.protocol.TList _list261 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.v = new java.util.ArrayList<FU_INT64>(_list261.size);
+          @org.apache.thrift.annotation.Nullable FU_INT64 _elem262;
+          for (int _i263 = 0; _i263 < _list261.size; ++_i263)
           {
-            _elem254 = new FU_INT64();
-            _elem254.read(iprot);
-            struct.v.add(_elem254);
+            _elem262 = new FU_INT64();
+            _elem262.read(iprot);
+            struct.v.add(_elem262);
           }
         }
         struct.setVIsSet(true);

@@ -55,6 +55,27 @@ class ServiceIf {
   virtual void sql_select(Cells& _return, const std::string& sql) = 0;
 
   /**
+   * The direct SQL method to select cells with result in CellsPlain.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  virtual void sql_select_plain(CellsPlain& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to select cells with result in CellsCounter.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  virtual void sql_select_counter(CellsCounter& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to select cells with result in CellsSerial.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  virtual void sql_select_serial(CellsSerial& _return, const std::string& sql) = 0;
+
+  /**
    * The direct SQL method to select cells with result in Columns Cells map.
    * 
    * @param sql The SQL string to Execute
@@ -122,7 +143,17 @@ class ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  virtual void update(const UCCells& cells, const int64_t updater_id) = 0;
+  virtual void update(const UCCellsPlain& cells, const int64_t updater_id) = 0;
+
+  /**
+   * The direct method to update cells with cell in Update-Columns-Cells-Counter,
+   * optionally to work with updater-id.
+   * 
+   * @param cells The Counter Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  virtual void update_counter(const UCCellsCounter& cells, const int64_t updater_id) = 0;
 
   /**
    * The direct method to update cells with cell in Update-Columns-Cells-Serial,
@@ -140,11 +171,13 @@ class ServiceIf {
    * 
    * @param plain The PLAIN Cells to update
    * 
+   * @param counter The COUNTER Cells to update
+   * 
    * @param serial The SERIAL Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  virtual void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) = 0;
+  virtual void update_by_types(const UCCellsPlain& plain, const UCCellsCounter& counter, const UCCellsSerial& serial, const int64_t updater_id) = 0;
 
   /**
    * The direct method to Manage Column
@@ -246,6 +279,15 @@ class ServiceNull : virtual public ServiceIf {
   void sql_select(Cells& /* _return */, const std::string& /* sql */) override {
     return;
   }
+  void sql_select_plain(CellsPlain& /* _return */, const std::string& /* sql */) override {
+    return;
+  }
+  void sql_select_counter(CellsCounter& /* _return */, const std::string& /* sql */) override {
+    return;
+  }
+  void sql_select_serial(CellsSerial& /* _return */, const std::string& /* sql */) override {
+    return;
+  }
   void sql_select_rslt_on_column(CCells& /* _return */, const std::string& /* sql */) override {
     return;
   }
@@ -271,13 +313,16 @@ class ServiceNull : virtual public ServiceIf {
   void updater_close(const int64_t /* id */) override {
     return;
   }
-  void update(const UCCells& /* cells */, const int64_t /* updater_id */) override {
+  void update(const UCCellsPlain& /* cells */, const int64_t /* updater_id */) override {
+    return;
+  }
+  void update_counter(const UCCellsCounter& /* cells */, const int64_t /* updater_id */) override {
     return;
   }
   void update_serial(const UCCellsSerial& /* cells */, const int64_t /* updater_id */) override {
     return;
   }
-  void update_by_types(const UCCells& /* plain */, const UCCellsSerial& /* serial */, const int64_t /* updater_id */) override {
+  void update_by_types(const UCCellsPlain& /* plain */, const UCCellsCounter& /* counter */, const UCCellsSerial& /* serial */, const int64_t /* updater_id */) override {
     return;
   }
   void mng_column(const SchemaFunc::type /* func */, const Schema& /* schema */) override {
@@ -785,6 +830,375 @@ class Service_sql_select_presult {
   Exception e;
 
   _Service_sql_select_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_sql_select_plain_args__isset {
+  _Service_sql_select_plain_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_sql_select_plain_args__isset;
+
+class Service_sql_select_plain_args {
+ public:
+
+  Service_sql_select_plain_args(const Service_sql_select_plain_args&);
+  Service_sql_select_plain_args(Service_sql_select_plain_args&&) noexcept;
+  Service_sql_select_plain_args& operator=(const Service_sql_select_plain_args&);
+  Service_sql_select_plain_args& operator=(Service_sql_select_plain_args&&) noexcept;
+  Service_sql_select_plain_args() noexcept
+                                : sql() {
+  }
+
+  virtual ~Service_sql_select_plain_args() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  std::string sql;
+
+  _Service_sql_select_plain_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_sql_select_plain_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_plain_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_plain_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_select_plain_pargs {
+ public:
+
+
+  virtual ~Service_sql_select_plain_pargs() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_plain_result__isset {
+  _Service_sql_select_plain_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_plain_result__isset;
+
+class Service_sql_select_plain_result {
+ public:
+
+  Service_sql_select_plain_result(const Service_sql_select_plain_result&);
+  Service_sql_select_plain_result(Service_sql_select_plain_result&&) noexcept;
+  Service_sql_select_plain_result& operator=(const Service_sql_select_plain_result&);
+  Service_sql_select_plain_result& operator=(Service_sql_select_plain_result&&) noexcept;
+  Service_sql_select_plain_result() noexcept {
+  }
+
+  virtual ~Service_sql_select_plain_result() noexcept;
+  CellsPlain success;
+  Exception e;
+
+  _Service_sql_select_plain_result__isset __isset;
+
+  void __set_success(const CellsPlain& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_select_plain_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_plain_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_plain_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_plain_presult__isset {
+  _Service_sql_select_plain_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_plain_presult__isset;
+
+class Service_sql_select_plain_presult {
+ public:
+
+
+  virtual ~Service_sql_select_plain_presult() noexcept;
+  CellsPlain* success;
+  Exception e;
+
+  _Service_sql_select_plain_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_sql_select_counter_args__isset {
+  _Service_sql_select_counter_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_sql_select_counter_args__isset;
+
+class Service_sql_select_counter_args {
+ public:
+
+  Service_sql_select_counter_args(const Service_sql_select_counter_args&);
+  Service_sql_select_counter_args(Service_sql_select_counter_args&&) noexcept;
+  Service_sql_select_counter_args& operator=(const Service_sql_select_counter_args&);
+  Service_sql_select_counter_args& operator=(Service_sql_select_counter_args&&) noexcept;
+  Service_sql_select_counter_args() noexcept
+                                  : sql() {
+  }
+
+  virtual ~Service_sql_select_counter_args() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  std::string sql;
+
+  _Service_sql_select_counter_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_sql_select_counter_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_counter_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_counter_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_select_counter_pargs {
+ public:
+
+
+  virtual ~Service_sql_select_counter_pargs() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_counter_result__isset {
+  _Service_sql_select_counter_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_counter_result__isset;
+
+class Service_sql_select_counter_result {
+ public:
+
+  Service_sql_select_counter_result(const Service_sql_select_counter_result&);
+  Service_sql_select_counter_result(Service_sql_select_counter_result&&) noexcept;
+  Service_sql_select_counter_result& operator=(const Service_sql_select_counter_result&);
+  Service_sql_select_counter_result& operator=(Service_sql_select_counter_result&&) noexcept;
+  Service_sql_select_counter_result() noexcept {
+  }
+
+  virtual ~Service_sql_select_counter_result() noexcept;
+  CellsCounter success;
+  Exception e;
+
+  _Service_sql_select_counter_result__isset __isset;
+
+  void __set_success(const CellsCounter& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_select_counter_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_counter_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_counter_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_counter_presult__isset {
+  _Service_sql_select_counter_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_counter_presult__isset;
+
+class Service_sql_select_counter_presult {
+ public:
+
+
+  virtual ~Service_sql_select_counter_presult() noexcept;
+  CellsCounter* success;
+  Exception e;
+
+  _Service_sql_select_counter_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_sql_select_serial_args__isset {
+  _Service_sql_select_serial_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_sql_select_serial_args__isset;
+
+class Service_sql_select_serial_args {
+ public:
+
+  Service_sql_select_serial_args(const Service_sql_select_serial_args&);
+  Service_sql_select_serial_args(Service_sql_select_serial_args&&) noexcept;
+  Service_sql_select_serial_args& operator=(const Service_sql_select_serial_args&);
+  Service_sql_select_serial_args& operator=(Service_sql_select_serial_args&&) noexcept;
+  Service_sql_select_serial_args() noexcept
+                                 : sql() {
+  }
+
+  virtual ~Service_sql_select_serial_args() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  std::string sql;
+
+  _Service_sql_select_serial_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_sql_select_serial_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_serial_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_serial_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_select_serial_pargs {
+ public:
+
+
+  virtual ~Service_sql_select_serial_pargs() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_serial_result__isset {
+  _Service_sql_select_serial_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_serial_result__isset;
+
+class Service_sql_select_serial_result {
+ public:
+
+  Service_sql_select_serial_result(const Service_sql_select_serial_result&);
+  Service_sql_select_serial_result(Service_sql_select_serial_result&&) noexcept;
+  Service_sql_select_serial_result& operator=(const Service_sql_select_serial_result&);
+  Service_sql_select_serial_result& operator=(Service_sql_select_serial_result&&) noexcept;
+  Service_sql_select_serial_result() noexcept {
+  }
+
+  virtual ~Service_sql_select_serial_result() noexcept;
+  CellsSerial success;
+  Exception e;
+
+  _Service_sql_select_serial_result__isset __isset;
+
+  void __set_success(const CellsSerial& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_select_serial_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_serial_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_serial_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_serial_presult__isset {
+  _Service_sql_select_serial_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_serial_presult__isset;
+
+class Service_sql_select_serial_presult {
+ public:
+
+
+  virtual ~Service_sql_select_serial_presult() noexcept;
+  CellsSerial* success;
+  Exception e;
+
+  _Service_sql_select_serial_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -1812,7 +2226,7 @@ class Service_update_args {
   /**
    * The Cells to update
    */
-  UCCells cells;
+  UCCellsPlain cells;
   /**
    * The Updater ID to use for write
    */
@@ -1820,7 +2234,7 @@ class Service_update_args {
 
   _Service_update_args__isset __isset;
 
-  void __set_cells(const UCCells& val);
+  void __set_cells(const UCCellsPlain& val);
 
   void __set_updater_id(const int64_t val);
 
@@ -1852,7 +2266,7 @@ class Service_update_pargs {
   /**
    * The Cells to update
    */
-  const UCCells* cells;
+  const UCCellsPlain* cells;
   /**
    * The Updater ID to use for write
    */
@@ -1914,6 +2328,134 @@ class Service_update_presult {
   Exception e;
 
   _Service_update_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_update_counter_args__isset {
+  _Service_update_counter_args__isset() : cells(false), updater_id(true) {}
+  bool cells :1;
+  bool updater_id :1;
+} _Service_update_counter_args__isset;
+
+class Service_update_counter_args {
+ public:
+
+  Service_update_counter_args(const Service_update_counter_args&);
+  Service_update_counter_args(Service_update_counter_args&&) noexcept;
+  Service_update_counter_args& operator=(const Service_update_counter_args&);
+  Service_update_counter_args& operator=(Service_update_counter_args&&) noexcept;
+  Service_update_counter_args() noexcept
+                              : updater_id(0LL) {
+  }
+
+  virtual ~Service_update_counter_args() noexcept;
+  /**
+   * The Counter Cells to update
+   */
+  UCCellsCounter cells;
+  /**
+   * The Updater ID to use for write
+   */
+  int64_t updater_id;
+
+  _Service_update_counter_args__isset __isset;
+
+  void __set_cells(const UCCellsCounter& val);
+
+  void __set_updater_id(const int64_t val);
+
+  bool operator == (const Service_update_counter_args & rhs) const
+  {
+    if (!(cells == rhs.cells))
+      return false;
+    if (!(updater_id == rhs.updater_id))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_counter_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_counter_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_update_counter_pargs {
+ public:
+
+
+  virtual ~Service_update_counter_pargs() noexcept;
+  /**
+   * The Counter Cells to update
+   */
+  const UCCellsCounter* cells;
+  /**
+   * The Updater ID to use for write
+   */
+  const int64_t* updater_id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_counter_result__isset {
+  _Service_update_counter_result__isset() : e(false) {}
+  bool e :1;
+} _Service_update_counter_result__isset;
+
+class Service_update_counter_result {
+ public:
+
+  Service_update_counter_result(const Service_update_counter_result&);
+  Service_update_counter_result(Service_update_counter_result&&) noexcept;
+  Service_update_counter_result& operator=(const Service_update_counter_result&);
+  Service_update_counter_result& operator=(Service_update_counter_result&&) noexcept;
+  Service_update_counter_result() noexcept {
+  }
+
+  virtual ~Service_update_counter_result() noexcept;
+  Exception e;
+
+  _Service_update_counter_result__isset __isset;
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_update_counter_result & rhs) const
+  {
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_update_counter_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_update_counter_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_update_counter_presult__isset {
+  _Service_update_counter_presult__isset() : e(false) {}
+  bool e :1;
+} _Service_update_counter_presult__isset;
+
+class Service_update_counter_presult {
+ public:
+
+
+  virtual ~Service_update_counter_presult() noexcept;
+  Exception e;
+
+  _Service_update_counter_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -2048,8 +2590,9 @@ class Service_update_serial_presult {
 };
 
 typedef struct _Service_update_by_types_args__isset {
-  _Service_update_by_types_args__isset() : plain(false), serial(false), updater_id(true) {}
+  _Service_update_by_types_args__isset() : plain(false), counter(false), serial(false), updater_id(true) {}
   bool plain :1;
+  bool counter :1;
   bool serial :1;
   bool updater_id :1;
 } _Service_update_by_types_args__isset;
@@ -2069,7 +2612,11 @@ class Service_update_by_types_args {
   /**
    * The PLAIN Cells to update
    */
-  UCCells plain;
+  UCCellsPlain plain;
+  /**
+   * The COUNTER Cells to update
+   */
+  UCCellsCounter counter;
   /**
    * The SERIAL Cells to update
    */
@@ -2081,7 +2628,9 @@ class Service_update_by_types_args {
 
   _Service_update_by_types_args__isset __isset;
 
-  void __set_plain(const UCCells& val);
+  void __set_plain(const UCCellsPlain& val);
+
+  void __set_counter(const UCCellsCounter& val);
 
   void __set_serial(const UCCellsSerial& val);
 
@@ -2090,6 +2639,8 @@ class Service_update_by_types_args {
   bool operator == (const Service_update_by_types_args & rhs) const
   {
     if (!(plain == rhs.plain))
+      return false;
+    if (!(counter == rhs.counter))
       return false;
     if (!(serial == rhs.serial))
       return false;
@@ -2117,7 +2668,11 @@ class Service_update_by_types_pargs {
   /**
    * The PLAIN Cells to update
    */
-  const UCCells* plain;
+  const UCCellsPlain* plain;
+  /**
+   * The COUNTER Cells to update
+   */
+  const UCCellsCounter* counter;
   /**
    * The SERIAL Cells to update
    */
@@ -3256,6 +3811,30 @@ class ServiceClient : virtual public ServiceIf {
   void send_sql_select(const std::string& sql);
   void recv_sql_select(Cells& _return);
   /**
+   * The direct SQL method to select cells with result in CellsPlain.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_plain(CellsPlain& _return, const std::string& sql) override;
+  void send_sql_select_plain(const std::string& sql);
+  void recv_sql_select_plain(CellsPlain& _return);
+  /**
+   * The direct SQL method to select cells with result in CellsCounter.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_counter(CellsCounter& _return, const std::string& sql) override;
+  void send_sql_select_counter(const std::string& sql);
+  void recv_sql_select_counter(CellsCounter& _return);
+  /**
+   * The direct SQL method to select cells with result in CellsSerial.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_serial(CellsSerial& _return, const std::string& sql) override;
+  void send_sql_select_serial(const std::string& sql);
+  void recv_sql_select_serial(CellsSerial& _return);
+  /**
    * The direct SQL method to select cells with result in Columns Cells map.
    * 
    * @param sql The SQL string to Execute
@@ -3331,9 +3910,20 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCells& cells, const int64_t updater_id) override;
-  void send_update(const UCCells& cells, const int64_t updater_id);
+  void update(const UCCellsPlain& cells, const int64_t updater_id) override;
+  void send_update(const UCCellsPlain& cells, const int64_t updater_id);
   void recv_update();
+  /**
+   * The direct method to update cells with cell in Update-Columns-Cells-Counter,
+   * optionally to work with updater-id.
+   * 
+   * @param cells The Counter Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_counter(const UCCellsCounter& cells, const int64_t updater_id) override;
+  void send_update_counter(const UCCellsCounter& cells, const int64_t updater_id);
+  void recv_update_counter();
   /**
    * The direct method to update cells with cell in Update-Columns-Cells-Serial,
    * optionally to work with updater-id.
@@ -3351,12 +3941,14 @@ class ServiceClient : virtual public ServiceIf {
    * 
    * @param plain The PLAIN Cells to update
    * 
+   * @param counter The COUNTER Cells to update
+   * 
    * @param serial The SERIAL Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) override;
-  void send_update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id);
+  void update_by_types(const UCCellsPlain& plain, const UCCellsCounter& counter, const UCCellsSerial& serial, const int64_t updater_id) override;
+  void send_update_by_types(const UCCellsPlain& plain, const UCCellsCounter& counter, const UCCellsSerial& serial, const int64_t updater_id);
   void recv_update_by_types();
   /**
    * The direct method to Manage Column
@@ -3445,6 +4037,9 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_sql_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_compact_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select_plain(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select_counter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select_serial(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -3454,6 +4049,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_counter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_serial(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_by_types(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mng_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -3471,6 +4067,9 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["sql_list_columns"] = &ServiceProcessor::process_sql_list_columns;
     processMap_["sql_compact_columns"] = &ServiceProcessor::process_sql_compact_columns;
     processMap_["sql_select"] = &ServiceProcessor::process_sql_select;
+    processMap_["sql_select_plain"] = &ServiceProcessor::process_sql_select_plain;
+    processMap_["sql_select_counter"] = &ServiceProcessor::process_sql_select_counter;
+    processMap_["sql_select_serial"] = &ServiceProcessor::process_sql_select_serial;
     processMap_["sql_select_rslt_on_column"] = &ServiceProcessor::process_sql_select_rslt_on_column;
     processMap_["sql_select_rslt_on_key"] = &ServiceProcessor::process_sql_select_rslt_on_key;
     processMap_["sql_select_rslt_on_fraction"] = &ServiceProcessor::process_sql_select_rslt_on_fraction;
@@ -3480,6 +4079,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
     processMap_["update"] = &ServiceProcessor::process_update;
+    processMap_["update_counter"] = &ServiceProcessor::process_update_counter;
     processMap_["update_serial"] = &ServiceProcessor::process_update_serial;
     processMap_["update_by_types"] = &ServiceProcessor::process_update_by_types;
     processMap_["mng_column"] = &ServiceProcessor::process_mng_column;
@@ -3574,6 +4174,51 @@ class ServiceMultiface : virtual public ServiceIf {
       ifaces_[i]->sql_select(_return, sql);
     }
     ifaces_[i]->sql_select(_return, sql);
+    return;
+  }
+
+  /**
+   * The direct SQL method to select cells with result in CellsPlain.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_plain(CellsPlain& _return, const std::string& sql) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_select_plain(_return, sql);
+    }
+    ifaces_[i]->sql_select_plain(_return, sql);
+    return;
+  }
+
+  /**
+   * The direct SQL method to select cells with result in CellsCounter.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_counter(CellsCounter& _return, const std::string& sql) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_select_counter(_return, sql);
+    }
+    ifaces_[i]->sql_select_counter(_return, sql);
+    return;
+  }
+
+  /**
+   * The direct SQL method to select cells with result in CellsSerial.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_serial(CellsSerial& _return, const std::string& sql) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_select_serial(_return, sql);
+    }
+    ifaces_[i]->sql_select_serial(_return, sql);
     return;
   }
 
@@ -3706,13 +4351,30 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCells& cells, const int64_t updater_id) override {
+  void update(const UCCellsPlain& cells, const int64_t updater_id) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
       ifaces_[i]->update(cells, updater_id);
     }
     ifaces_[i]->update(cells, updater_id);
+  }
+
+  /**
+   * The direct method to update cells with cell in Update-Columns-Cells-Counter,
+   * optionally to work with updater-id.
+   * 
+   * @param cells The Counter Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_counter(const UCCellsCounter& cells, const int64_t updater_id) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_counter(cells, updater_id);
+    }
+    ifaces_[i]->update_counter(cells, updater_id);
   }
 
   /**
@@ -3738,17 +4400,19 @@ class ServiceMultiface : virtual public ServiceIf {
    * 
    * @param plain The PLAIN Cells to update
    * 
+   * @param counter The COUNTER Cells to update
+   * 
    * @param serial The SERIAL Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) override {
+  void update_by_types(const UCCellsPlain& plain, const UCCellsCounter& counter, const UCCellsSerial& serial, const int64_t updater_id) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->update_by_types(plain, serial, updater_id);
+      ifaces_[i]->update_by_types(plain, counter, serial, updater_id);
     }
-    ifaces_[i]->update_by_types(plain, serial, updater_id);
+    ifaces_[i]->update_by_types(plain, counter, serial, updater_id);
   }
 
   /**
@@ -3939,6 +4603,30 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   int32_t send_sql_select(const std::string& sql);
   void recv_sql_select(Cells& _return, const int32_t seqid);
   /**
+   * The direct SQL method to select cells with result in CellsPlain.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_plain(CellsPlain& _return, const std::string& sql) override;
+  int32_t send_sql_select_plain(const std::string& sql);
+  void recv_sql_select_plain(CellsPlain& _return, const int32_t seqid);
+  /**
+   * The direct SQL method to select cells with result in CellsCounter.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_counter(CellsCounter& _return, const std::string& sql) override;
+  int32_t send_sql_select_counter(const std::string& sql);
+  void recv_sql_select_counter(CellsCounter& _return, const int32_t seqid);
+  /**
+   * The direct SQL method to select cells with result in CellsSerial.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select_serial(CellsSerial& _return, const std::string& sql) override;
+  int32_t send_sql_select_serial(const std::string& sql);
+  void recv_sql_select_serial(CellsSerial& _return, const int32_t seqid);
+  /**
    * The direct SQL method to select cells with result in Columns Cells map.
    * 
    * @param sql The SQL string to Execute
@@ -4014,9 +4702,20 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCells& cells, const int64_t updater_id) override;
-  int32_t send_update(const UCCells& cells, const int64_t updater_id);
+  void update(const UCCellsPlain& cells, const int64_t updater_id) override;
+  int32_t send_update(const UCCellsPlain& cells, const int64_t updater_id);
   void recv_update(const int32_t seqid);
+  /**
+   * The direct method to update cells with cell in Update-Columns-Cells-Counter,
+   * optionally to work with updater-id.
+   * 
+   * @param cells The Counter Cells to update
+   * 
+   * @param updater_id The Updater ID to use for write
+   */
+  void update_counter(const UCCellsCounter& cells, const int64_t updater_id) override;
+  int32_t send_update_counter(const UCCellsCounter& cells, const int64_t updater_id);
+  void recv_update_counter(const int32_t seqid);
   /**
    * The direct method to update cells with cell in Update-Columns-Cells-Serial,
    * optionally to work with updater-id.
@@ -4034,12 +4733,14 @@ class ServiceConcurrentClient : virtual public ServiceIf {
    * 
    * @param plain The PLAIN Cells to update
    * 
+   * @param counter The COUNTER Cells to update
+   * 
    * @param serial The SERIAL Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id) override;
-  int32_t send_update_by_types(const UCCells& plain, const UCCellsSerial& serial, const int64_t updater_id);
+  void update_by_types(const UCCellsPlain& plain, const UCCellsCounter& counter, const UCCellsSerial& serial, const int64_t updater_id) override;
+  int32_t send_update_by_types(const UCCellsPlain& plain, const UCCellsCounter& counter, const UCCellsSerial& serial, const int64_t updater_id);
   void recv_update_by_types(const int32_t seqid);
   /**
    * The direct method to Manage Column

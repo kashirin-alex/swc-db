@@ -202,9 +202,13 @@ typedef GPtrArray swcdb_thriftSpecValueSerialFields;
 
 typedef GPtrArray swcdb_thriftSpecValuesSerial;
 
-typedef GPtrArray swcdb_thriftUCells;
+typedef GPtrArray swcdb_thriftUCellsPlain;
 
-typedef GHashTable swcdb_thriftUCCells;
+typedef GHashTable swcdb_thriftUCCellsPlain;
+
+typedef GPtrArray swcdb_thriftUCellsCounter;
+
+typedef GHashTable swcdb_thriftUCCellsCounter;
 
 typedef GPtrArray swcdb_thriftCellValuesSerial;
 
@@ -213,6 +217,12 @@ typedef GPtrArray swcdb_thriftCellValuesSerialOp;
 typedef GPtrArray swcdb_thriftUCellsSerial;
 
 typedef GHashTable swcdb_thriftUCCellsSerial;
+
+typedef GPtrArray swcdb_thriftCellsPlain;
+
+typedef GPtrArray swcdb_thriftCellsCounter;
+
+typedef GPtrArray swcdb_thriftCellsSerial;
 
 typedef GHashTable swcdb_thriftCCells;
 
@@ -1056,8 +1066,8 @@ GType swcdb_thrift_spec_scan_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_SCAN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_SCAN))
 #define SWCDB_THRIFT_SPEC_SCAN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_SCAN, swcdb_thriftSpecScanClass))
 
-/* struct UCell */
-struct _swcdb_thriftUCell
+/* struct UCellPlain */
+struct _swcdb_thriftUCellPlain
 { 
   ThriftStruct parent; 
 
@@ -1075,21 +1085,56 @@ struct _swcdb_thriftUCell
   swcdb_thriftEncodingType encoder;
   gboolean __isset_encoder;
 };
-typedef struct _swcdb_thriftUCell swcdb_thriftUCell;
+typedef struct _swcdb_thriftUCellPlain swcdb_thriftUCellPlain;
 
-struct _swcdb_thriftUCellClass
+struct _swcdb_thriftUCellPlainClass
 {
   ThriftStructClass parent;
 };
-typedef struct _swcdb_thriftUCellClass swcdb_thriftUCellClass;
+typedef struct _swcdb_thriftUCellPlainClass swcdb_thriftUCellPlainClass;
 
-GType swcdb_thrift_u_cell_get_type (void);
-#define SWCDB_THRIFT_TYPE_U_CELL (swcdb_thrift_u_cell_get_type())
-#define SWCDB_THRIFT_U_CELL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_U_CELL, swcdb_thriftUCell))
-#define SWCDB_THRIFT_U_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_U_CELL, swcdb_thriftUCellClass))
-#define SWCDB_THRIFT_IS_U_CELL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_U_CELL))
-#define SWCDB_THRIFT_IS_U_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_U_CELL))
-#define SWCDB_THRIFT_U_CELL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_U_CELL, swcdb_thriftUCellClass))
+GType swcdb_thrift_u_cell_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_U_CELL_PLAIN (swcdb_thrift_u_cell_plain_get_type())
+#define SWCDB_THRIFT_U_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_U_CELL_PLAIN, swcdb_thriftUCellPlain))
+#define SWCDB_THRIFT_U_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_U_CELL_PLAIN, swcdb_thriftUCellPlainClass))
+#define SWCDB_THRIFT_IS_U_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_U_CELL_PLAIN))
+#define SWCDB_THRIFT_IS_U_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_U_CELL_PLAIN))
+#define SWCDB_THRIFT_U_CELL_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_U_CELL_PLAIN, swcdb_thriftUCellPlainClass))
+
+/* struct UCellCounter */
+struct _swcdb_thriftUCellCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftFlag f;
+  gboolean __isset_f;
+  GPtrArray * k;
+  gboolean __isset_k;
+  gint64 ts;
+  gboolean __isset_ts;
+  gboolean ts_desc;
+  gboolean __isset_ts_desc;
+  gint8 op;
+  gboolean __isset_op;
+  gint64 v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftUCellCounter swcdb_thriftUCellCounter;
+
+struct _swcdb_thriftUCellCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftUCellCounterClass swcdb_thriftUCellCounterClass;
+
+GType swcdb_thrift_u_cell_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_U_CELL_COUNTER (swcdb_thrift_u_cell_counter_get_type())
+#define SWCDB_THRIFT_U_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_U_CELL_COUNTER, swcdb_thriftUCellCounter))
+#define SWCDB_THRIFT_U_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_U_CELL_COUNTER, swcdb_thriftUCellCounterClass))
+#define SWCDB_THRIFT_IS_U_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_U_CELL_COUNTER))
+#define SWCDB_THRIFT_IS_U_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_U_CELL_COUNTER))
+#define SWCDB_THRIFT_U_CELL_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_U_CELL_COUNTER, swcdb_thriftUCellCounterClass))
 
 /* struct CellValueSerial */
 struct _swcdb_thriftCellValueSerial
@@ -1361,8 +1406,8 @@ GType swcdb_thrift_u_cell_serial_get_type (void);
 #define SWCDB_THRIFT_IS_U_CELL_SERIAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_U_CELL_SERIAL))
 #define SWCDB_THRIFT_U_CELL_SERIAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_U_CELL_SERIAL, swcdb_thriftUCellSerialClass))
 
-/* struct Cell */
-struct _swcdb_thriftCell
+/* struct CellPlain */
+struct _swcdb_thriftCellPlain
 { 
   ThriftStruct parent; 
 
@@ -1376,21 +1421,54 @@ struct _swcdb_thriftCell
   GByteArray * v;
   gboolean __isset_v;
 };
-typedef struct _swcdb_thriftCell swcdb_thriftCell;
+typedef struct _swcdb_thriftCellPlain swcdb_thriftCellPlain;
 
-struct _swcdb_thriftCellClass
+struct _swcdb_thriftCellPlainClass
 {
   ThriftStructClass parent;
 };
-typedef struct _swcdb_thriftCellClass swcdb_thriftCellClass;
+typedef struct _swcdb_thriftCellPlainClass swcdb_thriftCellPlainClass;
 
-GType swcdb_thrift_cell_get_type (void);
-#define SWCDB_THRIFT_TYPE_CELL (swcdb_thrift_cell_get_type())
-#define SWCDB_THRIFT_CELL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_CELL, swcdb_thriftCell))
-#define SWCDB_THRIFT_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_CELL, swcdb_thriftCellClass))
-#define SWCDB_THRIFT_IS_CELL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_CELL))
-#define SWCDB_THRIFT_IS_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_CELL))
-#define SWCDB_THRIFT_CELL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_CELL, swcdb_thriftCellClass))
+GType swcdb_thrift_cell_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_CELL_PLAIN (swcdb_thrift_cell_plain_get_type())
+#define SWCDB_THRIFT_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_CELL_PLAIN, swcdb_thriftCellPlain))
+#define SWCDB_THRIFT_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_CELL_PLAIN, swcdb_thriftCellPlainClass))
+#define SWCDB_THRIFT_IS_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_CELL_PLAIN))
+#define SWCDB_THRIFT_IS_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_CELL_PLAIN))
+#define SWCDB_THRIFT_CELL_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_CELL_PLAIN, swcdb_thriftCellPlainClass))
+
+/* struct CellCounter */
+struct _swcdb_thriftCellCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * c;
+  gboolean __isset_c;
+  GPtrArray * k;
+  gboolean __isset_k;
+  gint64 ts;
+  gboolean __isset_ts;
+  gint64 v;
+  gboolean __isset_v;
+  gint64 eq;
+  gboolean __isset_eq;
+};
+typedef struct _swcdb_thriftCellCounter swcdb_thriftCellCounter;
+
+struct _swcdb_thriftCellCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftCellCounterClass swcdb_thriftCellCounterClass;
+
+GType swcdb_thrift_cell_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_CELL_COUNTER (swcdb_thrift_cell_counter_get_type())
+#define SWCDB_THRIFT_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_CELL_COUNTER, swcdb_thriftCellCounter))
+#define SWCDB_THRIFT_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_CELL_COUNTER, swcdb_thriftCellCounterClass))
+#define SWCDB_THRIFT_IS_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_CELL_COUNTER))
+#define SWCDB_THRIFT_IS_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_CELL_COUNTER))
+#define SWCDB_THRIFT_CELL_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_CELL_COUNTER, swcdb_thriftCellCounterClass))
 
 /* struct CellSerial */
 struct _swcdb_thriftCellSerial
@@ -1799,6 +1877,7 @@ GType swcdb_thrift_result_get_type (void);
 /* constants */
 #define SWCDB_THRIFT_TIMESTAMP_NULL G_GINT64_CONSTANT (-9223372036854775807)
 #define SWCDB_THRIFT_TIMESTAMP_AUTO G_GINT64_CONSTANT (-9223372036854775806)
+#define SWCDB_THRIFT_COUNTER_OP_EQUAL 1
 #define SWCDB_THRIFT_FU_CTRL_DEFAULT 0
 #define SWCDB_THRIFT_FU_CTRL_NO_ADD_FIELD 1
 #define SWCDB_THRIFT_FU_CTRL_DELETE_FIELD 2
@@ -2010,6 +2089,162 @@ GType swcdb_thrift_service_sql_select_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT))
 #define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT))
 #define SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT, swcdb_thriftServiceSqlSelectResultClass))
+
+/* struct ServiceSqlSelectPlainArgs */
+struct _swcdb_thriftServiceSqlSelectPlainArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * sql;
+  gboolean __isset_sql;
+};
+typedef struct _swcdb_thriftServiceSqlSelectPlainArgs swcdb_thriftServiceSqlSelectPlainArgs;
+
+struct _swcdb_thriftServiceSqlSelectPlainArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectPlainArgsClass swcdb_thriftServiceSqlSelectPlainArgsClass;
+
+GType swcdb_thrift_service_sql_select_plain_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_ARGS (swcdb_thrift_service_sql_select_plain_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_PLAIN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_ARGS, swcdb_thriftServiceSqlSelectPlainArgs))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_PLAIN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_PLAIN_ARGS, swcdb_thriftServiceSqlSelectPlainArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_PLAIN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_PLAIN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_ARGS))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_PLAIN_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_ARGS, swcdb_thriftServiceSqlSelectPlainArgsClass))
+
+/* struct ServiceSqlSelectPlainResult */
+struct _swcdb_thriftServiceSqlSelectPlainResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceSqlSelectPlainResult swcdb_thriftServiceSqlSelectPlainResult;
+
+struct _swcdb_thriftServiceSqlSelectPlainResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectPlainResultClass swcdb_thriftServiceSqlSelectPlainResultClass;
+
+GType swcdb_thrift_service_sql_select_plain_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_RESULT (swcdb_thrift_service_sql_select_plain_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_PLAIN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_RESULT, swcdb_thriftServiceSqlSelectPlainResult))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_PLAIN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_PLAIN_RESULT, swcdb_thriftServiceSqlSelectPlainResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_PLAIN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_PLAIN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_RESULT))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_PLAIN_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_PLAIN_RESULT, swcdb_thriftServiceSqlSelectPlainResultClass))
+
+/* struct ServiceSqlSelectCounterArgs */
+struct _swcdb_thriftServiceSqlSelectCounterArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * sql;
+  gboolean __isset_sql;
+};
+typedef struct _swcdb_thriftServiceSqlSelectCounterArgs swcdb_thriftServiceSqlSelectCounterArgs;
+
+struct _swcdb_thriftServiceSqlSelectCounterArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectCounterArgsClass swcdb_thriftServiceSqlSelectCounterArgsClass;
+
+GType swcdb_thrift_service_sql_select_counter_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_ARGS (swcdb_thrift_service_sql_select_counter_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_COUNTER_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_ARGS, swcdb_thriftServiceSqlSelectCounterArgs))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_COUNTER_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_COUNTER_ARGS, swcdb_thriftServiceSqlSelectCounterArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_COUNTER_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_COUNTER_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_ARGS))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_COUNTER_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_ARGS, swcdb_thriftServiceSqlSelectCounterArgsClass))
+
+/* struct ServiceSqlSelectCounterResult */
+struct _swcdb_thriftServiceSqlSelectCounterResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceSqlSelectCounterResult swcdb_thriftServiceSqlSelectCounterResult;
+
+struct _swcdb_thriftServiceSqlSelectCounterResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectCounterResultClass swcdb_thriftServiceSqlSelectCounterResultClass;
+
+GType swcdb_thrift_service_sql_select_counter_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_RESULT (swcdb_thrift_service_sql_select_counter_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_COUNTER_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_RESULT, swcdb_thriftServiceSqlSelectCounterResult))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_COUNTER_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_COUNTER_RESULT, swcdb_thriftServiceSqlSelectCounterResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_COUNTER_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_COUNTER_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_RESULT))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_COUNTER_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_RESULT, swcdb_thriftServiceSqlSelectCounterResultClass))
+
+/* struct ServiceSqlSelectSerialArgs */
+struct _swcdb_thriftServiceSqlSelectSerialArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * sql;
+  gboolean __isset_sql;
+};
+typedef struct _swcdb_thriftServiceSqlSelectSerialArgs swcdb_thriftServiceSqlSelectSerialArgs;
+
+struct _swcdb_thriftServiceSqlSelectSerialArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectSerialArgsClass swcdb_thriftServiceSqlSelectSerialArgsClass;
+
+GType swcdb_thrift_service_sql_select_serial_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_ARGS (swcdb_thrift_service_sql_select_serial_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_SERIAL_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_ARGS, swcdb_thriftServiceSqlSelectSerialArgs))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_SERIAL_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_SERIAL_ARGS, swcdb_thriftServiceSqlSelectSerialArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_SERIAL_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_SERIAL_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_ARGS))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_SERIAL_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_ARGS, swcdb_thriftServiceSqlSelectSerialArgsClass))
+
+/* struct ServiceSqlSelectSerialResult */
+struct _swcdb_thriftServiceSqlSelectSerialResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceSqlSelectSerialResult swcdb_thriftServiceSqlSelectSerialResult;
+
+struct _swcdb_thriftServiceSqlSelectSerialResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectSerialResultClass swcdb_thriftServiceSqlSelectSerialResultClass;
+
+GType swcdb_thrift_service_sql_select_serial_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT (swcdb_thrift_service_sql_select_serial_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_SERIAL_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT, swcdb_thriftServiceSqlSelectSerialResult))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_SERIAL_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT, swcdb_thriftServiceSqlSelectSerialResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_SERIAL_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_SERIAL_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_SERIAL_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT, swcdb_thriftServiceSqlSelectSerialResultClass))
 
 /* struct ServiceSqlSelectRsltOnColumnArgs */
 struct _swcdb_thriftServiceSqlSelectRsltOnColumnArgs
@@ -2479,6 +2714,58 @@ GType swcdb_thrift_service_update_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_UPDATE_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT))
 #define SWCDB_THRIFT_SERVICE_UPDATE_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT, swcdb_thriftServiceUpdateResultClass))
 
+/* struct ServiceUpdateCounterArgs */
+struct _swcdb_thriftServiceUpdateCounterArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GHashTable * cells;
+  gboolean __isset_cells;
+  gint64 updater_id;
+  gboolean __isset_updater_id;
+};
+typedef struct _swcdb_thriftServiceUpdateCounterArgs swcdb_thriftServiceUpdateCounterArgs;
+
+struct _swcdb_thriftServiceUpdateCounterArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceUpdateCounterArgsClass swcdb_thriftServiceUpdateCounterArgsClass;
+
+GType swcdb_thrift_service_update_counter_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_ARGS (swcdb_thrift_service_update_counter_args_get_type())
+#define SWCDB_THRIFT_SERVICE_UPDATE_COUNTER_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_ARGS, swcdb_thriftServiceUpdateCounterArgs))
+#define SWCDB_THRIFT_SERVICE_UPDATE_COUNTER_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_COUNTER_ARGS, swcdb_thriftServiceUpdateCounterArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_COUNTER_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_COUNTER_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_ARGS))
+#define SWCDB_THRIFT_SERVICE_UPDATE_COUNTER_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_ARGS, swcdb_thriftServiceUpdateCounterArgsClass))
+
+/* struct ServiceUpdateCounterResult */
+struct _swcdb_thriftServiceUpdateCounterResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceUpdateCounterResult swcdb_thriftServiceUpdateCounterResult;
+
+struct _swcdb_thriftServiceUpdateCounterResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceUpdateCounterResultClass swcdb_thriftServiceUpdateCounterResultClass;
+
+GType swcdb_thrift_service_update_counter_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_RESULT (swcdb_thrift_service_update_counter_result_get_type())
+#define SWCDB_THRIFT_SERVICE_UPDATE_COUNTER_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_RESULT, swcdb_thriftServiceUpdateCounterResult))
+#define SWCDB_THRIFT_SERVICE_UPDATE_COUNTER_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_COUNTER_RESULT, swcdb_thriftServiceUpdateCounterResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_COUNTER_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_COUNTER_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_RESULT))
+#define SWCDB_THRIFT_SERVICE_UPDATE_COUNTER_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_COUNTER_RESULT, swcdb_thriftServiceUpdateCounterResultClass))
+
 /* struct ServiceUpdateSerialArgs */
 struct _swcdb_thriftServiceUpdateSerialArgs
 { 
@@ -2539,6 +2826,8 @@ struct _swcdb_thriftServiceUpdateByTypesArgs
   /* public */
   GHashTable * plain;
   gboolean __isset_plain;
+  GHashTable * counter;
+  gboolean __isset_counter;
   GHashTable * serial;
   gboolean __isset_serial;
   gint64 updater_id;

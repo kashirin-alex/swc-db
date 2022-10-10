@@ -466,14 +466,14 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
           case 1: // CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list352 = iprot.readListBegin();
-                struct.cells = new java.util.ArrayList<CCell>(_list352.size);
-                @org.apache.thrift.annotation.Nullable CCell _elem353;
-                for (int _i354 = 0; _i354 < _list352.size; ++_i354)
+                org.apache.thrift.protocol.TList _list368 = iprot.readListBegin();
+                struct.cells = new java.util.ArrayList<CCell>(_list368.size);
+                @org.apache.thrift.annotation.Nullable CCell _elem369;
+                for (int _i370 = 0; _i370 < _list368.size; ++_i370)
                 {
-                  _elem353 = new CCell();
-                  _elem353.read(iprot);
-                  struct.cells.add(_elem353);
+                  _elem369 = new CCell();
+                  _elem369.read(iprot);
+                  struct.cells.add(_elem369);
                 }
                 iprot.readListEnd();
               }
@@ -485,14 +485,14 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
           case 2: // SERIAL_CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list355 = iprot.readListBegin();
-                struct.serial_cells = new java.util.ArrayList<CCellSerial>(_list355.size);
-                @org.apache.thrift.annotation.Nullable CCellSerial _elem356;
-                for (int _i357 = 0; _i357 < _list355.size; ++_i357)
+                org.apache.thrift.protocol.TList _list371 = iprot.readListBegin();
+                struct.serial_cells = new java.util.ArrayList<CCellSerial>(_list371.size);
+                @org.apache.thrift.annotation.Nullable CCellSerial _elem372;
+                for (int _i373 = 0; _i373 < _list371.size; ++_i373)
                 {
-                  _elem356 = new CCellSerial();
-                  _elem356.read(iprot);
-                  struct.serial_cells.add(_elem356);
+                  _elem372 = new CCellSerial();
+                  _elem372.read(iprot);
+                  struct.serial_cells.add(_elem372);
                 }
                 iprot.readListEnd();
               }
@@ -521,9 +521,9 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
         oprot.writeFieldBegin(CELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cells.size()));
-          for (CCell _iter358 : struct.cells)
+          for (CCell _iter374 : struct.cells)
           {
-            _iter358.write(oprot);
+            _iter374.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -533,9 +533,9 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
         oprot.writeFieldBegin(SERIAL_CELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.serial_cells.size()));
-          for (CCellSerial _iter359 : struct.serial_cells)
+          for (CCellSerial _iter375 : struct.serial_cells)
           {
-            _iter359.write(oprot);
+            _iter375.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -570,18 +570,18 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
       if (struct.isSetCells()) {
         {
           oprot.writeI32(struct.cells.size());
-          for (CCell _iter360 : struct.cells)
+          for (CCell _iter376 : struct.cells)
           {
-            _iter360.write(oprot);
+            _iter376.write(oprot);
           }
         }
       }
       if (struct.isSetSerial_cells()) {
         {
           oprot.writeI32(struct.serial_cells.size());
-          for (CCellSerial _iter361 : struct.serial_cells)
+          for (CCellSerial _iter377 : struct.serial_cells)
           {
-            _iter361.write(oprot);
+            _iter377.write(oprot);
           }
         }
       }
@@ -593,28 +593,28 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list362 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.cells = new java.util.ArrayList<CCell>(_list362.size);
-          @org.apache.thrift.annotation.Nullable CCell _elem363;
-          for (int _i364 = 0; _i364 < _list362.size; ++_i364)
+          org.apache.thrift.protocol.TList _list378 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.cells = new java.util.ArrayList<CCell>(_list378.size);
+          @org.apache.thrift.annotation.Nullable CCell _elem379;
+          for (int _i380 = 0; _i380 < _list378.size; ++_i380)
           {
-            _elem363 = new CCell();
-            _elem363.read(iprot);
-            struct.cells.add(_elem363);
+            _elem379 = new CCell();
+            _elem379.read(iprot);
+            struct.cells.add(_elem379);
           }
         }
         struct.setCellsIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list365 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.serial_cells = new java.util.ArrayList<CCellSerial>(_list365.size);
-          @org.apache.thrift.annotation.Nullable CCellSerial _elem366;
-          for (int _i367 = 0; _i367 < _list365.size; ++_i367)
+          org.apache.thrift.protocol.TList _list381 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.serial_cells = new java.util.ArrayList<CCellSerial>(_list381.size);
+          @org.apache.thrift.annotation.Nullable CCellSerial _elem382;
+          for (int _i383 = 0; _i383 < _list381.size; ++_i383)
           {
-            _elem366 = new CCellSerial();
-            _elem366.read(iprot);
-            struct.serial_cells.add(_elem366);
+            _elem382 = new CCellSerial();
+            _elem382.read(iprot);
+            struct.serial_cells.add(_elem382);
           }
         }
         struct.setSerial_cellsIsSet(true);

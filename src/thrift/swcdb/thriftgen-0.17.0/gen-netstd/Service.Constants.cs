@@ -35,6 +35,10 @@ public static class ServiceConstants
   /// </summary>
   public const long TIMESTAMP_AUTO = -9223372036854775806;
   /// <summary>
+  /// The COUNTER equal operation
+  /// </summary>
+  public const sbyte COUNTER_OP_EQUAL = 1;
+  /// <summary>
   /// A control bit of default-state
   /// </summary>
   public const sbyte FU_CTRL_DEFAULT = 0;

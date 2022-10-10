@@ -62,6 +62,36 @@ class Iface(object):
         """
         pass
 
+    def sql_select_plain(self, sql):
+        """
+        The direct SQL method to select cells with result in CellsPlain.
+
+        Parameters:
+         - sql: The SQL string to Execute
+
+        """
+        pass
+
+    def sql_select_counter(self, sql):
+        """
+        The direct SQL method to select cells with result in CellsCounter.
+
+        Parameters:
+         - sql: The SQL string to Execute
+
+        """
+        pass
+
+    def sql_select_serial(self, sql):
+        """
+        The direct SQL method to select cells with result in CellsSerial.
+
+        Parameters:
+         - sql: The SQL string to Execute
+
+        """
+        pass
+
     def sql_select_rslt_on_column(self, sql):
         """
         The direct SQL method to select cells with result in Columns Cells map.
@@ -156,6 +186,18 @@ class Iface(object):
         """
         pass
 
+    def update_counter(self, cells, updater_id):
+        """
+        The direct method to update cells with cell in Update-Columns-Cells-Counter,
+        optionally to work with updater-id.
+
+        Parameters:
+         - cells: The Counter Cells to update
+         - updater_id: The Updater ID to use for write
+
+        """
+        pass
+
     def update_serial(self, cells, updater_id):
         """
         The direct method to update cells with cell in Update-Columns-Cells-Serial,
@@ -168,13 +210,14 @@ class Iface(object):
         """
         pass
 
-    def update_by_types(self, plain, serial, updater_id):
+    def update_by_types(self, plain, counter, serial, updater_id):
         """
         The method is to update cells by several Column-Types,
         optionally to work with updater-id.
 
         Parameters:
          - plain: The PLAIN Cells to update
+         - counter: The COUNTER Cells to update
          - serial: The SERIAL Cells to update
          - updater_id: The Updater ID to use for write
 
@@ -416,6 +459,114 @@ class Client(Iface):
         if result.e is not None:
             raise result.e
         raise TApplicationException(TApplicationException.MISSING_RESULT, "sql_select failed: unknown result")
+
+    def sql_select_plain(self, sql):
+        """
+        The direct SQL method to select cells with result in CellsPlain.
+
+        Parameters:
+         - sql: The SQL string to Execute
+
+        """
+        self.send_sql_select_plain(sql)
+        return self.recv_sql_select_plain()
+
+    def send_sql_select_plain(self, sql):
+        self._oprot.writeMessageBegin('sql_select_plain', TMessageType.CALL, self._seqid)
+        args = sql_select_plain_args()
+        args.sql = sql
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_sql_select_plain(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = sql_select_plain_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "sql_select_plain failed: unknown result")
+
+    def sql_select_counter(self, sql):
+        """
+        The direct SQL method to select cells with result in CellsCounter.
+
+        Parameters:
+         - sql: The SQL string to Execute
+
+        """
+        self.send_sql_select_counter(sql)
+        return self.recv_sql_select_counter()
+
+    def send_sql_select_counter(self, sql):
+        self._oprot.writeMessageBegin('sql_select_counter', TMessageType.CALL, self._seqid)
+        args = sql_select_counter_args()
+        args.sql = sql
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_sql_select_counter(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = sql_select_counter_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "sql_select_counter failed: unknown result")
+
+    def sql_select_serial(self, sql):
+        """
+        The direct SQL method to select cells with result in CellsSerial.
+
+        Parameters:
+         - sql: The SQL string to Execute
+
+        """
+        self.send_sql_select_serial(sql)
+        return self.recv_sql_select_serial()
+
+    def send_sql_select_serial(self, sql):
+        self._oprot.writeMessageBegin('sql_select_serial', TMessageType.CALL, self._seqid)
+        args = sql_select_serial_args()
+        args.sql = sql
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_sql_select_serial(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = sql_select_serial_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.e is not None:
+            raise result.e
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "sql_select_serial failed: unknown result")
 
     def sql_select_rslt_on_column(self, sql):
         """
@@ -742,6 +893,43 @@ class Client(Iface):
             raise result.e
         return
 
+    def update_counter(self, cells, updater_id):
+        """
+        The direct method to update cells with cell in Update-Columns-Cells-Counter,
+        optionally to work with updater-id.
+
+        Parameters:
+         - cells: The Counter Cells to update
+         - updater_id: The Updater ID to use for write
+
+        """
+        self.send_update_counter(cells, updater_id)
+        self.recv_update_counter()
+
+    def send_update_counter(self, cells, updater_id):
+        self._oprot.writeMessageBegin('update_counter', TMessageType.CALL, self._seqid)
+        args = update_counter_args()
+        args.cells = cells
+        args.updater_id = updater_id
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_update_counter(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = update_counter_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.e is not None:
+            raise result.e
+        return
+
     def update_serial(self, cells, updater_id):
         """
         The direct method to update cells with cell in Update-Columns-Cells-Serial,
@@ -779,24 +967,26 @@ class Client(Iface):
             raise result.e
         return
 
-    def update_by_types(self, plain, serial, updater_id):
+    def update_by_types(self, plain, counter, serial, updater_id):
         """
         The method is to update cells by several Column-Types,
         optionally to work with updater-id.
 
         Parameters:
          - plain: The PLAIN Cells to update
+         - counter: The COUNTER Cells to update
          - serial: The SERIAL Cells to update
          - updater_id: The Updater ID to use for write
 
         """
-        self.send_update_by_types(plain, serial, updater_id)
+        self.send_update_by_types(plain, counter, serial, updater_id)
         self.recv_update_by_types()
 
-    def send_update_by_types(self, plain, serial, updater_id):
+    def send_update_by_types(self, plain, counter, serial, updater_id):
         self._oprot.writeMessageBegin('update_by_types', TMessageType.CALL, self._seqid)
         args = update_by_types_args()
         args.plain = plain
+        args.counter = counter
         args.serial = serial
         args.updater_id = updater_id
         args.write(self._oprot)
@@ -1117,6 +1307,9 @@ class Processor(Iface, TProcessor):
         self._processMap["sql_list_columns"] = Processor.process_sql_list_columns
         self._processMap["sql_compact_columns"] = Processor.process_sql_compact_columns
         self._processMap["sql_select"] = Processor.process_sql_select
+        self._processMap["sql_select_plain"] = Processor.process_sql_select_plain
+        self._processMap["sql_select_counter"] = Processor.process_sql_select_counter
+        self._processMap["sql_select_serial"] = Processor.process_sql_select_serial
         self._processMap["sql_select_rslt_on_column"] = Processor.process_sql_select_rslt_on_column
         self._processMap["sql_select_rslt_on_key"] = Processor.process_sql_select_rslt_on_key
         self._processMap["sql_select_rslt_on_fraction"] = Processor.process_sql_select_rslt_on_fraction
@@ -1126,6 +1319,7 @@ class Processor(Iface, TProcessor):
         self._processMap["updater_create"] = Processor.process_updater_create
         self._processMap["updater_close"] = Processor.process_updater_close
         self._processMap["update"] = Processor.process_update
+        self._processMap["update_counter"] = Processor.process_update_counter
         self._processMap["update_serial"] = Processor.process_update_serial
         self._processMap["update_by_types"] = Processor.process_update_by_types
         self._processMap["mng_column"] = Processor.process_mng_column
@@ -1258,6 +1452,84 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("sql_select", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_sql_select_plain(self, seqid, iprot, oprot):
+        args = sql_select_plain_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = sql_select_plain_result()
+        try:
+            result.success = self._handler.sql_select_plain(args.sql)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("sql_select_plain", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_sql_select_counter(self, seqid, iprot, oprot):
+        args = sql_select_counter_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = sql_select_counter_result()
+        try:
+            result.success = self._handler.sql_select_counter(args.sql)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("sql_select_counter", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_sql_select_serial(self, seqid, iprot, oprot):
+        args = sql_select_serial_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = sql_select_serial_result()
+        try:
+            result.success = self._handler.sql_select_serial(args.sql)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("sql_select_serial", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -1496,6 +1768,32 @@ class Processor(Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
+    def process_update_counter(self, seqid, iprot, oprot):
+        args = update_counter_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_counter_result()
+        try:
+            self._handler.update_counter(args.cells, args.updater_id)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except Exception as e:
+            msg_type = TMessageType.REPLY
+            result.e = e
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("update_counter", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
     def process_update_serial(self, seqid, iprot, oprot):
         args = update_serial_args()
         args.read(iprot)
@@ -1528,7 +1826,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = update_by_types_result()
         try:
-            self._handler.update_by_types(args.plain, args.serial, args.updater_id)
+            self._handler.update_by_types(args.plain, args.counter, args.serial, args.updater_id)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -2008,11 +2306,11 @@ class sql_list_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype413, _size410) = iprot.readListBegin()
-                    for _i414 in range(_size410):
-                        _elem415 = Schema()
-                        _elem415.read(iprot)
-                        self.success.append(_elem415)
+                    (_etype427, _size424) = iprot.readListBegin()
+                    for _i428 in range(_size424):
+                        _elem429 = Schema()
+                        _elem429.read(iprot)
+                        self.success.append(_elem429)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2034,8 +2332,8 @@ class sql_list_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter416 in self.success:
-                iter416.write(oprot)
+            for iter430 in self.success:
+                iter430.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -2175,11 +2473,11 @@ class sql_compact_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype420, _size417) = iprot.readListBegin()
-                    for _i421 in range(_size417):
-                        _elem422 = CompactResult()
-                        _elem422.read(iprot)
-                        self.success.append(_elem422)
+                    (_etype434, _size431) = iprot.readListBegin()
+                    for _i435 in range(_size431):
+                        _elem436 = CompactResult()
+                        _elem436.read(iprot)
+                        self.success.append(_elem436)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2201,8 +2499,8 @@ class sql_compact_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter423 in self.success:
-                iter423.write(oprot)
+            for iter437 in self.success:
+                iter437.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -2398,6 +2696,507 @@ sql_select_result.thrift_spec = (
 )
 
 
+class sql_select_plain_args(object):
+    """
+    Attributes:
+     - sql: The SQL string to Execute
+
+    """
+
+    __slots__ = (
+        'sql',
+    )
+
+
+    def __init__(self, sql=None,):
+        self.sql = sql
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.sql = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_select_plain_args')
+        if self.sql is not None:
+            oprot.writeFieldBegin('sql', TType.STRING, 1)
+            oprot.writeString(self.sql)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_select_plain_args)
+sql_select_plain_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'sql', None, None, ),  # 1
+)
+
+
+class sql_select_plain_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype441, _size438) = iprot.readListBegin()
+                    for _i442 in range(_size438):
+                        _elem443 = CellPlain()
+                        _elem443.read(iprot)
+                        self.success.append(_elem443)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_select_plain_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter444 in self.success:
+                iter444.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_select_plain_result)
+sql_select_plain_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [CellPlain, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
+class sql_select_counter_args(object):
+    """
+    Attributes:
+     - sql: The SQL string to Execute
+
+    """
+
+    __slots__ = (
+        'sql',
+    )
+
+
+    def __init__(self, sql=None,):
+        self.sql = sql
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.sql = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_select_counter_args')
+        if self.sql is not None:
+            oprot.writeFieldBegin('sql', TType.STRING, 1)
+            oprot.writeString(self.sql)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_select_counter_args)
+sql_select_counter_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'sql', None, None, ),  # 1
+)
+
+
+class sql_select_counter_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype448, _size445) = iprot.readListBegin()
+                    for _i449 in range(_size445):
+                        _elem450 = CellCounter()
+                        _elem450.read(iprot)
+                        self.success.append(_elem450)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_select_counter_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter451 in self.success:
+                iter451.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_select_counter_result)
+sql_select_counter_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [CellCounter, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
+class sql_select_serial_args(object):
+    """
+    Attributes:
+     - sql: The SQL string to Execute
+
+    """
+
+    __slots__ = (
+        'sql',
+    )
+
+
+    def __init__(self, sql=None,):
+        self.sql = sql
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.sql = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_select_serial_args')
+        if self.sql is not None:
+            oprot.writeFieldBegin('sql', TType.STRING, 1)
+            oprot.writeString(self.sql)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_select_serial_args)
+sql_select_serial_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'sql', None, None, ),  # 1
+)
+
+
+class sql_select_serial_result(object):
+    """
+    Attributes:
+     - success
+     - e
+
+    """
+
+    __slots__ = (
+        'success',
+        'e',
+    )
+
+
+    def __init__(self, success=None, e=None,):
+        self.success = success
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype455, _size452) = iprot.readListBegin()
+                    for _i456 in range(_size452):
+                        _elem457 = CellSerial()
+                        _elem457.read(iprot)
+                        self.success.append(_elem457)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('sql_select_serial_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter458 in self.success:
+                iter458.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(sql_select_serial_result)
+sql_select_serial_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [CellSerial, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
 class sql_select_rslt_on_column_args(object):
     """
     Attributes:
@@ -2501,12 +3300,12 @@ class sql_select_rslt_on_column_result(object):
             if fid == 0:
                 if ftype == TType.MAP:
                     self.success = {}
-                    (_ktype425, _vtype426, _size424) = iprot.readMapBegin()
-                    for _i428 in range(_size424):
-                        _key429 = iprot.readString()
-                        _val430 = ColCells()
-                        _val430.read(iprot)
-                        self.success[_key429] = _val430
+                    (_ktype460, _vtype461, _size459) = iprot.readMapBegin()
+                    for _i463 in range(_size459):
+                        _key464 = iprot.readString()
+                        _val465 = ColCells()
+                        _val465.read(iprot)
+                        self.success[_key464] = _val465
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -2528,9 +3327,9 @@ class sql_select_rslt_on_column_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.MAP, 0)
             oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.success))
-            for kiter431, viter432 in self.success.items():
-                oprot.writeString(kiter431)
-                viter432.write(oprot)
+            for kiter466, viter467 in self.success.items():
+                oprot.writeString(kiter466)
+                viter467.write(oprot)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -2670,11 +3469,11 @@ class sql_select_rslt_on_key_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype436, _size433) = iprot.readListBegin()
-                    for _i437 in range(_size433):
-                        _elem438 = kCells()
-                        _elem438.read(iprot)
-                        self.success.append(_elem438)
+                    (_etype471, _size468) = iprot.readListBegin()
+                    for _i472 in range(_size468):
+                        _elem473 = kCells()
+                        _elem473.read(iprot)
+                        self.success.append(_elem473)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -2696,8 +3495,8 @@ class sql_select_rslt_on_key_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter439 in self.success:
-                iter439.write(oprot)
+            for iter474 in self.success:
+                iter474.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -3717,17 +4516,17 @@ class update_args(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.cells = {}
-                    (_ktype441, _vtype442, _size440) = iprot.readMapBegin()
-                    for _i444 in range(_size440):
-                        _key445 = iprot.readI64()
-                        _val446 = []
-                        (_etype450, _size447) = iprot.readListBegin()
-                        for _i451 in range(_size447):
-                            _elem452 = UCell()
-                            _elem452.read(iprot)
-                            _val446.append(_elem452)
+                    (_ktype476, _vtype477, _size475) = iprot.readMapBegin()
+                    for _i479 in range(_size475):
+                        _key480 = iprot.readI64()
+                        _val481 = []
+                        (_etype485, _size482) = iprot.readListBegin()
+                        for _i486 in range(_size482):
+                            _elem487 = UCellPlain()
+                            _elem487.read(iprot)
+                            _val481.append(_elem487)
                         iprot.readListEnd()
-                        self.cells[_key445] = _val446
+                        self.cells[_key480] = _val481
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -3749,11 +4548,11 @@ class update_args(object):
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.MAP, 1)
             oprot.writeMapBegin(TType.I64, TType.LIST, len(self.cells))
-            for kiter453, viter454 in self.cells.items():
-                oprot.writeI64(kiter453)
-                oprot.writeListBegin(TType.STRUCT, len(viter454))
-                for iter455 in viter454:
-                    iter455.write(oprot)
+            for kiter488, viter489 in self.cells.items():
+                oprot.writeI64(kiter488)
+                oprot.writeListBegin(TType.STRUCT, len(viter489))
+                for iter490 in viter489:
+                    iter490.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -3787,7 +4586,7 @@ class update_args(object):
 all_structs.append(update_args)
 update_args.thrift_spec = (
     None,  # 0
-    (1, TType.MAP, 'cells', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCell, None], False), False), None, ),  # 1
+    (1, TType.MAP, 'cells', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCellPlain, None], False), False), None, ),  # 1
     (2, TType.I64, 'updater_id', None, 0, ),  # 2
 )
 
@@ -3865,6 +4664,184 @@ update_result.thrift_spec = (
 )
 
 
+class update_counter_args(object):
+    """
+    Attributes:
+     - cells: The Counter Cells to update
+     - updater_id: The Updater ID to use for write
+
+    """
+
+    __slots__ = (
+        'cells',
+        'updater_id',
+    )
+
+
+    def __init__(self, cells=None, updater_id=0,):
+        self.cells = cells
+        self.updater_id = updater_id
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.MAP:
+                    self.cells = {}
+                    (_ktype492, _vtype493, _size491) = iprot.readMapBegin()
+                    for _i495 in range(_size491):
+                        _key496 = iprot.readI64()
+                        _val497 = []
+                        (_etype501, _size498) = iprot.readListBegin()
+                        for _i502 in range(_size498):
+                            _elem503 = UCellCounter()
+                            _elem503.read(iprot)
+                            _val497.append(_elem503)
+                        iprot.readListEnd()
+                        self.cells[_key496] = _val497
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.updater_id = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_counter_args')
+        if self.cells is not None:
+            oprot.writeFieldBegin('cells', TType.MAP, 1)
+            oprot.writeMapBegin(TType.I64, TType.LIST, len(self.cells))
+            for kiter504, viter505 in self.cells.items():
+                oprot.writeI64(kiter504)
+                oprot.writeListBegin(TType.STRUCT, len(viter505))
+                for iter506 in viter505:
+                    iter506.write(oprot)
+                oprot.writeListEnd()
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.updater_id is not None:
+            oprot.writeFieldBegin('updater_id', TType.I64, 2)
+            oprot.writeI64(self.updater_id)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_counter_args)
+update_counter_args.thrift_spec = (
+    None,  # 0
+    (1, TType.MAP, 'cells', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCellCounter, None], False), False), None, ),  # 1
+    (2, TType.I64, 'updater_id', None, 0, ),  # 2
+)
+
+
+class update_counter_result(object):
+    """
+    Attributes:
+     - e
+
+    """
+
+    __slots__ = (
+        'e',
+    )
+
+
+    def __init__(self, e=None,):
+        self.e = e
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.e = Exception.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_counter_result')
+        if self.e is not None:
+            oprot.writeFieldBegin('e', TType.STRUCT, 1)
+            self.e.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, getattr(self, key))
+             for key in self.__slots__]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        for attr in self.__slots__:
+            my_val = getattr(self, attr)
+            other_val = getattr(other, attr)
+            if my_val != other_val:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_counter_result)
+update_counter_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
+)
+
+
 class update_serial_args(object):
     """
     Attributes:
@@ -3895,17 +4872,17 @@ class update_serial_args(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.cells = {}
-                    (_ktype457, _vtype458, _size456) = iprot.readMapBegin()
-                    for _i460 in range(_size456):
-                        _key461 = iprot.readI64()
-                        _val462 = []
-                        (_etype466, _size463) = iprot.readListBegin()
-                        for _i467 in range(_size463):
-                            _elem468 = UCellSerial()
-                            _elem468.read(iprot)
-                            _val462.append(_elem468)
+                    (_ktype508, _vtype509, _size507) = iprot.readMapBegin()
+                    for _i511 in range(_size507):
+                        _key512 = iprot.readI64()
+                        _val513 = []
+                        (_etype517, _size514) = iprot.readListBegin()
+                        for _i518 in range(_size514):
+                            _elem519 = UCellSerial()
+                            _elem519.read(iprot)
+                            _val513.append(_elem519)
                         iprot.readListEnd()
-                        self.cells[_key461] = _val462
+                        self.cells[_key512] = _val513
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -3927,11 +4904,11 @@ class update_serial_args(object):
         if self.cells is not None:
             oprot.writeFieldBegin('cells', TType.MAP, 1)
             oprot.writeMapBegin(TType.I64, TType.LIST, len(self.cells))
-            for kiter469, viter470 in self.cells.items():
-                oprot.writeI64(kiter469)
-                oprot.writeListBegin(TType.STRUCT, len(viter470))
-                for iter471 in viter470:
-                    iter471.write(oprot)
+            for kiter520, viter521 in self.cells.items():
+                oprot.writeI64(kiter520)
+                oprot.writeListBegin(TType.STRUCT, len(viter521))
+                for iter522 in viter521:
+                    iter522.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
@@ -4047,6 +5024,7 @@ class update_by_types_args(object):
     """
     Attributes:
      - plain: The PLAIN Cells to update
+     - counter: The COUNTER Cells to update
      - serial: The SERIAL Cells to update
      - updater_id: The Updater ID to use for write
 
@@ -4054,13 +5032,15 @@ class update_by_types_args(object):
 
     __slots__ = (
         'plain',
+        'counter',
         'serial',
         'updater_id',
     )
 
 
-    def __init__(self, plain=None, serial=None, updater_id=0,):
+    def __init__(self, plain=None, counter=None, serial=None, updater_id=0,):
         self.plain = plain
+        self.counter = counter
         self.serial = serial
         self.updater_id = updater_id
 
@@ -4076,38 +5056,55 @@ class update_by_types_args(object):
             if fid == 1:
                 if ftype == TType.MAP:
                     self.plain = {}
-                    (_ktype473, _vtype474, _size472) = iprot.readMapBegin()
-                    for _i476 in range(_size472):
-                        _key477 = iprot.readI64()
-                        _val478 = []
-                        (_etype482, _size479) = iprot.readListBegin()
-                        for _i483 in range(_size479):
-                            _elem484 = UCell()
-                            _elem484.read(iprot)
-                            _val478.append(_elem484)
+                    (_ktype524, _vtype525, _size523) = iprot.readMapBegin()
+                    for _i527 in range(_size523):
+                        _key528 = iprot.readI64()
+                        _val529 = []
+                        (_etype533, _size530) = iprot.readListBegin()
+                        for _i534 in range(_size530):
+                            _elem535 = UCellPlain()
+                            _elem535.read(iprot)
+                            _val529.append(_elem535)
                         iprot.readListEnd()
-                        self.plain[_key477] = _val478
+                        self.plain[_key528] = _val529
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.MAP:
-                    self.serial = {}
-                    (_ktype486, _vtype487, _size485) = iprot.readMapBegin()
-                    for _i489 in range(_size485):
-                        _key490 = iprot.readI64()
-                        _val491 = []
-                        (_etype495, _size492) = iprot.readListBegin()
-                        for _i496 in range(_size492):
-                            _elem497 = UCellSerial()
-                            _elem497.read(iprot)
-                            _val491.append(_elem497)
+                    self.counter = {}
+                    (_ktype537, _vtype538, _size536) = iprot.readMapBegin()
+                    for _i540 in range(_size536):
+                        _key541 = iprot.readI64()
+                        _val542 = []
+                        (_etype546, _size543) = iprot.readListBegin()
+                        for _i547 in range(_size543):
+                            _elem548 = UCellCounter()
+                            _elem548.read(iprot)
+                            _val542.append(_elem548)
                         iprot.readListEnd()
-                        self.serial[_key490] = _val491
+                        self.counter[_key541] = _val542
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
+                if ftype == TType.MAP:
+                    self.serial = {}
+                    (_ktype550, _vtype551, _size549) = iprot.readMapBegin()
+                    for _i553 in range(_size549):
+                        _key554 = iprot.readI64()
+                        _val555 = []
+                        (_etype559, _size556) = iprot.readListBegin()
+                        for _i560 in range(_size556):
+                            _elem561 = UCellSerial()
+                            _elem561.read(iprot)
+                            _val555.append(_elem561)
+                        iprot.readListEnd()
+                        self.serial[_key554] = _val555
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
                 if ftype == TType.I64:
                     self.updater_id = iprot.readI64()
                 else:
@@ -4125,27 +5122,38 @@ class update_by_types_args(object):
         if self.plain is not None:
             oprot.writeFieldBegin('plain', TType.MAP, 1)
             oprot.writeMapBegin(TType.I64, TType.LIST, len(self.plain))
-            for kiter498, viter499 in self.plain.items():
-                oprot.writeI64(kiter498)
-                oprot.writeListBegin(TType.STRUCT, len(viter499))
-                for iter500 in viter499:
-                    iter500.write(oprot)
+            for kiter562, viter563 in self.plain.items():
+                oprot.writeI64(kiter562)
+                oprot.writeListBegin(TType.STRUCT, len(viter563))
+                for iter564 in viter563:
+                    iter564.write(oprot)
+                oprot.writeListEnd()
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.counter is not None:
+            oprot.writeFieldBegin('counter', TType.MAP, 2)
+            oprot.writeMapBegin(TType.I64, TType.LIST, len(self.counter))
+            for kiter565, viter566 in self.counter.items():
+                oprot.writeI64(kiter565)
+                oprot.writeListBegin(TType.STRUCT, len(viter566))
+                for iter567 in viter566:
+                    iter567.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.serial is not None:
-            oprot.writeFieldBegin('serial', TType.MAP, 2)
+            oprot.writeFieldBegin('serial', TType.MAP, 3)
             oprot.writeMapBegin(TType.I64, TType.LIST, len(self.serial))
-            for kiter501, viter502 in self.serial.items():
-                oprot.writeI64(kiter501)
-                oprot.writeListBegin(TType.STRUCT, len(viter502))
-                for iter503 in viter502:
-                    iter503.write(oprot)
+            for kiter568, viter569 in self.serial.items():
+                oprot.writeI64(kiter568)
+                oprot.writeListBegin(TType.STRUCT, len(viter569))
+                for iter570 in viter569:
+                    iter570.write(oprot)
                 oprot.writeListEnd()
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.updater_id is not None:
-            oprot.writeFieldBegin('updater_id', TType.I64, 3)
+            oprot.writeFieldBegin('updater_id', TType.I64, 4)
             oprot.writeI64(self.updater_id)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -4174,9 +5182,10 @@ class update_by_types_args(object):
 all_structs.append(update_by_types_args)
 update_by_types_args.thrift_spec = (
     None,  # 0
-    (1, TType.MAP, 'plain', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCell, None], False), False), None, ),  # 1
-    (2, TType.MAP, 'serial', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCellSerial, None], False), False), None, ),  # 2
-    (3, TType.I64, 'updater_id', None, 0, ),  # 3
+    (1, TType.MAP, 'plain', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCellPlain, None], False), False), None, ),  # 1
+    (2, TType.MAP, 'counter', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCellCounter, None], False), False), None, ),  # 2
+    (3, TType.MAP, 'serial', (TType.I64, None, TType.LIST, (TType.STRUCT, [UCellSerial, None], False), False), None, ),  # 3
+    (4, TType.I64, 'updater_id', None, 0, ),  # 4
 )
 
 
@@ -4517,11 +5526,11 @@ class list_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype507, _size504) = iprot.readListBegin()
-                    for _i508 in range(_size504):
-                        _elem509 = Schema()
-                        _elem509.read(iprot)
-                        self.success.append(_elem509)
+                    (_etype574, _size571) = iprot.readListBegin()
+                    for _i575 in range(_size571):
+                        _elem576 = Schema()
+                        _elem576.read(iprot)
+                        self.success.append(_elem576)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -4543,8 +5552,8 @@ class list_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter510 in self.success:
-                iter510.write(oprot)
+            for iter577 in self.success:
+                iter577.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -4685,11 +5694,11 @@ class compact_columns_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype514, _size511) = iprot.readListBegin()
-                    for _i515 in range(_size511):
-                        _elem516 = CompactResult()
-                        _elem516.read(iprot)
-                        self.success.append(_elem516)
+                    (_etype581, _size578) = iprot.readListBegin()
+                    for _i582 in range(_size578):
+                        _elem583 = CompactResult()
+                        _elem583.read(iprot)
+                        self.success.append(_elem583)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -4711,8 +5720,8 @@ class compact_columns_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter517 in self.success:
-                iter517.write(oprot)
+            for iter584 in self.success:
+                iter584.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -5013,12 +6022,12 @@ class scan_rslt_on_column_result(object):
             if fid == 0:
                 if ftype == TType.MAP:
                     self.success = {}
-                    (_ktype519, _vtype520, _size518) = iprot.readMapBegin()
-                    for _i522 in range(_size518):
-                        _key523 = iprot.readString()
-                        _val524 = ColCells()
-                        _val524.read(iprot)
-                        self.success[_key523] = _val524
+                    (_ktype586, _vtype587, _size585) = iprot.readMapBegin()
+                    for _i589 in range(_size585):
+                        _key590 = iprot.readString()
+                        _val591 = ColCells()
+                        _val591.read(iprot)
+                        self.success[_key590] = _val591
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -5040,9 +6049,9 @@ class scan_rslt_on_column_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.MAP, 0)
             oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.success))
-            for kiter525, viter526 in self.success.items():
-                oprot.writeString(kiter525)
-                viter526.write(oprot)
+            for kiter592, viter593 in self.success.items():
+                oprot.writeString(kiter592)
+                viter593.write(oprot)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         if self.e is not None:
@@ -5183,11 +6192,11 @@ class scan_rslt_on_key_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype530, _size527) = iprot.readListBegin()
-                    for _i531 in range(_size527):
-                        _elem532 = kCells()
-                        _elem532.read(iprot)
-                        self.success.append(_elem532)
+                    (_etype597, _size594) = iprot.readListBegin()
+                    for _i598 in range(_size594):
+                        _elem599 = kCells()
+                        _elem599.read(iprot)
+                        self.success.append(_elem599)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -5209,8 +6218,8 @@ class scan_rslt_on_key_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter533 in self.success:
-                iter533.write(oprot)
+            for iter600 in self.success:
+                iter600.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.e is not None:

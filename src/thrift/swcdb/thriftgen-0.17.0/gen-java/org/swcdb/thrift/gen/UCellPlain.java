@@ -7,21 +7,21 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Cell data for using with Update of SERIAL Column Type
+ * The Cell data for using with Update of PLAIN Column Type
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSerial._Fields>, java.io.Serializable, Cloneable, Comparable<UCellSerial> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("UCellSerial");
+public class UCellPlain implements org.apache.thrift.TBase<UCellPlain, UCellPlain._Fields>, java.io.Serializable, Cloneable, Comparable<UCellPlain> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("UCellPlain");
 
   private static final org.apache.thrift.protocol.TField F_FIELD_DESC = new org.apache.thrift.protocol.TField("f", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField K_FIELD_DESC = new org.apache.thrift.protocol.TField("k", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField TS_DESC_FIELD_DESC = new org.apache.thrift.protocol.TField("ts_desc", org.apache.thrift.protocol.TType.BOOL, (short)4);
-  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField ENCODER_FIELD_DESC = new org.apache.thrift.protocol.TField("encoder", org.apache.thrift.protocol.TType.I32, (short)6);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new UCellSerialStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new UCellSerialTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new UCellPlainStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new UCellPlainTupleSchemeFactory();
 
   /**
    * The Cell Flag
@@ -42,9 +42,9 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
    */
   public boolean ts_desc; // optional
   /**
-   * The Serial Cell Value fields
+   * The Cell Value
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<CellValueSerial> v; // required
+  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // required
   /**
    * Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
    * 
@@ -73,7 +73,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
      */
     TS_DESC((short)4, "ts_desc"),
     /**
-     * The Serial Cell Value fields
+     * The Cell Value
      */
     V((short)5, "v"),
     /**
@@ -168,31 +168,31 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
     tmpMap.put(_Fields.TS_DESC, new org.apache.thrift.meta_data.FieldMetaData("ts_desc", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "CellValuesSerial")));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     tmpMap.put(_Fields.ENCODER, new org.apache.thrift.meta_data.FieldMetaData("encoder", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, EncodingType.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(UCellSerial.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(UCellPlain.class, metaDataMap);
   }
 
-  public UCellSerial() {
+  public UCellPlain() {
   }
 
-  public UCellSerial(
+  public UCellPlain(
     Flag f,
     java.util.List<java.nio.ByteBuffer> k,
-    java.util.List<CellValueSerial> v)
+    java.nio.ByteBuffer v)
   {
     this();
     this.f = f;
     this.k = k;
-    this.v = v;
+    this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public UCellSerial(UCellSerial other) {
+  public UCellPlain(UCellPlain other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetF()) {
       this.f = other.f;
@@ -204,11 +204,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
     this.ts = other.ts;
     this.ts_desc = other.ts_desc;
     if (other.isSetV()) {
-      java.util.List<CellValueSerial> __this__v = new java.util.ArrayList<CellValueSerial>(other.v.size());
-      for (CellValueSerial other_element : other.v) {
-        __this__v.add(new CellValueSerial(other_element));
-      }
-      this.v = __this__v;
+      this.v = org.apache.thrift.TBaseHelper.copyBinary(other.v);
     }
     if (other.isSetEncoder()) {
       this.encoder = other.encoder;
@@ -216,8 +212,8 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
   }
 
   @Override
-  public UCellSerial deepCopy() {
-    return new UCellSerial(this);
+  public UCellPlain deepCopy() {
+    return new UCellPlain(this);
   }
 
   @Override
@@ -247,7 +243,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
    * 
    * @see Flag
    */
-  public UCellSerial setF(@org.apache.thrift.annotation.Nullable Flag f) {
+  public UCellPlain setF(@org.apache.thrift.annotation.Nullable Flag f) {
     this.f = f;
     return this;
   }
@@ -294,7 +290,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
   /**
    * The Cell Key
    */
-  public UCellSerial setK(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k) {
+  public UCellPlain setK(@org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> k) {
     this.k = k;
     return this;
   }
@@ -324,7 +320,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
   /**
    * The Cell Timestamp in nanoseconds
    */
-  public UCellSerial setTs(long ts) {
+  public UCellPlain setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
     return this;
@@ -353,7 +349,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
   /**
    * The Cell Version is in timestamp descending
    */
-  public UCellSerial setTs_desc(boolean ts_desc) {
+  public UCellPlain setTs_desc(boolean ts_desc) {
     this.ts_desc = ts_desc;
     setTs_descIsSet(true);
     return this;
@@ -372,35 +368,28 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TS_DESC_ISSET_ID, value);
   }
 
-  public int getVSize() {
-    return (this.v == null) ? 0 : this.v.size();
+  /**
+   * The Cell Value
+   */
+  public byte[] getV() {
+    setV(org.apache.thrift.TBaseHelper.rightSize(v));
+    return v == null ? null : v.array();
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<CellValueSerial> getVIterator() {
-    return (this.v == null) ? null : this.v.iterator();
-  }
-
-  public void addToV(CellValueSerial elem) {
-    if (this.v == null) {
-      this.v = new java.util.ArrayList<CellValueSerial>();
-    }
-    this.v.add(elem);
+  public java.nio.ByteBuffer bufferForV() {
+    return org.apache.thrift.TBaseHelper.copyBinary(v);
   }
 
   /**
-   * The Serial Cell Value fields
+   * The Cell Value
    */
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<CellValueSerial> getV() {
-    return this.v;
+  public UCellPlain setV(byte[] v) {
+    this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
+    return this;
   }
 
-  /**
-   * The Serial Cell Value fields
-   */
-  public UCellSerial setV(@org.apache.thrift.annotation.Nullable java.util.List<CellValueSerial> v) {
-    this.v = v;
+  public UCellPlain setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
+    this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
     return this;
   }
 
@@ -434,7 +423,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
    * 
    * @see EncodingType
    */
-  public UCellSerial setEncoder(@org.apache.thrift.annotation.Nullable EncodingType encoder) {
+  public UCellPlain setEncoder(@org.apache.thrift.annotation.Nullable EncodingType encoder) {
     this.encoder = encoder;
     return this;
   }
@@ -493,7 +482,11 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
       if (value == null) {
         unsetV();
       } else {
-        setV((java.util.List<CellValueSerial>)value);
+        if (value instanceof byte[]) {
+          setV((byte[])value);
+        } else {
+          setV((java.nio.ByteBuffer)value);
+        }
       }
       break;
 
@@ -560,12 +553,12 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof UCellSerial)
-      return this.equals((UCellSerial)that);
+    if (that instanceof UCellPlain)
+      return this.equals((UCellPlain)that);
     return false;
   }
 
-  public boolean equals(UCellSerial that) {
+  public boolean equals(UCellPlain that) {
     if (that == null)
       return false;
     if (this == that)
@@ -660,7 +653,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
   }
 
   @Override
-  public int compareTo(UCellSerial other) {
+  public int compareTo(UCellPlain other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -748,7 +741,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("UCellSerial(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("UCellPlain(");
     boolean first = true;
 
     sb.append("f:");
@@ -783,7 +776,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
     if (this.v == null) {
       sb.append("null");
     } else {
-      sb.append(this.v);
+      org.apache.thrift.TBaseHelper.toString(this.v, sb);
     }
     first = false;
     if (isSetEncoder()) {
@@ -823,17 +816,17 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
     }
   }
 
-  private static class UCellSerialStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class UCellPlainStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public UCellSerialStandardScheme getScheme() {
-      return new UCellSerialStandardScheme();
+    public UCellPlainStandardScheme getScheme() {
+      return new UCellPlainStandardScheme();
     }
   }
 
-  private static class UCellSerialStandardScheme extends org.apache.thrift.scheme.StandardScheme<UCellSerial> {
+  private static class UCellPlainStandardScheme extends org.apache.thrift.scheme.StandardScheme<UCellPlain> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, UCellSerial struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, UCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -854,13 +847,13 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
           case 2: // K
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list280 = iprot.readListBegin();
-                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list280.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem281;
-                for (int _i282 = 0; _i282 < _list280.size; ++_i282)
+                org.apache.thrift.protocol.TList _list216 = iprot.readListBegin();
+                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list216.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem217;
+                for (int _i218 = 0; _i218 < _list216.size; ++_i218)
                 {
-                  _elem281 = iprot.readBinary();
-                  struct.k.add(_elem281);
+                  _elem217 = iprot.readBinary();
+                  struct.k.add(_elem217);
                 }
                 iprot.readListEnd();
               }
@@ -886,19 +879,8 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
             }
             break;
           case 5: // V
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list283 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<CellValueSerial>(_list283.size);
-                @org.apache.thrift.annotation.Nullable CellValueSerial _elem284;
-                for (int _i285 = 0; _i285 < _list283.size; ++_i285)
-                {
-                  _elem284 = new CellValueSerial();
-                  _elem284.read(iprot);
-                  struct.v.add(_elem284);
-                }
-                iprot.readListEnd();
-              }
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.v = iprot.readBinary();
               struct.setVIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -924,7 +906,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, UCellSerial struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, UCellPlain struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -937,9 +919,9 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
         oprot.writeFieldBegin(K_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.k.size()));
-          for (java.nio.ByteBuffer _iter286 : struct.k)
+          for (java.nio.ByteBuffer _iter219 : struct.k)
           {
-            oprot.writeBinary(_iter286);
+            oprot.writeBinary(_iter219);
           }
           oprot.writeListEnd();
         }
@@ -957,14 +939,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
       }
       if (struct.v != null) {
         oprot.writeFieldBegin(V_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (CellValueSerial _iter287 : struct.v)
-          {
-            _iter287.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
+        oprot.writeBinary(struct.v);
         oprot.writeFieldEnd();
       }
       if (struct.encoder != null) {
@@ -980,17 +955,17 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
 
   }
 
-  private static class UCellSerialTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class UCellPlainTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public UCellSerialTupleScheme getScheme() {
-      return new UCellSerialTupleScheme();
+    public UCellPlainTupleScheme getScheme() {
+      return new UCellPlainTupleScheme();
     }
   }
 
-  private static class UCellSerialTupleScheme extends org.apache.thrift.scheme.TupleScheme<UCellSerial> {
+  private static class UCellPlainTupleScheme extends org.apache.thrift.scheme.TupleScheme<UCellPlain> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, UCellSerial struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, UCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetF()) {
@@ -1018,9 +993,9 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
       if (struct.isSetK()) {
         {
           oprot.writeI32(struct.k.size());
-          for (java.nio.ByteBuffer _iter288 : struct.k)
+          for (java.nio.ByteBuffer _iter220 : struct.k)
           {
-            oprot.writeBinary(_iter288);
+            oprot.writeBinary(_iter220);
           }
         }
       }
@@ -1031,13 +1006,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
         oprot.writeBool(struct.ts_desc);
       }
       if (struct.isSetV()) {
-        {
-          oprot.writeI32(struct.v.size());
-          for (CellValueSerial _iter289 : struct.v)
-          {
-            _iter289.write(oprot);
-          }
-        }
+        oprot.writeBinary(struct.v);
       }
       if (struct.isSetEncoder()) {
         oprot.writeI32(struct.encoder.getValue());
@@ -1045,7 +1014,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, UCellSerial struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, UCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
@@ -1054,13 +1023,13 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list290 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list290.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem291;
-          for (int _i292 = 0; _i292 < _list290.size; ++_i292)
+          org.apache.thrift.protocol.TList _list221 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list221.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem222;
+          for (int _i223 = 0; _i223 < _list221.size; ++_i223)
           {
-            _elem291 = iprot.readBinary();
-            struct.k.add(_elem291);
+            _elem222 = iprot.readBinary();
+            struct.k.add(_elem222);
           }
         }
         struct.setKIsSet(true);
@@ -1074,17 +1043,7 @@ public class UCellSerial implements org.apache.thrift.TBase<UCellSerial, UCellSe
         struct.setTs_descIsSet(true);
       }
       if (incoming.get(4)) {
-        {
-          org.apache.thrift.protocol.TList _list293 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<CellValueSerial>(_list293.size);
-          @org.apache.thrift.annotation.Nullable CellValueSerial _elem294;
-          for (int _i295 = 0; _i295 < _list293.size; ++_i295)
-          {
-            _elem294 = new CellValueSerial();
-            _elem294.read(iprot);
-            struct.v.add(_elem294);
-          }
-        }
+        struct.v = iprot.readBinary();
         struct.setVIsSet(true);
       }
       if (incoming.get(5)) {
