@@ -5979,15 +5979,18 @@ impl Default for CellSerial {
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Cells {
   /// The Cells, defined as Cell items in a list-container
-  pub cells: Option<CellsPlain>,
+  pub plain_cells: Option<CellsPlain>,
+  /// The Cells, defined as Cell items in a list-container
+  pub counter_cells: Option<CellsCounter>,
   /// The Serial Cells, defined as CellSerial items in a list-container
   pub serial_cells: Option<CellsSerial>,
 }
 
 impl Cells {
-  pub fn new<F1, F2>(cells: F1, serial_cells: F2) -> Cells where F1: Into<Option<CellsPlain>>, F2: Into<Option<CellsSerial>> {
+  pub fn new<F1, F2, F3>(plain_cells: F1, counter_cells: F2, serial_cells: F3) -> Cells where F1: Into<Option<CellsPlain>>, F2: Into<Option<CellsCounter>>, F3: Into<Option<CellsSerial>> {
     Cells {
-      cells: cells.into(),
+      plain_cells: plain_cells.into(),
+      counter_cells: counter_cells.into(),
       serial_cells: serial_cells.into(),
     }
   }
@@ -5997,7 +6000,8 @@ impl TSerializable for Cells {
   fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<Cells> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<CellsPlain> = Some(Vec::new());
-    let mut f_2: Option<CellsSerial> = Some(Vec::new());
+    let mut f_2: Option<CellsCounter> = Some(Vec::new());
+    let mut f_3: Option<CellsSerial> = Some(Vec::new());
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -6017,13 +6021,23 @@ impl TSerializable for Cells {
         },
         2 => {
           let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
+          let mut val: Vec<CellCounter> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_42 = CellSerial::read_from_in_protocol(i_prot)?;
+            let list_elem_42 = CellCounter::read_from_in_protocol(i_prot)?;
             val.push(list_elem_42);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
+        },
+        3 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_43 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_43);
+          }
+          i_prot.read_list_end()?;
+          f_3 = Some(val);
         },
         _ => {
           i_prot.skip(field_ident.field_type)?;
@@ -6033,16 +6047,26 @@ impl TSerializable for Cells {
     }
     i_prot.read_struct_end()?;
     let ret = Cells {
-      cells: f_1,
-      serial_cells: f_2,
+      plain_cells: f_1,
+      counter_cells: f_2,
+      serial_cells: f_3,
     };
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     let struct_ident = TStructIdentifier::new("Cells");
     o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.cells {
-      o_prot.write_field_begin(&TFieldIdentifier::new("cells", TType::List, 1))?;
+    if let Some(ref fld_var) = self.plain_cells {
+      o_prot.write_field_begin(&TFieldIdentifier::new("plain_cells", TType::List, 1))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.counter_cells {
+      o_prot.write_field_begin(&TFieldIdentifier::new("counter_cells", TType::List, 2))?;
       o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
       for e in fld_var {
         e.write_to_out_protocol(o_prot)?;
@@ -6051,7 +6075,7 @@ impl TSerializable for Cells {
       o_prot.write_field_end()?
     }
     if let Some(ref fld_var) = self.serial_cells {
-      o_prot.write_field_begin(&TFieldIdentifier::new("serial_cells", TType::List, 2))?;
+      o_prot.write_field_begin(&TFieldIdentifier::new("serial_cells", TType::List, 3))?;
       o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
       for e in fld_var {
         e.write_to_out_protocol(o_prot)?;
@@ -6067,7 +6091,8 @@ impl TSerializable for Cells {
 impl Default for Cells {
   fn default() -> Self {
     Cells{
-      cells: Some(Vec::new()),
+      plain_cells: Some(Vec::new()),
+      counter_cells: Some(Vec::new()),
       serial_cells: Some(Vec::new()),
     }
   }
@@ -6115,8 +6140,8 @@ impl TSerializable for CCell {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_43 = i_prot.read_bytes()?;
-            val.push(list_elem_43);
+            let list_elem_44 = i_prot.read_bytes()?;
+            val.push(list_elem_44);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6222,8 +6247,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_44 = i_prot.read_bytes()?;
-            val.push(list_elem_44);
+            let list_elem_45 = i_prot.read_bytes()?;
+            val.push(list_elem_45);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6236,8 +6261,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_45 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_45);
+            let list_elem_46 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_46);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6335,8 +6360,8 @@ impl TSerializable for ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_46 = CCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_46);
+            let list_elem_47 = CCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_47);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6345,8 +6370,8 @@ impl TSerializable for ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_47 = CCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_47);
+            let list_elem_48 = CCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_48);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6546,8 +6571,8 @@ impl TSerializable for KCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_48 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_48);
+            let list_elem_49 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_49);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6645,8 +6670,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_49 = i_prot.read_bytes()?;
-            val.push(list_elem_49);
+            let list_elem_50 = i_prot.read_bytes()?;
+            val.push(list_elem_50);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6655,8 +6680,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_50 = KCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_50);
+            let list_elem_51 = KCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_51);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6665,8 +6690,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_51 = KCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_51);
+            let list_elem_52 = KCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_52);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6877,8 +6902,8 @@ impl TSerializable for FCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_52 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_52);
+            let list_elem_53 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_53);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6976,9 +7001,9 @@ impl TSerializable for FCells {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<Vec<u8>, Box<FCells>> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_53 = i_prot.read_bytes()?;
-            let map_val_54 = Box::new(FCells::read_from_in_protocol(i_prot)?);
-            val.insert(map_key_53, map_val_54);
+            let map_key_54 = i_prot.read_bytes()?;
+            let map_val_55 = Box::new(FCells::read_from_in_protocol(i_prot)?);
+            val.insert(map_key_54, map_val_55);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -6987,8 +7012,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_55 = FCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_55);
+            let list_elem_56 = FCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_56);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6997,8 +7022,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_56 = FCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_56);
+            let list_elem_57 = FCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_57);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7113,9 +7138,9 @@ impl TSerializable for CellsGroup {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_57 = i_prot.read_string()?;
-            let map_val_58 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_57, map_val_58);
+            let map_key_58 = i_prot.read_string()?;
+            let map_val_59 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_58, map_val_59);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -7124,8 +7149,8 @@ impl TSerializable for CellsGroup {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_59 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_59);
+            let list_elem_60 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_60);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7321,8 +7346,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_60 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_60);
+            let list_elem_61 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_61);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -7335,8 +7360,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_61 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_61);
+            let list_elem_62 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_62);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7448,9 +7473,9 @@ pub trait TServiceSyncClient {
   fn updater_create(&mut self, buffer_size: i32) -> thrift::Result<i64>;
   /// The method to Close an Updater ID.
   fn updater_close(&mut self, id: i64) -> thrift::Result<()>;
-  /// The direct method to update cells with cell in Update-Columns-Cells,
+  /// The direct method to update cells with cell in Update-Columns-Cells-Plain,
   /// optionally to work with updater-id.
-  fn update(&mut self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()>;
+  fn update_plain(&mut self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()>;
   /// The direct method to update cells with cell in Update-Columns-Cells-Counter,
   /// optionally to work with updater-id.
   fn update_counter(&mut self, cells: UCCellsCounter, updater_id: i64) -> thrift::Result<()>;
@@ -7907,12 +7932,12 @@ impl <C: TThriftClient + TServiceSyncClientMarker> TServiceSyncClient for C {
       result.ok_or()
     }
   }
-  fn update(&mut self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()> {
+  fn update_plain(&mut self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()> {
     (
       {
         self.increment_sequence_number();
-        let message_ident = TMessageIdentifier::new("update", TMessageType::Call, self.sequence_number());
-        let call_args = ServiceUpdateArgs { cells, updater_id };
+        let message_ident = TMessageIdentifier::new("update_plain", TMessageType::Call, self.sequence_number());
+        let call_args = ServiceUpdatePlainArgs { cells, updater_id };
         self.o_prot_mut().write_message_begin(&message_ident)?;
         call_args.write_to_out_protocol(self.o_prot_mut())?;
         self.o_prot_mut().write_message_end()?;
@@ -7922,14 +7947,14 @@ impl <C: TThriftClient + TServiceSyncClientMarker> TServiceSyncClient for C {
     {
       let message_ident = self.i_prot_mut().read_message_begin()?;
       verify_expected_sequence_number(self.sequence_number(), message_ident.sequence_number)?;
-      verify_expected_service_call("update", &message_ident.name)?;
+      verify_expected_service_call("update_plain", &message_ident.name)?;
       if message_ident.message_type == TMessageType::Exception {
         let remote_error = thrift::Error::read_application_error_from_in_protocol(self.i_prot_mut())?;
         self.i_prot_mut().read_message_end()?;
         return Err(thrift::Error::Application(remote_error))
       }
       verify_expected_message_type(TMessageType::Reply, message_ident.message_type)?;
-      let result = ServiceUpdateResult::read_from_in_protocol(self.i_prot_mut())?;
+      let result = ServiceUpdatePlainResult::read_from_in_protocol(self.i_prot_mut())?;
       self.i_prot_mut().read_message_end()?;
       result.ok_or()
     }
@@ -8269,9 +8294,9 @@ pub trait ServiceSyncHandler {
   fn handle_updater_create(&self, buffer_size: i32) -> thrift::Result<i64>;
   /// The method to Close an Updater ID.
   fn handle_updater_close(&self, id: i64) -> thrift::Result<()>;
-  /// The direct method to update cells with cell in Update-Columns-Cells,
+  /// The direct method to update cells with cell in Update-Columns-Cells-Plain,
   /// optionally to work with updater-id.
-  fn handle_update(&self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()>;
+  fn handle_update_plain(&self, cells: UCCellsPlain, updater_id: i64) -> thrift::Result<()>;
   /// The direct method to update cells with cell in Update-Columns-Cells-Counter,
   /// optionally to work with updater-id.
   fn handle_update_counter(&self, cells: UCCellsCounter, updater_id: i64) -> thrift::Result<()>;
@@ -8354,8 +8379,8 @@ impl <H: ServiceSyncHandler> ServiceSyncProcessor<H> {
   fn process_updater_close(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     TServiceProcessFunctions::process_updater_close(&self.handler, incoming_sequence_number, i_prot, o_prot)
   }
-  fn process_update(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    TServiceProcessFunctions::process_update(&self.handler, incoming_sequence_number, i_prot, o_prot)
+  fn process_update_plain(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    TServiceProcessFunctions::process_update_plain(&self.handler, incoming_sequence_number, i_prot, o_prot)
   }
   fn process_update_counter(&self, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     TServiceProcessFunctions::process_update_counter(&self.handler, incoming_sequence_number, i_prot, o_prot)
@@ -9295,13 +9320,13 @@ impl TServiceProcessFunctions {
       },
     }
   }
-  pub fn process_update<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let args = ServiceUpdateArgs::read_from_in_protocol(i_prot)?;
-    match handler.handle_update(args.cells, args.updater_id) {
+  pub fn process_update_plain<H: ServiceSyncHandler>(handler: &H, incoming_sequence_number: i32, i_prot: &mut dyn TInputProtocol, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let args = ServiceUpdatePlainArgs::read_from_in_protocol(i_prot)?;
+    match handler.handle_update_plain(args.cells, args.updater_id) {
       Ok(_) => {
-        let message_ident = TMessageIdentifier::new("update", TMessageType::Reply, incoming_sequence_number);
+        let message_ident = TMessageIdentifier::new("update_plain", TMessageType::Reply, incoming_sequence_number);
         o_prot.write_message_begin(&message_ident)?;
-        let ret = ServiceUpdateResult { e: None };
+        let ret = ServiceUpdatePlainResult { e: None };
         ret.write_to_out_protocol(o_prot)?;
         o_prot.write_message_end()?;
         o_prot.flush()
@@ -9311,8 +9336,8 @@ impl TServiceProcessFunctions {
           thrift::Error::User(usr_err) => {
             if usr_err.downcast_ref::<Exception>().is_some() {
               let err = usr_err.downcast::<Exception>().expect("downcast already checked");
-              let ret_err = ServiceUpdateResult{ e: Some(*err) };
-              let message_ident = TMessageIdentifier::new("update", TMessageType::Reply, incoming_sequence_number);
+              let ret_err = ServiceUpdatePlainResult{ e: Some(*err) };
+              let message_ident = TMessageIdentifier::new("update_plain", TMessageType::Reply, incoming_sequence_number);
               o_prot.write_message_begin(&message_ident)?;
               ret_err.write_to_out_protocol(o_prot)?;
               o_prot.write_message_end()?;
@@ -9324,7 +9349,7 @@ impl TServiceProcessFunctions {
                   usr_err.to_string()
                 )
               };
-              let message_ident = TMessageIdentifier::new("update", TMessageType::Exception, incoming_sequence_number);
+              let message_ident = TMessageIdentifier::new("update_plain", TMessageType::Exception, incoming_sequence_number);
               o_prot.write_message_begin(&message_ident)?;
               thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
               o_prot.write_message_end()?;
@@ -9332,7 +9357,7 @@ impl TServiceProcessFunctions {
             }
           },
           thrift::Error::Application(app_err) => {
-            let message_ident = TMessageIdentifier::new("update", TMessageType::Exception, incoming_sequence_number);
+            let message_ident = TMessageIdentifier::new("update_plain", TMessageType::Exception, incoming_sequence_number);
             o_prot.write_message_begin(&message_ident)?;
             thrift::Error::write_application_error_to_out_protocol(&app_err, o_prot)?;
             o_prot.write_message_end()?;
@@ -9345,7 +9370,7 @@ impl TServiceProcessFunctions {
                 e.to_string()
               )
             };
-            let message_ident = TMessageIdentifier::new("update", TMessageType::Exception, incoming_sequence_number);
+            let message_ident = TMessageIdentifier::new("update_plain", TMessageType::Exception, incoming_sequence_number);
             o_prot.write_message_begin(&message_ident)?;
             thrift::Error::write_application_error_to_out_protocol(&ret_err, o_prot)?;
             o_prot.write_message_end()?;
@@ -10066,8 +10091,8 @@ impl <H: ServiceSyncHandler> TProcessor for ServiceSyncProcessor<H> {
       "updater_close" => {
         self.process_updater_close(message_ident.sequence_number, i_prot, o_prot)
       },
-      "update" => {
-        self.process_update(message_ident.sequence_number, i_prot, o_prot)
+      "update_plain" => {
+        self.process_update_plain(message_ident.sequence_number, i_prot, o_prot)
       },
       "update_counter" => {
         self.process_update_counter(message_ident.sequence_number, i_prot, o_prot)
@@ -10313,8 +10338,8 @@ impl ServiceSqlListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_62 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_62);
+            let list_elem_63 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_63);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10449,8 +10474,8 @@ impl ServiceSqlCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_63 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_63);
+            let list_elem_64 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_64);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10711,8 +10736,8 @@ impl ServiceSqlSelectPlainResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellPlain> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_64 = CellPlain::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_64);
+            let list_elem_65 = CellPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_65);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10847,8 +10872,8 @@ impl ServiceSqlSelectCounterResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellCounter> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_65 = CellCounter::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_65);
+            let list_elem_66 = CellCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_66);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10983,8 +11008,8 @@ impl ServiceSqlSelectSerialResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_66 = CellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_66);
+            let list_elem_67 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_67);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11119,9 +11144,9 @@ impl ServiceSqlSelectRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_67 = i_prot.read_string()?;
-            let map_val_68 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_67, map_val_68);
+            let map_key_68 = i_prot.read_string()?;
+            let map_val_69 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_68, map_val_69);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -11257,8 +11282,8 @@ impl ServiceSqlSelectRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_69 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_69);
+            let list_elem_70 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_70);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -12041,19 +12066,19 @@ impl ServiceUpdaterCloseResult {
 }
 
 //
-// ServiceUpdateArgs
+// ServiceUpdatePlainArgs
 //
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-struct ServiceUpdateArgs {
+struct ServiceUpdatePlainArgs {
   /// The Cells to update
   cells: UCCellsPlain,
   /// The Updater ID to use for write
   updater_id: i64,
 }
 
-impl ServiceUpdateArgs {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdateArgs> {
+impl ServiceUpdatePlainArgs {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdatePlainArgs> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<UCCellsPlain> = None;
     let mut f_2: Option<i64> = None;
@@ -12068,15 +12093,15 @@ impl ServiceUpdateArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_70 = i_prot.read_i64()?;
+            let map_key_71 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_71: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_72: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_72 = UCellPlain::read_from_in_protocol(i_prot)?;
-              map_val_71.push(list_elem_72);
+              let list_elem_73 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_72.push(list_elem_73);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_70, map_val_71);
+            val.insert(map_key_71, map_val_72);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12092,16 +12117,16 @@ impl ServiceUpdateArgs {
       i_prot.read_field_end()?;
     }
     i_prot.read_struct_end()?;
-    verify_required_field_exists("ServiceUpdateArgs.cells", &f_1)?;
-    verify_required_field_exists("ServiceUpdateArgs.updater_id", &f_2)?;
-    let ret = ServiceUpdateArgs {
+    verify_required_field_exists("ServiceUpdatePlainArgs.cells", &f_1)?;
+    verify_required_field_exists("ServiceUpdatePlainArgs.updater_id", &f_2)?;
+    let ret = ServiceUpdatePlainArgs {
       cells: f_1.expect("auto-generated code should have checked for presence of required fields"),
       updater_id: f_2.expect("auto-generated code should have checked for presence of required fields"),
     };
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("update_args");
+    let struct_ident = TStructIdentifier::new("update_plain_args");
     o_prot.write_struct_begin(&struct_ident)?;
     o_prot.write_field_begin(&TFieldIdentifier::new("cells", TType::Map, 1))?;
     o_prot.write_map_begin(&TMapIdentifier::new(TType::I64, TType::List, self.cells.len() as i32))?;
@@ -12124,15 +12149,15 @@ impl ServiceUpdateArgs {
 }
 
 //
-// ServiceUpdateResult
+// ServiceUpdatePlainResult
 //
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-struct ServiceUpdateResult {
+struct ServiceUpdatePlainResult {
   e: Option<Exception>,
 }
 
-impl ServiceUpdateResult {
+impl ServiceUpdatePlainResult {
   fn ok_or(self) -> thrift::Result<()> {
     if self.e.is_some() {
       Err(thrift::Error::User(Box::new(self.e.unwrap())))
@@ -12140,7 +12165,7 @@ impl ServiceUpdateResult {
       Ok(())
     }
   }
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdateResult> {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ServiceUpdatePlainResult> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<Exception> = None;
     loop {
@@ -12161,13 +12186,13 @@ impl ServiceUpdateResult {
       i_prot.read_field_end()?;
     }
     i_prot.read_struct_end()?;
-    let ret = ServiceUpdateResult {
+    let ret = ServiceUpdatePlainResult {
       e: f_1,
     };
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("ServiceUpdateResult");
+    let struct_ident = TStructIdentifier::new("ServiceUpdatePlainResult");
     o_prot.write_struct_begin(&struct_ident)?;
     if let Some(ref fld_var) = self.e {
       o_prot.write_field_begin(&TFieldIdentifier::new("e", TType::Struct, 1))?;
@@ -12207,15 +12232,15 @@ impl ServiceUpdateCounterArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_73 = i_prot.read_i64()?;
+            let map_key_74 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_74: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_75: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_75 = UCellCounter::read_from_in_protocol(i_prot)?;
-              map_val_74.push(list_elem_75);
+              let list_elem_76 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_75.push(list_elem_76);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_73, map_val_74);
+            val.insert(map_key_74, map_val_75);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12346,15 +12371,15 @@ impl ServiceUpdateSerialArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_76 = i_prot.read_i64()?;
+            let map_key_77 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_77: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_78: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_78 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_77.push(list_elem_78);
+              let list_elem_79 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_78.push(list_elem_79);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_76, map_val_77);
+            val.insert(map_key_77, map_val_78);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12491,15 +12516,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_79 = i_prot.read_i64()?;
+            let map_key_80 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_80: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_81: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_81 = UCellPlain::read_from_in_protocol(i_prot)?;
-              map_val_80.push(list_elem_81);
+              let list_elem_82 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_81.push(list_elem_82);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_79, map_val_80);
+            val.insert(map_key_80, map_val_81);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12508,15 +12533,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_82 = i_prot.read_i64()?;
+            let map_key_83 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_83: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_84: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_84 = UCellCounter::read_from_in_protocol(i_prot)?;
-              map_val_83.push(list_elem_84);
+              let list_elem_85 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_84.push(list_elem_85);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_82, map_val_83);
+            val.insert(map_key_83, map_val_84);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -12525,15 +12550,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_85 = i_prot.read_i64()?;
+            let map_key_86 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_86: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_87: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_87 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_86.push(list_elem_87);
+              let list_elem_88 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_87.push(list_elem_88);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_85, map_val_86);
+            val.insert(map_key_86, map_val_87);
           }
           i_prot.read_map_end()?;
           f_3 = Some(val);
@@ -12872,8 +12897,8 @@ impl ServiceListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_88 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_88);
+            let list_elem_89 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_89);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -13008,8 +13033,8 @@ impl ServiceCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_89 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_89);
+            let list_elem_90 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_90);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -13270,9 +13295,9 @@ impl ServiceScanRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_90 = i_prot.read_string()?;
-            let map_val_91 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_90, map_val_91);
+            let map_key_91 = i_prot.read_string()?;
+            let map_val_92 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_91, map_val_92);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -13408,8 +13433,8 @@ impl ServiceScanRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_92 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_92);
+            let list_elem_93 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_93);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);

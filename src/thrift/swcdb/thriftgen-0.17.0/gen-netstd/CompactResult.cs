@@ -86,18 +86,18 @@ public partial class CompactResult : TBase
 
   public CompactResult DeepCopy()
   {
-    var tmp489 = new CompactResult();
+    var tmp493 = new CompactResult();
     if(__isset.cid)
     {
-      tmp489.Cid = this.Cid;
+      tmp493.Cid = this.Cid;
     }
-    tmp489.__isset.cid = this.__isset.cid;
+    tmp493.__isset.cid = this.__isset.cid;
     if(__isset.err)
     {
-      tmp489.Err = this.Err;
+      tmp493.Err = this.Err;
     }
-    tmp489.__isset.err = this.__isset.err;
-    return tmp489;
+    tmp493.__isset.err = this.__isset.err;
+    return tmp493;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -158,24 +158,24 @@ public partial class CompactResult : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp490 = new TStruct("CompactResult");
-      await oprot.WriteStructBeginAsync(tmp490, cancellationToken);
-      var tmp491 = new TField();
+      var tmp494 = new TStruct("CompactResult");
+      await oprot.WriteStructBeginAsync(tmp494, cancellationToken);
+      var tmp495 = new TField();
       if(__isset.cid)
       {
-        tmp491.Name = "cid";
-        tmp491.Type = TType.I64;
-        tmp491.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp491, cancellationToken);
+        tmp495.Name = "cid";
+        tmp495.Type = TType.I64;
+        tmp495.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp495, cancellationToken);
         await oprot.WriteI64Async(Cid, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.err)
       {
-        tmp491.Name = "err";
-        tmp491.Type = TType.I32;
-        tmp491.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp491, cancellationToken);
+        tmp495.Name = "err";
+        tmp495.Type = TType.I32;
+        tmp495.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp495, cancellationToken);
         await oprot.WriteI32Async(Err, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -213,22 +213,22 @@ public partial class CompactResult : TBase
 
   public override string ToString()
   {
-    var tmp492 = new StringBuilder("CompactResult(");
-    int tmp493 = 0;
+    var tmp496 = new StringBuilder("CompactResult(");
+    int tmp497 = 0;
     if(__isset.cid)
     {
-      if(0 < tmp493++) { tmp492.Append(", "); }
-      tmp492.Append("Cid: ");
-      Cid.ToString(tmp492);
+      if(0 < tmp497++) { tmp496.Append(", "); }
+      tmp496.Append("Cid: ");
+      Cid.ToString(tmp496);
     }
     if(__isset.err)
     {
-      if(0 < tmp493++) { tmp492.Append(", "); }
-      tmp492.Append("Err: ");
-      Err.ToString(tmp492);
+      if(0 < tmp497++) { tmp496.Append(", "); }
+      tmp496.Append("Err: ");
+      Err.ToString(tmp496);
     }
-    tmp492.Append(')');
-    return tmp492.ToString();
+    tmp496.Append(')');
+    return tmp496.ToString();
   }
 }
 

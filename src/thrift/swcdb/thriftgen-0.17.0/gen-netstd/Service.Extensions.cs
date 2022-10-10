@@ -47,10 +47,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1147 = new Dictionary<byte[], FCells>(source.Count);
+    var tmp1151 = new Dictionary<byte[], FCells>(source.Count);
     foreach (var pair in source)
-      tmp1147.Add((pair.Key != null) ? pair.Key.ToArray() : null, (pair.Value != null) ? pair.Value.DeepCopy() : null);
-    return tmp1147;
+      tmp1151.Add((pair.Key != null) ? pair.Key.ToArray() : null, (pair.Value != null) ? pair.Value.DeepCopy() : null);
+    return tmp1151;
   }
 
 
@@ -74,10 +74,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1148 = new Dictionary<long, List<UCellCounter>>(source.Count);
+    var tmp1152 = new Dictionary<long, List<UCellCounter>>(source.Count);
     foreach (var pair in source)
-      tmp1148.Add(pair.Key, (pair.Value != null) ? pair.Value.DeepCopy() : null);
-    return tmp1148;
+      tmp1152.Add(pair.Key, (pair.Value != null) ? pair.Value.DeepCopy() : null);
+    return tmp1152;
   }
 
 
@@ -101,10 +101,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1149 = new Dictionary<long, List<UCellPlain>>(source.Count);
+    var tmp1153 = new Dictionary<long, List<UCellPlain>>(source.Count);
     foreach (var pair in source)
-      tmp1149.Add(pair.Key, (pair.Value != null) ? pair.Value.DeepCopy() : null);
-    return tmp1149;
+      tmp1153.Add(pair.Key, (pair.Value != null) ? pair.Value.DeepCopy() : null);
+    return tmp1153;
   }
 
 
@@ -128,10 +128,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1150 = new Dictionary<long, List<UCellSerial>>(source.Count);
+    var tmp1154 = new Dictionary<long, List<UCellSerial>>(source.Count);
     foreach (var pair in source)
-      tmp1150.Add(pair.Key, (pair.Value != null) ? pair.Value.DeepCopy() : null);
-    return tmp1150;
+      tmp1154.Add(pair.Key, (pair.Value != null) ? pair.Value.DeepCopy() : null);
+    return tmp1154;
   }
 
 
@@ -155,10 +155,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1151 = new Dictionary<string, ColCells>(source.Count);
+    var tmp1155 = new Dictionary<string, ColCells>(source.Count);
     foreach (var pair in source)
-      tmp1151.Add((pair.Key != null) ? pair.Key : null, (pair.Value != null) ? pair.Value.DeepCopy() : null);
-    return tmp1151;
+      tmp1155.Add((pair.Key != null) ? pair.Key : null, (pair.Value != null) ? pair.Value.DeepCopy() : null);
+    return tmp1155;
   }
 
 
@@ -182,10 +182,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1152 = new List<CCell>(source.Count);
+    var tmp1156 = new List<CCell>(source.Count);
     foreach (var elem in source)
-      tmp1152.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1152;
+      tmp1156.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1156;
   }
 
 
@@ -209,10 +209,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1153 = new List<CCellSerial>(source.Count);
+    var tmp1157 = new List<CCellSerial>(source.Count);
     foreach (var elem in source)
-      tmp1153.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1153;
+      tmp1157.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1157;
   }
 
 
@@ -236,10 +236,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1154 = new List<CellCounter>(source.Count);
+    var tmp1158 = new List<CellCounter>(source.Count);
     foreach (var elem in source)
-      tmp1154.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1154;
+      tmp1158.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1158;
   }
 
 
@@ -263,10 +263,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1155 = new List<CellPlain>(source.Count);
+    var tmp1159 = new List<CellPlain>(source.Count);
     foreach (var elem in source)
-      tmp1155.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1155;
+      tmp1159.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1159;
   }
 
 
@@ -290,10 +290,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1156 = new List<CellSerial>(source.Count);
+    var tmp1160 = new List<CellSerial>(source.Count);
     foreach (var elem in source)
-      tmp1156.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1156;
+      tmp1160.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1160;
   }
 
 
@@ -317,10 +317,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1157 = new List<CellValueSerial>(source.Count);
+    var tmp1161 = new List<CellValueSerial>(source.Count);
     foreach (var elem in source)
-      tmp1157.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1157;
+      tmp1161.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1161;
   }
 
 
@@ -344,10 +344,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1158 = new List<CellValueSerialOp>(source.Count);
+    var tmp1162 = new List<CellValueSerialOp>(source.Count);
     foreach (var elem in source)
-      tmp1158.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1158;
+      tmp1162.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1162;
   }
 
 
@@ -371,10 +371,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1159 = new List<CompactResult>(source.Count);
+    var tmp1163 = new List<CompactResult>(source.Count);
     foreach (var elem in source)
-      tmp1159.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1159;
+      tmp1163.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1163;
   }
 
 
@@ -398,10 +398,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1160 = new List<FCell>(source.Count);
+    var tmp1164 = new List<FCell>(source.Count);
     foreach (var elem in source)
-      tmp1160.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1160;
+      tmp1164.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1164;
   }
 
 
@@ -425,10 +425,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1161 = new List<FCellSerial>(source.Count);
+    var tmp1165 = new List<FCellSerial>(source.Count);
     foreach (var elem in source)
-      tmp1161.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1161;
+      tmp1165.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1165;
   }
 
 
@@ -452,10 +452,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1162 = new List<FU_BYTES>(source.Count);
+    var tmp1166 = new List<FU_BYTES>(source.Count);
     foreach (var elem in source)
-      tmp1162.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1162;
+      tmp1166.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1166;
   }
 
 
@@ -479,10 +479,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1163 = new List<FU_INT64>(source.Count);
+    var tmp1167 = new List<FU_INT64>(source.Count);
     foreach (var elem in source)
-      tmp1163.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1163;
+      tmp1167.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1167;
   }
 
 
@@ -506,10 +506,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1164 = new List<KCell>(source.Count);
+    var tmp1168 = new List<KCell>(source.Count);
     foreach (var elem in source)
-      tmp1164.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1164;
+      tmp1168.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1168;
   }
 
 
@@ -533,10 +533,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1165 = new List<KCellSerial>(source.Count);
+    var tmp1169 = new List<KCellSerial>(source.Count);
     foreach (var elem in source)
-      tmp1165.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1165;
+      tmp1169.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1169;
   }
 
 
@@ -560,10 +560,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1166 = new List<Schema>(source.Count);
+    var tmp1170 = new List<Schema>(source.Count);
     foreach (var elem in source)
-      tmp1166.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1166;
+      tmp1170.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1170;
   }
 
 
@@ -587,10 +587,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1167 = new List<SchemaPattern>(source.Count);
+    var tmp1171 = new List<SchemaPattern>(source.Count);
     foreach (var elem in source)
-      tmp1167.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1167;
+      tmp1171.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1171;
   }
 
 
@@ -614,10 +614,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1168 = new List<SpecColumn>(source.Count);
+    var tmp1172 = new List<SpecColumn>(source.Count);
     foreach (var elem in source)
-      tmp1168.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1168;
+      tmp1172.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1172;
   }
 
 
@@ -641,10 +641,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1169 = new List<SpecColumnSerial>(source.Count);
+    var tmp1173 = new List<SpecColumnSerial>(source.Count);
     foreach (var elem in source)
-      tmp1169.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1169;
+      tmp1173.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1173;
   }
 
 
@@ -668,10 +668,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1170 = new List<SpecFraction>(source.Count);
+    var tmp1174 = new List<SpecFraction>(source.Count);
     foreach (var elem in source)
-      tmp1170.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1170;
+      tmp1174.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1174;
   }
 
 
@@ -695,10 +695,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1171 = new List<SpecInterval>(source.Count);
+    var tmp1175 = new List<SpecInterval>(source.Count);
     foreach (var elem in source)
-      tmp1171.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1171;
+      tmp1175.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1175;
   }
 
 
@@ -722,10 +722,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1172 = new List<SpecIntervalSerial>(source.Count);
+    var tmp1176 = new List<SpecIntervalSerial>(source.Count);
     foreach (var elem in source)
-      tmp1172.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1172;
+      tmp1176.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1176;
   }
 
 
@@ -749,10 +749,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1173 = new List<SpecKeyInterval>(source.Count);
+    var tmp1177 = new List<SpecKeyInterval>(source.Count);
     foreach (var elem in source)
-      tmp1173.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1173;
+      tmp1177.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1177;
   }
 
 
@@ -776,10 +776,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1174 = new List<SpecValue>(source.Count);
+    var tmp1178 = new List<SpecValue>(source.Count);
     foreach (var elem in source)
-      tmp1174.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1174;
+      tmp1178.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1178;
   }
 
 
@@ -803,10 +803,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1175 = new List<SpecValueSerial>(source.Count);
+    var tmp1179 = new List<SpecValueSerial>(source.Count);
     foreach (var elem in source)
-      tmp1175.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1175;
+      tmp1179.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1179;
   }
 
 
@@ -830,10 +830,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1176 = new List<SpecValueSerialField>(source.Count);
+    var tmp1180 = new List<SpecValueSerialField>(source.Count);
     foreach (var elem in source)
-      tmp1176.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1176;
+      tmp1180.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1180;
   }
 
 
@@ -857,10 +857,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1177 = new List<SpecValueSerial_BYTES>(source.Count);
+    var tmp1181 = new List<SpecValueSerial_BYTES>(source.Count);
     foreach (var elem in source)
-      tmp1177.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1177;
+      tmp1181.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1181;
   }
 
 
@@ -884,10 +884,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1178 = new List<SpecValueSerial_INT64>(source.Count);
+    var tmp1182 = new List<SpecValueSerial_INT64>(source.Count);
     foreach (var elem in source)
-      tmp1178.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1178;
+      tmp1182.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1182;
   }
 
 
@@ -911,10 +911,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1179 = new List<UCellCounter>(source.Count);
+    var tmp1183 = new List<UCellCounter>(source.Count);
     foreach (var elem in source)
-      tmp1179.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1179;
+      tmp1183.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1183;
   }
 
 
@@ -938,10 +938,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1180 = new List<UCellPlain>(source.Count);
+    var tmp1184 = new List<UCellPlain>(source.Count);
     foreach (var elem in source)
-      tmp1180.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1180;
+      tmp1184.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1184;
   }
 
 
@@ -965,10 +965,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1181 = new List<UCellSerial>(source.Count);
+    var tmp1185 = new List<UCellSerial>(source.Count);
     foreach (var elem in source)
-      tmp1181.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1181;
+      tmp1185.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1185;
   }
 
 
@@ -992,10 +992,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1182 = new List<byte[]>(source.Count);
+    var tmp1186 = new List<byte[]>(source.Count);
     foreach (var elem in source)
-      tmp1182.Add((elem != null) ? elem.ToArray() : null);
-    return tmp1182;
+      tmp1186.Add((elem != null) ? elem.ToArray() : null);
+    return tmp1186;
   }
 
 
@@ -1019,10 +1019,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1183 = new List<kCells>(source.Count);
+    var tmp1187 = new List<kCells>(source.Count);
     foreach (var elem in source)
-      tmp1183.Add((elem != null) ? elem.DeepCopy() : null);
-    return tmp1183;
+      tmp1187.Add((elem != null) ? elem.DeepCopy() : null);
+    return tmp1187;
   }
 
 
@@ -1046,10 +1046,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1184 = new List<long>(source.Count);
+    var tmp1188 = new List<long>(source.Count);
     foreach (var elem in source)
-      tmp1184.Add(elem);
-    return tmp1184;
+      tmp1188.Add(elem);
+    return tmp1188;
   }
 
 
@@ -1073,10 +1073,10 @@ public static class ServiceExtensions
     if (source == null)
       return null;
 
-    var tmp1185 = new List<string>(source.Count);
+    var tmp1189 = new List<string>(source.Count);
     foreach (var elem in source)
-      tmp1185.Add((elem != null) ? elem : null);
-    return tmp1185;
+      tmp1189.Add((elem != null) ? elem : null);
+    return tmp1189;
   }
 
 

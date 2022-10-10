@@ -4135,8 +4135,9 @@ void swap(CellSerial &a, CellSerial &b);
 std::ostream& operator<<(std::ostream& out, const CellSerial& obj);
 
 typedef struct _Cells__isset {
-  _Cells__isset() : cells(false), serial_cells(false) {}
-  bool cells :1;
+  _Cells__isset() : plain_cells(false), counter_cells(false), serial_cells(false) {}
+  bool plain_cells :1;
+  bool counter_cells :1;
   bool serial_cells :1;
 } _Cells__isset;
 
@@ -4157,7 +4158,11 @@ class Cells : public virtual ::apache::thrift::TBase {
   /**
    * The Cells, defined as Cell items in a list-container
    */
-  CellsPlain cells;
+  CellsPlain plain_cells;
+  /**
+   * The Cells, defined as Cell items in a list-container
+   */
+  CellsCounter counter_cells;
   /**
    * The Serial Cells, defined as CellSerial items in a list-container
    */
@@ -4165,13 +4170,17 @@ class Cells : public virtual ::apache::thrift::TBase {
 
   _Cells__isset __isset;
 
-  void __set_cells(const CellsPlain& val);
+  void __set_plain_cells(const CellsPlain& val);
+
+  void __set_counter_cells(const CellsCounter& val);
 
   void __set_serial_cells(const CellsSerial& val);
 
   bool operator == (const Cells & rhs) const
   {
-    if (!(cells == rhs.cells))
+    if (!(plain_cells == rhs.plain_cells))
+      return false;
+    if (!(counter_cells == rhs.counter_cells))
       return false;
     if (!(serial_cells == rhs.serial_cells))
       return false;

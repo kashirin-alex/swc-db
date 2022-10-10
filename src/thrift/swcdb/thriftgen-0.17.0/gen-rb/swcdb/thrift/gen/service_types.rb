@@ -1520,12 +1520,15 @@ module Swcdb
       # The Cells for results list of scan
       class Cells
         include ::Thrift::Struct, ::Thrift::Struct_Union
-        CELLS = 1
-        SERIAL_CELLS = 2
+        PLAIN_CELLS = 1
+        COUNTER_CELLS = 2
+        SERIAL_CELLS = 3
 
         FIELDS = {
           # The Cells, defined as Cell items in a list-container
-          CELLS => {:type => ::Thrift::Types::LIST, :name => 'cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellPlain}},
+          PLAIN_CELLS => {:type => ::Thrift::Types::LIST, :name => 'plain_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellPlain}},
+          # The Cells, defined as Cell items in a list-container
+          COUNTER_CELLS => {:type => ::Thrift::Types::LIST, :name => 'counter_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellCounter}},
           # The Serial Cells, defined as CellSerial items in a list-container
           SERIAL_CELLS => {:type => ::Thrift::Types::LIST, :name => 'serial_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellSerial}}
         }

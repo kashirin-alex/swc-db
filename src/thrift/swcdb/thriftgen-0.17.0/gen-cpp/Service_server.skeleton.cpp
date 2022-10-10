@@ -175,16 +175,16 @@ class ServiceHandler : virtual public ServiceIf {
   }
 
   /**
-   * The direct method to update cells with cell in Update-Columns-Cells,
+   * The direct method to update cells with cell in Update-Columns-Cells-Plain,
    * optionally to work with updater-id.
    * 
    * @param cells The Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCellsPlain& cells, const int64_t updater_id) {
+  void update_plain(const UCCellsPlain& cells, const int64_t updater_id) {
     // Your implementation goes here
-    printf("update\n");
+    printf("update_plain\n");
   }
 
   /**

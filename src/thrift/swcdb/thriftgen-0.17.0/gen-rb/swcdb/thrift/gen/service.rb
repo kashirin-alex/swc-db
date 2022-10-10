@@ -251,17 +251,17 @@ module Swcdb
             return
           end
 
-          def update(cells, updater_id)
-            send_update(cells, updater_id)
-            recv_update()
+          def update_plain(cells, updater_id)
+            send_update_plain(cells, updater_id)
+            recv_update_plain()
           end
 
-          def send_update(cells, updater_id)
-            send_message('update', Update_args, :cells => cells, :updater_id => updater_id)
+          def send_update_plain(cells, updater_id)
+            send_message('update_plain', Update_plain_args, :cells => cells, :updater_id => updater_id)
           end
 
-          def recv_update()
-            result = receive_message(Update_result)
+          def recv_update_plain()
+            result = receive_message(Update_plain_result)
             raise result.e unless result.e.nil?
             return
           end
@@ -608,15 +608,15 @@ module Swcdb
             write_result(result, oprot, 'updater_close', seqid)
           end
 
-          def process_update(seqid, iprot, oprot)
-            args = read_args(iprot, Update_args)
-            result = Update_result.new()
+          def process_update_plain(seqid, iprot, oprot)
+            args = read_args(iprot, Update_plain_args)
+            result = Update_plain_result.new()
             begin
-              @handler.update(args.cells, args.updater_id)
+              @handler.update_plain(args.cells, args.updater_id)
             rescue ::Swcdb::Thrift::Gen::Exception => e
               result.e = e
             end
-            write_result(result, oprot, 'update', seqid)
+            write_result(result, oprot, 'update_plain', seqid)
           end
 
           def process_update_counter(seqid, iprot, oprot)
@@ -1272,7 +1272,7 @@ module Swcdb
           ::Thrift::Struct.generate_accessors self
         end
 
-        class Update_args
+        class Update_plain_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           CELLS = 1
           UPDATER_ID = 2
@@ -1292,7 +1292,7 @@ module Swcdb
           ::Thrift::Struct.generate_accessors self
         end
 
-        class Update_result
+        class Update_plain_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           E = 1
 

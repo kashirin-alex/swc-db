@@ -1507,8 +1507,10 @@ struct _swcdb_thriftCells
   ThriftStruct parent; 
 
   /* public */
-  GPtrArray * cells;
-  gboolean __isset_cells;
+  GPtrArray * plain_cells;
+  gboolean __isset_plain_cells;
+  GPtrArray * counter_cells;
+  gboolean __isset_counter_cells;
   GPtrArray * serial_cells;
   gboolean __isset_serial_cells;
 };
@@ -2662,8 +2664,8 @@ GType swcdb_thrift_service_updater_close_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_UPDATER_CLOSE_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATER_CLOSE_RESULT))
 #define SWCDB_THRIFT_SERVICE_UPDATER_CLOSE_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATER_CLOSE_RESULT, swcdb_thriftServiceUpdaterCloseResultClass))
 
-/* struct ServiceUpdateArgs */
-struct _swcdb_thriftServiceUpdateArgs
+/* struct ServiceUpdatePlainArgs */
+struct _swcdb_thriftServiceUpdatePlainArgs
 { 
   ThriftStruct parent; 
 
@@ -2673,24 +2675,24 @@ struct _swcdb_thriftServiceUpdateArgs
   gint64 updater_id;
   gboolean __isset_updater_id;
 };
-typedef struct _swcdb_thriftServiceUpdateArgs swcdb_thriftServiceUpdateArgs;
+typedef struct _swcdb_thriftServiceUpdatePlainArgs swcdb_thriftServiceUpdatePlainArgs;
 
-struct _swcdb_thriftServiceUpdateArgsClass
+struct _swcdb_thriftServiceUpdatePlainArgsClass
 {
   ThriftStructClass parent;
 };
-typedef struct _swcdb_thriftServiceUpdateArgsClass swcdb_thriftServiceUpdateArgsClass;
+typedef struct _swcdb_thriftServiceUpdatePlainArgsClass swcdb_thriftServiceUpdatePlainArgsClass;
 
-GType swcdb_thrift_service_update_args_get_type (void);
-#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_ARGS (swcdb_thrift_service_update_args_get_type())
-#define SWCDB_THRIFT_SERVICE_UPDATE_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_ARGS, swcdb_thriftServiceUpdateArgs))
-#define SWCDB_THRIFT_SERVICE_UPDATE_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_ARGS, swcdb_thriftServiceUpdateArgsClass))
-#define SWCDB_THRIFT_IS_SERVICE_UPDATE_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_ARGS))
-#define SWCDB_THRIFT_IS_SERVICE_UPDATE_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_ARGS))
-#define SWCDB_THRIFT_SERVICE_UPDATE_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_ARGS, swcdb_thriftServiceUpdateArgsClass))
+GType swcdb_thrift_service_update_plain_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_ARGS (swcdb_thrift_service_update_plain_args_get_type())
+#define SWCDB_THRIFT_SERVICE_UPDATE_PLAIN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_ARGS, swcdb_thriftServiceUpdatePlainArgs))
+#define SWCDB_THRIFT_SERVICE_UPDATE_PLAIN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_PLAIN_ARGS, swcdb_thriftServiceUpdatePlainArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_PLAIN_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_PLAIN_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_ARGS))
+#define SWCDB_THRIFT_SERVICE_UPDATE_PLAIN_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_ARGS, swcdb_thriftServiceUpdatePlainArgsClass))
 
-/* struct ServiceUpdateResult */
-struct _swcdb_thriftServiceUpdateResult
+/* struct ServiceUpdatePlainResult */
+struct _swcdb_thriftServiceUpdatePlainResult
 { 
   ThriftStruct parent; 
 
@@ -2698,21 +2700,21 @@ struct _swcdb_thriftServiceUpdateResult
   swcdb_thriftException * e;
   gboolean __isset_e;
 };
-typedef struct _swcdb_thriftServiceUpdateResult swcdb_thriftServiceUpdateResult;
+typedef struct _swcdb_thriftServiceUpdatePlainResult swcdb_thriftServiceUpdatePlainResult;
 
-struct _swcdb_thriftServiceUpdateResultClass
+struct _swcdb_thriftServiceUpdatePlainResultClass
 {
   ThriftStructClass parent;
 };
-typedef struct _swcdb_thriftServiceUpdateResultClass swcdb_thriftServiceUpdateResultClass;
+typedef struct _swcdb_thriftServiceUpdatePlainResultClass swcdb_thriftServiceUpdatePlainResultClass;
 
-GType swcdb_thrift_service_update_result_get_type (void);
-#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT (swcdb_thrift_service_update_result_get_type())
-#define SWCDB_THRIFT_SERVICE_UPDATE_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT, swcdb_thriftServiceUpdateResult))
-#define SWCDB_THRIFT_SERVICE_UPDATE_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_RESULT, swcdb_thriftServiceUpdateResultClass))
-#define SWCDB_THRIFT_IS_SERVICE_UPDATE_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT))
-#define SWCDB_THRIFT_IS_SERVICE_UPDATE_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT))
-#define SWCDB_THRIFT_SERVICE_UPDATE_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_RESULT, swcdb_thriftServiceUpdateResultClass))
+GType swcdb_thrift_service_update_plain_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_RESULT (swcdb_thrift_service_update_plain_result_get_type())
+#define SWCDB_THRIFT_SERVICE_UPDATE_PLAIN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_RESULT, swcdb_thriftServiceUpdatePlainResult))
+#define SWCDB_THRIFT_SERVICE_UPDATE_PLAIN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_UPDATE_PLAIN_RESULT, swcdb_thriftServiceUpdatePlainResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_PLAIN_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_UPDATE_PLAIN_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_RESULT))
+#define SWCDB_THRIFT_SERVICE_UPDATE_PLAIN_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_UPDATE_PLAIN_RESULT, swcdb_thriftServiceUpdatePlainResultClass))
 
 /* struct ServiceUpdateCounterArgs */
 struct _swcdb_thriftServiceUpdateCounterArgs

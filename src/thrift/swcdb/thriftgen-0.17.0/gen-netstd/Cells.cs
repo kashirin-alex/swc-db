@@ -37,22 +37,39 @@ using Thrift.Processor;
 /// </summary>
 public partial class Cells : TBase
 {
-  private List<CellPlain> _cells;
+  private List<CellPlain> _plain_cells;
+  private List<CellCounter> _counter_cells;
   private List<CellSerial> _serial_cells;
 
   /// <summary>
   /// The Cells, defined as Cell items in a list-container
   /// </summary>
-  public List<CellPlain> Cells_
+  public List<CellPlain> Plain_cells
   {
     get
     {
-      return _cells;
+      return _plain_cells;
     }
     set
     {
-      __isset.cells = true;
-      this._cells = value;
+      __isset.plain_cells = true;
+      this._plain_cells = value;
+    }
+  }
+
+  /// <summary>
+  /// The Cells, defined as Cell items in a list-container
+  /// </summary>
+  public List<CellCounter> Counter_cells
+  {
+    get
+    {
+      return _counter_cells;
+    }
+    set
+    {
+      __isset.counter_cells = true;
+      this._counter_cells = value;
     }
   }
 
@@ -76,7 +93,8 @@ public partial class Cells : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool cells;
+    public bool plain_cells;
+    public bool counter_cells;
     public bool serial_cells;
   }
 
@@ -87,11 +105,16 @@ public partial class Cells : TBase
   public Cells DeepCopy()
   {
     var tmp364 = new Cells();
-    if((Cells_ != null) && __isset.cells)
+    if((Plain_cells != null) && __isset.plain_cells)
     {
-      tmp364.Cells_ = this.Cells_.DeepCopy();
+      tmp364.Plain_cells = this.Plain_cells.DeepCopy();
     }
-    tmp364.__isset.cells = this.__isset.cells;
+    tmp364.__isset.plain_cells = this.__isset.plain_cells;
+    if((Counter_cells != null) && __isset.counter_cells)
+    {
+      tmp364.Counter_cells = this.Counter_cells.DeepCopy();
+    }
+    tmp364.__isset.counter_cells = this.__isset.counter_cells;
     if((Serial_cells != null) && __isset.serial_cells)
     {
       tmp364.Serial_cells = this.Serial_cells.DeepCopy();
@@ -122,13 +145,13 @@ public partial class Cells : TBase
             {
               {
                 var _list365 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells_ = new List<CellPlain>(_list365.Count);
+                Plain_cells = new List<CellPlain>(_list365.Count);
                 for(int _i366 = 0; _i366 < _list365.Count; ++_i366)
                 {
                   CellPlain _elem367;
                   _elem367 = new CellPlain();
                   await _elem367.ReadAsync(iprot, cancellationToken);
-                  Cells_.Add(_elem367);
+                  Plain_cells.Add(_elem367);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -143,13 +166,34 @@ public partial class Cells : TBase
             {
               {
                 var _list368 = await iprot.ReadListBeginAsync(cancellationToken);
-                Serial_cells = new List<CellSerial>(_list368.Count);
+                Counter_cells = new List<CellCounter>(_list368.Count);
                 for(int _i369 = 0; _i369 < _list368.Count; ++_i369)
                 {
-                  CellSerial _elem370;
-                  _elem370 = new CellSerial();
+                  CellCounter _elem370;
+                  _elem370 = new CellCounter();
                   await _elem370.ReadAsync(iprot, cancellationToken);
-                  Serial_cells.Add(_elem370);
+                  Counter_cells.Add(_elem370);
+                }
+                await iprot.ReadListEndAsync(cancellationToken);
+              }
+            }
+            else
+            {
+              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
+            }
+            break;
+          case 3:
+            if (field.Type == TType.List)
+            {
+              {
+                var _list371 = await iprot.ReadListBeginAsync(cancellationToken);
+                Serial_cells = new List<CellSerial>(_list371.Count);
+                for(int _i372 = 0; _i372 < _list371.Count; ++_i372)
+                {
+                  CellSerial _elem373;
+                  _elem373 = new CellSerial();
+                  await _elem373.ReadAsync(iprot, cancellationToken);
+                  Serial_cells.Add(_elem373);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -180,33 +224,47 @@ public partial class Cells : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp371 = new TStruct("Cells");
-      await oprot.WriteStructBeginAsync(tmp371, cancellationToken);
-      var tmp372 = new TField();
-      if((Cells_ != null) && __isset.cells)
+      var tmp374 = new TStruct("Cells");
+      await oprot.WriteStructBeginAsync(tmp374, cancellationToken);
+      var tmp375 = new TField();
+      if((Plain_cells != null) && __isset.plain_cells)
       {
-        tmp372.Name = "cells";
-        tmp372.Type = TType.List;
-        tmp372.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp372, cancellationToken);
-        await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells_.Count), cancellationToken);
-        foreach (CellPlain _iter373 in Cells_)
+        tmp375.Name = "plain_cells";
+        tmp375.Type = TType.List;
+        tmp375.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp375, cancellationToken);
+        await oprot.WriteListBeginAsync(new TList(TType.Struct, Plain_cells.Count), cancellationToken);
+        foreach (CellPlain _iter376 in Plain_cells)
         {
-          await _iter373.WriteAsync(oprot, cancellationToken);
+          await _iter376.WriteAsync(oprot, cancellationToken);
+        }
+        await oprot.WriteListEndAsync(cancellationToken);
+        await oprot.WriteFieldEndAsync(cancellationToken);
+      }
+      if((Counter_cells != null) && __isset.counter_cells)
+      {
+        tmp375.Name = "counter_cells";
+        tmp375.Type = TType.List;
+        tmp375.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp375, cancellationToken);
+        await oprot.WriteListBeginAsync(new TList(TType.Struct, Counter_cells.Count), cancellationToken);
+        foreach (CellCounter _iter377 in Counter_cells)
+        {
+          await _iter377.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Serial_cells != null) && __isset.serial_cells)
       {
-        tmp372.Name = "serial_cells";
-        tmp372.Type = TType.List;
-        tmp372.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp372, cancellationToken);
+        tmp375.Name = "serial_cells";
+        tmp375.Type = TType.List;
+        tmp375.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp375, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, Serial_cells.Count), cancellationToken);
-        foreach (CellSerial _iter374 in Serial_cells)
+        foreach (CellSerial _iter378 in Serial_cells)
         {
-          await _iter374.WriteAsync(oprot, cancellationToken);
+          await _iter378.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -224,16 +282,21 @@ public partial class Cells : TBase
   {
     if (!(that is Cells other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.cells == other.__isset.cells) && ((!__isset.cells) || (global::System.Object.Equals(Cells_, other.Cells_))))
+    return ((__isset.plain_cells == other.__isset.plain_cells) && ((!__isset.plain_cells) || (global::System.Object.Equals(Plain_cells, other.Plain_cells))))
+      && ((__isset.counter_cells == other.__isset.counter_cells) && ((!__isset.counter_cells) || (global::System.Object.Equals(Counter_cells, other.Counter_cells))))
       && ((__isset.serial_cells == other.__isset.serial_cells) && ((!__isset.serial_cells) || (global::System.Object.Equals(Serial_cells, other.Serial_cells))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if((Cells_ != null) && __isset.cells)
+      if((Plain_cells != null) && __isset.plain_cells)
       {
-        hashcode = (hashcode * 397) + Cells_.GetHashCode();
+        hashcode = (hashcode * 397) + Plain_cells.GetHashCode();
+      }
+      if((Counter_cells != null) && __isset.counter_cells)
+      {
+        hashcode = (hashcode * 397) + Counter_cells.GetHashCode();
       }
       if((Serial_cells != null) && __isset.serial_cells)
       {
@@ -245,22 +308,28 @@ public partial class Cells : TBase
 
   public override string ToString()
   {
-    var tmp375 = new StringBuilder("Cells(");
-    int tmp376 = 0;
-    if((Cells_ != null) && __isset.cells)
+    var tmp379 = new StringBuilder("Cells(");
+    int tmp380 = 0;
+    if((Plain_cells != null) && __isset.plain_cells)
     {
-      if(0 < tmp376++) { tmp375.Append(", "); }
-      tmp375.Append("Cells_: ");
-      Cells_.ToString(tmp375);
+      if(0 < tmp380++) { tmp379.Append(", "); }
+      tmp379.Append("Plain_cells: ");
+      Plain_cells.ToString(tmp379);
+    }
+    if((Counter_cells != null) && __isset.counter_cells)
+    {
+      if(0 < tmp380++) { tmp379.Append(", "); }
+      tmp379.Append("Counter_cells: ");
+      Counter_cells.ToString(tmp379);
     }
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      if(0 < tmp376++) { tmp375.Append(", "); }
-      tmp375.Append("Serial_cells: ");
-      Serial_cells.ToString(tmp375);
+      if(0 < tmp380++) { tmp379.Append(", "); }
+      tmp379.Append("Serial_cells: ");
+      Serial_cells.ToString(tmp379);
     }
-    tmp375.Append(')');
-    return tmp375.ToString();
+    tmp379.Append(')');
+    return tmp379.ToString();
   }
 }
 

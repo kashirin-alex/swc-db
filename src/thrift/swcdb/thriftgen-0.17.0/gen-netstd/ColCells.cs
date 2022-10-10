@@ -86,18 +86,18 @@ public partial class ColCells : TBase
 
   public ColCells DeepCopy()
   {
-    var tmp399 = new ColCells();
+    var tmp403 = new ColCells();
     if((Cells != null) && __isset.cells)
     {
-      tmp399.Cells = this.Cells.DeepCopy();
+      tmp403.Cells = this.Cells.DeepCopy();
     }
-    tmp399.__isset.cells = this.__isset.cells;
+    tmp403.__isset.cells = this.__isset.cells;
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      tmp399.Serial_cells = this.Serial_cells.DeepCopy();
+      tmp403.Serial_cells = this.Serial_cells.DeepCopy();
     }
-    tmp399.__isset.serial_cells = this.__isset.serial_cells;
-    return tmp399;
+    tmp403.__isset.serial_cells = this.__isset.serial_cells;
+    return tmp403;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -121,14 +121,14 @@ public partial class ColCells : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list400 = await iprot.ReadListBeginAsync(cancellationToken);
-                Cells = new List<CCell>(_list400.Count);
-                for(int _i401 = 0; _i401 < _list400.Count; ++_i401)
+                var _list404 = await iprot.ReadListBeginAsync(cancellationToken);
+                Cells = new List<CCell>(_list404.Count);
+                for(int _i405 = 0; _i405 < _list404.Count; ++_i405)
                 {
-                  CCell _elem402;
-                  _elem402 = new CCell();
-                  await _elem402.ReadAsync(iprot, cancellationToken);
-                  Cells.Add(_elem402);
+                  CCell _elem406;
+                  _elem406 = new CCell();
+                  await _elem406.ReadAsync(iprot, cancellationToken);
+                  Cells.Add(_elem406);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -142,14 +142,14 @@ public partial class ColCells : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list403 = await iprot.ReadListBeginAsync(cancellationToken);
-                Serial_cells = new List<CCellSerial>(_list403.Count);
-                for(int _i404 = 0; _i404 < _list403.Count; ++_i404)
+                var _list407 = await iprot.ReadListBeginAsync(cancellationToken);
+                Serial_cells = new List<CCellSerial>(_list407.Count);
+                for(int _i408 = 0; _i408 < _list407.Count; ++_i408)
                 {
-                  CCellSerial _elem405;
-                  _elem405 = new CCellSerial();
-                  await _elem405.ReadAsync(iprot, cancellationToken);
-                  Serial_cells.Add(_elem405);
+                  CCellSerial _elem409;
+                  _elem409 = new CCellSerial();
+                  await _elem409.ReadAsync(iprot, cancellationToken);
+                  Serial_cells.Add(_elem409);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -180,33 +180,33 @@ public partial class ColCells : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp406 = new TStruct("ColCells");
-      await oprot.WriteStructBeginAsync(tmp406, cancellationToken);
-      var tmp407 = new TField();
+      var tmp410 = new TStruct("ColCells");
+      await oprot.WriteStructBeginAsync(tmp410, cancellationToken);
+      var tmp411 = new TField();
       if((Cells != null) && __isset.cells)
       {
-        tmp407.Name = "cells";
-        tmp407.Type = TType.List;
-        tmp407.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp407, cancellationToken);
+        tmp411.Name = "cells";
+        tmp411.Type = TType.List;
+        tmp411.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp411, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, Cells.Count), cancellationToken);
-        foreach (CCell _iter408 in Cells)
+        foreach (CCell _iter412 in Cells)
         {
-          await _iter408.WriteAsync(oprot, cancellationToken);
+          await _iter412.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Serial_cells != null) && __isset.serial_cells)
       {
-        tmp407.Name = "serial_cells";
-        tmp407.Type = TType.List;
-        tmp407.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp407, cancellationToken);
+        tmp411.Name = "serial_cells";
+        tmp411.Type = TType.List;
+        tmp411.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp411, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, Serial_cells.Count), cancellationToken);
-        foreach (CCellSerial _iter409 in Serial_cells)
+        foreach (CCellSerial _iter413 in Serial_cells)
         {
-          await _iter409.WriteAsync(oprot, cancellationToken);
+          await _iter413.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -245,22 +245,22 @@ public partial class ColCells : TBase
 
   public override string ToString()
   {
-    var tmp410 = new StringBuilder("ColCells(");
-    int tmp411 = 0;
+    var tmp414 = new StringBuilder("ColCells(");
+    int tmp415 = 0;
     if((Cells != null) && __isset.cells)
     {
-      if(0 < tmp411++) { tmp410.Append(", "); }
-      tmp410.Append("Cells: ");
-      Cells.ToString(tmp410);
+      if(0 < tmp415++) { tmp414.Append(", "); }
+      tmp414.Append("Cells: ");
+      Cells.ToString(tmp414);
     }
     if((Serial_cells != null) && __isset.serial_cells)
     {
-      if(0 < tmp411++) { tmp410.Append(", "); }
-      tmp410.Append("Serial_cells: ");
-      Serial_cells.ToString(tmp410);
+      if(0 < tmp415++) { tmp414.Append(", "); }
+      tmp414.Append("Serial_cells: ");
+      Serial_cells.ToString(tmp414);
     }
-    tmp410.Append(')');
-    return tmp410.ToString();
+    tmp414.Append(')');
+    return tmp414.ToString();
   }
 }
 

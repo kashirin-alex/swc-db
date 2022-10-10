@@ -33,7 +33,7 @@ struct _swcdb_thriftServiceIfInterface
   gboolean (*exec_sql) (swcdb_thriftServiceIf *iface, swcdb_thriftResult ** _return, const gchar * sql, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_create) (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_close) (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
-  gboolean (*update) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+  gboolean (*update_plain) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*update_counter) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsCounter * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*update_serial) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*update_by_types) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * plain, const swcdb_thriftUCCellsCounter * counter, const swcdb_thriftUCCellsSerial * serial, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
@@ -69,7 +69,7 @@ gboolean swcdb_thrift_service_if_sql_update (swcdb_thriftServiceIf *iface, const
 gboolean swcdb_thrift_service_if_exec_sql (swcdb_thriftServiceIf *iface, swcdb_thriftResult ** _return, const gchar * sql, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_updater_create (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_updater_close (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
-gboolean swcdb_thrift_service_if_update (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_if_update_plain (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_update_counter (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsCounter * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_update_serial (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_if_update_by_types (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * plain, const swcdb_thriftUCCellsCounter * counter, const swcdb_thriftUCCellsSerial * serial, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
@@ -151,9 +151,9 @@ gboolean swcdb_thrift_service_client_recv_updater_create (swcdb_thriftServiceIf 
 gboolean swcdb_thrift_service_client_updater_close (swcdb_thriftServiceIf * iface, const gint64 id, swcdb_thriftException ** e, GError ** error);
 gboolean swcdb_thrift_service_client_send_updater_close (swcdb_thriftServiceIf * iface, const gint64 id, GError ** error);
 gboolean swcdb_thrift_service_client_recv_updater_close (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
-gboolean swcdb_thrift_service_client_update (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError ** error);
-gboolean swcdb_thrift_service_client_send_update (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, GError ** error);
-gboolean swcdb_thrift_service_client_recv_update (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_update_plain (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError ** error);
+gboolean swcdb_thrift_service_client_send_update_plain (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, GError ** error);
+gboolean swcdb_thrift_service_client_recv_update_plain (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
 gboolean swcdb_thrift_service_client_update_counter (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsCounter * cells, const gint64 updater_id, swcdb_thriftException ** e, GError ** error);
 gboolean swcdb_thrift_service_client_send_update_counter (swcdb_thriftServiceIf * iface, const swcdb_thriftUCCellsCounter * cells, const gint64 updater_id, GError ** error);
 gboolean swcdb_thrift_service_client_recv_update_counter (swcdb_thriftServiceIf * iface, swcdb_thriftException ** e, GError ** error);
@@ -216,7 +216,7 @@ struct _swcdb_thriftServiceHandlerClass
   gboolean (*exec_sql) (swcdb_thriftServiceIf *iface, swcdb_thriftResult ** _return, const gchar * sql, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_create) (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
   gboolean (*updater_close) (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
-  gboolean (*update) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+  gboolean (*update_plain) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*update_counter) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsCounter * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*update_serial) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
   gboolean (*update_by_types) (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * plain, const swcdb_thriftUCCellsCounter * counter, const swcdb_thriftUCCellsSerial * serial, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
@@ -254,7 +254,7 @@ gboolean swcdb_thrift_service_handler_sql_update (swcdb_thriftServiceIf *iface, 
 gboolean swcdb_thrift_service_handler_exec_sql (swcdb_thriftServiceIf *iface, swcdb_thriftResult ** _return, const gchar * sql, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_updater_create (swcdb_thriftServiceIf *iface, gint64* _return, const gint32 buffer_size, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_updater_close (swcdb_thriftServiceIf *iface, const gint64 id, swcdb_thriftException ** e, GError **error);
-gboolean swcdb_thrift_service_handler_update (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
+gboolean swcdb_thrift_service_handler_update_plain (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_update_counter (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsCounter * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_update_serial (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsSerial * cells, const gint64 updater_id, swcdb_thriftException ** e, GError **error);
 gboolean swcdb_thrift_service_handler_update_by_types (swcdb_thriftServiceIf *iface, const swcdb_thriftUCCellsPlain * plain, const swcdb_thriftUCCellsCounter * counter, const swcdb_thriftUCCellsSerial * serial, const gint64 updater_id, swcdb_thriftException ** e, GError **error);

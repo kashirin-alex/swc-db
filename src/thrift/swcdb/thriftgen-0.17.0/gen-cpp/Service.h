@@ -136,14 +136,14 @@ class ServiceIf {
   virtual void updater_close(const int64_t id) = 0;
 
   /**
-   * The direct method to update cells with cell in Update-Columns-Cells,
+   * The direct method to update cells with cell in Update-Columns-Cells-Plain,
    * optionally to work with updater-id.
    * 
    * @param cells The Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  virtual void update(const UCCellsPlain& cells, const int64_t updater_id) = 0;
+  virtual void update_plain(const UCCellsPlain& cells, const int64_t updater_id) = 0;
 
   /**
    * The direct method to update cells with cell in Update-Columns-Cells-Counter,
@@ -313,7 +313,7 @@ class ServiceNull : virtual public ServiceIf {
   void updater_close(const int64_t /* id */) override {
     return;
   }
-  void update(const UCCellsPlain& /* cells */, const int64_t /* updater_id */) override {
+  void update_plain(const UCCellsPlain& /* cells */, const int64_t /* updater_id */) override {
     return;
   }
   void update_counter(const UCCellsCounter& /* cells */, const int64_t /* updater_id */) override {
@@ -2205,24 +2205,24 @@ class Service_updater_close_presult {
 
 };
 
-typedef struct _Service_update_args__isset {
-  _Service_update_args__isset() : cells(false), updater_id(true) {}
+typedef struct _Service_update_plain_args__isset {
+  _Service_update_plain_args__isset() : cells(false), updater_id(true) {}
   bool cells :1;
   bool updater_id :1;
-} _Service_update_args__isset;
+} _Service_update_plain_args__isset;
 
-class Service_update_args {
+class Service_update_plain_args {
  public:
 
-  Service_update_args(const Service_update_args&);
-  Service_update_args(Service_update_args&&) noexcept;
-  Service_update_args& operator=(const Service_update_args&);
-  Service_update_args& operator=(Service_update_args&&) noexcept;
-  Service_update_args() noexcept
-                      : updater_id(0LL) {
+  Service_update_plain_args(const Service_update_plain_args&);
+  Service_update_plain_args(Service_update_plain_args&&) noexcept;
+  Service_update_plain_args& operator=(const Service_update_plain_args&);
+  Service_update_plain_args& operator=(Service_update_plain_args&&) noexcept;
+  Service_update_plain_args() noexcept
+                            : updater_id(0LL) {
   }
 
-  virtual ~Service_update_args() noexcept;
+  virtual ~Service_update_plain_args() noexcept;
   /**
    * The Cells to update
    */
@@ -2232,13 +2232,13 @@ class Service_update_args {
    */
   int64_t updater_id;
 
-  _Service_update_args__isset __isset;
+  _Service_update_plain_args__isset __isset;
 
   void __set_cells(const UCCellsPlain& val);
 
   void __set_updater_id(const int64_t val);
 
-  bool operator == (const Service_update_args & rhs) const
+  bool operator == (const Service_update_plain_args & rhs) const
   {
     if (!(cells == rhs.cells))
       return false;
@@ -2246,11 +2246,11 @@ class Service_update_args {
       return false;
     return true;
   }
-  bool operator != (const Service_update_args &rhs) const {
+  bool operator != (const Service_update_plain_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_update_args & ) const;
+  bool operator < (const Service_update_plain_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -2258,11 +2258,11 @@ class Service_update_args {
 };
 
 
-class Service_update_pargs {
+class Service_update_plain_pargs {
  public:
 
 
-  virtual ~Service_update_pargs() noexcept;
+  virtual ~Service_update_plain_pargs() noexcept;
   /**
    * The Cells to update
    */
@@ -2276,58 +2276,58 @@ class Service_update_pargs {
 
 };
 
-typedef struct _Service_update_result__isset {
-  _Service_update_result__isset() : e(false) {}
+typedef struct _Service_update_plain_result__isset {
+  _Service_update_plain_result__isset() : e(false) {}
   bool e :1;
-} _Service_update_result__isset;
+} _Service_update_plain_result__isset;
 
-class Service_update_result {
+class Service_update_plain_result {
  public:
 
-  Service_update_result(const Service_update_result&);
-  Service_update_result(Service_update_result&&) noexcept;
-  Service_update_result& operator=(const Service_update_result&);
-  Service_update_result& operator=(Service_update_result&&) noexcept;
-  Service_update_result() noexcept {
+  Service_update_plain_result(const Service_update_plain_result&);
+  Service_update_plain_result(Service_update_plain_result&&) noexcept;
+  Service_update_plain_result& operator=(const Service_update_plain_result&);
+  Service_update_plain_result& operator=(Service_update_plain_result&&) noexcept;
+  Service_update_plain_result() noexcept {
   }
 
-  virtual ~Service_update_result() noexcept;
+  virtual ~Service_update_plain_result() noexcept;
   Exception e;
 
-  _Service_update_result__isset __isset;
+  _Service_update_plain_result__isset __isset;
 
   void __set_e(const Exception& val);
 
-  bool operator == (const Service_update_result & rhs) const
+  bool operator == (const Service_update_plain_result & rhs) const
   {
     if (!(e == rhs.e))
       return false;
     return true;
   }
-  bool operator != (const Service_update_result &rhs) const {
+  bool operator != (const Service_update_plain_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const Service_update_result & ) const;
+  bool operator < (const Service_update_plain_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _Service_update_presult__isset {
-  _Service_update_presult__isset() : e(false) {}
+typedef struct _Service_update_plain_presult__isset {
+  _Service_update_plain_presult__isset() : e(false) {}
   bool e :1;
-} _Service_update_presult__isset;
+} _Service_update_plain_presult__isset;
 
-class Service_update_presult {
+class Service_update_plain_presult {
  public:
 
 
-  virtual ~Service_update_presult() noexcept;
+  virtual ~Service_update_plain_presult() noexcept;
   Exception e;
 
-  _Service_update_presult__isset __isset;
+  _Service_update_plain_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -3903,16 +3903,16 @@ class ServiceClient : virtual public ServiceIf {
   void send_updater_close(const int64_t id);
   void recv_updater_close();
   /**
-   * The direct method to update cells with cell in Update-Columns-Cells,
+   * The direct method to update cells with cell in Update-Columns-Cells-Plain,
    * optionally to work with updater-id.
    * 
    * @param cells The Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCellsPlain& cells, const int64_t updater_id) override;
-  void send_update(const UCCellsPlain& cells, const int64_t updater_id);
-  void recv_update();
+  void update_plain(const UCCellsPlain& cells, const int64_t updater_id) override;
+  void send_update_plain(const UCCellsPlain& cells, const int64_t updater_id);
+  void recv_update_plain();
   /**
    * The direct method to update cells with cell in Update-Columns-Cells-Counter,
    * optionally to work with updater-id.
@@ -4048,7 +4048,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_exec_sql(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_create(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_updater_close(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_update(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_plain(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_counter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_serial(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_by_types(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -4078,7 +4078,7 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["exec_sql"] = &ServiceProcessor::process_exec_sql;
     processMap_["updater_create"] = &ServiceProcessor::process_updater_create;
     processMap_["updater_close"] = &ServiceProcessor::process_updater_close;
-    processMap_["update"] = &ServiceProcessor::process_update;
+    processMap_["update_plain"] = &ServiceProcessor::process_update_plain;
     processMap_["update_counter"] = &ServiceProcessor::process_update_counter;
     processMap_["update_serial"] = &ServiceProcessor::process_update_serial;
     processMap_["update_by_types"] = &ServiceProcessor::process_update_by_types;
@@ -4344,20 +4344,20 @@ class ServiceMultiface : virtual public ServiceIf {
   }
 
   /**
-   * The direct method to update cells with cell in Update-Columns-Cells,
+   * The direct method to update cells with cell in Update-Columns-Cells-Plain,
    * optionally to work with updater-id.
    * 
    * @param cells The Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCellsPlain& cells, const int64_t updater_id) override {
+  void update_plain(const UCCellsPlain& cells, const int64_t updater_id) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->update(cells, updater_id);
+      ifaces_[i]->update_plain(cells, updater_id);
     }
-    ifaces_[i]->update(cells, updater_id);
+    ifaces_[i]->update_plain(cells, updater_id);
   }
 
   /**
@@ -4695,16 +4695,16 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   int32_t send_updater_close(const int64_t id);
   void recv_updater_close(const int32_t seqid);
   /**
-   * The direct method to update cells with cell in Update-Columns-Cells,
+   * The direct method to update cells with cell in Update-Columns-Cells-Plain,
    * optionally to work with updater-id.
    * 
    * @param cells The Cells to update
    * 
    * @param updater_id The Updater ID to use for write
    */
-  void update(const UCCellsPlain& cells, const int64_t updater_id) override;
-  int32_t send_update(const UCCellsPlain& cells, const int64_t updater_id);
-  void recv_update(const int32_t seqid);
+  void update_plain(const UCCellsPlain& cells, const int64_t updater_id) override;
+  int32_t send_update_plain(const UCCellsPlain& cells, const int64_t updater_id);
+  void recv_update_plain(const int32_t seqid);
   /**
    * The direct method to update cells with cell in Update-Columns-Cells-Counter,
    * optionally to work with updater-id.
