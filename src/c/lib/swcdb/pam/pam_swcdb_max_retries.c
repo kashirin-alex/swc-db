@@ -143,21 +143,18 @@ bool swcdb_pam_confirm_state(swcdb_pam_cfg* cfg, const char* pam_rhost) {
     return allowed;
   }
 
-  swcdb_thriftCells container;
-  container.cells = g_object_new (
-    SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT, NULL);
+  swcdb_thriftCellsCounter* counter_cells = g_object_new (
+    SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_COUNTER_RESULT, NULL);
   swcdb_thriftException*    exception = NULL;
   GError*                   err = NULL;
 
-  swcdb_thriftCells* rslt = &container;
-  if(swcdb_thrift_service_client_sql_select(
-     client.service, &rslt, sql, &exception, &err)) {
+  if(swcdb_thrift_service_client_sql_select_counter(
+     client.service, &counter_cells, sql, &exception, &err)) {
     syslog(LOG_NOTICE|LOG_AUTH, "%s query %s", SWCDB_PAM_NAME, sql);
     
-    if(container.cells->len > 0) {
-      swcdb_thriftCell* cell = g_ptr_array_index(container.cells, 0);
-      char *last;
-      tries = strtoll((const char*)cell->v->data, &last, 0);
+    if(counter_cells->len > 0) {
+      swcdb_thriftCell* cell = g_ptr_array_index(counter_cells, 0);
+      tries = cell->v;
       g_clear_object(&cell);
     }
 
@@ -177,7 +174,7 @@ bool swcdb_pam_confirm_state(swcdb_pam_cfg* cfg, const char* pam_rhost) {
             SWCDB_PAM_NAME);
   }
   g_free(sql);
-  g_clear_object(&container.cells);
+  g_clear_object(&counter_cells);
   
 
   bool adj = tries < 0;
