@@ -153,7 +153,7 @@ bool swcdb_pam_confirm_state(swcdb_pam_cfg* cfg, const char* pam_rhost) {
     syslog(LOG_NOTICE|LOG_AUTH, "%s query %s", SWCDB_PAM_NAME, sql);
     
     if(counter_cells->len > 0) {
-      swcdb_thriftCell* cell = g_ptr_array_index(counter_cells, 0);
+      swcdb_thriftCellCounter* cell = g_ptr_array_index(counter_cells, 0);
       tries = cell->v;
       g_clear_object(&cell);
     }
