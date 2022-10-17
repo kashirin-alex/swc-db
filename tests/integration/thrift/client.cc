@@ -56,18 +56,36 @@ void key(int i, int f, Key& key) {
   }
 }
 
-std::string cell_value(int c, int i, int f, int batch) {
-  return "DATAOF:"
-          + column_name(c)
-          + "-"
-          + std::to_string(i)
-          + "/"
-          + std::to_string(f)
-          + "/"
-          + std::to_string(batch)
-          ;
-}
 
+template<ColumnType::type ColumnT>
+std::string cell_value(int c, int i, int f, int batch);
+template<>
+std::string cell_value<ColumnType::type::PLAIN>(int c, int i, int f, int batch) {
+  return "DATAOF:"
+        + column_name(c)
+        + "-"
+        + std::to_string(i)
+        + "/"
+        + std::to_string(f)
+        + "/"
+        + std::to_string(batch)
+        ;
+}
+template<>
+std::string cell_value<ColumnType::type::COUNTER_I64>(int c, int i, int f, int batch) {
+  (void)c;
+  (void)i;
+  (void)f;
+  (void)batch;
+  return "+1";
+}
+template<>
+std::string cell_value<ColumnType::type::SERIAL>(int c, int i, int f, int batch) {
+  return "[0:B:"+ column_name(c) + 
+          ",0:I:" + std::to_string(i) +
+          ",1:I:" + std::to_string(f) +
+          ",2:I:" + std::to_string(batch) + "]";
+}
 
 
 /* OUTPUT */
@@ -125,6 +143,7 @@ void print(FCells& cells) {
 
 /* SQL METHODS */
 
+template<ColumnType::type ColumnT>
 void sql_mng_and_list_column(Client& client) {
   std::cout << std::endl << "test: sql_mng_column: " << std::endl;
 
@@ -145,9 +164,21 @@ void sql_mng_and_list_column(Client& client) {
     std::cout << std::endl;
   }
 
-  client.sql_mng_column(
-    "create column(name='col-test-create-1' cell_ttl=123456)"
-  );
+  std::string sql_create = "create column(name='col-test-create-1' cell_ttl=123456";
+  switch(ColumnT) {
+    case ColumnType::type::PLAIN:
+      sql_create += ')';
+      break;
+    case ColumnType::type::COUNTER_I64:
+      sql_create.append(" type=COUNTER_I64");
+      break;
+    case ColumnType::type::SERIAL: 
+      sql_create.append(" type=SERIAL");
+      break;
+  }
+  sql_create += ')';
+
+  client.sql_mng_column(sql_create);
   schemas.clear();
   client.sql_list_columns(
     schemas,
@@ -155,10 +186,22 @@ void sql_mng_and_list_column(Client& client) {
   );
   assert(schemas.size() == 1);
 
-  std::string sql("modify column(cid=");
-  sql.append(std::to_string(schemas.back().cid));
-  sql.append(" name='col-test-create-1' cell_ttl=123456789)");
-  client.sql_mng_column(sql);
+  std::string sql_modify = "modify column(name='col-test-create-1' cid=";
+  sql_modify.append(std::to_string(schemas.back().cid));
+  switch(ColumnT) {
+    case ColumnType::type::PLAIN:
+      sql_modify.append(" cell_ttl=123456789 type=PLAIN");
+      break;
+    case ColumnType::type::COUNTER_I64:
+      sql_modify.append(" cell_ttl=123456789 type=COUNTER_I64");
+      break;
+    case ColumnType::type::SERIAL: 
+      sql_modify.append(" cell_ttl=123456789 type=SERIAL");
+      break;
+  }
+  sql_modify += ')';
+
+  client.sql_mng_column(sql_modify);
 
   schemas.clear();
   client.sql_list_columns(
@@ -167,6 +210,7 @@ void sql_mng_and_list_column(Client& client) {
   );
   assert(schemas.size() == 1);
   assert(schemas.back().cell_ttl == 123456789);
+  assert(schemas.back().col_type == ColumnT);
 
   std::string sql_delete("delete column(name='col-test-create-1' cid=");
   sql_delete.append(std::to_string(schemas.front().cid));
@@ -185,6 +229,7 @@ void sql_mng_and_list_column(Client& client) {
   }
 }
 
+template<ColumnType::type ColumnT>
 void sql_list_columns_all(Client& client) {
   std::cout << std::endl << "test: sql_list_columns_all: " << std::endl;
 
@@ -201,6 +246,7 @@ void sql_list_columns_all(Client& client) {
   }
 }
 
+template<ColumnType::type ColumnT>
 void sql_compact_columns(Client& client) {
   std::cout << std::endl << "test: sql_compact_columns all: " << std::endl;
   CompactResults res;
@@ -245,6 +291,7 @@ void sql_compact_columns(Client& client) {
 }
 
 
+template<ColumnType::type ColumnT>
 void sql_delete_test_column(Client& client) {
   std::cout << std::endl << "test: sql_delete_test_column: " << std::endl;
   for(auto c=1; c <= num_columns; ++c) {
@@ -262,18 +309,37 @@ void sql_delete_test_column(Client& client) {
   }
 }
 
+template<ColumnType::type ColumnT>
 void sql_create_test_column(Client& client, uint32_t cell_versions=1) {
-  sql_delete_test_column(client);
+  sql_delete_test_column<ColumnT>(client);
   std::cout << std::endl << "test: sql_create_test_column: " << std::endl;
+  std::string sql;
   for(auto c=1; c <= num_columns; ++c) {
-    client.sql_mng_column(
-      "create column(name='"+column_name(c)+"' "
+    switch(ColumnT) {
+      case ColumnType::type::PLAIN:
+        sql = "create column(name='"+column_name(c)+"' "
                     "cell_versions="+std::to_string(cell_versions)+
                     " tags=[" + std::to_string(c % 2) + "]" +
-                    ")");
+                    ")";
+        break;
+      case ColumnType::type::COUNTER_I64:
+        sql = "create column(name='"+column_name(c)+"' "
+                    "cell_versions="+std::to_string(cell_versions)+
+                    " tags=[" + std::to_string(c % 2) + "]" +
+                    " type=COUNTER_I64)";
+        break;
+      case ColumnType::type::SERIAL: 
+        sql = "create column(name='"+column_name(c)+"' "
+                    "cell_versions="+std::to_string(cell_versions)+
+                    " tags=[" + std::to_string(c % 2) + "]" +
+                    " type=SERIAL)";
+        break;
+    }
+    client.sql_mng_column(sql);
   }
 }
 
+template<ColumnType::type ColumnT>
 void sql_update(Client& client, size_t updater_id=0, int batch=0) {
   std::cout << std::endl << "test: sql_update";
   if(updater_id)
@@ -299,7 +365,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
         //cells.append(std::to_string(now_ns()));
         cells.append(", ");
 
-        cells.append(cell_value(c, i, f, batch));
+        cells.append(cell_value<ColumnT>(c, i, f, batch));
         cells.append(")");
         if(i != num_cells || c != num_columns || f != num_fractions)
           cells.append(",");
@@ -310,6 +376,7 @@ void sql_update(Client& client, size_t updater_id=0, int batch=0) {
   client.sql_update(cells, updater_id);
 }
 
+template<ColumnType::type ColumnT>
 void sql_update_with_id(Client& client) {
   std::cout << std::endl << "test: sql_update_with_id: " << std::endl;
 
@@ -319,7 +386,7 @@ void sql_update_with_id(Client& client) {
   assert(updater_id);
 
   for(size_t b=1; b<=batches;++b) {
-    sql_update(client, updater_id, b);
+    sql_update<ColumnT>(client, updater_id, b);
   }
   client.updater_close(updater_id);
 }
@@ -336,6 +403,7 @@ std::string select_sql() {
   return sql;
 }
 
+template<ColumnType::type ColumnT>
 void sql_select(Client& client) {
   std::cout << std::endl << "test: sql_select: " << std::endl;
 
@@ -347,11 +415,26 @@ void sql_select(Client& client) {
 
   print(container);
 
-  std::cout << " cells.size()=" << container.plain_cells.size()
-            << " expected=" << total_cells*batches << "\n";
-  assert(container.plain_cells.size() == total_cells*batches);
+  switch(ColumnT) {
+    case ColumnType::type::PLAIN:
+      std::cout << " cells.size()=" << container.plain_cells.size()
+                << " expected=" << total_cells*batches << "\n";
+      assert(container.plain_cells.size() == total_cells*batches);
+      break;
+    case ColumnType::type::COUNTER_I64:
+      std::cout << " counter_cells.size()=" << container.counter_cells.size()
+                << " expected=" << total_cells * 1 << "\n";
+      assert(container.counter_cells.size() == total_cells * 1);
+      break;
+    case ColumnType::type::SERIAL: 
+      std::cout << " serial_cells.size()=" << container.serial_cells.size()
+                << " expected=" << total_cells*batches << "\n";
+      assert(container.serial_cells.size() == total_cells*batches);
+      break;
+  }
 }
 
+template<ColumnType::type ColumnT>
 void sql_select_rslt_on_column(Client& client) {
   std::cout << std::endl << "test: sql_select_rslt_on_column: " << std::endl;
 
@@ -365,6 +448,7 @@ void sql_select_rslt_on_column(Client& client) {
   assert(cells.size() == num_columns);
 }
 
+template<ColumnType::type ColumnT>
 void sql_select_rslt_on_key(Client& client) {
   std::cout << std::endl << "test: sql_select_rslt_on_key: " << std::endl;
 
@@ -378,6 +462,7 @@ void sql_select_rslt_on_key(Client& client) {
   assert(cells.size() == num_cells*num_fractions);
 }
 
+template<ColumnType::type ColumnT>
 void sql_select_rslt_on_fraction(Client& client) {
   std::cout << std::endl << "test: sql_select_rslt_on_fraction: " << std::endl;
 
@@ -391,6 +476,7 @@ void sql_select_rslt_on_fraction(Client& client) {
   assert(cells.f.size() == num_cells);
 }
 
+template<ColumnType::type ColumnT>
 void sql_query(Client& client, CellsResult::type rslt) {
   std::cout << std::endl << "test: sql_query, " << rslt << ": " << std::endl;
 
@@ -422,8 +508,17 @@ void sql_query(Client& client, CellsResult::type rslt) {
     }
     default : {
       print(group.cells);
-      assert(group.cells.plain_cells.size() == total_cells);
-      break;
+      switch(ColumnT) {
+        case ColumnType::type::PLAIN:
+          assert(group.cells.plain_cells.size() == total_cells);
+          break;
+        case ColumnType::type::COUNTER_I64:
+          assert(group.cells.counter_cells.size() == total_cells);
+          break;
+        case ColumnType::type::SERIAL: 
+          assert(group.cells.serial_cells.size() == total_cells);
+          break;
+      }
     }
   }
 }
@@ -432,6 +527,7 @@ void sql_query(Client& client, CellsResult::type rslt) {
 
 /* SPECS METHODS */
 
+template<ColumnType::type ColumnT>
 void spec_delete_test_column(Client& client) {
   std::cout << std::endl << "test: spec_delete_test_column: " << std::endl;
 
@@ -453,23 +549,22 @@ void spec_delete_test_column(Client& client) {
   }
 }
 
-void spec_create_test_column(Client& client, uint32_t cell_versions=1,
-                             bool serial=false) {
-  spec_delete_test_column(client);
+template<ColumnType::type ColumnT>
+void spec_create_test_column(Client& client, uint32_t cell_versions=1) {
+  spec_delete_test_column<ColumnT>(client);
   std::cout << std::endl << "test: spec_create_test_column: " << std::endl;
   Schema schema;
   for(auto c=1; c <= num_columns; ++c) {
     schema.__set_col_name(column_name(c));
     schema.__set_col_tags({std::to_string(c % 2)});
     schema.__set_cell_versions(cell_versions);
-    if(serial)
-      schema.__set_col_type(ColumnType::type::SERIAL);
-
+    schema.__set_col_type(ColumnT);
     std::cout << " create: " << schema << std::endl;
     client.mng_column(SchemaFunc::CREATE, schema);
   }
 }
 
+template<ColumnType::type ColumnT>
 void spec_compact_test_column(Client& client) {
   std::cout << std::endl << "test: spec_compact_test_column: " << std::endl;
 
@@ -485,6 +580,7 @@ void spec_compact_test_column(Client& client) {
     std::cout << " " << r << std::endl;
 }
 
+template<ColumnType::type ColumnT>
 void spec_list_columns(Client& client) {
   std::cout << std::endl << "test: spec_list_columns: " << std::endl;
 
@@ -520,6 +616,7 @@ void spec_list_columns(Client& client) {
   }
 }
 
+template<ColumnType::type ColumnT>
 void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   std::cout << std::endl << "test: spec_update";
   if(updater_id)
@@ -535,76 +632,88 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   }
   client.sql_list_columns(schemas, sql);
 
-  UCCellsPlain cells;
-  auto c=0;
-  for(auto& schema : schemas) {
-    ++c;
-    auto& col = cells[schema.cid];
-    for(auto i=1; i <= num_cells; ++i) {
-      for(auto f=1; f <= num_fractions; ++f) {
-        auto& cell = col.emplace_back();
-        cell.f = Flag::INSERT;
-        key(i, f, cell.k);
-        cell.__set_ts(i*f*c);//now_ns());
-        cell.__set_ts_desc(true);
-        cell.__set_v(cell_value(c, i, f, batch));
-      }
-    }
-  }
-  //std::cout << cells << "\n";
-  client.update_plain(cells, updater_id);
-}
-
-void spec_update_serial(Client& client, size_t updater_id=0, int batch=0) {
-  std::cout << std::endl << "test: spec_update_serial";
-  if(updater_id)
-    std::cout << " updater_id=" << updater_id;
-  std::cout << ": " << std::endl;
-
-  Schemas schemas;
-  std::string sql("get schema ");
-  for(auto c=1; c <= num_columns; ++c) {
-    sql.append(column_name(c));
-    if(c != num_columns)
-      sql += ',';
-  }
-  client.sql_list_columns(schemas, sql);
-
-  UCCellsSerial cells;
-  auto c=0;
-  for(auto& schema : schemas) {
-    ++c;
-    auto& col = cells[schema.cid];
-    for(auto i=1; i <= num_cells; ++i) {
-      for(auto f=1; f <= num_fractions; ++f) {
-        auto& cell = col.emplace_back();
-        cell.f = Flag::INSERT;
-        key(i, f, cell.k);
-        cell.__set_ts(i*f*c);//now_ns());
-        cell.__set_ts_desc(true);
-        cell.__set_encoder(EncodingType::SNAPPY);
-        cell.v.resize(10);
-        for(int fid=0; fid<10; ++fid) {
-          auto& fields = cell.v[fid];
-          fields.__set_field_id(fid);
-          fields.__set_v_int64(f);
-          fields.__set_v_double(f);
-          fields.__set_v_bytes(apache::thrift::to_string(cell.k));
-          fields.__set_v_key(cell.k);
-          fields.__set_v_li({c, i, f, batch});
-          fields.__set_v_lb({
-            column_name(c),
-            std::to_string(c),
-            std::to_string(i),
-            std::to_string(f),
-            std::to_string(batch)
-          });
+  switch(ColumnT) {
+    case ColumnType::type::PLAIN: {
+      UCCellsPlain cells;
+      auto c=0;
+      for(auto& schema : schemas) {
+        ++c;
+        auto& col = cells[schema.cid];
+        for(auto i=1; i <= num_cells; ++i) {
+          for(auto f=1; f <= num_fractions; ++f) {
+            auto& cell = col.emplace_back();
+            cell.f = Flag::INSERT;
+            key(i, f, cell.k);
+            cell.__set_ts(i*f*c);//now_ns());
+            cell.__set_ts_desc(true);
+            cell.__set_v(cell_value<ColumnT>(c, i, f, batch));
+          }
         }
       }
+      //std::cout << cells << "\n";
+      client.update_plain(cells, updater_id);
+      break;
+    }
+    case ColumnType::type::COUNTER_I64: {
+      UCCellsCounter cells;
+      auto c=0;
+      for(auto& schema : schemas) {
+        ++c;
+        auto& col = cells[schema.cid];
+        for(auto i=1; i <= num_cells; ++i) {
+          for(auto f=1; f <= num_fractions; ++f) {
+            auto& cell = col.emplace_back();
+            cell.f = Flag::INSERT;
+            key(i, f, cell.k);
+            cell.__set_ts(i*f*c);//now_ns());
+            cell.__set_ts_desc(true);
+            cell.__set_v(c * i * f * batch);
+          }
+        }
+      }
+      //std::cout << cells << "\n";
+      client.update_counter(cells, updater_id);
+      break;
+    }
+    case ColumnType::type::SERIAL: {
+      UCCellsSerial cells;
+      auto c=0;
+      for(auto& schema : schemas) {
+        ++c;
+        auto& col = cells[schema.cid];
+        for(auto i=1; i <= num_cells; ++i) {
+          for(auto f=1; f <= num_fractions; ++f) {
+            auto& cell = col.emplace_back();
+            cell.f = Flag::INSERT;
+            key(i, f, cell.k);
+            cell.__set_ts(i*f*c);//now_ns());
+            cell.__set_ts_desc(true);
+            cell.__set_encoder(EncodingType::SNAPPY);
+            cell.v.resize(10);
+            for(int fid=0; fid<10; ++fid) {
+              auto& fields = cell.v[fid];
+              fields.__set_field_id(fid);
+              fields.__set_v_int64(f);
+              fields.__set_v_double(f);
+              fields.__set_v_bytes(apache::thrift::to_string(cell.k));
+              fields.__set_v_key(cell.k);
+              fields.__set_v_li({c, i, f, batch});
+              fields.__set_v_lb({
+                column_name(c),
+                std::to_string(c),
+                std::to_string(i),
+                std::to_string(f),
+                std::to_string(batch)
+              });
+            }
+          }
+        }
+      }
+      //std::cout << cells << "\n";
+      client.update_serial(cells, updater_id);
+      break;
     }
   }
-  //std::cout << cells << "\n";
-  client.update_serial(cells, updater_id);
 }
 
 SpecScan select_specs(Client& client) {
@@ -633,6 +742,7 @@ SpecScan select_specs(Client& client) {
   return ss;
 }
 
+template<ColumnType::type ColumnT>
 void spec_select(Client& client) {
   std::cout << std::endl << "test: spec_select: " << std::endl;
 
@@ -644,11 +754,26 @@ void spec_select(Client& client) {
   client.scan(container, specs);
 
   print(container);
-  std::cout << " cells.size()=" << container.plain_cells.size()
-            << " serial_cells.size()=" << container.serial_cells.size()
-            << " expected=" << num_fractions*num_columns << "\n";
-  assert(container.plain_cells.size() + container.serial_cells.size()
-         == num_fractions*num_columns);
+  switch (ColumnT) {
+    case ColumnType::type::PLAIN: {
+      std::cout << " plain_cells.size()=" << container.plain_cells.size()
+                << " expected=" << num_fractions*num_columns << "\n";
+      assert(container.plain_cells.size() == num_fractions * num_columns);
+      break;
+    }
+    case ColumnType::type::COUNTER_I64: {
+      std::cout << " counter_cells.size()=" << container.counter_cells.size()
+                << " expected=" << num_fractions*num_columns << "\n";
+      assert(container.counter_cells.size() == num_fractions * num_columns);
+      break;
+    }
+    case ColumnType::type::SERIAL: {
+      std::cout << " serial_cells.size()=" << container.serial_cells.size()
+                << " expected=" << num_fractions*num_columns << "\n";
+      assert(container.serial_cells.size() == num_fractions * num_columns);
+      break;
+    }
+  }
 
   for(auto rslt_typ : {
     CellsResult::IN_LIST,
@@ -696,77 +821,88 @@ void spec_select(Client& client) {
         break;
       }
       default: { // IN_LIST
-        std::cout << rslt_typ
-                  << " plain_cells.size()=" << gcells.cells.plain_cells.size()
-                  << " serial_cells.size()=" << gcells.cells.serial_cells.size()
-                  << " expected=" << num_fractions*num_columns << "\n";
-        assert(gcells.cells.plain_cells.size() + gcells.cells.serial_cells.size()
-                == num_fractions*num_columns);
-        break;
+        switch (ColumnT) {
+          case ColumnType::type::PLAIN: {
+            std::cout<< rslt_typ << " plain_cells.size()=" << gcells.cells.plain_cells.size()
+                      << " expected=" << num_fractions*num_columns << "\n";
+            assert(gcells.cells.plain_cells.size() == num_fractions * num_columns);
+            break;
+          }
+          case ColumnType::type::COUNTER_I64: {
+            std::cout<< rslt_typ << " counter_cells.size()=" << gcells.cells.counter_cells.size()
+                      << " expected=" << num_fractions*num_columns << "\n";
+            assert(gcells.cells.counter_cells.size() == num_fractions * num_columns);
+            break;
+          }
+          case ColumnType::type::SERIAL: {
+            std::cout<< rslt_typ << " serial_cells.size()=" << gcells.cells.serial_cells.size()
+                      << " expected=" << num_fractions*num_columns << "\n";
+            assert(gcells.cells.serial_cells.size() == num_fractions * num_columns);
+            break;
+          }
+        }
       }
     }
   }
 }
 
 
+template<ColumnType::type ColumnT>
+void test() {
+  batches = 1;
+  //auto client = Client::make("localhost", 18000);
 
-}
-}}
-
-namespace Test = SWC::Thrift::Test;
-
-int main() {
-  //auto client = SWC::Thrift::Client::make("localhost", 18000);
-
-  SWC::Thrift::Client client("localhost", 18000);
+  Client client("localhost", 18000);
 
   /** SQL **/
-  Test::sql_list_columns_all(client);
-  Test::sql_mng_and_list_column(client);
+  sql_list_columns_all<ColumnT>(client);
+  sql_mng_and_list_column<ColumnT>(client);
 
-  Test::sql_create_test_column(client);
-  Test::sql_compact_columns(client);
+  sql_create_test_column<ColumnT>(client);
+  sql_compact_columns<ColumnT>(client);
 
-  Test::sql_update(client);
+  sql_update<ColumnT>(client);
 
-  Test::sql_select(client);
-  Test::sql_select_rslt_on_column(client);
-  Test::sql_select_rslt_on_key(client);
-  Test::sql_select_rslt_on_fraction(client);
+  sql_select<ColumnT>(client);
+  sql_select_rslt_on_column<ColumnT>(client);
+  sql_select_rslt_on_key<ColumnT>(client);
+  sql_select_rslt_on_fraction<ColumnT>(client);
 
-  Test::sql_query(client, SWC::Thrift::CellsResult::IN_LIST);
-  Test::sql_query(client, SWC::Thrift::CellsResult::ON_COLUMN);
-  Test::sql_query(client, SWC::Thrift::CellsResult::ON_KEY);
-  Test::sql_query(client, SWC::Thrift::CellsResult::ON_FRACTION);
+  sql_query<ColumnT>(client, CellsResult::IN_LIST);
+  sql_query<ColumnT>(client, CellsResult::ON_COLUMN);
+  sql_query<ColumnT>(client, CellsResult::ON_KEY);
+  sql_query<ColumnT>(client, CellsResult::ON_FRACTION);
 
-  Test::sql_delete_test_column(client);
+  sql_delete_test_column<ColumnT>(client);
 
   // with updater_id
-  Test::sql_create_test_column(client, batches *= 10);
-  Test::sql_update_with_id(client);
-  Test::sql_select(client);
-  Test::sql_delete_test_column(client);
+  sql_create_test_column<ColumnT>(client, batches *= 10);
+  sql_update_with_id<ColumnT>(client);
+  sql_select<ColumnT>(client);
+  sql_delete_test_column<ColumnT>(client);
 
   batches = 1;
 
   /** SPECS **/
-  Test::spec_create_test_column(client);
-  Test::spec_update(client);
-  Test::spec_select(client);
-  Test::spec_compact_test_column(client);
-  Test::spec_select(client);
+  spec_create_test_column<ColumnT>(client);
+  spec_update<ColumnT>(client);
+  spec_select<ColumnT>(client);
+  spec_compact_test_column<ColumnT>(client);
+  spec_select<ColumnT>(client);
 
-  Test::spec_list_columns(client);
-  Test::spec_delete_test_column(client);
-
-  /** SPECS Serial Value **/
-  Test::spec_create_test_column(client, 1, true);
-  Test::spec_update_serial(client);
-  Test::spec_select(client);
-  Test::spec_delete_test_column(client);
-
+  spec_list_columns<ColumnT>(client);
+  spec_delete_test_column<ColumnT>(client);
 
   client.close();
 
   std::cout << std::endl << " # OK! #" << std::endl;
+}
+
+}
+}}
+
+int main() {
+  SWC::Thrift::Test::test<SWC::Thrift::ColumnType::type::PLAIN>();
+  SWC::Thrift::Test::test<SWC::Thrift::ColumnType::type::COUNTER_I64>();
+  SWC::Thrift::Test::test<SWC::Thrift::ColumnType::type::SERIAL>();
 }
