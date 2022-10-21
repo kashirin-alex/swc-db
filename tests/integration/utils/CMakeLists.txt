@@ -4,14 +4,20 @@
 
 
 
+foreach(col_type PLAIN;COUNTER;SERIAL)
+  foreach(by ID;NAME)
+    foreach(ext plain;zst)
 
-add_test(
-  NAME    utils_shell_dbclient
-  COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/utils_shell_dbclient.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR} 
-)
+      add_test(
+        NAME    utils_shell_dbclient-${col_type}-${by}-${ext}-bkr_false
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/utils_shell_dbclient.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR} ${col_type} ${by} ${ext}
+      )
 
-add_test(
-  NAME    utils_shell_dbclient_broker
-  COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/utils_shell_dbclient.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR} --with-broker
-)
+      add_test(
+        NAME    utils_shell_dbclient-${col_type}-${by}-${ext}-bkr_true
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/utils_shell_dbclient.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR} ${col_type} ${by} ${ext} --with-broker
+      )
 
+    endforeach()
+  endforeach()
+endforeach()
