@@ -384,7 +384,7 @@ bool Blocks::wait_processing(int64_t quit_time) {
         SWC_LOG_OUT(LOG_WARN,
           SWC_LOG_PRINTF(
             "Blocks wait-processing quit " SWC_FMT_LU "/" SWC_FMT_LU
-            "blocks=%d commitlog=%d cellstores=%d",
+            " blocks=%d commitlog=%d cellstores=%d",
             range->cfg->cid, range->rid,
             processing(), commitlog.processing(), cellstores.processing()
           );
