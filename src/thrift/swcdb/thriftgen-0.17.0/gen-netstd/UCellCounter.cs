@@ -164,38 +164,38 @@ public partial class UCellCounter : TBase
 
   public UCellCounter DeepCopy()
   {
-    var tmp252 = new UCellCounter();
+    var tmp300 = new UCellCounter();
     if(__isset.f)
     {
-      tmp252.F = this.F;
+      tmp300.F = this.F;
     }
-    tmp252.__isset.f = this.__isset.f;
+    tmp300.__isset.f = this.__isset.f;
     if((K != null) && __isset.k)
     {
-      tmp252.K = this.K.DeepCopy();
+      tmp300.K = this.K.DeepCopy();
     }
-    tmp252.__isset.k = this.__isset.k;
+    tmp300.__isset.k = this.__isset.k;
     if(__isset.ts)
     {
-      tmp252.Ts = this.Ts;
+      tmp300.Ts = this.Ts;
     }
-    tmp252.__isset.ts = this.__isset.ts;
+    tmp300.__isset.ts = this.__isset.ts;
     if(__isset.ts_desc)
     {
-      tmp252.Ts_desc = this.Ts_desc;
+      tmp300.Ts_desc = this.Ts_desc;
     }
-    tmp252.__isset.ts_desc = this.__isset.ts_desc;
+    tmp300.__isset.ts_desc = this.__isset.ts_desc;
     if(__isset.op)
     {
-      tmp252.Op = this.Op;
+      tmp300.Op = this.Op;
     }
-    tmp252.__isset.op = this.__isset.op;
+    tmp300.__isset.op = this.__isset.op;
     if(__isset.v)
     {
-      tmp252.V = this.V;
+      tmp300.V = this.V;
     }
-    tmp252.__isset.v = this.__isset.v;
-    return tmp252;
+    tmp300.__isset.v = this.__isset.v;
+    return tmp300;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -229,13 +229,13 @@ public partial class UCellCounter : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list253 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list253.Count);
-                for(int _i254 = 0; _i254 < _list253.Count; ++_i254)
+                var _list301 = await iprot.ReadListBeginAsync(cancellationToken);
+                K = new List<byte[]>(_list301.Count);
+                for(int _i302 = 0; _i302 < _list301.Count; ++_i302)
                 {
-                  byte[] _elem255;
-                  _elem255 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem255);
+                  byte[] _elem303;
+                  _elem303 = await iprot.ReadBinaryAsync(cancellationToken);
+                  K.Add(_elem303);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -306,65 +306,65 @@ public partial class UCellCounter : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp256 = new TStruct("UCellCounter");
-      await oprot.WriteStructBeginAsync(tmp256, cancellationToken);
-      var tmp257 = new TField();
+      var tmp304 = new TStruct("UCellCounter");
+      await oprot.WriteStructBeginAsync(tmp304, cancellationToken);
+      var tmp305 = new TField();
       if(__isset.f)
       {
-        tmp257.Name = "f";
-        tmp257.Type = TType.I32;
-        tmp257.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp257, cancellationToken);
+        tmp305.Name = "f";
+        tmp305.Type = TType.I32;
+        tmp305.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp305, cancellationToken);
         await oprot.WriteI32Async((int)F, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((K != null) && __isset.k)
       {
-        tmp257.Name = "k";
-        tmp257.Type = TType.List;
-        tmp257.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp257, cancellationToken);
+        tmp305.Name = "k";
+        tmp305.Type = TType.List;
+        tmp305.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp305, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-        foreach (byte[] _iter258 in K)
+        foreach (byte[] _iter306 in K)
         {
-          await oprot.WriteBinaryAsync(_iter258, cancellationToken);
+          await oprot.WriteBinaryAsync(_iter306, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp257.Name = "ts";
-        tmp257.Type = TType.I64;
-        tmp257.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp257, cancellationToken);
+        tmp305.Name = "ts";
+        tmp305.Type = TType.I64;
+        tmp305.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp305, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts_desc)
       {
-        tmp257.Name = "ts_desc";
-        tmp257.Type = TType.Bool;
-        tmp257.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp257, cancellationToken);
+        tmp305.Name = "ts_desc";
+        tmp305.Type = TType.Bool;
+        tmp305.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp305, cancellationToken);
         await oprot.WriteBoolAsync(Ts_desc, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.op)
       {
-        tmp257.Name = "op";
-        tmp257.Type = TType.Byte;
-        tmp257.ID = 5;
-        await oprot.WriteFieldBeginAsync(tmp257, cancellationToken);
+        tmp305.Name = "op";
+        tmp305.Type = TType.Byte;
+        tmp305.ID = 5;
+        await oprot.WriteFieldBeginAsync(tmp305, cancellationToken);
         await oprot.WriteByteAsync(Op, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.v)
       {
-        tmp257.Name = "v";
-        tmp257.Type = TType.I64;
-        tmp257.ID = 6;
-        await oprot.WriteFieldBeginAsync(tmp257, cancellationToken);
+        tmp305.Name = "v";
+        tmp305.Type = TType.I64;
+        tmp305.ID = 6;
+        await oprot.WriteFieldBeginAsync(tmp305, cancellationToken);
         await oprot.WriteI64Async(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -422,46 +422,46 @@ public partial class UCellCounter : TBase
 
   public override string ToString()
   {
-    var tmp259 = new StringBuilder("UCellCounter(");
-    int tmp260 = 0;
+    var tmp307 = new StringBuilder("UCellCounter(");
+    int tmp308 = 0;
     if(__isset.f)
     {
-      if(0 < tmp260++) { tmp259.Append(", "); }
-      tmp259.Append("F: ");
-      F.ToString(tmp259);
+      if(0 < tmp308++) { tmp307.Append(", "); }
+      tmp307.Append("F: ");
+      F.ToString(tmp307);
     }
     if((K != null) && __isset.k)
     {
-      if(0 < tmp260++) { tmp259.Append(", "); }
-      tmp259.Append("K: ");
-      K.ToString(tmp259);
+      if(0 < tmp308++) { tmp307.Append(", "); }
+      tmp307.Append("K: ");
+      K.ToString(tmp307);
     }
     if(__isset.ts)
     {
-      if(0 < tmp260++) { tmp259.Append(", "); }
-      tmp259.Append("Ts: ");
-      Ts.ToString(tmp259);
+      if(0 < tmp308++) { tmp307.Append(", "); }
+      tmp307.Append("Ts: ");
+      Ts.ToString(tmp307);
     }
     if(__isset.ts_desc)
     {
-      if(0 < tmp260++) { tmp259.Append(", "); }
-      tmp259.Append("Ts_desc: ");
-      Ts_desc.ToString(tmp259);
+      if(0 < tmp308++) { tmp307.Append(", "); }
+      tmp307.Append("Ts_desc: ");
+      Ts_desc.ToString(tmp307);
     }
     if(__isset.op)
     {
-      if(0 < tmp260++) { tmp259.Append(", "); }
-      tmp259.Append("Op: ");
-      Op.ToString(tmp259);
+      if(0 < tmp308++) { tmp307.Append(", "); }
+      tmp307.Append("Op: ");
+      Op.ToString(tmp307);
     }
     if(__isset.v)
     {
-      if(0 < tmp260++) { tmp259.Append(", "); }
-      tmp259.Append("V: ");
-      V.ToString(tmp259);
+      if(0 < tmp308++) { tmp307.Append(", "); }
+      tmp307.Append("V: ");
+      V.ToString(tmp307);
     }
-    tmp259.Append(')');
-    return tmp259.ToString();
+    tmp307.Append(')');
+    return tmp307.ToString();
   }
 }
 

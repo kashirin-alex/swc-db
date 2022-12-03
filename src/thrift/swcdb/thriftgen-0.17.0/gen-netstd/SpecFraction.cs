@@ -88,18 +88,18 @@ public partial class SpecFraction : TBase
 
   public SpecFraction DeepCopy()
   {
-    var tmp55 = new SpecFraction();
+    var tmp149 = new SpecFraction();
     if(__isset.comp)
     {
-      tmp55.Comp = this.Comp;
+      tmp149.Comp = this.Comp;
     }
-    tmp55.__isset.comp = this.__isset.comp;
+    tmp149.__isset.comp = this.__isset.comp;
     if((F != null) && __isset.f)
     {
-      tmp55.F = this.F.ToArray();
+      tmp149.F = this.F.ToArray();
     }
-    tmp55.__isset.f = this.__isset.f;
-    return tmp55;
+    tmp149.__isset.f = this.__isset.f;
+    return tmp149;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -160,24 +160,24 @@ public partial class SpecFraction : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp56 = new TStruct("SpecFraction");
-      await oprot.WriteStructBeginAsync(tmp56, cancellationToken);
-      var tmp57 = new TField();
+      var tmp150 = new TStruct("SpecFraction");
+      await oprot.WriteStructBeginAsync(tmp150, cancellationToken);
+      var tmp151 = new TField();
       if(__isset.comp)
       {
-        tmp57.Name = "comp";
-        tmp57.Type = TType.I32;
-        tmp57.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp57, cancellationToken);
+        tmp151.Name = "comp";
+        tmp151.Type = TType.I32;
+        tmp151.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp151, cancellationToken);
         await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((F != null) && __isset.f)
       {
-        tmp57.Name = "f";
-        tmp57.Type = TType.String;
-        tmp57.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp57, cancellationToken);
+        tmp151.Name = "f";
+        tmp151.Type = TType.String;
+        tmp151.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp151, cancellationToken);
         await oprot.WriteBinaryAsync(F, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -215,22 +215,22 @@ public partial class SpecFraction : TBase
 
   public override string ToString()
   {
-    var tmp58 = new StringBuilder("SpecFraction(");
-    int tmp59 = 0;
+    var tmp152 = new StringBuilder("SpecFraction(");
+    int tmp153 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp59++) { tmp58.Append(", "); }
-      tmp58.Append("Comp: ");
-      Comp.ToString(tmp58);
+      if(0 < tmp153++) { tmp152.Append(", "); }
+      tmp152.Append("Comp: ");
+      Comp.ToString(tmp152);
     }
     if((F != null) && __isset.f)
     {
-      if(0 < tmp59++) { tmp58.Append(", "); }
-      tmp58.Append("F: ");
-      F.ToString(tmp58);
+      if(0 < tmp153++) { tmp152.Append(", "); }
+      tmp152.Append("F: ");
+      F.ToString(tmp152);
     }
-    tmp58.Append(')');
-    return tmp58.ToString();
+    tmp152.Append(')');
+    return tmp152.ToString();
   }
 }
 

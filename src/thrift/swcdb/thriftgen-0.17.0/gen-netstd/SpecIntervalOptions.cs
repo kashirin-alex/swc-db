@@ -13,7 +13,7 @@
 #pragma warning disable IDE0083  // pattern matching "that is not SomeType" requires net5.0 but we still support earlier versions
 
 /// <summary>
-/// The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit
+/// The Scan Interval Specs Options for the SpecIntervalPlain, SpecIntervalCounter and SpecIntervalSerial 'options' bit
 /// </summary>
 public enum SpecIntervalOptions
 {

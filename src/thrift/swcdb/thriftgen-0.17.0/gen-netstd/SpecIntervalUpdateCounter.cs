@@ -33,19 +33,19 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Value specs for an Updating Interval of 'updating' in SpecInterval
+/// The Value specs for an Updating Interval of 'updating' in SpecIntervalCounter
 /// </summary>
-public partial class SpecIntervalUpdate : TBase
+public partial class SpecIntervalUpdateCounter : TBase
 {
-  private byte[] _v;
+  private long _v;
+  private long _op;
   private long _ts;
-  private EncodingType _encoder;
   private SpecUpdateOP _update_op;
 
   /// <summary>
-  /// The value for the updated cell
+  /// The int64 value for the updated cell
   /// </summary>
-  public byte[] V
+  public long V
   {
     get
     {
@@ -55,6 +55,22 @@ public partial class SpecIntervalUpdate : TBase
     {
       __isset.v = true;
       this._v = value;
+    }
+  }
+
+  /// <summary>
+  /// The Opration pf Counter, available: COUNTER_OP_EQUAL
+  /// </summary>
+  public long Op
+  {
+    get
+    {
+      return _op;
+    }
+    set
+    {
+      __isset.op = true;
+      this._op = value;
     }
   }
 
@@ -71,24 +87,6 @@ public partial class SpecIntervalUpdate : TBase
     {
       __isset.ts = true;
       this._ts = value;
-    }
-  }
-
-  /// <summary>
-  /// Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD
-  /// 
-  /// <seealso cref="global::.EncodingType"/>
-  /// </summary>
-  public EncodingType Encoder
-  {
-    get
-    {
-      return _encoder;
-    }
-    set
-    {
-      __isset.encoder = true;
-      this._encoder = value;
     }
   }
 
@@ -113,39 +111,41 @@ public partial class SpecIntervalUpdate : TBase
   public struct Isset
   {
     public bool v;
+    public bool op;
     public bool ts;
-    public bool encoder;
     public bool update_op;
   }
 
-  public SpecIntervalUpdate()
+  public SpecIntervalUpdateCounter()
   {
+    this._op = 0;
+    this.__isset.op = true;
   }
 
-  public SpecIntervalUpdate DeepCopy()
+  public SpecIntervalUpdateCounter DeepCopy()
   {
-    var tmp88 = new SpecIntervalUpdate();
-    if((V != null) && __isset.v)
+    var tmp65 = new SpecIntervalUpdateCounter();
+    if(__isset.v)
     {
-      tmp88.V = this.V.ToArray();
+      tmp65.V = this.V;
     }
-    tmp88.__isset.v = this.__isset.v;
+    tmp65.__isset.v = this.__isset.v;
+    if(__isset.op)
+    {
+      tmp65.Op = this.Op;
+    }
+    tmp65.__isset.op = this.__isset.op;
     if(__isset.ts)
     {
-      tmp88.Ts = this.Ts;
+      tmp65.Ts = this.Ts;
     }
-    tmp88.__isset.ts = this.__isset.ts;
-    if(__isset.encoder)
-    {
-      tmp88.Encoder = this.Encoder;
-    }
-    tmp88.__isset.encoder = this.__isset.encoder;
+    tmp65.__isset.ts = this.__isset.ts;
     if((Update_op != null) && __isset.update_op)
     {
-      tmp88.Update_op = (SpecUpdateOP)this.Update_op.DeepCopy();
+      tmp65.Update_op = (SpecUpdateOP)this.Update_op.DeepCopy();
     }
-    tmp88.__isset.update_op = this.__isset.update_op;
-    return tmp88;
+    tmp65.__isset.update_op = this.__isset.update_op;
+    return tmp65;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -166,9 +166,9 @@ public partial class SpecIntervalUpdate : TBase
         switch (field.ID)
         {
           case 1:
-            if (field.Type == TType.String)
+            if (field.Type == TType.I64)
             {
-              V = await iprot.ReadBinaryAsync(cancellationToken);
+              V = await iprot.ReadI64Async(cancellationToken);
             }
             else
             {
@@ -178,7 +178,7 @@ public partial class SpecIntervalUpdate : TBase
           case 2:
             if (field.Type == TType.I64)
             {
-              Ts = await iprot.ReadI64Async(cancellationToken);
+              Op = await iprot.ReadI64Async(cancellationToken);
             }
             else
             {
@@ -186,9 +186,9 @@ public partial class SpecIntervalUpdate : TBase
             }
             break;
           case 3:
-            if (field.Type == TType.I32)
+            if (field.Type == TType.I64)
             {
-              Encoder = (EncodingType)await iprot.ReadI32Async(cancellationToken);
+              Ts = await iprot.ReadI64Async(cancellationToken);
             }
             else
             {
@@ -227,42 +227,42 @@ public partial class SpecIntervalUpdate : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp89 = new TStruct("SpecIntervalUpdate");
-      await oprot.WriteStructBeginAsync(tmp89, cancellationToken);
-      var tmp90 = new TField();
-      if((V != null) && __isset.v)
+      var tmp66 = new TStruct("SpecIntervalUpdateCounter");
+      await oprot.WriteStructBeginAsync(tmp66, cancellationToken);
+      var tmp67 = new TField();
+      if(__isset.v)
       {
-        tmp90.Name = "v";
-        tmp90.Type = TType.String;
-        tmp90.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp90, cancellationToken);
-        await oprot.WriteBinaryAsync(V, cancellationToken);
+        tmp67.Name = "v";
+        tmp67.Type = TType.I64;
+        tmp67.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp67, cancellationToken);
+        await oprot.WriteI64Async(V, cancellationToken);
+        await oprot.WriteFieldEndAsync(cancellationToken);
+      }
+      if(__isset.op)
+      {
+        tmp67.Name = "op";
+        tmp67.Type = TType.I64;
+        tmp67.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp67, cancellationToken);
+        await oprot.WriteI64Async(Op, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp90.Name = "ts";
-        tmp90.Type = TType.I64;
-        tmp90.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp90, cancellationToken);
+        tmp67.Name = "ts";
+        tmp67.Type = TType.I64;
+        tmp67.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp67, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
-        await oprot.WriteFieldEndAsync(cancellationToken);
-      }
-      if(__isset.encoder)
-      {
-        tmp90.Name = "encoder";
-        tmp90.Type = TType.I32;
-        tmp90.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp90, cancellationToken);
-        await oprot.WriteI32Async((int)Encoder, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Update_op != null) && __isset.update_op)
       {
-        tmp90.Name = "update_op";
-        tmp90.Type = TType.Struct;
-        tmp90.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp90, cancellationToken);
+        tmp67.Name = "update_op";
+        tmp67.Type = TType.Struct;
+        tmp67.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp67, cancellationToken);
         await Update_op.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -277,28 +277,28 @@ public partial class SpecIntervalUpdate : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is SpecIntervalUpdate other)) return false;
+    if (!(that is SpecIntervalUpdateCounter other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))))
+    return ((__isset.v == other.__isset.v) && ((!__isset.v) || (global::System.Object.Equals(V, other.V))))
+      && ((__isset.op == other.__isset.op) && ((!__isset.op) || (global::System.Object.Equals(Op, other.Op))))
       && ((__isset.ts == other.__isset.ts) && ((!__isset.ts) || (global::System.Object.Equals(Ts, other.Ts))))
-      && ((__isset.encoder == other.__isset.encoder) && ((!__isset.encoder) || (global::System.Object.Equals(Encoder, other.Encoder))))
       && ((__isset.update_op == other.__isset.update_op) && ((!__isset.update_op) || (global::System.Object.Equals(Update_op, other.Update_op))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if((V != null) && __isset.v)
+      if(__isset.v)
       {
         hashcode = (hashcode * 397) + V.GetHashCode();
+      }
+      if(__isset.op)
+      {
+        hashcode = (hashcode * 397) + Op.GetHashCode();
       }
       if(__isset.ts)
       {
         hashcode = (hashcode * 397) + Ts.GetHashCode();
-      }
-      if(__isset.encoder)
-      {
-        hashcode = (hashcode * 397) + Encoder.GetHashCode();
       }
       if((Update_op != null) && __isset.update_op)
       {
@@ -310,34 +310,34 @@ public partial class SpecIntervalUpdate : TBase
 
   public override string ToString()
   {
-    var tmp91 = new StringBuilder("SpecIntervalUpdate(");
-    int tmp92 = 0;
-    if((V != null) && __isset.v)
+    var tmp68 = new StringBuilder("SpecIntervalUpdateCounter(");
+    int tmp69 = 0;
+    if(__isset.v)
     {
-      if(0 < tmp92++) { tmp91.Append(", "); }
-      tmp91.Append("V: ");
-      V.ToString(tmp91);
+      if(0 < tmp69++) { tmp68.Append(", "); }
+      tmp68.Append("V: ");
+      V.ToString(tmp68);
+    }
+    if(__isset.op)
+    {
+      if(0 < tmp69++) { tmp68.Append(", "); }
+      tmp68.Append("Op: ");
+      Op.ToString(tmp68);
     }
     if(__isset.ts)
     {
-      if(0 < tmp92++) { tmp91.Append(", "); }
-      tmp91.Append("Ts: ");
-      Ts.ToString(tmp91);
-    }
-    if(__isset.encoder)
-    {
-      if(0 < tmp92++) { tmp91.Append(", "); }
-      tmp91.Append("Encoder: ");
-      Encoder.ToString(tmp91);
+      if(0 < tmp69++) { tmp68.Append(", "); }
+      tmp68.Append("Ts: ");
+      Ts.ToString(tmp68);
     }
     if((Update_op != null) && __isset.update_op)
     {
-      if(0 < tmp92++) { tmp91.Append(", "); }
-      tmp91.Append("Update_op: ");
-      Update_op.ToString(tmp91);
+      if(0 < tmp69++) { tmp68.Append(", "); }
+      tmp68.Append("Update_op: ");
+      Update_op.ToString(tmp68);
     }
-    tmp91.Append(')');
-    return tmp91.ToString();
+    tmp68.Append(')');
+    return tmp68.ToString();
   }
 }
 

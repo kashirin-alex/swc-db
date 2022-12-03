@@ -8,7 +8,7 @@ package org.swcdb.thrift.gen;
 
 
 /**
- * The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit
+ * The Scan Interval Specs Options for the SpecIntervalPlain, SpecIntervalCounter and SpecIntervalSerial 'options' bit
  */
 public enum SpecIntervalOptions implements org.apache.thrift.TEnum {
   /**

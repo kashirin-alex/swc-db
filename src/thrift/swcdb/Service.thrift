@@ -346,8 +346,6 @@ enum SpecFlagsOpt {
   ONLY_DELETES      = 10
 }
 
-
-
 /** The Scan Specifications Flags */
 struct SpecFlags {
   /** Limit to this number of cells */
@@ -367,65 +365,8 @@ struct SpecFlags {
 }
 
 
-/** The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit */
-enum SpecIntervalOptions {
-  /** Update Bit Option */
-  UPDATING      = 4,
 
-  /** Delete Bit Option */
-  DELETING      = 8,
-}
-
-/** The Fraction Specifications */
-struct SpecFraction {
-  /** Logical comparator to Apply */
-  1: Comp   comp
-  /** The binary(bytes) to match against a fraction of a Cell-Key*/
-  2: binary f
-}
-
-/** The Key Specifications defined as SpecFraction items in a list-container */
-typedef list<SpecFraction> SpecKey
-
-
-
-/** The Timestamp Specifications */
-struct SpecTimestamp {
-  /** Logical comparator to Apply */
-  1: Comp comp
-
-  /** The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision) */
-  2: i64  ts
-}
-
-
-
-/** The Key Interval Specifications */
-struct SpecKeyInterval {
-  /** The Key Start Spec, the start of cells-interval key match */
-  1: SpecKey  start
-
-  /** The Key Finish Spec, the finish of cells-interval key match */
-  2: SpecKey  finish
-}
-
-/** The Key Intervals Specifications defined as SpecKeyInterval items in a list-container */
-typedef list<SpecKeyInterval> SpecKeyIntervals
-
-
-
-/** The Value Specifications, option to use with Extended Logical Comparators  */
-struct SpecValue {
-  /** Logical comparator to Apply */
-  1: Comp   comp
-
-  /** The binary(bytes) to match against the Cell value */
-  2: binary v
-}
-
-/** The Cell Value Specifications defined as SpecValue items in a list-container */
-typedef list<SpecValue> SpecValues
-
+/* THE SPEC INTERVAL UPDATE VALUE BY COLUMN VALUE TYPE */
 
 enum UpdateOP {
   /** The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_) */
@@ -455,10 +396,11 @@ struct SpecUpdateOP {
   2: optional i32   pos
 }
 
-/** The Value specs for an Updating Interval of 'updating' in SpecInterval */
-struct SpecIntervalUpdate {
 
-  /** The value for the updated cell */
+/** The Value specs for an Updating Interval of 'updating' in SpecIntervalPlain */
+struct SpecIntervalUpdatePlain {
+
+  /** The bytes value for the updated cell */
   1: binary                 v
 
   /** The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set) */
@@ -466,6 +408,22 @@ struct SpecIntervalUpdate {
 
   /** Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD */
   3: optional EncodingType  encoder
+
+  /** Optionally the operaton of value update */
+  4: optional SpecUpdateOP  update_op
+}
+
+/** The Value specs for an Updating Interval of 'updating' in SpecIntervalCounter */
+struct SpecIntervalUpdateCounter {
+
+  /** The int64 value for the updated cell */
+  1: i64                    v
+  
+  /** The Opration pf Counter, available: COUNTER_OP_EQUAL */
+  2: i64                    op = 0
+
+  /** The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set) */
+  3: optional i64           ts
 
   /** Optionally the operaton of value update */
   4: optional SpecUpdateOP  update_op
@@ -490,55 +448,8 @@ struct SpecIntervalUpdateSerial {
 }
 
 
-/** The Cells Interval Specifications with interval-scope Flags */
-struct SpecInterval {
-  /** Begin of Ranges evaluation with this Key inclusive */
-  1: Key                            range_begin
 
-  /** End of Ranges evaluation with this Key inclusive */
-  2: Key                            range_end
-
-  /** Offset Cell Key of a Scan, select cells from this key inclusive */
-  3: Key                            offset_key
-
-  /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
-  4: optional i64                   offset_rev
-
-  /** The Key Intervals */
-  5: SpecKeyIntervals               key_intervals
-
-  /** The Cell Value Specifications, cell-value match */
-  6: SpecValues                     values
-
-  /** The Timestamp Start Spec, the start of cells-interval timestamp match */
-  7: optional SpecTimestamp         ts_start
-
-  /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
-  8: optional SpecTimestamp         ts_finish
-
-  /** The Interval Flags Specification */
-  9: optional SpecFlags             flags
-
-  /** The Interval Options Specification */
-  10: optional SpecIntervalOptions  options
-
-  /** The Value spec of an Updating Interval */
-  11: optional SpecIntervalUpdate   updating
-}
-
-
-
-/** The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column */
-struct SpecColumn {
-  /** The Column ID */
-  1: i64                cid
-
-  /** The Cells Interval in a list-container*/
-  2: list<SpecInterval> intervals
-}
-
-
-
+/* THE SPEC VALUE BY COLUMN VALUE TYPE */
 
 /** The Specifications of INT64 Serial Value Field */
 struct SpecValueSerial_INT64 {
@@ -614,6 +525,27 @@ struct SpecValueSerialField {
 typedef list<SpecValueSerialField> SpecValueSerialFields
 
 
+/** The Plain Value Specifications, option to use with Extended Logical Comparators  */
+struct SpecValuePlain {
+  /** Logical comparator to Apply */
+  1: Comp   comp
+
+  /** The binary(bytes) to match against the Cell value */
+  2: binary v
+}
+/** The Cell Value Specifications defined as SpecValuePlain items in a list-container */
+typedef list<SpecValuePlain> SpecValuesPlain
+
+/** The Counter Value Specifications, option to use with Extended Logical Comparators  */
+struct SpecValueCounter {
+  /** Logical comparator to Apply */
+  1: Comp   comp
+
+  /** The int64 to match against the Cell value */
+  2: i64    v
+}
+/** The Cell Value Specifications defined as SpecValueCounter items in a list-container */
+typedef list<SpecValueCounter> SpecValuesCounter
 
 /** The Serial Value Specifications */
 struct SpecValueSerial {
@@ -627,7 +559,122 @@ struct SpecValueSerial {
 typedef list<SpecValueSerial> SpecValuesSerial
 
 
-/** The Serial Value Cells Interval Specifications with interval-scope Flags */
+
+/* THE SPEC INTERVAL BY COLUMN VALUE TYPE */
+
+/** The Fraction Specifications */
+struct SpecFraction {
+  /** Logical comparator to Apply */
+  1: Comp   comp
+  /** The binary(bytes) to match against a fraction of a Cell-Key*/
+  2: binary f
+}
+/** The Key Specifications defined as SpecFraction items in a list-container */
+typedef list<SpecFraction> SpecKey
+
+/** The Timestamp Specifications */
+struct SpecTimestamp {
+  /** Logical comparator to Apply */
+  1: Comp comp
+
+  /** The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision) */
+  2: i64  ts
+}
+
+/** The Key Interval Specifications */
+struct SpecKeyInterval {
+  /** The Key Start Spec, the start of cells-interval key match */
+  1: SpecKey  start
+
+  /** The Key Finish Spec, the finish of cells-interval key match */
+  2: SpecKey  finish
+}
+/** The Key Intervals Specifications defined as SpecKeyInterval items in a list-container */
+typedef list<SpecKeyInterval> SpecKeyIntervals
+
+/** The Scan Interval Specs Options for the SpecIntervalPlain, SpecIntervalCounter and SpecIntervalSerial 'options' bit */
+enum SpecIntervalOptions {
+  /** Update Bit Option */
+  UPDATING      = 4,
+
+  /** Delete Bit Option */
+  DELETING      = 8,
+}
+
+
+/** The Cells Interval Plain type Specifications with interval-scope Flags */
+struct SpecIntervalPlain {
+  /** Begin of Ranges evaluation with this Key inclusive */
+  1: Key                            range_begin
+
+  /** End of Ranges evaluation with this Key inclusive */
+  2: Key                            range_end
+
+  /** Offset Cell Key of a Scan, select cells from this key inclusive */
+  3: Key                            offset_key
+
+  /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
+  4: optional i64                   offset_rev
+
+  /** The Key Intervals */
+  5: SpecKeyIntervals               key_intervals
+
+  /** The Cell Value Specifications, cell-value match for plain type */
+  6: SpecValuesPlain                values
+
+  /** The Timestamp Start Spec, the start of cells-interval timestamp match */
+  7: optional SpecTimestamp         ts_start
+
+  /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
+  8: optional SpecTimestamp         ts_finish
+
+  /** The Interval Flags Specification */
+  9: optional SpecFlags             flags
+
+  /** The Interval Options Specification */
+  10: optional SpecIntervalOptions  options
+
+  /** The Value spec of an Updating Interval */
+  11: optional SpecIntervalUpdatePlain   updating
+}
+
+/** The Cells Interval Counter type Specifications with interval-scope Flags */
+struct SpecIntervalCounter {
+  /** Begin of Ranges evaluation with this Key inclusive */
+  1: Key                                    range_begin
+
+  /** End of Ranges evaluation with this Key inclusive */
+  2: Key                                    range_end
+
+  /** Offset Cell Key of a Scan, select cells from this key inclusive */
+  3: Key                                    offset_key
+
+  /** Offset Cell Timestamp of a Scan, select cells after this timestamp  */
+  4: optional i64                           offset_rev
+
+  /** The Key Intervals */
+  5: SpecKeyIntervals                       key_intervals
+
+  /** The Cell Value Specifications, cell-value match for counter type */
+  6: SpecValuesCounter                      values
+
+  /** The Timestamp Start Spec, the start of cells-interval timestamp match */
+  7: optional SpecTimestamp                 ts_start
+
+  /** The Timestamp Finish Spec, the finish of cells-interval timestamp match */
+  8: optional SpecTimestamp                 ts_finish
+
+  /** The Interval Flags Specification */
+  9: optional SpecFlags                     flags
+
+  /** The Interval Options Specification */
+  10: optional SpecIntervalOptions          options
+
+  /** The Value spec of an Updating Interval */
+  11: optional SpecIntervalUpdateCounter    updating
+}
+
+/** The Cells Interval Serial type Specifications with interval-scope Flags */
 struct SpecIntervalSerial {
   /** Begin of Ranges evaluation with this Key inclusive */
   1: Key                                  range_begin
@@ -665,7 +712,27 @@ struct SpecIntervalSerial {
 
 
 
-/** The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column */
+/* THE SPEC COLUMN BY COLUMN VALUE TYPE */
+
+/** The Column Specifications, the Cells-Intervals(SpecIntervalPlain/s) specification for a PLAIN Type column */
+struct SpecColumnPlain {
+  /** The Column ID */
+  1: i64                cid
+
+  /** The Cells Interval in a list-container*/
+  2: list<SpecIntervalPlain> intervals
+}
+
+/** The Column Specifications, the Cells-Intervals(SpecIntervalCounter/s) specification for a COUNTER Type column */
+struct SpecColumnCounter {
+  /** The Column ID */
+  1: i64                cid
+
+  /** The Cells Interval in a list-container*/
+  2: list<SpecIntervalCounter> intervals
+}
+
+/** The Column Specifications, the Cells-Intervals(SpecIntervalSerial/s) specification for a SERIAL Type Column */
 struct SpecColumnSerial {
   /** The Column ID */
   1: i64                      cid
@@ -676,17 +743,19 @@ struct SpecColumnSerial {
 
 
 
-
 /** The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags */
 struct SpecScan {
-  /** The Column Intervals(SpecColumn) in a list-container */
-  1: list<SpecColumn>       columns
+  /** The Plain Column Intervals(SpecColumnPlain) in a list-container */
+  1: list<SpecColumnPlain>    columns_plain
+
+  /** The Counter Column Intervals(SpecColumnCounter) in a list-container */
+  2: list<SpecColumnCounter>  columns_counter
 
   /** The Serial Column Intervals(SpecColumnSerial) in a list-container */
-  2: list<SpecColumnSerial> columns_serial
+  3: list<SpecColumnSerial>   columns_serial
 
   /** The Global Flags Specification */
-  3: optional SpecFlags     flags
+  4: optional SpecFlags     flags
 }
 
 

@@ -716,6 +716,7 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
   }
 }
 
+template<ColumnType::type ColumnT>
 SpecScan select_specs(Client& client) {
   SpecScan ss;
   for(auto c=1; c <= num_columns; ++c) {
@@ -726,13 +727,35 @@ SpecScan select_specs(Client& client) {
     );
     assert(!schemas.empty());
 
-    auto& col = ss.columns.emplace_back();
-    col.__set_cid(schemas.back().cid);
-    auto& intval = col.intervals.emplace_back();
+    SpecKeyInterval* key_intval_ptr = nullptr;
+    switch (ColumnT) {
+      case ColumnType::type::PLAIN: {
+        auto& col = ss.columns_plain.emplace_back();
+        col.__set_cid(schemas.back().cid);
+        auto& intval = col.intervals.emplace_back();
+        intval.key_intervals.emplace_back();
+        key_intval_ptr = &intval.key_intervals.back();
+        break;
+      }
+      case ColumnType::type::COUNTER_I64: {
+        auto& col = ss.columns_counter.emplace_back();
+        col.__set_cid(schemas.back().cid);
+        auto& intval = col.intervals.emplace_back();
+        intval.key_intervals.emplace_back();
+        key_intval_ptr = &intval.key_intervals.back();
+        break;
+      }
+      case ColumnType::type::SERIAL: {
+        auto& col = ss.columns_serial.emplace_back();
+        col.__set_cid(schemas.back().cid);
+        auto& intval = col.intervals.emplace_back();
+        intval.key_intervals.emplace_back();
+        key_intval_ptr = &intval.key_intervals.back();
+        break;
+      }
+    }
 
-    intval.key_intervals.emplace_back();
-    auto& key_intval = intval.key_intervals.back();
-
+    auto& key_intval = *key_intval_ptr;
     key_intval.start.resize(2);
     key_intval.start[0].__set_comp(Comp::EQ);
     key_intval.start[0].__set_f("a1");
@@ -746,7 +769,7 @@ template<ColumnType::type ColumnT>
 void spec_select(Client& client) {
   std::cout << std::endl << "test: spec_select: " << std::endl;
 
-  SpecScan specs = select_specs(client);
+  SpecScan specs = select_specs<ColumnT>(client);
   specs.printTo(std::cout << " spec_select='");
   std::cout << "'\n";
 

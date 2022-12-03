@@ -33,36 +33,19 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial
+/// The Value specs for an Updating Interval of 'updating' in SpecIntervalPlain
 /// </summary>
-public partial class SpecIntervalUpdateSerial : TBase
+public partial class SpecIntervalUpdatePlain : TBase
 {
+  private byte[] _v;
   private long _ts;
-  private List<CellValueSerial> _v;
-  private List<CellValueSerialOp> _v_op;
   private EncodingType _encoder;
   private SpecUpdateOP _update_op;
 
   /// <summary>
-  /// The timestamp for the updated cell NULL: MIN_INT64-1, AUTO:MIN_INT64-1
+  /// The bytes value for the updated cell
   /// </summary>
-  public long Ts
-  {
-    get
-    {
-      return _ts;
-    }
-    set
-    {
-      __isset.ts = true;
-      this._ts = value;
-    }
-  }
-
-  /// <summary>
-  /// The values of serial-fields for the updated cell
-  /// </summary>
-  public List<CellValueSerial> V
+  public byte[] V
   {
     get
     {
@@ -76,18 +59,18 @@ public partial class SpecIntervalUpdateSerial : TBase
   }
 
   /// <summary>
-  /// The values of serial-fields for the the SERIAL operation update
+  /// The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
   /// </summary>
-  public List<CellValueSerialOp> V_op
+  public long Ts
   {
     get
     {
-      return _v_op;
+      return _ts;
     }
     set
     {
-      __isset.v_op = true;
-      this._v_op = value;
+      __isset.ts = true;
+      this._ts = value;
     }
   }
 
@@ -129,46 +112,40 @@ public partial class SpecIntervalUpdateSerial : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool ts;
     public bool v;
-    public bool v_op;
+    public bool ts;
     public bool encoder;
     public bool update_op;
   }
 
-  public SpecIntervalUpdateSerial()
+  public SpecIntervalUpdatePlain()
   {
   }
 
-  public SpecIntervalUpdateSerial DeepCopy()
+  public SpecIntervalUpdatePlain DeepCopy()
   {
-    var tmp70 = new SpecIntervalUpdateSerial();
-    if(__isset.ts)
-    {
-      tmp70.Ts = this.Ts;
-    }
-    tmp70.__isset.ts = this.__isset.ts;
+    var tmp60 = new SpecIntervalUpdatePlain();
     if((V != null) && __isset.v)
     {
-      tmp70.V = this.V.DeepCopy();
+      tmp60.V = this.V.ToArray();
     }
-    tmp70.__isset.v = this.__isset.v;
-    if((V_op != null) && __isset.v_op)
+    tmp60.__isset.v = this.__isset.v;
+    if(__isset.ts)
     {
-      tmp70.V_op = this.V_op.DeepCopy();
+      tmp60.Ts = this.Ts;
     }
-    tmp70.__isset.v_op = this.__isset.v_op;
+    tmp60.__isset.ts = this.__isset.ts;
     if(__isset.encoder)
     {
-      tmp70.Encoder = this.Encoder;
+      tmp60.Encoder = this.Encoder;
     }
-    tmp70.__isset.encoder = this.__isset.encoder;
+    tmp60.__isset.encoder = this.__isset.encoder;
     if((Update_op != null) && __isset.update_op)
     {
-      tmp70.Update_op = (SpecUpdateOP)this.Update_op.DeepCopy();
+      tmp60.Update_op = (SpecUpdateOP)this.Update_op.DeepCopy();
     }
-    tmp70.__isset.update_op = this.__isset.update_op;
-    return tmp70;
+    tmp60.__isset.update_op = this.__isset.update_op;
+    return tmp60;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -189,6 +166,16 @@ public partial class SpecIntervalUpdateSerial : TBase
         switch (field.ID)
         {
           case 1:
+            if (field.Type == TType.String)
+            {
+              V = await iprot.ReadBinaryAsync(cancellationToken);
+            }
+            else
+            {
+              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
+            }
+            break;
+          case 2:
             if (field.Type == TType.I64)
             {
               Ts = await iprot.ReadI64Async(cancellationToken);
@@ -198,49 +185,7 @@ public partial class SpecIntervalUpdateSerial : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 2:
-            if (field.Type == TType.List)
-            {
-              {
-                var _list71 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<CellValueSerial>(_list71.Count);
-                for(int _i72 = 0; _i72 < _list71.Count; ++_i72)
-                {
-                  CellValueSerial _elem73;
-                  _elem73 = new CellValueSerial();
-                  await _elem73.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem73);
-                }
-                await iprot.ReadListEndAsync(cancellationToken);
-              }
-            }
-            else
-            {
-              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
-            }
-            break;
           case 3:
-            if (field.Type == TType.List)
-            {
-              {
-                var _list74 = await iprot.ReadListBeginAsync(cancellationToken);
-                V_op = new List<CellValueSerialOp>(_list74.Count);
-                for(int _i75 = 0; _i75 < _list74.Count; ++_i75)
-                {
-                  CellValueSerialOp _elem76;
-                  _elem76 = new CellValueSerialOp();
-                  await _elem76.ReadAsync(iprot, cancellationToken);
-                  V_op.Add(_elem76);
-                }
-                await iprot.ReadListEndAsync(cancellationToken);
-              }
-            }
-            else
-            {
-              await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
-            }
-            break;
-          case 4:
             if (field.Type == TType.I32)
             {
               Encoder = (EncodingType)await iprot.ReadI32Async(cancellationToken);
@@ -250,7 +195,7 @@ public partial class SpecIntervalUpdateSerial : TBase
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
             }
             break;
-          case 5:
+          case 4:
             if (field.Type == TType.Struct)
             {
               Update_op = new SpecUpdateOP();
@@ -282,61 +227,42 @@ public partial class SpecIntervalUpdateSerial : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp77 = new TStruct("SpecIntervalUpdateSerial");
-      await oprot.WriteStructBeginAsync(tmp77, cancellationToken);
-      var tmp78 = new TField();
-      if(__isset.ts)
-      {
-        tmp78.Name = "ts";
-        tmp78.Type = TType.I64;
-        tmp78.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp78, cancellationToken);
-        await oprot.WriteI64Async(Ts, cancellationToken);
-        await oprot.WriteFieldEndAsync(cancellationToken);
-      }
+      var tmp61 = new TStruct("SpecIntervalUpdatePlain");
+      await oprot.WriteStructBeginAsync(tmp61, cancellationToken);
+      var tmp62 = new TField();
       if((V != null) && __isset.v)
       {
-        tmp78.Name = "v";
-        tmp78.Type = TType.List;
-        tmp78.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp78, cancellationToken);
-        await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-        foreach (CellValueSerial _iter79 in V)
-        {
-          await _iter79.WriteAsync(oprot, cancellationToken);
-        }
-        await oprot.WriteListEndAsync(cancellationToken);
+        tmp62.Name = "v";
+        tmp62.Type = TType.String;
+        tmp62.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp62, cancellationToken);
+        await oprot.WriteBinaryAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if((V_op != null) && __isset.v_op)
+      if(__isset.ts)
       {
-        tmp78.Name = "v_op";
-        tmp78.Type = TType.List;
-        tmp78.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp78, cancellationToken);
-        await oprot.WriteListBeginAsync(new TList(TType.Struct, V_op.Count), cancellationToken);
-        foreach (CellValueSerialOp _iter80 in V_op)
-        {
-          await _iter80.WriteAsync(oprot, cancellationToken);
-        }
-        await oprot.WriteListEndAsync(cancellationToken);
+        tmp62.Name = "ts";
+        tmp62.Type = TType.I64;
+        tmp62.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp62, cancellationToken);
+        await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.encoder)
       {
-        tmp78.Name = "encoder";
-        tmp78.Type = TType.I32;
-        tmp78.ID = 4;
-        await oprot.WriteFieldBeginAsync(tmp78, cancellationToken);
+        tmp62.Name = "encoder";
+        tmp62.Type = TType.I32;
+        tmp62.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp62, cancellationToken);
         await oprot.WriteI32Async((int)Encoder, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Update_op != null) && __isset.update_op)
       {
-        tmp78.Name = "update_op";
-        tmp78.Type = TType.Struct;
-        tmp78.ID = 5;
-        await oprot.WriteFieldBeginAsync(tmp78, cancellationToken);
+        tmp62.Name = "update_op";
+        tmp62.Type = TType.Struct;
+        tmp62.ID = 4;
+        await oprot.WriteFieldBeginAsync(tmp62, cancellationToken);
         await Update_op.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -351,11 +277,10 @@ public partial class SpecIntervalUpdateSerial : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is SpecIntervalUpdateSerial other)) return false;
+    if (!(that is SpecIntervalUpdatePlain other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.ts == other.__isset.ts) && ((!__isset.ts) || (global::System.Object.Equals(Ts, other.Ts))))
-      && ((__isset.v == other.__isset.v) && ((!__isset.v) || (global::System.Object.Equals(V, other.V))))
-      && ((__isset.v_op == other.__isset.v_op) && ((!__isset.v_op) || (global::System.Object.Equals(V_op, other.V_op))))
+    return ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))))
+      && ((__isset.ts == other.__isset.ts) && ((!__isset.ts) || (global::System.Object.Equals(Ts, other.Ts))))
       && ((__isset.encoder == other.__isset.encoder) && ((!__isset.encoder) || (global::System.Object.Equals(Encoder, other.Encoder))))
       && ((__isset.update_op == other.__isset.update_op) && ((!__isset.update_op) || (global::System.Object.Equals(Update_op, other.Update_op))));
   }
@@ -363,17 +288,13 @@ public partial class SpecIntervalUpdateSerial : TBase
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if(__isset.ts)
-      {
-        hashcode = (hashcode * 397) + Ts.GetHashCode();
-      }
       if((V != null) && __isset.v)
       {
         hashcode = (hashcode * 397) + V.GetHashCode();
       }
-      if((V_op != null) && __isset.v_op)
+      if(__isset.ts)
       {
-        hashcode = (hashcode * 397) + V_op.GetHashCode();
+        hashcode = (hashcode * 397) + Ts.GetHashCode();
       }
       if(__isset.encoder)
       {
@@ -389,40 +310,34 @@ public partial class SpecIntervalUpdateSerial : TBase
 
   public override string ToString()
   {
-    var tmp81 = new StringBuilder("SpecIntervalUpdateSerial(");
-    int tmp82 = 0;
-    if(__isset.ts)
-    {
-      if(0 < tmp82++) { tmp81.Append(", "); }
-      tmp81.Append("Ts: ");
-      Ts.ToString(tmp81);
-    }
+    var tmp63 = new StringBuilder("SpecIntervalUpdatePlain(");
+    int tmp64 = 0;
     if((V != null) && __isset.v)
     {
-      if(0 < tmp82++) { tmp81.Append(", "); }
-      tmp81.Append("V: ");
-      V.ToString(tmp81);
+      if(0 < tmp64++) { tmp63.Append(", "); }
+      tmp63.Append("V: ");
+      V.ToString(tmp63);
     }
-    if((V_op != null) && __isset.v_op)
+    if(__isset.ts)
     {
-      if(0 < tmp82++) { tmp81.Append(", "); }
-      tmp81.Append("V_op: ");
-      V_op.ToString(tmp81);
+      if(0 < tmp64++) { tmp63.Append(", "); }
+      tmp63.Append("Ts: ");
+      Ts.ToString(tmp63);
     }
     if(__isset.encoder)
     {
-      if(0 < tmp82++) { tmp81.Append(", "); }
-      tmp81.Append("Encoder: ");
-      Encoder.ToString(tmp81);
+      if(0 < tmp64++) { tmp63.Append(", "); }
+      tmp63.Append("Encoder: ");
+      Encoder.ToString(tmp63);
     }
     if((Update_op != null) && __isset.update_op)
     {
-      if(0 < tmp82++) { tmp81.Append(", "); }
-      tmp81.Append("Update_op: ");
-      Update_op.ToString(tmp81);
+      if(0 < tmp64++) { tmp63.Append(", "); }
+      tmp63.Append("Update_op: ");
+      Update_op.ToString(tmp63);
     }
-    tmp81.Append(')');
-    return tmp81.ToString();
+    tmp63.Append(')');
+    return tmp63.ToString();
   }
 }
 

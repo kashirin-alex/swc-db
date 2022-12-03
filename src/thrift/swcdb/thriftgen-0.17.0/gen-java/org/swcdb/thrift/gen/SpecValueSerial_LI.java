@@ -461,14 +461,14 @@ public class SpecValueSerial_LI implements org.apache.thrift.TBase<SpecValueSeri
           case 2: // V
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list128 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<SpecValueSerial_INT64>(_list128.size);
-                @org.apache.thrift.annotation.Nullable SpecValueSerial_INT64 _elem129;
-                for (int _i130 = 0; _i130 < _list128.size; ++_i130)
+                org.apache.thrift.protocol.TList _list64 = iprot.readListBegin();
+                struct.v = new java.util.ArrayList<SpecValueSerial_INT64>(_list64.size);
+                @org.apache.thrift.annotation.Nullable SpecValueSerial_INT64 _elem65;
+                for (int _i66 = 0; _i66 < _list64.size; ++_i66)
                 {
-                  _elem129 = new SpecValueSerial_INT64();
-                  _elem129.read(iprot);
-                  struct.v.add(_elem129);
+                  _elem65 = new SpecValueSerial_INT64();
+                  _elem65.read(iprot);
+                  struct.v.add(_elem65);
                 }
                 iprot.readListEnd();
               }
@@ -502,9 +502,9 @@ public class SpecValueSerial_LI implements org.apache.thrift.TBase<SpecValueSeri
         oprot.writeFieldBegin(V_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (SpecValueSerial_INT64 _iter131 : struct.v)
+          for (SpecValueSerial_INT64 _iter67 : struct.v)
           {
-            _iter131.write(oprot);
+            _iter67.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -542,9 +542,9 @@ public class SpecValueSerial_LI implements org.apache.thrift.TBase<SpecValueSeri
       if (struct.isSetV()) {
         {
           oprot.writeI32(struct.v.size());
-          for (SpecValueSerial_INT64 _iter132 : struct.v)
+          for (SpecValueSerial_INT64 _iter68 : struct.v)
           {
-            _iter132.write(oprot);
+            _iter68.write(oprot);
           }
         }
       }
@@ -560,14 +560,14 @@ public class SpecValueSerial_LI implements org.apache.thrift.TBase<SpecValueSeri
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list133 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<SpecValueSerial_INT64>(_list133.size);
-          @org.apache.thrift.annotation.Nullable SpecValueSerial_INT64 _elem134;
-          for (int _i135 = 0; _i135 < _list133.size; ++_i135)
+          org.apache.thrift.protocol.TList _list69 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.v = new java.util.ArrayList<SpecValueSerial_INT64>(_list69.size);
+          @org.apache.thrift.annotation.Nullable SpecValueSerial_INT64 _elem70;
+          for (int _i71 = 0; _i71 < _list69.size; ++_i71)
           {
-            _elem134 = new SpecValueSerial_INT64();
-            _elem134.read(iprot);
-            struct.v.add(_elem134);
+            _elem70 = new SpecValueSerial_INT64();
+            _elem70.read(iprot);
+            struct.v.add(_elem70);
           }
         }
         struct.setVIsSet(true);

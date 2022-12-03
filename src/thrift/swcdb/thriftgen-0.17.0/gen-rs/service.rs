@@ -493,60 +493,6 @@ impl From<&SpecFlagsOpt> for i32 {
   }
 }
 
-/// The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit
-#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecIntervalOptions(pub i32);
-
-impl SpecIntervalOptions {
-  /// Update Bit Option
-  pub const UPDATING: SpecIntervalOptions = SpecIntervalOptions(4);
-  /// Delete Bit Option
-  pub const DELETING: SpecIntervalOptions = SpecIntervalOptions(8);
-  pub const ENUM_VALUES: &'static [Self] = &[
-    Self::UPDATING,
-    Self::DELETING,
-  ];
-}
-
-impl TSerializable for SpecIntervalOptions {
-  #[allow(clippy::trivially_copy_pass_by_ref)]
-  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    o_prot.write_i32(self.0)
-  }
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalOptions> {
-    let enum_value = i_prot.read_i32()?;
-    Ok(SpecIntervalOptions::from(enum_value))
-  }
-}
-
-impl From<i32> for SpecIntervalOptions {
-  fn from(i: i32) -> Self {
-    match i {
-      4 => SpecIntervalOptions::UPDATING,
-      8 => SpecIntervalOptions::DELETING,
-      _ => SpecIntervalOptions(i)
-    }
-  }
-}
-
-impl From<&i32> for SpecIntervalOptions {
-  fn from(i: &i32) -> Self {
-    SpecIntervalOptions::from(*i)
-  }
-}
-
-impl From<SpecIntervalOptions> for i32 {
-  fn from(e: SpecIntervalOptions) -> i32 {
-    e.0
-  }
-}
-
-impl From<&SpecIntervalOptions> for i32 {
-  fn from(e: &SpecIntervalOptions) -> i32 {
-    e.0
-  }
-}
-
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UpdateOP(pub i32);
 
@@ -612,6 +558,60 @@ impl From<UpdateOP> for i32 {
 
 impl From<&UpdateOP> for i32 {
   fn from(e: &UpdateOP) -> i32 {
+    e.0
+  }
+}
+
+/// The Scan Interval Specs Options for the SpecIntervalPlain, SpecIntervalCounter and SpecIntervalSerial 'options' bit
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecIntervalOptions(pub i32);
+
+impl SpecIntervalOptions {
+  /// Update Bit Option
+  pub const UPDATING: SpecIntervalOptions = SpecIntervalOptions(4);
+  /// Delete Bit Option
+  pub const DELETING: SpecIntervalOptions = SpecIntervalOptions(8);
+  pub const ENUM_VALUES: &'static [Self] = &[
+    Self::UPDATING,
+    Self::DELETING,
+  ];
+}
+
+impl TSerializable for SpecIntervalOptions {
+  #[allow(clippy::trivially_copy_pass_by_ref)]
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    o_prot.write_i32(self.0)
+  }
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalOptions> {
+    let enum_value = i_prot.read_i32()?;
+    Ok(SpecIntervalOptions::from(enum_value))
+  }
+}
+
+impl From<i32> for SpecIntervalOptions {
+  fn from(i: i32) -> Self {
+    match i {
+      4 => SpecIntervalOptions::UPDATING,
+      8 => SpecIntervalOptions::DELETING,
+      _ => SpecIntervalOptions(i)
+    }
+  }
+}
+
+impl From<&i32> for SpecIntervalOptions {
+  fn from(i: &i32) -> Self {
+    SpecIntervalOptions::from(*i)
+  }
+}
+
+impl From<SpecIntervalOptions> for i32 {
+  fn from(e: SpecIntervalOptions) -> i32 {
+    e.0
+  }
+}
+
+impl From<&SpecIntervalOptions> for i32 {
+  fn from(e: &SpecIntervalOptions) -> i32 {
     e.0
   }
 }
@@ -888,15 +888,17 @@ pub type Schemas = Vec<Schema>;
 
 pub type Key = Vec<Vec<u8>>;
 
+pub type SpecValueSerialFields = Vec<SpecValueSerialField>;
+
+pub type SpecValuesPlain = Vec<SpecValuePlain>;
+
+pub type SpecValuesCounter = Vec<SpecValueCounter>;
+
+pub type SpecValuesSerial = Vec<SpecValueSerial>;
+
 pub type SpecKey = Vec<SpecFraction>;
 
 pub type SpecKeyIntervals = Vec<SpecKeyInterval>;
-
-pub type SpecValues = Vec<SpecValue>;
-
-pub type SpecValueSerialFields = Vec<SpecValueSerialField>;
-
-pub type SpecValuesSerial = Vec<SpecValueSerial>;
 
 pub type UCellsPlain = Vec<UCellPlain>;
 
@@ -1866,354 +1868,6 @@ impl Default for SpecFlags {
 }
 
 //
-// SpecFraction
-//
-
-/// The Fraction Specifications
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecFraction {
-  /// Logical comparator to Apply
-  pub comp: Option<Comp>,
-  /// The binary(bytes) to match against a fraction of a Cell-Key
-  pub f: Option<Vec<u8>>,
-}
-
-impl SpecFraction {
-  pub fn new<F1, F2>(comp: F1, f: F2) -> SpecFraction where F1: Into<Option<Comp>>, F2: Into<Option<Vec<u8>>> {
-    SpecFraction {
-      comp: comp.into(),
-      f: f.into(),
-    }
-  }
-}
-
-impl TSerializable for SpecFraction {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecFraction> {
-    i_prot.read_struct_begin()?;
-    let mut f_1: Option<Comp> = None;
-    let mut f_2: Option<Vec<u8>> = Some(Vec::new());
-    loop {
-      let field_ident = i_prot.read_field_begin()?;
-      if field_ident.field_type == TType::Stop {
-        break;
-      }
-      let field_id = field_id(&field_ident)?;
-      match field_id {
-        1 => {
-          let val = Comp::read_from_in_protocol(i_prot)?;
-          f_1 = Some(val);
-        },
-        2 => {
-          let val = i_prot.read_bytes()?;
-          f_2 = Some(val);
-        },
-        _ => {
-          i_prot.skip(field_ident.field_type)?;
-        },
-      };
-      i_prot.read_field_end()?;
-    }
-    i_prot.read_struct_end()?;
-    let ret = SpecFraction {
-      comp: f_1,
-      f: f_2,
-    };
-    Ok(ret)
-  }
-  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("SpecFraction");
-    o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.comp {
-      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 1))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.f {
-      o_prot.write_field_begin(&TFieldIdentifier::new("f", TType::String, 2))?;
-      o_prot.write_bytes(fld_var)?;
-      o_prot.write_field_end()?
-    }
-    o_prot.write_field_stop()?;
-    o_prot.write_struct_end()
-  }
-}
-
-impl Default for SpecFraction {
-  fn default() -> Self {
-    SpecFraction{
-      comp: None,
-      f: Some(Vec::new()),
-    }
-  }
-}
-
-//
-// SpecTimestamp
-//
-
-/// The Timestamp Specifications
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecTimestamp {
-  /// Logical comparator to Apply
-  pub comp: Option<Comp>,
-  /// The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
-  pub ts: Option<i64>,
-}
-
-impl SpecTimestamp {
-  pub fn new<F1, F2>(comp: F1, ts: F2) -> SpecTimestamp where F1: Into<Option<Comp>>, F2: Into<Option<i64>> {
-    SpecTimestamp {
-      comp: comp.into(),
-      ts: ts.into(),
-    }
-  }
-}
-
-impl TSerializable for SpecTimestamp {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecTimestamp> {
-    i_prot.read_struct_begin()?;
-    let mut f_1: Option<Comp> = None;
-    let mut f_2: Option<i64> = Some(0);
-    loop {
-      let field_ident = i_prot.read_field_begin()?;
-      if field_ident.field_type == TType::Stop {
-        break;
-      }
-      let field_id = field_id(&field_ident)?;
-      match field_id {
-        1 => {
-          let val = Comp::read_from_in_protocol(i_prot)?;
-          f_1 = Some(val);
-        },
-        2 => {
-          let val = i_prot.read_i64()?;
-          f_2 = Some(val);
-        },
-        _ => {
-          i_prot.skip(field_ident.field_type)?;
-        },
-      };
-      i_prot.read_field_end()?;
-    }
-    i_prot.read_struct_end()?;
-    let ret = SpecTimestamp {
-      comp: f_1,
-      ts: f_2,
-    };
-    Ok(ret)
-  }
-  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("SpecTimestamp");
-    o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.comp {
-      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 1))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(fld_var) = self.ts {
-      o_prot.write_field_begin(&TFieldIdentifier::new("ts", TType::I64, 2))?;
-      o_prot.write_i64(fld_var)?;
-      o_prot.write_field_end()?
-    }
-    o_prot.write_field_stop()?;
-    o_prot.write_struct_end()
-  }
-}
-
-impl Default for SpecTimestamp {
-  fn default() -> Self {
-    SpecTimestamp{
-      comp: None,
-      ts: Some(0),
-    }
-  }
-}
-
-//
-// SpecKeyInterval
-//
-
-/// The Key Interval Specifications
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecKeyInterval {
-  /// The Key Start Spec, the start of cells-interval key match
-  pub start: Option<SpecKey>,
-  /// The Key Finish Spec, the finish of cells-interval key match
-  pub finish: Option<SpecKey>,
-}
-
-impl SpecKeyInterval {
-  pub fn new<F1, F2>(start: F1, finish: F2) -> SpecKeyInterval where F1: Into<Option<SpecKey>>, F2: Into<Option<SpecKey>> {
-    SpecKeyInterval {
-      start: start.into(),
-      finish: finish.into(),
-    }
-  }
-}
-
-impl TSerializable for SpecKeyInterval {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecKeyInterval> {
-    i_prot.read_struct_begin()?;
-    let mut f_1: Option<SpecKey> = Some(Vec::new());
-    let mut f_2: Option<SpecKey> = Some(Vec::new());
-    loop {
-      let field_ident = i_prot.read_field_begin()?;
-      if field_ident.field_type == TType::Stop {
-        break;
-      }
-      let field_id = field_id(&field_ident)?;
-      match field_id {
-        1 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<SpecFraction> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_5 = SpecFraction::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_5);
-          }
-          i_prot.read_list_end()?;
-          f_1 = Some(val);
-        },
-        2 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<SpecFraction> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_6 = SpecFraction::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_6);
-          }
-          i_prot.read_list_end()?;
-          f_2 = Some(val);
-        },
-        _ => {
-          i_prot.skip(field_ident.field_type)?;
-        },
-      };
-      i_prot.read_field_end()?;
-    }
-    i_prot.read_struct_end()?;
-    let ret = SpecKeyInterval {
-      start: f_1,
-      finish: f_2,
-    };
-    Ok(ret)
-  }
-  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("SpecKeyInterval");
-    o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.start {
-      o_prot.write_field_begin(&TFieldIdentifier::new("start", TType::List, 1))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
-      for e in fld_var {
-        e.write_to_out_protocol(o_prot)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.finish {
-      o_prot.write_field_begin(&TFieldIdentifier::new("finish", TType::List, 2))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
-      for e in fld_var {
-        e.write_to_out_protocol(o_prot)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    o_prot.write_field_stop()?;
-    o_prot.write_struct_end()
-  }
-}
-
-impl Default for SpecKeyInterval {
-  fn default() -> Self {
-    SpecKeyInterval{
-      start: Some(Vec::new()),
-      finish: Some(Vec::new()),
-    }
-  }
-}
-
-//
-// SpecValue
-//
-
-/// The Value Specifications, option to use with Extended Logical Comparators
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecValue {
-  /// Logical comparator to Apply
-  pub comp: Option<Comp>,
-  /// The binary(bytes) to match against the Cell value
-  pub v: Option<Vec<u8>>,
-}
-
-impl SpecValue {
-  pub fn new<F1, F2>(comp: F1, v: F2) -> SpecValue where F1: Into<Option<Comp>>, F2: Into<Option<Vec<u8>>> {
-    SpecValue {
-      comp: comp.into(),
-      v: v.into(),
-    }
-  }
-}
-
-impl TSerializable for SpecValue {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecValue> {
-    i_prot.read_struct_begin()?;
-    let mut f_1: Option<Comp> = None;
-    let mut f_2: Option<Vec<u8>> = Some(Vec::new());
-    loop {
-      let field_ident = i_prot.read_field_begin()?;
-      if field_ident.field_type == TType::Stop {
-        break;
-      }
-      let field_id = field_id(&field_ident)?;
-      match field_id {
-        1 => {
-          let val = Comp::read_from_in_protocol(i_prot)?;
-          f_1 = Some(val);
-        },
-        2 => {
-          let val = i_prot.read_bytes()?;
-          f_2 = Some(val);
-        },
-        _ => {
-          i_prot.skip(field_ident.field_type)?;
-        },
-      };
-      i_prot.read_field_end()?;
-    }
-    i_prot.read_struct_end()?;
-    let ret = SpecValue {
-      comp: f_1,
-      v: f_2,
-    };
-    Ok(ret)
-  }
-  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("SpecValue");
-    o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.comp {
-      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 1))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.v {
-      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::String, 2))?;
-      o_prot.write_bytes(fld_var)?;
-      o_prot.write_field_end()?
-    }
-    o_prot.write_field_stop()?;
-    o_prot.write_struct_end()
-  }
-}
-
-impl Default for SpecValue {
-  fn default() -> Self {
-    SpecValue{
-      comp: None,
-      v: Some(Vec::new()),
-    }
-  }
-}
-
-//
 // SpecUpdateOP
 //
 
@@ -2295,13 +1949,13 @@ impl Default for SpecUpdateOP {
 }
 
 //
-// SpecIntervalUpdate
+// SpecIntervalUpdatePlain
 //
 
-/// The Value specs for an Updating Interval of 'updating' in SpecInterval
+/// The Value specs for an Updating Interval of 'updating' in SpecIntervalPlain
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecIntervalUpdate {
-  /// The value for the updated cell
+pub struct SpecIntervalUpdatePlain {
+  /// The bytes value for the updated cell
   pub v: Option<Vec<u8>>,
   /// The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
   pub ts: Option<i64>,
@@ -2311,9 +1965,9 @@ pub struct SpecIntervalUpdate {
   pub update_op: Option<SpecUpdateOP>,
 }
 
-impl SpecIntervalUpdate {
-  pub fn new<F1, F2, F3, F4>(v: F1, ts: F2, encoder: F3, update_op: F4) -> SpecIntervalUpdate where F1: Into<Option<Vec<u8>>>, F2: Into<Option<i64>>, F3: Into<Option<EncodingType>>, F4: Into<Option<SpecUpdateOP>> {
-    SpecIntervalUpdate {
+impl SpecIntervalUpdatePlain {
+  pub fn new<F1, F2, F3, F4>(v: F1, ts: F2, encoder: F3, update_op: F4) -> SpecIntervalUpdatePlain where F1: Into<Option<Vec<u8>>>, F2: Into<Option<i64>>, F3: Into<Option<EncodingType>>, F4: Into<Option<SpecUpdateOP>> {
+    SpecIntervalUpdatePlain {
       v: v.into(),
       ts: ts.into(),
       encoder: encoder.into(),
@@ -2322,8 +1976,8 @@ impl SpecIntervalUpdate {
   }
 }
 
-impl TSerializable for SpecIntervalUpdate {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalUpdate> {
+impl TSerializable for SpecIntervalUpdatePlain {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalUpdatePlain> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<Vec<u8>> = Some(Vec::new());
     let mut f_2: Option<i64> = None;
@@ -2359,7 +2013,7 @@ impl TSerializable for SpecIntervalUpdate {
       i_prot.read_field_end()?;
     }
     i_prot.read_struct_end()?;
-    let ret = SpecIntervalUpdate {
+    let ret = SpecIntervalUpdatePlain {
       v: f_1,
       ts: f_2,
       encoder: f_3,
@@ -2368,7 +2022,7 @@ impl TSerializable for SpecIntervalUpdate {
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("SpecIntervalUpdate");
+    let struct_ident = TStructIdentifier::new("SpecIntervalUpdatePlain");
     o_prot.write_struct_begin(&struct_ident)?;
     if let Some(ref fld_var) = self.v {
       o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::String, 1))?;
@@ -2395,12 +2049,124 @@ impl TSerializable for SpecIntervalUpdate {
   }
 }
 
-impl Default for SpecIntervalUpdate {
+impl Default for SpecIntervalUpdatePlain {
   fn default() -> Self {
-    SpecIntervalUpdate{
+    SpecIntervalUpdatePlain{
       v: Some(Vec::new()),
       ts: Some(0),
       encoder: None,
+      update_op: None,
+    }
+  }
+}
+
+//
+// SpecIntervalUpdateCounter
+//
+
+/// The Value specs for an Updating Interval of 'updating' in SpecIntervalCounter
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecIntervalUpdateCounter {
+  /// The int64 value for the updated cell
+  pub v: Option<i64>,
+  /// The Opration pf Counter, available: COUNTER_OP_EQUAL
+  pub op: Option<i64>,
+  /// The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
+  pub ts: Option<i64>,
+  /// Optionally the operaton of value update
+  pub update_op: Option<SpecUpdateOP>,
+}
+
+impl SpecIntervalUpdateCounter {
+  pub fn new<F1, F2, F3, F4>(v: F1, op: F2, ts: F3, update_op: F4) -> SpecIntervalUpdateCounter where F1: Into<Option<i64>>, F2: Into<Option<i64>>, F3: Into<Option<i64>>, F4: Into<Option<SpecUpdateOP>> {
+    SpecIntervalUpdateCounter {
+      v: v.into(),
+      op: op.into(),
+      ts: ts.into(),
+      update_op: update_op.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecIntervalUpdateCounter {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalUpdateCounter> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i64> = Some(0);
+    let mut f_2: Option<i64> = Some(0);
+    let mut f_3: Option<i64> = None;
+    let mut f_4: Option<SpecUpdateOP> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i64()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_i64()?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i64()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = SpecUpdateOP::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecIntervalUpdateCounter {
+      v: f_1,
+      op: f_2,
+      ts: f_3,
+      update_op: f_4,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecIntervalUpdateCounter");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::I64, 1))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("op", TType::I64, 2))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.ts {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts", TType::I64, 3))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.update_op {
+      o_prot.write_field_begin(&TFieldIdentifier::new("update_op", TType::Struct, 4))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecIntervalUpdateCounter {
+  fn default() -> Self {
+    SpecIntervalUpdateCounter{
+      v: Some(0),
+      op: Some(0),
+      ts: Some(0),
       update_op: None,
     }
   }
@@ -2460,8 +2226,8 @@ impl TSerializable for SpecIntervalUpdateSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_7 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_7);
+            let list_elem_5 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_5);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -2470,8 +2236,8 @@ impl TSerializable for SpecIntervalUpdateSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerialOp> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_8 = CellValueSerialOp::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_8);
+            let list_elem_6 = CellValueSerialOp::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_6);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -2549,365 +2315,6 @@ impl Default for SpecIntervalUpdateSerial {
       v_op: Some(Vec::new()),
       encoder: None,
       update_op: None,
-    }
-  }
-}
-
-//
-// SpecInterval
-//
-
-/// The Cells Interval Specifications with interval-scope Flags
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecInterval {
-  /// Begin of Ranges evaluation with this Key inclusive
-  pub range_begin: Option<Key>,
-  /// End of Ranges evaluation with this Key inclusive
-  pub range_end: Option<Key>,
-  /// Offset Cell Key of a Scan, select cells from this key inclusive
-  pub offset_key: Option<Key>,
-  /// Offset Cell Timestamp of a Scan, select cells after this timestamp
-  pub offset_rev: Option<i64>,
-  /// The Key Intervals
-  pub key_intervals: Option<SpecKeyIntervals>,
-  /// The Cell Value Specifications, cell-value match
-  pub values: Option<SpecValues>,
-  /// The Timestamp Start Spec, the start of cells-interval timestamp match
-  pub ts_start: Option<SpecTimestamp>,
-  /// The Timestamp Finish Spec, the finish of cells-interval timestamp match
-  pub ts_finish: Option<SpecTimestamp>,
-  /// The Interval Flags Specification
-  pub flags: Option<SpecFlags>,
-  /// The Interval Options Specification
-  pub options: Option<SpecIntervalOptions>,
-  /// The Value spec of an Updating Interval
-  pub updating: Option<SpecIntervalUpdate>,
-}
-
-impl SpecInterval {
-  pub fn new<F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11>(range_begin: F1, range_end: F2, offset_key: F3, offset_rev: F4, key_intervals: F5, values: F6, ts_start: F7, ts_finish: F8, flags: F9, options: F10, updating: F11) -> SpecInterval where F1: Into<Option<Key>>, F2: Into<Option<Key>>, F3: Into<Option<Key>>, F4: Into<Option<i64>>, F5: Into<Option<SpecKeyIntervals>>, F6: Into<Option<SpecValues>>, F7: Into<Option<SpecTimestamp>>, F8: Into<Option<SpecTimestamp>>, F9: Into<Option<SpecFlags>>, F10: Into<Option<SpecIntervalOptions>>, F11: Into<Option<SpecIntervalUpdate>> {
-    SpecInterval {
-      range_begin: range_begin.into(),
-      range_end: range_end.into(),
-      offset_key: offset_key.into(),
-      offset_rev: offset_rev.into(),
-      key_intervals: key_intervals.into(),
-      values: values.into(),
-      ts_start: ts_start.into(),
-      ts_finish: ts_finish.into(),
-      flags: flags.into(),
-      options: options.into(),
-      updating: updating.into(),
-    }
-  }
-}
-
-impl TSerializable for SpecInterval {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecInterval> {
-    i_prot.read_struct_begin()?;
-    let mut f_1: Option<Key> = Some(Vec::new());
-    let mut f_2: Option<Key> = Some(Vec::new());
-    let mut f_3: Option<Key> = Some(Vec::new());
-    let mut f_4: Option<i64> = None;
-    let mut f_5: Option<SpecKeyIntervals> = Some(Vec::new());
-    let mut f_6: Option<SpecValues> = Some(Vec::new());
-    let mut f_7: Option<SpecTimestamp> = None;
-    let mut f_8: Option<SpecTimestamp> = None;
-    let mut f_9: Option<SpecFlags> = None;
-    let mut f_10: Option<SpecIntervalOptions> = None;
-    let mut f_11: Option<SpecIntervalUpdate> = None;
-    loop {
-      let field_ident = i_prot.read_field_begin()?;
-      if field_ident.field_type == TType::Stop {
-        break;
-      }
-      let field_id = field_id(&field_ident)?;
-      match field_id {
-        1 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_9 = i_prot.read_bytes()?;
-            val.push(list_elem_9);
-          }
-          i_prot.read_list_end()?;
-          f_1 = Some(val);
-        },
-        2 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_10 = i_prot.read_bytes()?;
-            val.push(list_elem_10);
-          }
-          i_prot.read_list_end()?;
-          f_2 = Some(val);
-        },
-        3 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_11 = i_prot.read_bytes()?;
-            val.push(list_elem_11);
-          }
-          i_prot.read_list_end()?;
-          f_3 = Some(val);
-        },
-        4 => {
-          let val = i_prot.read_i64()?;
-          f_4 = Some(val);
-        },
-        5 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<SpecKeyInterval> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_12 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_12);
-          }
-          i_prot.read_list_end()?;
-          f_5 = Some(val);
-        },
-        6 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<SpecValue> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_13 = SpecValue::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_13);
-          }
-          i_prot.read_list_end()?;
-          f_6 = Some(val);
-        },
-        7 => {
-          let val = SpecTimestamp::read_from_in_protocol(i_prot)?;
-          f_7 = Some(val);
-        },
-        8 => {
-          let val = SpecTimestamp::read_from_in_protocol(i_prot)?;
-          f_8 = Some(val);
-        },
-        9 => {
-          let val = SpecFlags::read_from_in_protocol(i_prot)?;
-          f_9 = Some(val);
-        },
-        10 => {
-          let val = SpecIntervalOptions::read_from_in_protocol(i_prot)?;
-          f_10 = Some(val);
-        },
-        11 => {
-          let val = SpecIntervalUpdate::read_from_in_protocol(i_prot)?;
-          f_11 = Some(val);
-        },
-        _ => {
-          i_prot.skip(field_ident.field_type)?;
-        },
-      };
-      i_prot.read_field_end()?;
-    }
-    i_prot.read_struct_end()?;
-    let ret = SpecInterval {
-      range_begin: f_1,
-      range_end: f_2,
-      offset_key: f_3,
-      offset_rev: f_4,
-      key_intervals: f_5,
-      values: f_6,
-      ts_start: f_7,
-      ts_finish: f_8,
-      flags: f_9,
-      options: f_10,
-      updating: f_11,
-    };
-    Ok(ret)
-  }
-  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("SpecInterval");
-    o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.range_begin {
-      o_prot.write_field_begin(&TFieldIdentifier::new("range_begin", TType::List, 1))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
-      for e in fld_var {
-        o_prot.write_bytes(e)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.range_end {
-      o_prot.write_field_begin(&TFieldIdentifier::new("range_end", TType::List, 2))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
-      for e in fld_var {
-        o_prot.write_bytes(e)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.offset_key {
-      o_prot.write_field_begin(&TFieldIdentifier::new("offset_key", TType::List, 3))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
-      for e in fld_var {
-        o_prot.write_bytes(e)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    if let Some(fld_var) = self.offset_rev {
-      o_prot.write_field_begin(&TFieldIdentifier::new("offset_rev", TType::I64, 4))?;
-      o_prot.write_i64(fld_var)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.key_intervals {
-      o_prot.write_field_begin(&TFieldIdentifier::new("key_intervals", TType::List, 5))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
-      for e in fld_var {
-        e.write_to_out_protocol(o_prot)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.values {
-      o_prot.write_field_begin(&TFieldIdentifier::new("values", TType::List, 6))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
-      for e in fld_var {
-        e.write_to_out_protocol(o_prot)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.ts_start {
-      o_prot.write_field_begin(&TFieldIdentifier::new("ts_start", TType::Struct, 7))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.ts_finish {
-      o_prot.write_field_begin(&TFieldIdentifier::new("ts_finish", TType::Struct, 8))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.flags {
-      o_prot.write_field_begin(&TFieldIdentifier::new("flags", TType::Struct, 9))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.options {
-      o_prot.write_field_begin(&TFieldIdentifier::new("options", TType::I32, 10))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.updating {
-      o_prot.write_field_begin(&TFieldIdentifier::new("updating", TType::Struct, 11))?;
-      fld_var.write_to_out_protocol(o_prot)?;
-      o_prot.write_field_end()?
-    }
-    o_prot.write_field_stop()?;
-    o_prot.write_struct_end()
-  }
-}
-
-impl Default for SpecInterval {
-  fn default() -> Self {
-    SpecInterval{
-      range_begin: Some(Vec::new()),
-      range_end: Some(Vec::new()),
-      offset_key: Some(Vec::new()),
-      offset_rev: Some(0),
-      key_intervals: Some(Vec::new()),
-      values: Some(Vec::new()),
-      ts_start: None,
-      ts_finish: None,
-      flags: None,
-      options: None,
-      updating: None,
-    }
-  }
-}
-
-//
-// SpecColumn
-//
-
-/// The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SpecColumn {
-  /// The Column ID
-  pub cid: Option<i64>,
-  /// The Cells Interval in a list-container
-  pub intervals: Option<Vec<SpecInterval>>,
-}
-
-impl SpecColumn {
-  pub fn new<F1, F2>(cid: F1, intervals: F2) -> SpecColumn where F1: Into<Option<i64>>, F2: Into<Option<Vec<SpecInterval>>> {
-    SpecColumn {
-      cid: cid.into(),
-      intervals: intervals.into(),
-    }
-  }
-}
-
-impl TSerializable for SpecColumn {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecColumn> {
-    i_prot.read_struct_begin()?;
-    let mut f_1: Option<i64> = Some(0);
-    let mut f_2: Option<Vec<SpecInterval>> = Some(Vec::new());
-    loop {
-      let field_ident = i_prot.read_field_begin()?;
-      if field_ident.field_type == TType::Stop {
-        break;
-      }
-      let field_id = field_id(&field_ident)?;
-      match field_id {
-        1 => {
-          let val = i_prot.read_i64()?;
-          f_1 = Some(val);
-        },
-        2 => {
-          let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<SpecInterval> = Vec::with_capacity(list_ident.size as usize);
-          for _ in 0..list_ident.size {
-            let list_elem_14 = SpecInterval::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_14);
-          }
-          i_prot.read_list_end()?;
-          f_2 = Some(val);
-        },
-        _ => {
-          i_prot.skip(field_ident.field_type)?;
-        },
-      };
-      i_prot.read_field_end()?;
-    }
-    i_prot.read_struct_end()?;
-    let ret = SpecColumn {
-      cid: f_1,
-      intervals: f_2,
-    };
-    Ok(ret)
-  }
-  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("SpecColumn");
-    o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(fld_var) = self.cid {
-      o_prot.write_field_begin(&TFieldIdentifier::new("cid", TType::I64, 1))?;
-      o_prot.write_i64(fld_var)?;
-      o_prot.write_field_end()?
-    }
-    if let Some(ref fld_var) = self.intervals {
-      o_prot.write_field_begin(&TFieldIdentifier::new("intervals", TType::List, 2))?;
-      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
-      for e in fld_var {
-        e.write_to_out_protocol(o_prot)?;
-      }
-      o_prot.write_list_end()?;
-      o_prot.write_field_end()?
-    }
-    o_prot.write_field_stop()?;
-    o_prot.write_struct_end()
-  }
-}
-
-impl Default for SpecColumn {
-  fn default() -> Self {
-    SpecColumn{
-      cid: Some(0),
-      intervals: Some(Vec::new()),
     }
   }
 }
@@ -3168,11 +2575,11 @@ pub struct SpecValueSerialKEY {
   /// The Key Sequence to use
   pub seq: Option<KeySeq>,
   /// The Specification of the Key to match against the value field
-  pub v: Option<SpecKey>,
+  pub v: Option<Box<SpecKey>>,
 }
 
 impl SpecValueSerialKEY {
-  pub fn new<F1, F2>(seq: F1, v: F2) -> SpecValueSerialKEY where F1: Into<Option<KeySeq>>, F2: Into<Option<SpecKey>> {
+  pub fn new<F1, F2>(seq: F1, v: F2) -> SpecValueSerialKEY where F1: Into<Option<KeySeq>>, F2: Into<Option<Box<SpecKey>>> {
     SpecValueSerialKEY {
       seq: seq.into(),
       v: v.into(),
@@ -3184,7 +2591,7 @@ impl TSerializable for SpecValueSerialKEY {
   fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecValueSerialKEY> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<KeySeq> = None;
-    let mut f_2: Option<SpecKey> = Some(Vec::new());
+    let mut f_2: Option<Box<SpecKey>> = Some(Vec::new());
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -3200,8 +2607,8 @@ impl TSerializable for SpecValueSerialKEY {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecFraction> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_15 = SpecFraction::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_15);
+            let list_elem_7 = SpecFraction::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_7);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3292,8 +2699,8 @@ impl TSerializable for SpecValueSerialLI {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerialINT64> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_16 = SpecValueSerialINT64::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_16);
+            let list_elem_8 = SpecValueSerialINT64::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_8);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3384,8 +2791,8 @@ impl TSerializable for SpecValueSerialLB {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerialBYTES> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_17 = SpecValueSerialBYTES::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_17);
+            let list_elem_9 = SpecValueSerialBYTES::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_9);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3591,6 +2998,170 @@ impl Default for SpecValueSerialField {
 }
 
 //
+// SpecValuePlain
+//
+
+/// The Plain Value Specifications, option to use with Extended Logical Comparators
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecValuePlain {
+  /// Logical comparator to Apply
+  pub comp: Option<Comp>,
+  /// The binary(bytes) to match against the Cell value
+  pub v: Option<Vec<u8>>,
+}
+
+impl SpecValuePlain {
+  pub fn new<F1, F2>(comp: F1, v: F2) -> SpecValuePlain where F1: Into<Option<Comp>>, F2: Into<Option<Vec<u8>>> {
+    SpecValuePlain {
+      comp: comp.into(),
+      v: v.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecValuePlain {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecValuePlain> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Comp> = None;
+    let mut f_2: Option<Vec<u8>> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = Comp::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_bytes()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecValuePlain {
+      comp: f_1,
+      v: f_2,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecValuePlain");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.comp {
+      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::String, 2))?;
+      o_prot.write_bytes(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecValuePlain {
+  fn default() -> Self {
+    SpecValuePlain{
+      comp: None,
+      v: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// SpecValueCounter
+//
+
+/// The Counter Value Specifications, option to use with Extended Logical Comparators
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecValueCounter {
+  /// Logical comparator to Apply
+  pub comp: Option<Comp>,
+  /// The int64 to match against the Cell value
+  pub v: Option<i64>,
+}
+
+impl SpecValueCounter {
+  pub fn new<F1, F2>(comp: F1, v: F2) -> SpecValueCounter where F1: Into<Option<Comp>>, F2: Into<Option<i64>> {
+    SpecValueCounter {
+      comp: comp.into(),
+      v: v.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecValueCounter {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecValueCounter> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Comp> = None;
+    let mut f_2: Option<i64> = Some(0);
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = Comp::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_i64()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecValueCounter {
+      comp: f_1,
+      v: f_2,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecValueCounter");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.comp {
+      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::I64, 2))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecValueCounter {
+  fn default() -> Self {
+    SpecValueCounter{
+      comp: None,
+      v: Some(0),
+    }
+  }
+}
+
+//
 // SpecValueSerial
 //
 
@@ -3632,8 +3203,8 @@ impl TSerializable for SpecValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerialField> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_18 = SpecValueSerialField::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_18);
+            let list_elem_10 = SpecValueSerialField::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_10);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3683,10 +3254,810 @@ impl Default for SpecValueSerial {
 }
 
 //
+// SpecFraction
+//
+
+/// The Fraction Specifications
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecFraction {
+  /// Logical comparator to Apply
+  pub comp: Option<Comp>,
+  /// The binary(bytes) to match against a fraction of a Cell-Key
+  pub f: Option<Vec<u8>>,
+}
+
+impl SpecFraction {
+  pub fn new<F1, F2>(comp: F1, f: F2) -> SpecFraction where F1: Into<Option<Comp>>, F2: Into<Option<Vec<u8>>> {
+    SpecFraction {
+      comp: comp.into(),
+      f: f.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecFraction {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecFraction> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Comp> = None;
+    let mut f_2: Option<Vec<u8>> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = Comp::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_bytes()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecFraction {
+      comp: f_1,
+      f: f_2,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecFraction");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.comp {
+      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.f {
+      o_prot.write_field_begin(&TFieldIdentifier::new("f", TType::String, 2))?;
+      o_prot.write_bytes(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecFraction {
+  fn default() -> Self {
+    SpecFraction{
+      comp: None,
+      f: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// SpecTimestamp
+//
+
+/// The Timestamp Specifications
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecTimestamp {
+  /// Logical comparator to Apply
+  pub comp: Option<Comp>,
+  /// The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+  pub ts: Option<i64>,
+}
+
+impl SpecTimestamp {
+  pub fn new<F1, F2>(comp: F1, ts: F2) -> SpecTimestamp where F1: Into<Option<Comp>>, F2: Into<Option<i64>> {
+    SpecTimestamp {
+      comp: comp.into(),
+      ts: ts.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecTimestamp {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecTimestamp> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Comp> = None;
+    let mut f_2: Option<i64> = Some(0);
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = Comp::read_from_in_protocol(i_prot)?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_i64()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecTimestamp {
+      comp: f_1,
+      ts: f_2,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecTimestamp");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.comp {
+      o_prot.write_field_begin(&TFieldIdentifier::new("comp", TType::I32, 1))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.ts {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts", TType::I64, 2))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecTimestamp {
+  fn default() -> Self {
+    SpecTimestamp{
+      comp: None,
+      ts: Some(0),
+    }
+  }
+}
+
+//
+// SpecKeyInterval
+//
+
+/// The Key Interval Specifications
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecKeyInterval {
+  /// The Key Start Spec, the start of cells-interval key match
+  pub start: Option<SpecKey>,
+  /// The Key Finish Spec, the finish of cells-interval key match
+  pub finish: Option<SpecKey>,
+}
+
+impl SpecKeyInterval {
+  pub fn new<F1, F2>(start: F1, finish: F2) -> SpecKeyInterval where F1: Into<Option<SpecKey>>, F2: Into<Option<SpecKey>> {
+    SpecKeyInterval {
+      start: start.into(),
+      finish: finish.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecKeyInterval {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecKeyInterval> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<SpecKey> = Some(Vec::new());
+    let mut f_2: Option<SpecKey> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecFraction> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_11 = SpecFraction::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_11);
+          }
+          i_prot.read_list_end()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecFraction> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_12 = SpecFraction::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_12);
+          }
+          i_prot.read_list_end()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecKeyInterval {
+      start: f_1,
+      finish: f_2,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecKeyInterval");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.start {
+      o_prot.write_field_begin(&TFieldIdentifier::new("start", TType::List, 1))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.finish {
+      o_prot.write_field_begin(&TFieldIdentifier::new("finish", TType::List, 2))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecKeyInterval {
+  fn default() -> Self {
+    SpecKeyInterval{
+      start: Some(Vec::new()),
+      finish: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// SpecIntervalPlain
+//
+
+/// The Cells Interval Plain type Specifications with interval-scope Flags
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecIntervalPlain {
+  /// Begin of Ranges evaluation with this Key inclusive
+  pub range_begin: Option<Key>,
+  /// End of Ranges evaluation with this Key inclusive
+  pub range_end: Option<Key>,
+  /// Offset Cell Key of a Scan, select cells from this key inclusive
+  pub offset_key: Option<Key>,
+  /// Offset Cell Timestamp of a Scan, select cells after this timestamp
+  pub offset_rev: Option<i64>,
+  /// The Key Intervals
+  pub key_intervals: Option<SpecKeyIntervals>,
+  /// The Cell Value Specifications, cell-value match for plain type
+  pub values: Option<SpecValuesPlain>,
+  /// The Timestamp Start Spec, the start of cells-interval timestamp match
+  pub ts_start: Option<SpecTimestamp>,
+  /// The Timestamp Finish Spec, the finish of cells-interval timestamp match
+  pub ts_finish: Option<SpecTimestamp>,
+  /// The Interval Flags Specification
+  pub flags: Option<SpecFlags>,
+  /// The Interval Options Specification
+  pub options: Option<SpecIntervalOptions>,
+  /// The Value spec of an Updating Interval
+  pub updating: Option<SpecIntervalUpdatePlain>,
+}
+
+impl SpecIntervalPlain {
+  pub fn new<F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11>(range_begin: F1, range_end: F2, offset_key: F3, offset_rev: F4, key_intervals: F5, values: F6, ts_start: F7, ts_finish: F8, flags: F9, options: F10, updating: F11) -> SpecIntervalPlain where F1: Into<Option<Key>>, F2: Into<Option<Key>>, F3: Into<Option<Key>>, F4: Into<Option<i64>>, F5: Into<Option<SpecKeyIntervals>>, F6: Into<Option<SpecValuesPlain>>, F7: Into<Option<SpecTimestamp>>, F8: Into<Option<SpecTimestamp>>, F9: Into<Option<SpecFlags>>, F10: Into<Option<SpecIntervalOptions>>, F11: Into<Option<SpecIntervalUpdatePlain>> {
+    SpecIntervalPlain {
+      range_begin: range_begin.into(),
+      range_end: range_end.into(),
+      offset_key: offset_key.into(),
+      offset_rev: offset_rev.into(),
+      key_intervals: key_intervals.into(),
+      values: values.into(),
+      ts_start: ts_start.into(),
+      ts_finish: ts_finish.into(),
+      flags: flags.into(),
+      options: options.into(),
+      updating: updating.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecIntervalPlain {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalPlain> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Key> = Some(Vec::new());
+    let mut f_2: Option<Key> = Some(Vec::new());
+    let mut f_3: Option<Key> = Some(Vec::new());
+    let mut f_4: Option<i64> = None;
+    let mut f_5: Option<SpecKeyIntervals> = Some(Vec::new());
+    let mut f_6: Option<SpecValuesPlain> = Some(Vec::new());
+    let mut f_7: Option<SpecTimestamp> = None;
+    let mut f_8: Option<SpecTimestamp> = None;
+    let mut f_9: Option<SpecFlags> = None;
+    let mut f_10: Option<SpecIntervalOptions> = None;
+    let mut f_11: Option<SpecIntervalUpdatePlain> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_13 = i_prot.read_bytes()?;
+            val.push(list_elem_13);
+          }
+          i_prot.read_list_end()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_14 = i_prot.read_bytes()?;
+            val.push(list_elem_14);
+          }
+          i_prot.read_list_end()?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_15 = i_prot.read_bytes()?;
+            val.push(list_elem_15);
+          }
+          i_prot.read_list_end()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = i_prot.read_i64()?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecKeyInterval> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_16 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_16);
+          }
+          i_prot.read_list_end()?;
+          f_5 = Some(val);
+        },
+        6 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecValuePlain> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_17 = SpecValuePlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_17);
+          }
+          i_prot.read_list_end()?;
+          f_6 = Some(val);
+        },
+        7 => {
+          let val = SpecTimestamp::read_from_in_protocol(i_prot)?;
+          f_7 = Some(val);
+        },
+        8 => {
+          let val = SpecTimestamp::read_from_in_protocol(i_prot)?;
+          f_8 = Some(val);
+        },
+        9 => {
+          let val = SpecFlags::read_from_in_protocol(i_prot)?;
+          f_9 = Some(val);
+        },
+        10 => {
+          let val = SpecIntervalOptions::read_from_in_protocol(i_prot)?;
+          f_10 = Some(val);
+        },
+        11 => {
+          let val = SpecIntervalUpdatePlain::read_from_in_protocol(i_prot)?;
+          f_11 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecIntervalPlain {
+      range_begin: f_1,
+      range_end: f_2,
+      offset_key: f_3,
+      offset_rev: f_4,
+      key_intervals: f_5,
+      values: f_6,
+      ts_start: f_7,
+      ts_finish: f_8,
+      flags: f_9,
+      options: f_10,
+      updating: f_11,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecIntervalPlain");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.range_begin {
+      o_prot.write_field_begin(&TFieldIdentifier::new("range_begin", TType::List, 1))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.range_end {
+      o_prot.write_field_begin(&TFieldIdentifier::new("range_end", TType::List, 2))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.offset_key {
+      o_prot.write_field_begin(&TFieldIdentifier::new("offset_key", TType::List, 3))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.offset_rev {
+      o_prot.write_field_begin(&TFieldIdentifier::new("offset_rev", TType::I64, 4))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.key_intervals {
+      o_prot.write_field_begin(&TFieldIdentifier::new("key_intervals", TType::List, 5))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.values {
+      o_prot.write_field_begin(&TFieldIdentifier::new("values", TType::List, 6))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.ts_start {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts_start", TType::Struct, 7))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.ts_finish {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts_finish", TType::Struct, 8))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.flags {
+      o_prot.write_field_begin(&TFieldIdentifier::new("flags", TType::Struct, 9))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.options {
+      o_prot.write_field_begin(&TFieldIdentifier::new("options", TType::I32, 10))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.updating {
+      o_prot.write_field_begin(&TFieldIdentifier::new("updating", TType::Struct, 11))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecIntervalPlain {
+  fn default() -> Self {
+    SpecIntervalPlain{
+      range_begin: Some(Vec::new()),
+      range_end: Some(Vec::new()),
+      offset_key: Some(Vec::new()),
+      offset_rev: Some(0),
+      key_intervals: Some(Vec::new()),
+      values: Some(Vec::new()),
+      ts_start: None,
+      ts_finish: None,
+      flags: None,
+      options: None,
+      updating: None,
+    }
+  }
+}
+
+//
+// SpecIntervalCounter
+//
+
+/// The Cells Interval Counter type Specifications with interval-scope Flags
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecIntervalCounter {
+  /// Begin of Ranges evaluation with this Key inclusive
+  pub range_begin: Option<Key>,
+  /// End of Ranges evaluation with this Key inclusive
+  pub range_end: Option<Key>,
+  /// Offset Cell Key of a Scan, select cells from this key inclusive
+  pub offset_key: Option<Key>,
+  /// Offset Cell Timestamp of a Scan, select cells after this timestamp
+  pub offset_rev: Option<i64>,
+  /// The Key Intervals
+  pub key_intervals: Option<SpecKeyIntervals>,
+  /// The Cell Value Specifications, cell-value match for counter type
+  pub values: Option<SpecValuesCounter>,
+  /// The Timestamp Start Spec, the start of cells-interval timestamp match
+  pub ts_start: Option<SpecTimestamp>,
+  /// The Timestamp Finish Spec, the finish of cells-interval timestamp match
+  pub ts_finish: Option<SpecTimestamp>,
+  /// The Interval Flags Specification
+  pub flags: Option<SpecFlags>,
+  /// The Interval Options Specification
+  pub options: Option<SpecIntervalOptions>,
+  /// The Value spec of an Updating Interval
+  pub updating: Option<SpecIntervalUpdateCounter>,
+}
+
+impl SpecIntervalCounter {
+  pub fn new<F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11>(range_begin: F1, range_end: F2, offset_key: F3, offset_rev: F4, key_intervals: F5, values: F6, ts_start: F7, ts_finish: F8, flags: F9, options: F10, updating: F11) -> SpecIntervalCounter where F1: Into<Option<Key>>, F2: Into<Option<Key>>, F3: Into<Option<Key>>, F4: Into<Option<i64>>, F5: Into<Option<SpecKeyIntervals>>, F6: Into<Option<SpecValuesCounter>>, F7: Into<Option<SpecTimestamp>>, F8: Into<Option<SpecTimestamp>>, F9: Into<Option<SpecFlags>>, F10: Into<Option<SpecIntervalOptions>>, F11: Into<Option<SpecIntervalUpdateCounter>> {
+    SpecIntervalCounter {
+      range_begin: range_begin.into(),
+      range_end: range_end.into(),
+      offset_key: offset_key.into(),
+      offset_rev: offset_rev.into(),
+      key_intervals: key_intervals.into(),
+      values: values.into(),
+      ts_start: ts_start.into(),
+      ts_finish: ts_finish.into(),
+      flags: flags.into(),
+      options: options.into(),
+      updating: updating.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecIntervalCounter {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecIntervalCounter> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Key> = Some(Vec::new());
+    let mut f_2: Option<Key> = Some(Vec::new());
+    let mut f_3: Option<Key> = Some(Vec::new());
+    let mut f_4: Option<i64> = None;
+    let mut f_5: Option<SpecKeyIntervals> = Some(Vec::new());
+    let mut f_6: Option<SpecValuesCounter> = Some(Vec::new());
+    let mut f_7: Option<SpecTimestamp> = None;
+    let mut f_8: Option<SpecTimestamp> = None;
+    let mut f_9: Option<SpecFlags> = None;
+    let mut f_10: Option<SpecIntervalOptions> = None;
+    let mut f_11: Option<SpecIntervalUpdateCounter> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_18 = i_prot.read_bytes()?;
+            val.push(list_elem_18);
+          }
+          i_prot.read_list_end()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_19 = i_prot.read_bytes()?;
+            val.push(list_elem_19);
+          }
+          i_prot.read_list_end()?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_20 = i_prot.read_bytes()?;
+            val.push(list_elem_20);
+          }
+          i_prot.read_list_end()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = i_prot.read_i64()?;
+          f_4 = Some(val);
+        },
+        5 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecKeyInterval> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_21 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_21);
+          }
+          i_prot.read_list_end()?;
+          f_5 = Some(val);
+        },
+        6 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecValueCounter> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_22 = SpecValueCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_22);
+          }
+          i_prot.read_list_end()?;
+          f_6 = Some(val);
+        },
+        7 => {
+          let val = SpecTimestamp::read_from_in_protocol(i_prot)?;
+          f_7 = Some(val);
+        },
+        8 => {
+          let val = SpecTimestamp::read_from_in_protocol(i_prot)?;
+          f_8 = Some(val);
+        },
+        9 => {
+          let val = SpecFlags::read_from_in_protocol(i_prot)?;
+          f_9 = Some(val);
+        },
+        10 => {
+          let val = SpecIntervalOptions::read_from_in_protocol(i_prot)?;
+          f_10 = Some(val);
+        },
+        11 => {
+          let val = SpecIntervalUpdateCounter::read_from_in_protocol(i_prot)?;
+          f_11 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecIntervalCounter {
+      range_begin: f_1,
+      range_end: f_2,
+      offset_key: f_3,
+      offset_rev: f_4,
+      key_intervals: f_5,
+      values: f_6,
+      ts_start: f_7,
+      ts_finish: f_8,
+      flags: f_9,
+      options: f_10,
+      updating: f_11,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecIntervalCounter");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.range_begin {
+      o_prot.write_field_begin(&TFieldIdentifier::new("range_begin", TType::List, 1))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.range_end {
+      o_prot.write_field_begin(&TFieldIdentifier::new("range_end", TType::List, 2))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.offset_key {
+      o_prot.write_field_begin(&TFieldIdentifier::new("offset_key", TType::List, 3))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.offset_rev {
+      o_prot.write_field_begin(&TFieldIdentifier::new("offset_rev", TType::I64, 4))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.key_intervals {
+      o_prot.write_field_begin(&TFieldIdentifier::new("key_intervals", TType::List, 5))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.values {
+      o_prot.write_field_begin(&TFieldIdentifier::new("values", TType::List, 6))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.ts_start {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts_start", TType::Struct, 7))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.ts_finish {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts_finish", TType::Struct, 8))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.flags {
+      o_prot.write_field_begin(&TFieldIdentifier::new("flags", TType::Struct, 9))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.options {
+      o_prot.write_field_begin(&TFieldIdentifier::new("options", TType::I32, 10))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.updating {
+      o_prot.write_field_begin(&TFieldIdentifier::new("updating", TType::Struct, 11))?;
+      fld_var.write_to_out_protocol(o_prot)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecIntervalCounter {
+  fn default() -> Self {
+    SpecIntervalCounter{
+      range_begin: Some(Vec::new()),
+      range_end: Some(Vec::new()),
+      offset_key: Some(Vec::new()),
+      offset_rev: Some(0),
+      key_intervals: Some(Vec::new()),
+      values: Some(Vec::new()),
+      ts_start: None,
+      ts_finish: None,
+      flags: None,
+      options: None,
+      updating: None,
+    }
+  }
+}
+
+//
 // SpecIntervalSerial
 //
 
-/// The Serial Value Cells Interval Specifications with interval-scope Flags
+/// The Cells Interval Serial type Specifications with interval-scope Flags
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SpecIntervalSerial {
   /// Begin of Ranges evaluation with this Key inclusive
@@ -3756,8 +4127,8 @@ impl TSerializable for SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_19 = i_prot.read_bytes()?;
-            val.push(list_elem_19);
+            let list_elem_23 = i_prot.read_bytes()?;
+            val.push(list_elem_23);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -3766,8 +4137,8 @@ impl TSerializable for SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_20 = i_prot.read_bytes()?;
-            val.push(list_elem_20);
+            let list_elem_24 = i_prot.read_bytes()?;
+            val.push(list_elem_24);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -3776,8 +4147,8 @@ impl TSerializable for SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_21 = i_prot.read_bytes()?;
-            val.push(list_elem_21);
+            let list_elem_25 = i_prot.read_bytes()?;
+            val.push(list_elem_25);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -3790,8 +4161,8 @@ impl TSerializable for SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecKeyInterval> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_22 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_22);
+            let list_elem_26 = SpecKeyInterval::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_26);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -3800,8 +4171,8 @@ impl TSerializable for SpecIntervalSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_23 = SpecValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_23);
+            let list_elem_27 = SpecValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_27);
           }
           i_prot.read_list_end()?;
           f_6 = Some(val);
@@ -3950,10 +4321,194 @@ impl Default for SpecIntervalSerial {
 }
 
 //
+// SpecColumnPlain
+//
+
+/// The Column Specifications, the Cells-Intervals(SpecIntervalPlain/s) specification for a PLAIN Type column
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecColumnPlain {
+  /// The Column ID
+  pub cid: Option<i64>,
+  /// The Cells Interval in a list-container
+  pub intervals: Option<Vec<SpecIntervalPlain>>,
+}
+
+impl SpecColumnPlain {
+  pub fn new<F1, F2>(cid: F1, intervals: F2) -> SpecColumnPlain where F1: Into<Option<i64>>, F2: Into<Option<Vec<SpecIntervalPlain>>> {
+    SpecColumnPlain {
+      cid: cid.into(),
+      intervals: intervals.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecColumnPlain {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecColumnPlain> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i64> = Some(0);
+    let mut f_2: Option<Vec<SpecIntervalPlain>> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i64()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecIntervalPlain> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_28 = SpecIntervalPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_28);
+          }
+          i_prot.read_list_end()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecColumnPlain {
+      cid: f_1,
+      intervals: f_2,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecColumnPlain");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.cid {
+      o_prot.write_field_begin(&TFieldIdentifier::new("cid", TType::I64, 1))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.intervals {
+      o_prot.write_field_begin(&TFieldIdentifier::new("intervals", TType::List, 2))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecColumnPlain {
+  fn default() -> Self {
+    SpecColumnPlain{
+      cid: Some(0),
+      intervals: Some(Vec::new()),
+    }
+  }
+}
+
+//
+// SpecColumnCounter
+//
+
+/// The Column Specifications, the Cells-Intervals(SpecIntervalCounter/s) specification for a COUNTER Type column
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SpecColumnCounter {
+  /// The Column ID
+  pub cid: Option<i64>,
+  /// The Cells Interval in a list-container
+  pub intervals: Option<Vec<SpecIntervalCounter>>,
+}
+
+impl SpecColumnCounter {
+  pub fn new<F1, F2>(cid: F1, intervals: F2) -> SpecColumnCounter where F1: Into<Option<i64>>, F2: Into<Option<Vec<SpecIntervalCounter>>> {
+    SpecColumnCounter {
+      cid: cid.into(),
+      intervals: intervals.into(),
+    }
+  }
+}
+
+impl TSerializable for SpecColumnCounter {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecColumnCounter> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<i64> = Some(0);
+    let mut f_2: Option<Vec<SpecIntervalCounter>> = Some(Vec::new());
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let val = i_prot.read_i64()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecIntervalCounter> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_29 = SpecIntervalCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_29);
+          }
+          i_prot.read_list_end()?;
+          f_2 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = SpecColumnCounter {
+      cid: f_1,
+      intervals: f_2,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("SpecColumnCounter");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(fld_var) = self.cid {
+      o_prot.write_field_begin(&TFieldIdentifier::new("cid", TType::I64, 1))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.intervals {
+      o_prot.write_field_begin(&TFieldIdentifier::new("intervals", TType::List, 2))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for SpecColumnCounter {
+  fn default() -> Self {
+    SpecColumnCounter{
+      cid: Some(0),
+      intervals: Some(Vec::new()),
+    }
+  }
+}
+
+//
 // SpecColumnSerial
 //
 
-/// The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column
+/// The Column Specifications, the Cells-Intervals(SpecIntervalSerial/s) specification for a SERIAL Type Column
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SpecColumnSerial {
   /// The Column ID
@@ -3991,8 +4546,8 @@ impl TSerializable for SpecColumnSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<SpecIntervalSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_24 = SpecIntervalSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_24);
+            let list_elem_30 = SpecIntervalSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_30);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4048,8 +4603,10 @@ impl Default for SpecColumnSerial {
 /// The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SpecScan {
-  /// The Column Intervals(SpecColumn) in a list-container
-  pub columns: Option<Vec<SpecColumn>>,
+  /// The Plain Column Intervals(SpecColumnPlain) in a list-container
+  pub columns_plain: Option<Vec<SpecColumnPlain>>,
+  /// The Counter Column Intervals(SpecColumnCounter) in a list-container
+  pub columns_counter: Option<Vec<SpecColumnCounter>>,
   /// The Serial Column Intervals(SpecColumnSerial) in a list-container
   pub columns_serial: Option<Vec<SpecColumnSerial>>,
   /// The Global Flags Specification
@@ -4057,9 +4614,10 @@ pub struct SpecScan {
 }
 
 impl SpecScan {
-  pub fn new<F1, F2, F3>(columns: F1, columns_serial: F2, flags: F3) -> SpecScan where F1: Into<Option<Vec<SpecColumn>>>, F2: Into<Option<Vec<SpecColumnSerial>>>, F3: Into<Option<SpecFlags>> {
+  pub fn new<F1, F2, F3, F4>(columns_plain: F1, columns_counter: F2, columns_serial: F3, flags: F4) -> SpecScan where F1: Into<Option<Vec<SpecColumnPlain>>>, F2: Into<Option<Vec<SpecColumnCounter>>>, F3: Into<Option<Vec<SpecColumnSerial>>>, F4: Into<Option<SpecFlags>> {
     SpecScan {
-      columns: columns.into(),
+      columns_plain: columns_plain.into(),
+      columns_counter: columns_counter.into(),
       columns_serial: columns_serial.into(),
       flags: flags.into(),
     }
@@ -4069,9 +4627,10 @@ impl SpecScan {
 impl TSerializable for SpecScan {
   fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<SpecScan> {
     i_prot.read_struct_begin()?;
-    let mut f_1: Option<Vec<SpecColumn>> = Some(Vec::new());
-    let mut f_2: Option<Vec<SpecColumnSerial>> = Some(Vec::new());
-    let mut f_3: Option<SpecFlags> = None;
+    let mut f_1: Option<Vec<SpecColumnPlain>> = Some(Vec::new());
+    let mut f_2: Option<Vec<SpecColumnCounter>> = Some(Vec::new());
+    let mut f_3: Option<Vec<SpecColumnSerial>> = Some(Vec::new());
+    let mut f_4: Option<SpecFlags> = None;
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -4081,27 +4640,37 @@ impl TSerializable for SpecScan {
       match field_id {
         1 => {
           let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<SpecColumn> = Vec::with_capacity(list_ident.size as usize);
+          let mut val: Vec<SpecColumnPlain> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_25 = SpecColumn::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_25);
+            let list_elem_31 = SpecColumnPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_31);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
         },
         2 => {
           let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<SpecColumnSerial> = Vec::with_capacity(list_ident.size as usize);
+          let mut val: Vec<SpecColumnCounter> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_26 = SpecColumnSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_26);
+            let list_elem_32 = SpecColumnCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_32);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
         },
         3 => {
-          let val = SpecFlags::read_from_in_protocol(i_prot)?;
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<SpecColumnSerial> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_33 = SpecColumnSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_33);
+          }
+          i_prot.read_list_end()?;
           f_3 = Some(val);
+        },
+        4 => {
+          let val = SpecFlags::read_from_in_protocol(i_prot)?;
+          f_4 = Some(val);
         },
         _ => {
           i_prot.skip(field_ident.field_type)?;
@@ -4111,17 +4680,27 @@ impl TSerializable for SpecScan {
     }
     i_prot.read_struct_end()?;
     let ret = SpecScan {
-      columns: f_1,
-      columns_serial: f_2,
-      flags: f_3,
+      columns_plain: f_1,
+      columns_counter: f_2,
+      columns_serial: f_3,
+      flags: f_4,
     };
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     let struct_ident = TStructIdentifier::new("SpecScan");
     o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.columns {
-      o_prot.write_field_begin(&TFieldIdentifier::new("columns", TType::List, 1))?;
+    if let Some(ref fld_var) = self.columns_plain {
+      o_prot.write_field_begin(&TFieldIdentifier::new("columns_plain", TType::List, 1))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.columns_counter {
+      o_prot.write_field_begin(&TFieldIdentifier::new("columns_counter", TType::List, 2))?;
       o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
       for e in fld_var {
         e.write_to_out_protocol(o_prot)?;
@@ -4130,7 +4709,7 @@ impl TSerializable for SpecScan {
       o_prot.write_field_end()?
     }
     if let Some(ref fld_var) = self.columns_serial {
-      o_prot.write_field_begin(&TFieldIdentifier::new("columns_serial", TType::List, 2))?;
+      o_prot.write_field_begin(&TFieldIdentifier::new("columns_serial", TType::List, 3))?;
       o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
       for e in fld_var {
         e.write_to_out_protocol(o_prot)?;
@@ -4139,7 +4718,7 @@ impl TSerializable for SpecScan {
       o_prot.write_field_end()?
     }
     if let Some(ref fld_var) = self.flags {
-      o_prot.write_field_begin(&TFieldIdentifier::new("flags", TType::Struct, 3))?;
+      o_prot.write_field_begin(&TFieldIdentifier::new("flags", TType::Struct, 4))?;
       fld_var.write_to_out_protocol(o_prot)?;
       o_prot.write_field_end()?
     }
@@ -4151,7 +4730,8 @@ impl TSerializable for SpecScan {
 impl Default for SpecScan {
   fn default() -> Self {
     SpecScan{
-      columns: Some(Vec::new()),
+      columns_plain: Some(Vec::new()),
+      columns_counter: Some(Vec::new()),
       columns_serial: Some(Vec::new()),
       flags: None,
     }
@@ -4216,8 +4796,8 @@ impl TSerializable for UCellPlain {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_27 = i_prot.read_bytes()?;
-            val.push(list_elem_27);
+            let list_elem_34 = i_prot.read_bytes()?;
+            val.push(list_elem_34);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4368,8 +4948,8 @@ impl TSerializable for UCellCounter {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_28 = i_prot.read_bytes()?;
-            val.push(list_elem_28);
+            let list_elem_35 = i_prot.read_bytes()?;
+            val.push(list_elem_35);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -4536,8 +5116,8 @@ impl TSerializable for CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_29 = i_prot.read_bytes()?;
-            val.push(list_elem_29);
+            let list_elem_36 = i_prot.read_bytes()?;
+            val.push(list_elem_36);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -4546,8 +5126,8 @@ impl TSerializable for CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<i64> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_30 = i_prot.read_i64()?;
-            val.push(list_elem_30);
+            let list_elem_37 = i_prot.read_i64()?;
+            val.push(list_elem_37);
           }
           i_prot.read_list_end()?;
           f_6 = Some(val);
@@ -4556,8 +5136,8 @@ impl TSerializable for CellValueSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_31 = i_prot.read_bytes()?;
-            val.push(list_elem_31);
+            let list_elem_38 = i_prot.read_bytes()?;
+            val.push(list_elem_38);
           }
           i_prot.read_list_end()?;
           f_7 = Some(val);
@@ -5069,8 +5649,8 @@ impl TSerializable for FULI {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FUINT64> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_32 = FUINT64::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_32);
+            let list_elem_39 = FUINT64::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_39);
           }
           i_prot.read_list_end()?;
           f_4 = Some(val);
@@ -5187,8 +5767,8 @@ impl TSerializable for FULB {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FUBYTES> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_33 = FUBYTES::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_33);
+            let list_elem_40 = FUBYTES::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_40);
           }
           i_prot.read_list_end()?;
           f_4 = Some(val);
@@ -5325,8 +5905,8 @@ impl TSerializable for CellValueSerialOp {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_34 = i_prot.read_bytes()?;
-            val.push(list_elem_34);
+            let list_elem_41 = i_prot.read_bytes()?;
+            val.push(list_elem_41);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -5476,8 +6056,8 @@ impl TSerializable for UCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_35 = i_prot.read_bytes()?;
-            val.push(list_elem_35);
+            let list_elem_42 = i_prot.read_bytes()?;
+            val.push(list_elem_42);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5494,8 +6074,8 @@ impl TSerializable for UCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_36 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_36);
+            let list_elem_43 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_43);
           }
           i_prot.read_list_end()?;
           f_5 = Some(val);
@@ -5630,8 +6210,8 @@ impl TSerializable for CellPlain {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_37 = i_prot.read_bytes()?;
-            val.push(list_elem_37);
+            let list_elem_44 = i_prot.read_bytes()?;
+            val.push(list_elem_44);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5756,8 +6336,8 @@ impl TSerializable for CellCounter {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_38 = i_prot.read_bytes()?;
-            val.push(list_elem_38);
+            let list_elem_45 = i_prot.read_bytes()?;
+            val.push(list_elem_45);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5889,8 +6469,8 @@ impl TSerializable for CellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_39 = i_prot.read_bytes()?;
-            val.push(list_elem_39);
+            let list_elem_46 = i_prot.read_bytes()?;
+            val.push(list_elem_46);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -5903,8 +6483,8 @@ impl TSerializable for CellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_40 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_40);
+            let list_elem_47 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_47);
           }
           i_prot.read_list_end()?;
           f_4 = Some(val);
@@ -6013,8 +6593,8 @@ impl TSerializable for Cells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellPlain> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_41 = CellPlain::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_41);
+            let list_elem_48 = CellPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_48);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6023,8 +6603,8 @@ impl TSerializable for Cells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellCounter> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_42 = CellCounter::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_42);
+            let list_elem_49 = CellCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_49);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6033,8 +6613,8 @@ impl TSerializable for Cells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_43 = CellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_43);
+            let list_elem_50 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_50);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6140,8 +6720,8 @@ impl TSerializable for CCell {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_44 = i_prot.read_bytes()?;
-            val.push(list_elem_44);
+            let list_elem_51 = i_prot.read_bytes()?;
+            val.push(list_elem_51);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6247,8 +6827,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_45 = i_prot.read_bytes()?;
-            val.push(list_elem_45);
+            let list_elem_52 = i_prot.read_bytes()?;
+            val.push(list_elem_52);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6261,8 +6841,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_46 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_46);
+            let list_elem_53 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_53);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6360,8 +6940,8 @@ impl TSerializable for ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_47 = CCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_47);
+            let list_elem_54 = CCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_54);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6370,8 +6950,8 @@ impl TSerializable for ColCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_48 = CCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_48);
+            let list_elem_55 = CCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_55);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6571,8 +7151,8 @@ impl TSerializable for KCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_49 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_49);
+            let list_elem_56 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_56);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6670,8 +7250,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_50 = i_prot.read_bytes()?;
-            val.push(list_elem_50);
+            let list_elem_57 = i_prot.read_bytes()?;
+            val.push(list_elem_57);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6680,8 +7260,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_51 = KCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_51);
+            let list_elem_58 = KCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_58);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -6690,8 +7270,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_52 = KCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_52);
+            let list_elem_59 = KCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_59);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6902,8 +7482,8 @@ impl TSerializable for FCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_53 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_53);
+            let list_elem_60 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_60);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7001,9 +7581,9 @@ impl TSerializable for FCells {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<Vec<u8>, Box<FCells>> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_54 = i_prot.read_bytes()?;
-            let map_val_55 = Box::new(FCells::read_from_in_protocol(i_prot)?);
-            val.insert(map_key_54, map_val_55);
+            let map_key_61 = i_prot.read_bytes()?;
+            let map_val_62 = Box::new(FCells::read_from_in_protocol(i_prot)?);
+            val.insert(map_key_61, map_val_62);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -7012,8 +7592,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_56 = FCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_56);
+            let list_elem_63 = FCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_63);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -7022,8 +7602,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_57 = FCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_57);
+            let list_elem_64 = FCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_64);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7138,9 +7718,9 @@ impl TSerializable for CellsGroup {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_58 = i_prot.read_string()?;
-            let map_val_59 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_58, map_val_59);
+            let map_key_65 = i_prot.read_string()?;
+            let map_val_66 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_65, map_val_66);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -7149,8 +7729,8 @@ impl TSerializable for CellsGroup {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_60 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_60);
+            let list_elem_67 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_67);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7346,8 +7926,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_61 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_61);
+            let list_elem_68 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_68);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -7360,8 +7940,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_62 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_62);
+            let list_elem_69 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_69);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -10338,8 +10918,8 @@ impl ServiceSqlListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_63 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_63);
+            let list_elem_70 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_70);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10474,8 +11054,8 @@ impl ServiceSqlCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_64 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_64);
+            let list_elem_71 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_71);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10736,8 +11316,8 @@ impl ServiceSqlSelectPlainResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellPlain> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_65 = CellPlain::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_65);
+            let list_elem_72 = CellPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_72);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -10872,8 +11452,8 @@ impl ServiceSqlSelectCounterResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellCounter> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_66 = CellCounter::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_66);
+            let list_elem_73 = CellCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_73);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11008,8 +11588,8 @@ impl ServiceSqlSelectSerialResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_67 = CellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_67);
+            let list_elem_74 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_74);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11144,9 +11724,9 @@ impl ServiceSqlSelectRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_68 = i_prot.read_string()?;
-            let map_val_69 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_68, map_val_69);
+            let map_key_75 = i_prot.read_string()?;
+            let map_val_76 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_75, map_val_76);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -11282,8 +11862,8 @@ impl ServiceSqlSelectRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_70 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_70);
+            let list_elem_77 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_77);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -12093,15 +12673,15 @@ impl ServiceUpdatePlainArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_71 = i_prot.read_i64()?;
+            let map_key_78 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_72: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_79: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_73 = UCellPlain::read_from_in_protocol(i_prot)?;
-              map_val_72.push(list_elem_73);
+              let list_elem_80 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_79.push(list_elem_80);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_71, map_val_72);
+            val.insert(map_key_78, map_val_79);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12232,15 +12812,15 @@ impl ServiceUpdateCounterArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_74 = i_prot.read_i64()?;
+            let map_key_81 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_75: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_82: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_76 = UCellCounter::read_from_in_protocol(i_prot)?;
-              map_val_75.push(list_elem_76);
+              let list_elem_83 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_82.push(list_elem_83);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_74, map_val_75);
+            val.insert(map_key_81, map_val_82);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12371,15 +12951,15 @@ impl ServiceUpdateSerialArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_77 = i_prot.read_i64()?;
+            let map_key_84 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_78: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_85: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_79 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_78.push(list_elem_79);
+              let list_elem_86 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_85.push(list_elem_86);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_77, map_val_78);
+            val.insert(map_key_84, map_val_85);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12516,15 +13096,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_80 = i_prot.read_i64()?;
+            let map_key_87 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_81: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_88: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_82 = UCellPlain::read_from_in_protocol(i_prot)?;
-              map_val_81.push(list_elem_82);
+              let list_elem_89 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_88.push(list_elem_89);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_80, map_val_81);
+            val.insert(map_key_87, map_val_88);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12533,15 +13113,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_83 = i_prot.read_i64()?;
+            let map_key_90 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_84: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_91: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_85 = UCellCounter::read_from_in_protocol(i_prot)?;
-              map_val_84.push(list_elem_85);
+              let list_elem_92 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_91.push(list_elem_92);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_83, map_val_84);
+            val.insert(map_key_90, map_val_91);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -12550,15 +13130,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_86 = i_prot.read_i64()?;
+            let map_key_93 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_87: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_94: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_88 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_87.push(list_elem_88);
+              let list_elem_95 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_94.push(list_elem_95);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_86, map_val_87);
+            val.insert(map_key_93, map_val_94);
           }
           i_prot.read_map_end()?;
           f_3 = Some(val);
@@ -12897,8 +13477,8 @@ impl ServiceListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_89 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_89);
+            let list_elem_96 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_96);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -13033,8 +13613,8 @@ impl ServiceCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_90 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_90);
+            let list_elem_97 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_97);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -13295,9 +13875,9 @@ impl ServiceScanRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_91 = i_prot.read_string()?;
-            let map_val_92 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_91, map_val_92);
+            let map_key_98 = i_prot.read_string()?;
+            let map_val_99 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_98, map_val_99);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -13433,8 +14013,8 @@ impl ServiceScanRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_93 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_93);
+            let list_elem_100 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_100);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);

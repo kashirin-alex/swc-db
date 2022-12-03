@@ -577,13 +577,13 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
           case 1: // K
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list400 = iprot.readListBegin();
-                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list400.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem401;
-                for (int _i402 = 0; _i402 < _list400.size; ++_i402)
+                org.apache.thrift.protocol.TList _list456 = iprot.readListBegin();
+                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list456.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem457;
+                for (int _i458 = 0; _i458 < _list456.size; ++_i458)
                 {
-                  _elem401 = iprot.readBinary();
-                  struct.k.add(_elem401);
+                  _elem457 = iprot.readBinary();
+                  struct.k.add(_elem457);
                 }
                 iprot.readListEnd();
               }
@@ -595,14 +595,14 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
           case 2: // CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list403 = iprot.readListBegin();
-                struct.cells = new java.util.ArrayList<KCell>(_list403.size);
-                @org.apache.thrift.annotation.Nullable KCell _elem404;
-                for (int _i405 = 0; _i405 < _list403.size; ++_i405)
+                org.apache.thrift.protocol.TList _list459 = iprot.readListBegin();
+                struct.cells = new java.util.ArrayList<KCell>(_list459.size);
+                @org.apache.thrift.annotation.Nullable KCell _elem460;
+                for (int _i461 = 0; _i461 < _list459.size; ++_i461)
                 {
-                  _elem404 = new KCell();
-                  _elem404.read(iprot);
-                  struct.cells.add(_elem404);
+                  _elem460 = new KCell();
+                  _elem460.read(iprot);
+                  struct.cells.add(_elem460);
                 }
                 iprot.readListEnd();
               }
@@ -614,14 +614,14 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
           case 3: // SERIAL_CELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list406 = iprot.readListBegin();
-                struct.serial_cells = new java.util.ArrayList<KCellSerial>(_list406.size);
-                @org.apache.thrift.annotation.Nullable KCellSerial _elem407;
-                for (int _i408 = 0; _i408 < _list406.size; ++_i408)
+                org.apache.thrift.protocol.TList _list462 = iprot.readListBegin();
+                struct.serial_cells = new java.util.ArrayList<KCellSerial>(_list462.size);
+                @org.apache.thrift.annotation.Nullable KCellSerial _elem463;
+                for (int _i464 = 0; _i464 < _list462.size; ++_i464)
                 {
-                  _elem407 = new KCellSerial();
-                  _elem407.read(iprot);
-                  struct.serial_cells.add(_elem407);
+                  _elem463 = new KCellSerial();
+                  _elem463.read(iprot);
+                  struct.serial_cells.add(_elem463);
                 }
                 iprot.readListEnd();
               }
@@ -650,9 +650,9 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
         oprot.writeFieldBegin(K_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.k.size()));
-          for (java.nio.ByteBuffer _iter409 : struct.k)
+          for (java.nio.ByteBuffer _iter465 : struct.k)
           {
-            oprot.writeBinary(_iter409);
+            oprot.writeBinary(_iter465);
           }
           oprot.writeListEnd();
         }
@@ -662,9 +662,9 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
         oprot.writeFieldBegin(CELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cells.size()));
-          for (KCell _iter410 : struct.cells)
+          for (KCell _iter466 : struct.cells)
           {
-            _iter410.write(oprot);
+            _iter466.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -674,9 +674,9 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
         oprot.writeFieldBegin(SERIAL_CELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.serial_cells.size()));
-          for (KCellSerial _iter411 : struct.serial_cells)
+          for (KCellSerial _iter467 : struct.serial_cells)
           {
-            _iter411.write(oprot);
+            _iter467.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -714,27 +714,27 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
       if (struct.isSetK()) {
         {
           oprot.writeI32(struct.k.size());
-          for (java.nio.ByteBuffer _iter412 : struct.k)
+          for (java.nio.ByteBuffer _iter468 : struct.k)
           {
-            oprot.writeBinary(_iter412);
+            oprot.writeBinary(_iter468);
           }
         }
       }
       if (struct.isSetCells()) {
         {
           oprot.writeI32(struct.cells.size());
-          for (KCell _iter413 : struct.cells)
+          for (KCell _iter469 : struct.cells)
           {
-            _iter413.write(oprot);
+            _iter469.write(oprot);
           }
         }
       }
       if (struct.isSetSerial_cells()) {
         {
           oprot.writeI32(struct.serial_cells.size());
-          for (KCellSerial _iter414 : struct.serial_cells)
+          for (KCellSerial _iter470 : struct.serial_cells)
           {
-            _iter414.write(oprot);
+            _iter470.write(oprot);
           }
         }
       }
@@ -746,41 +746,41 @@ public class kCells implements org.apache.thrift.TBase<kCells, kCells._Fields>, 
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list415 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list415.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem416;
-          for (int _i417 = 0; _i417 < _list415.size; ++_i417)
+          org.apache.thrift.protocol.TList _list471 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list471.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem472;
+          for (int _i473 = 0; _i473 < _list471.size; ++_i473)
           {
-            _elem416 = iprot.readBinary();
-            struct.k.add(_elem416);
+            _elem472 = iprot.readBinary();
+            struct.k.add(_elem472);
           }
         }
         struct.setKIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list418 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.cells = new java.util.ArrayList<KCell>(_list418.size);
-          @org.apache.thrift.annotation.Nullable KCell _elem419;
-          for (int _i420 = 0; _i420 < _list418.size; ++_i420)
+          org.apache.thrift.protocol.TList _list474 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.cells = new java.util.ArrayList<KCell>(_list474.size);
+          @org.apache.thrift.annotation.Nullable KCell _elem475;
+          for (int _i476 = 0; _i476 < _list474.size; ++_i476)
           {
-            _elem419 = new KCell();
-            _elem419.read(iprot);
-            struct.cells.add(_elem419);
+            _elem475 = new KCell();
+            _elem475.read(iprot);
+            struct.cells.add(_elem475);
           }
         }
         struct.setCellsIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list421 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.serial_cells = new java.util.ArrayList<KCellSerial>(_list421.size);
-          @org.apache.thrift.annotation.Nullable KCellSerial _elem422;
-          for (int _i423 = 0; _i423 < _list421.size; ++_i423)
+          org.apache.thrift.protocol.TList _list477 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.serial_cells = new java.util.ArrayList<KCellSerial>(_list477.size);
+          @org.apache.thrift.annotation.Nullable KCellSerial _elem478;
+          for (int _i479 = 0; _i479 < _list477.size; ++_i479)
           {
-            _elem422 = new KCellSerial();
-            _elem422.read(iprot);
-            struct.serial_cells.add(_elem422);
+            _elem478 = new KCellSerial();
+            _elem478.read(iprot);
+            struct.serial_cells.add(_elem478);
           }
         }
         struct.setSerial_cellsIsSet(true);

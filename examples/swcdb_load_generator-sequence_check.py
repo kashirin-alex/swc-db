@@ -33,11 +33,11 @@ client = PoolService(1)
 
 while True:
     specs = service.SpecScan(
-        columns=[
-            service.SpecColumn(
+        columns_plan=[
+            service.SpecColumnPlain(
                 cid=column_cid,
                 intervals=[
-                    service.SpecInterval(
+                    service.SpecIntervalPlain(
                         offset_key=offset_key,
                         offset_rev=offset_rev,
                         flags=service.SpecFlags(offset=0, limit=limit)
@@ -50,10 +50,10 @@ while True:
     print(specs)
 
     ts = time.time()
-    cells=client.scan(specs).cells
+    cells=client.scan(specs).plain_cells
     took = time.time() - ts
     if len(cells) == 0:
-	    break
+        break
 
     offset_rev = cells[-1].ts
     offset_key = cells[-1].k

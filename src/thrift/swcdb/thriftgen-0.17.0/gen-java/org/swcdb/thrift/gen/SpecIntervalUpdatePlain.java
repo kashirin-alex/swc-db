@@ -7,22 +7,22 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Value specs for an Updating Interval of 'updating' in SpecInterval
+ * The Value specs for an Updating Interval of 'updating' in SpecIntervalPlain
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalUpdate, SpecIntervalUpdate._Fields>, java.io.Serializable, Cloneable, Comparable<SpecIntervalUpdate> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecIntervalUpdate");
+public class SpecIntervalUpdatePlain implements org.apache.thrift.TBase<SpecIntervalUpdatePlain, SpecIntervalUpdatePlain._Fields>, java.io.Serializable, Cloneable, Comparable<SpecIntervalUpdatePlain> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecIntervalUpdatePlain");
 
   private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField ENCODER_FIELD_DESC = new org.apache.thrift.protocol.TField("encoder", org.apache.thrift.protocol.TType.I32, (short)3);
   private static final org.apache.thrift.protocol.TField UPDATE_OP_FIELD_DESC = new org.apache.thrift.protocol.TField("update_op", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecIntervalUpdateStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecIntervalUpdateTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecIntervalUpdatePlainStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecIntervalUpdatePlainTupleSchemeFactory();
 
   /**
-   * The value for the updated cell
+   * The bytes value for the updated cell
    */
   public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v; // required
   /**
@@ -43,7 +43,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * The value for the updated cell
+     * The bytes value for the updated cell
      */
     V((short)1, "v"),
     /**
@@ -141,13 +141,13 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     tmpMap.put(_Fields.UPDATE_OP, new org.apache.thrift.meta_data.FieldMetaData("update_op", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SpecUpdateOP.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecIntervalUpdate.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecIntervalUpdatePlain.class, metaDataMap);
   }
 
-  public SpecIntervalUpdate() {
+  public SpecIntervalUpdatePlain() {
   }
 
-  public SpecIntervalUpdate(
+  public SpecIntervalUpdatePlain(
     java.nio.ByteBuffer v)
   {
     this();
@@ -157,7 +157,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public SpecIntervalUpdate(SpecIntervalUpdate other) {
+  public SpecIntervalUpdatePlain(SpecIntervalUpdatePlain other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetV()) {
       this.v = org.apache.thrift.TBaseHelper.copyBinary(other.v);
@@ -172,8 +172,8 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   }
 
   @Override
-  public SpecIntervalUpdate deepCopy() {
-    return new SpecIntervalUpdate(this);
+  public SpecIntervalUpdatePlain deepCopy() {
+    return new SpecIntervalUpdatePlain(this);
   }
 
   @Override
@@ -186,7 +186,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   }
 
   /**
-   * The value for the updated cell
+   * The bytes value for the updated cell
    */
   public byte[] getV() {
     setV(org.apache.thrift.TBaseHelper.rightSize(v));
@@ -198,14 +198,14 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   }
 
   /**
-   * The value for the updated cell
+   * The bytes value for the updated cell
    */
-  public SpecIntervalUpdate setV(byte[] v) {
+  public SpecIntervalUpdatePlain setV(byte[] v) {
     this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
     return this;
   }
 
-  public SpecIntervalUpdate setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
+  public SpecIntervalUpdatePlain setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
     this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
     return this;
   }
@@ -235,7 +235,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   /**
    * The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
    */
-  public SpecIntervalUpdate setTs(long ts) {
+  public SpecIntervalUpdatePlain setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
     return this;
@@ -269,7 +269,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
    * 
    * @see EncodingType
    */
-  public SpecIntervalUpdate setEncoder(@org.apache.thrift.annotation.Nullable EncodingType encoder) {
+  public SpecIntervalUpdatePlain setEncoder(@org.apache.thrift.annotation.Nullable EncodingType encoder) {
     this.encoder = encoder;
     return this;
   }
@@ -300,7 +300,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   /**
    * Optionally the operaton of value update
    */
-  public SpecIntervalUpdate setUpdate_op(@org.apache.thrift.annotation.Nullable SpecUpdateOP update_op) {
+  public SpecIntervalUpdatePlain setUpdate_op(@org.apache.thrift.annotation.Nullable SpecUpdateOP update_op) {
     this.update_op = update_op;
     return this;
   }
@@ -404,12 +404,12 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof SpecIntervalUpdate)
-      return this.equals((SpecIntervalUpdate)that);
+    if (that instanceof SpecIntervalUpdatePlain)
+      return this.equals((SpecIntervalUpdatePlain)that);
     return false;
   }
 
-  public boolean equals(SpecIntervalUpdate that) {
+  public boolean equals(SpecIntervalUpdatePlain that) {
     if (that == null)
       return false;
     if (this == that)
@@ -478,7 +478,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
   }
 
   @Override
-  public int compareTo(SpecIntervalUpdate other) {
+  public int compareTo(SpecIntervalUpdatePlain other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -546,7 +546,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecIntervalUpdate(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecIntervalUpdatePlain(");
     boolean first = true;
 
     sb.append("v:");
@@ -612,17 +612,17 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     }
   }
 
-  private static class SpecIntervalUpdateStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SpecIntervalUpdatePlainStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public SpecIntervalUpdateStandardScheme getScheme() {
-      return new SpecIntervalUpdateStandardScheme();
+    public SpecIntervalUpdatePlainStandardScheme getScheme() {
+      return new SpecIntervalUpdatePlainStandardScheme();
     }
   }
 
-  private static class SpecIntervalUpdateStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecIntervalUpdate> {
+  private static class SpecIntervalUpdatePlainStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecIntervalUpdatePlain> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecIntervalUpdate struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecIntervalUpdatePlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -677,7 +677,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecIntervalUpdate struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecIntervalUpdatePlain struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -711,17 +711,17 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
 
   }
 
-  private static class SpecIntervalUpdateTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SpecIntervalUpdatePlainTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public SpecIntervalUpdateTupleScheme getScheme() {
-      return new SpecIntervalUpdateTupleScheme();
+    public SpecIntervalUpdatePlainTupleScheme getScheme() {
+      return new SpecIntervalUpdatePlainTupleScheme();
     }
   }
 
-  private static class SpecIntervalUpdateTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecIntervalUpdate> {
+  private static class SpecIntervalUpdatePlainTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecIntervalUpdatePlain> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, SpecIntervalUpdate struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, SpecIntervalUpdatePlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetV()) {
@@ -752,7 +752,7 @@ public class SpecIntervalUpdate implements org.apache.thrift.TBase<SpecIntervalU
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, SpecIntervalUpdate struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, SpecIntervalUpdatePlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {

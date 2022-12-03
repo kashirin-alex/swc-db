@@ -7,39 +7,39 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Specifications of KEY Serial Value Field
+ * The Counter Value Specifications, option to use with Extended Logical Comparators
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSerial_KEY, SpecValueSerial_KEY._Fields>, java.io.Serializable, Cloneable, Comparable<SpecValueSerial_KEY> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecValueSerial_KEY");
+public class SpecValueCounter implements org.apache.thrift.TBase<SpecValueCounter, SpecValueCounter._Fields>, java.io.Serializable, Cloneable, Comparable<SpecValueCounter> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecValueCounter");
 
-  private static final org.apache.thrift.protocol.TField SEQ_FIELD_DESC = new org.apache.thrift.protocol.TField("seq", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField COMP_FIELD_DESC = new org.apache.thrift.protocol.TField("comp", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.I64, (short)2);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecValueSerial_KEYStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecValueSerial_KEYTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecValueCounterStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecValueCounterTupleSchemeFactory();
 
   /**
-   * The Key Sequence to use
+   * Logical comparator to Apply
    * 
-   * @see KeySeq
+   * @see Comp
    */
-  public @org.apache.thrift.annotation.Nullable KeySeq seq; // required
+  public @org.apache.thrift.annotation.Nullable Comp comp; // required
   /**
-   * The Specification of the Key to match against the value field
+   * The int64 to match against the Cell value
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> v; // required
+  public long v; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
-     * The Key Sequence to use
+     * Logical comparator to Apply
      * 
-     * @see KeySeq
+     * @see Comp
      */
-    SEQ((short)1, "seq"),
+    COMP((short)1, "comp"),
     /**
-     * The Specification of the Key to match against the value field
+     * The int64 to match against the Cell value
      */
     V((short)2, "v");
 
@@ -57,8 +57,8 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SEQ
-          return SEQ;
+        case 1: // COMP
+          return COMP;
         case 2: // V
           return V;
         default:
@@ -104,146 +104,127 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
   }
 
   // isset id assignments
+  private static final int __V_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SEQ, new org.apache.thrift.meta_data.FieldMetaData("seq", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, KeySeq.class)));
+    tmpMap.put(_Fields.COMP, new org.apache.thrift.meta_data.FieldMetaData("comp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, Comp.class)));
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "SpecKey")));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecValueSerial_KEY.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecValueCounter.class, metaDataMap);
   }
 
-  public SpecValueSerial_KEY() {
+  public SpecValueCounter() {
   }
 
-  public SpecValueSerial_KEY(
-    KeySeq seq,
-    java.util.List<SpecFraction> v)
+  public SpecValueCounter(
+    Comp comp,
+    long v)
   {
     this();
-    this.seq = seq;
+    this.comp = comp;
     this.v = v;
+    setVIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public SpecValueSerial_KEY(SpecValueSerial_KEY other) {
-    if (other.isSetSeq()) {
-      this.seq = other.seq;
+  public SpecValueCounter(SpecValueCounter other) {
+    __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetComp()) {
+      this.comp = other.comp;
     }
-    if (other.isSetV()) {
-      java.util.List<SpecFraction> __this__v = new java.util.ArrayList<SpecFraction>(other.v.size());
-      for (SpecFraction other_element : other.v) {
-        __this__v.add(new SpecFraction(other_element));
-      }
-      this.v = __this__v;
-    }
+    this.v = other.v;
   }
 
   @Override
-  public SpecValueSerial_KEY deepCopy() {
-    return new SpecValueSerial_KEY(this);
+  public SpecValueCounter deepCopy() {
+    return new SpecValueCounter(this);
   }
 
   @Override
   public void clear() {
-    this.seq = null;
-    this.v = null;
+    this.comp = null;
+    setVIsSet(false);
+    this.v = 0;
   }
 
   /**
-   * The Key Sequence to use
+   * Logical comparator to Apply
    * 
-   * @see KeySeq
+   * @see Comp
    */
   @org.apache.thrift.annotation.Nullable
-  public KeySeq getSeq() {
-    return this.seq;
+  public Comp getComp() {
+    return this.comp;
   }
 
   /**
-   * The Key Sequence to use
+   * Logical comparator to Apply
    * 
-   * @see KeySeq
+   * @see Comp
    */
-  public SpecValueSerial_KEY setSeq(@org.apache.thrift.annotation.Nullable KeySeq seq) {
-    this.seq = seq;
+  public SpecValueCounter setComp(@org.apache.thrift.annotation.Nullable Comp comp) {
+    this.comp = comp;
     return this;
   }
 
-  public void unsetSeq() {
-    this.seq = null;
+  public void unsetComp() {
+    this.comp = null;
   }
 
-  /** Returns true if field seq is set (has been assigned a value) and false otherwise */
-  public boolean isSetSeq() {
-    return this.seq != null;
+  /** Returns true if field comp is set (has been assigned a value) and false otherwise */
+  public boolean isSetComp() {
+    return this.comp != null;
   }
 
-  public void setSeqIsSet(boolean value) {
+  public void setCompIsSet(boolean value) {
     if (!value) {
-      this.seq = null;
+      this.comp = null;
     }
-  }
-
-  public int getVSize() {
-    return (this.v == null) ? 0 : this.v.size();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<SpecFraction> getVIterator() {
-    return (this.v == null) ? null : this.v.iterator();
-  }
-
-  public void addToV(SpecFraction elem) {
-    if (this.v == null) {
-      this.v = new java.util.ArrayList<SpecFraction>();
-    }
-    this.v.add(elem);
   }
 
   /**
-   * The Specification of the Key to match against the value field
+   * The int64 to match against the Cell value
    */
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<SpecFraction> getV() {
+  public long getV() {
     return this.v;
   }
 
   /**
-   * The Specification of the Key to match against the value field
+   * The int64 to match against the Cell value
    */
-  public SpecValueSerial_KEY setV(@org.apache.thrift.annotation.Nullable java.util.List<SpecFraction> v) {
+  public SpecValueCounter setV(long v) {
     this.v = v;
+    setVIsSet(true);
     return this;
   }
 
   public void unsetV() {
-    this.v = null;
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __V_ISSET_ID);
   }
 
   /** Returns true if field v is set (has been assigned a value) and false otherwise */
   public boolean isSetV() {
-    return this.v != null;
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __V_ISSET_ID);
   }
 
   public void setVIsSet(boolean value) {
-    if (!value) {
-      this.v = null;
-    }
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __V_ISSET_ID, value);
   }
 
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case SEQ:
+    case COMP:
       if (value == null) {
-        unsetSeq();
+        unsetComp();
       } else {
-        setSeq((KeySeq)value);
+        setComp((Comp)value);
       }
       break;
 
@@ -251,7 +232,7 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
       if (value == null) {
         unsetV();
       } else {
-        setV((java.util.List<SpecFraction>)value);
+        setV((java.lang.Long)value);
       }
       break;
 
@@ -262,8 +243,8 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
   @Override
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case SEQ:
-      return getSeq();
+    case COMP:
+      return getComp();
 
     case V:
       return getV();
@@ -280,8 +261,8 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
     }
 
     switch (field) {
-    case SEQ:
-      return isSetSeq();
+    case COMP:
+      return isSetComp();
     case V:
       return isSetV();
     }
@@ -290,32 +271,32 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof SpecValueSerial_KEY)
-      return this.equals((SpecValueSerial_KEY)that);
+    if (that instanceof SpecValueCounter)
+      return this.equals((SpecValueCounter)that);
     return false;
   }
 
-  public boolean equals(SpecValueSerial_KEY that) {
+  public boolean equals(SpecValueCounter that) {
     if (that == null)
       return false;
     if (this == that)
       return true;
 
-    boolean this_present_seq = true && this.isSetSeq();
-    boolean that_present_seq = true && that.isSetSeq();
-    if (this_present_seq || that_present_seq) {
-      if (!(this_present_seq && that_present_seq))
+    boolean this_present_comp = true && this.isSetComp();
+    boolean that_present_comp = true && that.isSetComp();
+    if (this_present_comp || that_present_comp) {
+      if (!(this_present_comp && that_present_comp))
         return false;
-      if (!this.seq.equals(that.seq))
+      if (!this.comp.equals(that.comp))
         return false;
     }
 
-    boolean this_present_v = true && this.isSetV();
-    boolean that_present_v = true && that.isSetV();
+    boolean this_present_v = true;
+    boolean that_present_v = true;
     if (this_present_v || that_present_v) {
       if (!(this_present_v && that_present_v))
         return false;
-      if (!this.v.equals(that.v))
+      if (this.v != that.v)
         return false;
     }
 
@@ -326,31 +307,29 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetSeq()) ? 131071 : 524287);
-    if (isSetSeq())
-      hashCode = hashCode * 8191 + seq.getValue();
+    hashCode = hashCode * 8191 + ((isSetComp()) ? 131071 : 524287);
+    if (isSetComp())
+      hashCode = hashCode * 8191 + comp.getValue();
 
-    hashCode = hashCode * 8191 + ((isSetV()) ? 131071 : 524287);
-    if (isSetV())
-      hashCode = hashCode * 8191 + v.hashCode();
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(v);
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(SpecValueSerial_KEY other) {
+  public int compareTo(SpecValueCounter other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetSeq(), other.isSetSeq());
+    lastComparison = java.lang.Boolean.compare(isSetComp(), other.isSetComp());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSeq()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.seq, other.seq);
+    if (isSetComp()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.comp, other.comp);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -386,23 +365,19 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecValueSerial_KEY(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecValueCounter(");
     boolean first = true;
 
-    sb.append("seq:");
-    if (this.seq == null) {
+    sb.append("comp:");
+    if (this.comp == null) {
       sb.append("null");
     } else {
-      sb.append(this.seq);
+      sb.append(this.comp);
     }
     first = false;
     if (!first) sb.append(", ");
     sb.append("v:");
-    if (this.v == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.v);
-    }
+    sb.append(this.v);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -423,23 +398,25 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
     }
   }
 
-  private static class SpecValueSerial_KEYStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SpecValueCounterStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public SpecValueSerial_KEYStandardScheme getScheme() {
-      return new SpecValueSerial_KEYStandardScheme();
+    public SpecValueCounterStandardScheme getScheme() {
+      return new SpecValueCounterStandardScheme();
     }
   }
 
-  private static class SpecValueSerial_KEYStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecValueSerial_KEY> {
+  private static class SpecValueCounterStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecValueCounter> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecValueSerial_KEY struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecValueCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -449,28 +426,17 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
           break;
         }
         switch (schemeField.id) {
-          case 1: // SEQ
+          case 1: // COMP
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.seq = org.swcdb.thrift.gen.KeySeq.findByValue(iprot.readI32());
-              struct.setSeqIsSet(true);
+              struct.comp = org.swcdb.thrift.gen.Comp.findByValue(iprot.readI32());
+              struct.setCompIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 2: // V
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list56 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<SpecFraction>(_list56.size);
-                @org.apache.thrift.annotation.Nullable SpecFraction _elem57;
-                for (int _i58 = 0; _i58 < _list56.size; ++_i58)
-                {
-                  _elem57 = new SpecFraction();
-                  _elem57.read(iprot);
-                  struct.v.add(_elem57);
-                }
-                iprot.readListEnd();
-              }
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.v = iprot.readI64();
               struct.setVIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -488,87 +454,62 @@ public class SpecValueSerial_KEY implements org.apache.thrift.TBase<SpecValueSer
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecValueSerial_KEY struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecValueCounter struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.seq != null) {
-        oprot.writeFieldBegin(SEQ_FIELD_DESC);
-        oprot.writeI32(struct.seq.getValue());
+      if (struct.comp != null) {
+        oprot.writeFieldBegin(COMP_FIELD_DESC);
+        oprot.writeI32(struct.comp.getValue());
         oprot.writeFieldEnd();
       }
-      if (struct.v != null) {
-        oprot.writeFieldBegin(V_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (SpecFraction _iter59 : struct.v)
-          {
-            _iter59.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(V_FIELD_DESC);
+      oprot.writeI64(struct.v);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
   }
 
-  private static class SpecValueSerial_KEYTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SpecValueCounterTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public SpecValueSerial_KEYTupleScheme getScheme() {
-      return new SpecValueSerial_KEYTupleScheme();
+    public SpecValueCounterTupleScheme getScheme() {
+      return new SpecValueCounterTupleScheme();
     }
   }
 
-  private static class SpecValueSerial_KEYTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecValueSerial_KEY> {
+  private static class SpecValueCounterTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecValueCounter> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, SpecValueSerial_KEY struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, SpecValueCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetSeq()) {
+      if (struct.isSetComp()) {
         optionals.set(0);
       }
       if (struct.isSetV()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
-      if (struct.isSetSeq()) {
-        oprot.writeI32(struct.seq.getValue());
+      if (struct.isSetComp()) {
+        oprot.writeI32(struct.comp.getValue());
       }
       if (struct.isSetV()) {
-        {
-          oprot.writeI32(struct.v.size());
-          for (SpecFraction _iter60 : struct.v)
-          {
-            _iter60.write(oprot);
-          }
-        }
+        oprot.writeI64(struct.v);
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, SpecValueSerial_KEY struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, SpecValueCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.seq = org.swcdb.thrift.gen.KeySeq.findByValue(iprot.readI32());
-        struct.setSeqIsSet(true);
+        struct.comp = org.swcdb.thrift.gen.Comp.findByValue(iprot.readI32());
+        struct.setCompIsSet(true);
       }
       if (incoming.get(1)) {
-        {
-          org.apache.thrift.protocol.TList _list61 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<SpecFraction>(_list61.size);
-          @org.apache.thrift.annotation.Nullable SpecFraction _elem62;
-          for (int _i63 = 0; _i63 < _list61.size; ++_i63)
-          {
-            _elem62 = new SpecFraction();
-            _elem62.read(iprot);
-            struct.v.add(_elem62);
-          }
-        }
+        struct.v = iprot.readI64();
         struct.setVIsSet(true);
       }
     }

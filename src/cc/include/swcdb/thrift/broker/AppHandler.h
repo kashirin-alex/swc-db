@@ -348,10 +348,25 @@ class AppHandler final : virtual public BrokerIf {
 
     DB::Schema::Ptr schema;
 
-    for(auto& col : spec.columns) {
+    for(auto& col : spec.columns_plain) {
       schema = hdlr->clients->get_schema(err, col.cid);
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
+      if(schema->col_type != DB::Types::Column::PLAIN)
+        Converter::exception(Error::INCOMPATIBLE_OPTIONS, "Mismatching Column Type");
+
+      auto& dbcol = specs.columns.emplace_back(col.cid, col.intervals.size());
+      for(auto& intval : col.intervals) {
+        Converter::set(intval, *dbcol.add(schema->col_type).get());
+      }
+    }
+
+    for(auto& col : spec.columns_counter) {
+      schema = hdlr->clients->get_schema(err, col.cid);
+      if(!schema)
+        Converter::exception(err, "cid=" + std::to_string(col.cid));
+      if(!DB::Types::is_counter(schema->col_type))
+        Converter::exception(Error::INCOMPATIBLE_OPTIONS, "Mismatching Column Type");
 
       auto& dbcol = specs.columns.emplace_back(col.cid, col.intervals.size());
       for(auto& intval : col.intervals) {
@@ -363,6 +378,8 @@ class AppHandler final : virtual public BrokerIf {
       schema = hdlr->clients->get_schema(err, col.cid);
       if(!schema)
         Converter::exception(err, "cid=" + std::to_string(col.cid));
+      if(schema->col_type != DB::Types::Column::SERIAL)
+        Converter::exception(Error::INCOMPATIBLE_OPTIONS, "Mismatching Column Type");
 
       auto& dbcol = specs.columns.emplace_back(col.cid, col.intervals.size());
       for(auto& intval : col.intervals) {

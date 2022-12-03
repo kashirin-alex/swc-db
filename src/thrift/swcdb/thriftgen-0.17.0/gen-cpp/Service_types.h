@@ -297,28 +297,6 @@ std::ostream& operator<<(std::ostream& out, const SpecFlagsOpt::type& val);
 
 std::string to_string(const SpecFlagsOpt::type& val);
 
-/**
- * The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit
- */
-struct SpecIntervalOptions {
-  enum type {
-    /**
-     * Update Bit Option
-     */
-    UPDATING = 4,
-    /**
-     * Delete Bit Option
-     */
-    DELETING = 8
-  };
-};
-
-extern const std::map<int, const char*> _SpecIntervalOptions_VALUES_TO_NAMES;
-
-std::ostream& operator<<(std::ostream& out, const SpecIntervalOptions::type& val);
-
-std::string to_string(const SpecIntervalOptions::type& val);
-
 struct UpdateOP {
   enum type {
     /**
@@ -353,6 +331,28 @@ extern const std::map<int, const char*> _UpdateOP_VALUES_TO_NAMES;
 std::ostream& operator<<(std::ostream& out, const UpdateOP::type& val);
 
 std::string to_string(const UpdateOP::type& val);
+
+/**
+ * The Scan Interval Specs Options for the SpecIntervalPlain, SpecIntervalCounter and SpecIntervalSerial 'options' bit
+ */
+struct SpecIntervalOptions {
+  enum type {
+    /**
+     * Update Bit Option
+     */
+    UPDATING = 4,
+    /**
+     * Delete Bit Option
+     */
+    DELETING = 8
+  };
+};
+
+extern const std::map<int, const char*> _SpecIntervalOptions_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalOptions::type& val);
+
+std::string to_string(const SpecIntervalOptions::type& val);
 
 /**
  * The Cell Flag
@@ -505,6 +505,26 @@ typedef std::vector<class Schema>  Schemas;
 typedef std::vector<std::string>  Key;
 
 /**
+ * The Serial Cell Value Specifications defined as SpecValueSerialField items in a list-container
+ */
+typedef std::vector<class SpecValueSerialField>  SpecValueSerialFields;
+
+/**
+ * The Cell Value Specifications defined as SpecValuePlain items in a list-container
+ */
+typedef std::vector<class SpecValuePlain>  SpecValuesPlain;
+
+/**
+ * The Cell Value Specifications defined as SpecValueCounter items in a list-container
+ */
+typedef std::vector<class SpecValueCounter>  SpecValuesCounter;
+
+/**
+ * The Cell Value Specifications defined as SpecValueSerial items in a list-container
+ */
+typedef std::vector<class SpecValueSerial>  SpecValuesSerial;
+
+/**
  * The Key Specifications defined as SpecFraction items in a list-container
  */
 typedef std::vector<class SpecFraction>  SpecKey;
@@ -513,21 +533,6 @@ typedef std::vector<class SpecFraction>  SpecKey;
  * The Key Intervals Specifications defined as SpecKeyInterval items in a list-container
  */
 typedef std::vector<class SpecKeyInterval>  SpecKeyIntervals;
-
-/**
- * The Cell Value Specifications defined as SpecValue items in a list-container
- */
-typedef std::vector<class SpecValue>  SpecValues;
-
-/**
- * The Serial Cell Value Specifications defined as SpecValueSerialField items in a list-container
- */
-typedef std::vector<class SpecValueSerialField>  SpecValueSerialFields;
-
-/**
- * The Cell Value Specifications defined as SpecValueSerial items in a list-container
- */
-typedef std::vector<class SpecValueSerial>  SpecValuesSerial;
 
 /**
  * The Cells for Update defined as UCellPlain items in a list-container
@@ -613,23 +618,13 @@ class SpecSchemas;
 
 class SpecFlags;
 
-class SpecFraction;
-
-class SpecTimestamp;
-
-class SpecKeyInterval;
-
-class SpecValue;
-
 class SpecUpdateOP;
 
-class SpecIntervalUpdate;
+class SpecIntervalUpdatePlain;
+
+class SpecIntervalUpdateCounter;
 
 class SpecIntervalUpdateSerial;
-
-class SpecInterval;
-
-class SpecColumn;
 
 class SpecValueSerial_INT64;
 
@@ -645,9 +640,27 @@ class SpecValueSerial_LB;
 
 class SpecValueSerialField;
 
+class SpecValuePlain;
+
+class SpecValueCounter;
+
 class SpecValueSerial;
 
+class SpecFraction;
+
+class SpecTimestamp;
+
+class SpecKeyInterval;
+
+class SpecIntervalPlain;
+
+class SpecIntervalCounter;
+
 class SpecIntervalSerial;
+
+class SpecColumnPlain;
+
+class SpecColumnCounter;
 
 class SpecColumnSerial;
 
@@ -1382,254 +1395,6 @@ void swap(SpecFlags &a, SpecFlags &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecFlags& obj);
 
-typedef struct _SpecFraction__isset {
-  _SpecFraction__isset() : comp(false), f(false) {}
-  bool comp :1;
-  bool f :1;
-} _SpecFraction__isset;
-
-/**
- * The Fraction Specifications
- */
-class SpecFraction : public virtual ::apache::thrift::TBase {
- public:
-
-  SpecFraction(const SpecFraction&);
-  SpecFraction(SpecFraction&&) noexcept;
-  SpecFraction& operator=(const SpecFraction&);
-  SpecFraction& operator=(SpecFraction&&) noexcept;
-  SpecFraction() noexcept
-               : comp(static_cast<Comp::type>(0)),
-                 f() {
-  }
-
-  virtual ~SpecFraction() noexcept;
-  /**
-   * Logical comparator to Apply
-   * 
-   * @see Comp
-   */
-  Comp::type comp;
-  /**
-   * The binary(bytes) to match against a fraction of a Cell-Key
-   */
-  std::string f;
-
-  _SpecFraction__isset __isset;
-
-  void __set_comp(const Comp::type val);
-
-  void __set_f(const std::string& val);
-
-  bool operator == (const SpecFraction & rhs) const
-  {
-    if (!(comp == rhs.comp))
-      return false;
-    if (!(f == rhs.f))
-      return false;
-    return true;
-  }
-  bool operator != (const SpecFraction &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SpecFraction & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(SpecFraction &a, SpecFraction &b);
-
-std::ostream& operator<<(std::ostream& out, const SpecFraction& obj);
-
-typedef struct _SpecTimestamp__isset {
-  _SpecTimestamp__isset() : comp(false), ts(false) {}
-  bool comp :1;
-  bool ts :1;
-} _SpecTimestamp__isset;
-
-/**
- * The Timestamp Specifications
- */
-class SpecTimestamp : public virtual ::apache::thrift::TBase {
- public:
-
-  SpecTimestamp(const SpecTimestamp&) noexcept;
-  SpecTimestamp(SpecTimestamp&&) noexcept;
-  SpecTimestamp& operator=(const SpecTimestamp&) noexcept;
-  SpecTimestamp& operator=(SpecTimestamp&&) noexcept;
-  SpecTimestamp() noexcept
-                : comp(static_cast<Comp::type>(0)),
-                  ts(0) {
-  }
-
-  virtual ~SpecTimestamp() noexcept;
-  /**
-   * Logical comparator to Apply
-   * 
-   * @see Comp
-   */
-  Comp::type comp;
-  /**
-   * The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
-   */
-  int64_t ts;
-
-  _SpecTimestamp__isset __isset;
-
-  void __set_comp(const Comp::type val);
-
-  void __set_ts(const int64_t val);
-
-  bool operator == (const SpecTimestamp & rhs) const
-  {
-    if (!(comp == rhs.comp))
-      return false;
-    if (!(ts == rhs.ts))
-      return false;
-    return true;
-  }
-  bool operator != (const SpecTimestamp &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SpecTimestamp & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(SpecTimestamp &a, SpecTimestamp &b);
-
-std::ostream& operator<<(std::ostream& out, const SpecTimestamp& obj);
-
-typedef struct _SpecKeyInterval__isset {
-  _SpecKeyInterval__isset() : start(false), finish(false) {}
-  bool start :1;
-  bool finish :1;
-} _SpecKeyInterval__isset;
-
-/**
- * The Key Interval Specifications
- */
-class SpecKeyInterval : public virtual ::apache::thrift::TBase {
- public:
-
-  SpecKeyInterval(const SpecKeyInterval&);
-  SpecKeyInterval(SpecKeyInterval&&) noexcept;
-  SpecKeyInterval& operator=(const SpecKeyInterval&);
-  SpecKeyInterval& operator=(SpecKeyInterval&&) noexcept;
-  SpecKeyInterval() noexcept {
-  }
-
-  virtual ~SpecKeyInterval() noexcept;
-  /**
-   * The Key Start Spec, the start of cells-interval key match
-   */
-  SpecKey start;
-  /**
-   * The Key Finish Spec, the finish of cells-interval key match
-   */
-  SpecKey finish;
-
-  _SpecKeyInterval__isset __isset;
-
-  void __set_start(const SpecKey& val);
-
-  void __set_finish(const SpecKey& val);
-
-  bool operator == (const SpecKeyInterval & rhs) const
-  {
-    if (!(start == rhs.start))
-      return false;
-    if (!(finish == rhs.finish))
-      return false;
-    return true;
-  }
-  bool operator != (const SpecKeyInterval &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SpecKeyInterval & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(SpecKeyInterval &a, SpecKeyInterval &b);
-
-std::ostream& operator<<(std::ostream& out, const SpecKeyInterval& obj);
-
-typedef struct _SpecValue__isset {
-  _SpecValue__isset() : comp(false), v(false) {}
-  bool comp :1;
-  bool v :1;
-} _SpecValue__isset;
-
-/**
- * The Value Specifications, option to use with Extended Logical Comparators
- */
-class SpecValue : public virtual ::apache::thrift::TBase {
- public:
-
-  SpecValue(const SpecValue&);
-  SpecValue(SpecValue&&) noexcept;
-  SpecValue& operator=(const SpecValue&);
-  SpecValue& operator=(SpecValue&&) noexcept;
-  SpecValue() noexcept
-            : comp(static_cast<Comp::type>(0)),
-              v() {
-  }
-
-  virtual ~SpecValue() noexcept;
-  /**
-   * Logical comparator to Apply
-   * 
-   * @see Comp
-   */
-  Comp::type comp;
-  /**
-   * The binary(bytes) to match against the Cell value
-   */
-  std::string v;
-
-  _SpecValue__isset __isset;
-
-  void __set_comp(const Comp::type val);
-
-  void __set_v(const std::string& val);
-
-  bool operator == (const SpecValue & rhs) const
-  {
-    if (!(comp == rhs.comp))
-      return false;
-    if (!(v == rhs.v))
-      return false;
-    return true;
-  }
-  bool operator != (const SpecValue &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SpecValue & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(SpecValue &a, SpecValue &b);
-
-std::ostream& operator<<(std::ostream& out, const SpecValue& obj);
-
 typedef struct _SpecUpdateOP__isset {
   _SpecUpdateOP__isset() : op(false), pos(false) {}
   bool op :1;
@@ -1692,33 +1457,33 @@ void swap(SpecUpdateOP &a, SpecUpdateOP &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecUpdateOP& obj);
 
-typedef struct _SpecIntervalUpdate__isset {
-  _SpecIntervalUpdate__isset() : v(false), ts(false), encoder(false), update_op(false) {}
+typedef struct _SpecIntervalUpdatePlain__isset {
+  _SpecIntervalUpdatePlain__isset() : v(false), ts(false), encoder(false), update_op(false) {}
   bool v :1;
   bool ts :1;
   bool encoder :1;
   bool update_op :1;
-} _SpecIntervalUpdate__isset;
+} _SpecIntervalUpdatePlain__isset;
 
 /**
- * The Value specs for an Updating Interval of 'updating' in SpecInterval
+ * The Value specs for an Updating Interval of 'updating' in SpecIntervalPlain
  */
-class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
+class SpecIntervalUpdatePlain : public virtual ::apache::thrift::TBase {
  public:
 
-  SpecIntervalUpdate(const SpecIntervalUpdate&);
-  SpecIntervalUpdate(SpecIntervalUpdate&&) noexcept;
-  SpecIntervalUpdate& operator=(const SpecIntervalUpdate&);
-  SpecIntervalUpdate& operator=(SpecIntervalUpdate&&) noexcept;
-  SpecIntervalUpdate() noexcept
-                     : v(),
-                       ts(0),
-                       encoder(static_cast<EncodingType::type>(0)) {
+  SpecIntervalUpdatePlain(const SpecIntervalUpdatePlain&);
+  SpecIntervalUpdatePlain(SpecIntervalUpdatePlain&&) noexcept;
+  SpecIntervalUpdatePlain& operator=(const SpecIntervalUpdatePlain&);
+  SpecIntervalUpdatePlain& operator=(SpecIntervalUpdatePlain&&) noexcept;
+  SpecIntervalUpdatePlain() noexcept
+                          : v(),
+                            ts(0),
+                            encoder(static_cast<EncodingType::type>(0)) {
   }
 
-  virtual ~SpecIntervalUpdate() noexcept;
+  virtual ~SpecIntervalUpdatePlain() noexcept;
   /**
-   * The value for the updated cell
+   * The bytes value for the updated cell
    */
   std::string v;
   /**
@@ -1736,7 +1501,7 @@ class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
    */
   SpecUpdateOP update_op;
 
-  _SpecIntervalUpdate__isset __isset;
+  _SpecIntervalUpdatePlain__isset __isset;
 
   void __set_v(const std::string& val);
 
@@ -1746,7 +1511,7 @@ class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
 
   void __set_update_op(const SpecUpdateOP& val);
 
-  bool operator == (const SpecIntervalUpdate & rhs) const
+  bool operator == (const SpecIntervalUpdatePlain & rhs) const
   {
     if (!(v == rhs.v))
       return false;
@@ -1764,11 +1529,11 @@ class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const SpecIntervalUpdate &rhs) const {
+  bool operator != (const SpecIntervalUpdatePlain &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const SpecIntervalUpdate & ) const;
+  bool operator < (const SpecIntervalUpdatePlain & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
@@ -1776,9 +1541,93 @@ class SpecIntervalUpdate : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(SpecIntervalUpdate &a, SpecIntervalUpdate &b);
+void swap(SpecIntervalUpdatePlain &a, SpecIntervalUpdatePlain &b);
 
-std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdate& obj);
+std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdatePlain& obj);
+
+typedef struct _SpecIntervalUpdateCounter__isset {
+  _SpecIntervalUpdateCounter__isset() : v(false), op(true), ts(false), update_op(false) {}
+  bool v :1;
+  bool op :1;
+  bool ts :1;
+  bool update_op :1;
+} _SpecIntervalUpdateCounter__isset;
+
+/**
+ * The Value specs for an Updating Interval of 'updating' in SpecIntervalCounter
+ */
+class SpecIntervalUpdateCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecIntervalUpdateCounter(const SpecIntervalUpdateCounter&) noexcept;
+  SpecIntervalUpdateCounter(SpecIntervalUpdateCounter&&) noexcept;
+  SpecIntervalUpdateCounter& operator=(const SpecIntervalUpdateCounter&) noexcept;
+  SpecIntervalUpdateCounter& operator=(SpecIntervalUpdateCounter&&) noexcept;
+  SpecIntervalUpdateCounter() noexcept
+                            : v(0),
+                              op(0LL),
+                              ts(0) {
+  }
+
+  virtual ~SpecIntervalUpdateCounter() noexcept;
+  /**
+   * The int64 value for the updated cell
+   */
+  int64_t v;
+  /**
+   * The Opration pf Counter, available: COUNTER_OP_EQUAL
+   */
+  int64_t op;
+  /**
+   * The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
+   */
+  int64_t ts;
+  /**
+   * Optionally the operaton of value update
+   */
+  SpecUpdateOP update_op;
+
+  _SpecIntervalUpdateCounter__isset __isset;
+
+  void __set_v(const int64_t val);
+
+  void __set_op(const int64_t val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_update_op(const SpecUpdateOP& val);
+
+  bool operator == (const SpecIntervalUpdateCounter & rhs) const
+  {
+    if (!(v == rhs.v))
+      return false;
+    if (!(op == rhs.op))
+      return false;
+    if (__isset.ts != rhs.__isset.ts)
+      return false;
+    else if (__isset.ts && !(ts == rhs.ts))
+      return false;
+    if (__isset.update_op != rhs.__isset.update_op)
+      return false;
+    else if (__isset.update_op && !(update_op == rhs.update_op))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecIntervalUpdateCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecIntervalUpdateCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecIntervalUpdateCounter &a, SpecIntervalUpdateCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdateCounter& obj);
 
 typedef struct _SpecIntervalUpdateSerial__isset {
   _SpecIntervalUpdateSerial__isset() : ts(false), v(false), v_op(false), encoder(false), update_op(false) {}
@@ -1873,222 +1722,6 @@ class SpecIntervalUpdateSerial : public virtual ::apache::thrift::TBase {
 void swap(SpecIntervalUpdateSerial &a, SpecIntervalUpdateSerial &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecIntervalUpdateSerial& obj);
-
-typedef struct _SpecInterval__isset {
-  _SpecInterval__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false), options(false), updating(false) {}
-  bool range_begin :1;
-  bool range_end :1;
-  bool offset_key :1;
-  bool offset_rev :1;
-  bool key_intervals :1;
-  bool values :1;
-  bool ts_start :1;
-  bool ts_finish :1;
-  bool flags :1;
-  bool options :1;
-  bool updating :1;
-} _SpecInterval__isset;
-
-/**
- * The Cells Interval Specifications with interval-scope Flags
- */
-class SpecInterval : public virtual ::apache::thrift::TBase {
- public:
-
-  SpecInterval(const SpecInterval&);
-  SpecInterval(SpecInterval&&) noexcept;
-  SpecInterval& operator=(const SpecInterval&);
-  SpecInterval& operator=(SpecInterval&&) noexcept;
-  SpecInterval() noexcept
-               : offset_rev(0),
-                 options(static_cast<SpecIntervalOptions::type>(0)) {
-  }
-
-  virtual ~SpecInterval() noexcept;
-  /**
-   * Begin of Ranges evaluation with this Key inclusive
-   */
-  Key range_begin;
-  /**
-   * End of Ranges evaluation with this Key inclusive
-   */
-  Key range_end;
-  /**
-   * Offset Cell Key of a Scan, select cells from this key inclusive
-   */
-  Key offset_key;
-  /**
-   * Offset Cell Timestamp of a Scan, select cells after this timestamp
-   */
-  int64_t offset_rev;
-  /**
-   * The Key Intervals
-   */
-  SpecKeyIntervals key_intervals;
-  /**
-   * The Cell Value Specifications, cell-value match
-   */
-  SpecValues values;
-  /**
-   * The Timestamp Start Spec, the start of cells-interval timestamp match
-   */
-  SpecTimestamp ts_start;
-  /**
-   * The Timestamp Finish Spec, the finish of cells-interval timestamp match
-   */
-  SpecTimestamp ts_finish;
-  /**
-   * The Interval Flags Specification
-   */
-  SpecFlags flags;
-  /**
-   * The Interval Options Specification
-   * 
-   * @see SpecIntervalOptions
-   */
-  SpecIntervalOptions::type options;
-  /**
-   * The Value spec of an Updating Interval
-   */
-  SpecIntervalUpdate updating;
-
-  _SpecInterval__isset __isset;
-
-  void __set_range_begin(const Key& val);
-
-  void __set_range_end(const Key& val);
-
-  void __set_offset_key(const Key& val);
-
-  void __set_offset_rev(const int64_t val);
-
-  void __set_key_intervals(const SpecKeyIntervals& val);
-
-  void __set_values(const SpecValues& val);
-
-  void __set_ts_start(const SpecTimestamp& val);
-
-  void __set_ts_finish(const SpecTimestamp& val);
-
-  void __set_flags(const SpecFlags& val);
-
-  void __set_options(const SpecIntervalOptions::type val);
-
-  void __set_updating(const SpecIntervalUpdate& val);
-
-  bool operator == (const SpecInterval & rhs) const
-  {
-    if (!(range_begin == rhs.range_begin))
-      return false;
-    if (!(range_end == rhs.range_end))
-      return false;
-    if (!(offset_key == rhs.offset_key))
-      return false;
-    if (__isset.offset_rev != rhs.__isset.offset_rev)
-      return false;
-    else if (__isset.offset_rev && !(offset_rev == rhs.offset_rev))
-      return false;
-    if (!(key_intervals == rhs.key_intervals))
-      return false;
-    if (!(values == rhs.values))
-      return false;
-    if (__isset.ts_start != rhs.__isset.ts_start)
-      return false;
-    else if (__isset.ts_start && !(ts_start == rhs.ts_start))
-      return false;
-    if (__isset.ts_finish != rhs.__isset.ts_finish)
-      return false;
-    else if (__isset.ts_finish && !(ts_finish == rhs.ts_finish))
-      return false;
-    if (__isset.flags != rhs.__isset.flags)
-      return false;
-    else if (__isset.flags && !(flags == rhs.flags))
-      return false;
-    if (__isset.options != rhs.__isset.options)
-      return false;
-    else if (__isset.options && !(options == rhs.options))
-      return false;
-    if (__isset.updating != rhs.__isset.updating)
-      return false;
-    else if (__isset.updating && !(updating == rhs.updating))
-      return false;
-    return true;
-  }
-  bool operator != (const SpecInterval &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SpecInterval & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(SpecInterval &a, SpecInterval &b);
-
-std::ostream& operator<<(std::ostream& out, const SpecInterval& obj);
-
-typedef struct _SpecColumn__isset {
-  _SpecColumn__isset() : cid(false), intervals(false) {}
-  bool cid :1;
-  bool intervals :1;
-} _SpecColumn__isset;
-
-/**
- * The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column
- */
-class SpecColumn : public virtual ::apache::thrift::TBase {
- public:
-
-  SpecColumn(const SpecColumn&);
-  SpecColumn(SpecColumn&&) noexcept;
-  SpecColumn& operator=(const SpecColumn&);
-  SpecColumn& operator=(SpecColumn&&) noexcept;
-  SpecColumn() noexcept
-             : cid(0) {
-  }
-
-  virtual ~SpecColumn() noexcept;
-  /**
-   * The Column ID
-   */
-  int64_t cid;
-  /**
-   * The Cells Interval in a list-container
-   */
-  std::vector<SpecInterval>  intervals;
-
-  _SpecColumn__isset __isset;
-
-  void __set_cid(const int64_t val);
-
-  void __set_intervals(const std::vector<SpecInterval> & val);
-
-  bool operator == (const SpecColumn & rhs) const
-  {
-    if (!(cid == rhs.cid))
-      return false;
-    if (!(intervals == rhs.intervals))
-      return false;
-    return true;
-  }
-  bool operator != (const SpecColumn &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SpecColumn & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(SpecColumn &a, SpecColumn &b);
-
-std::ostream& operator<<(std::ostream& out, const SpecColumn& obj);
 
 typedef struct _SpecValueSerial_INT64__isset {
   _SpecValueSerial_INT64__isset() : comp(false), v(false) {}
@@ -2571,6 +2204,132 @@ void swap(SpecValueSerialField &a, SpecValueSerialField &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecValueSerialField& obj);
 
+typedef struct _SpecValuePlain__isset {
+  _SpecValuePlain__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValuePlain__isset;
+
+/**
+ * The Plain Value Specifications, option to use with Extended Logical Comparators
+ */
+class SpecValuePlain : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValuePlain(const SpecValuePlain&);
+  SpecValuePlain(SpecValuePlain&&) noexcept;
+  SpecValuePlain& operator=(const SpecValuePlain&);
+  SpecValuePlain& operator=(SpecValuePlain&&) noexcept;
+  SpecValuePlain() noexcept
+                 : comp(static_cast<Comp::type>(0)),
+                   v() {
+  }
+
+  virtual ~SpecValuePlain() noexcept;
+  /**
+   * Logical comparator to Apply
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  /**
+   * The binary(bytes) to match against the Cell value
+   */
+  std::string v;
+
+  _SpecValuePlain__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const std::string& val);
+
+  bool operator == (const SpecValuePlain & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValuePlain &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValuePlain & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValuePlain &a, SpecValuePlain &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValuePlain& obj);
+
+typedef struct _SpecValueCounter__isset {
+  _SpecValueCounter__isset() : comp(false), v(false) {}
+  bool comp :1;
+  bool v :1;
+} _SpecValueCounter__isset;
+
+/**
+ * The Counter Value Specifications, option to use with Extended Logical Comparators
+ */
+class SpecValueCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecValueCounter(const SpecValueCounter&) noexcept;
+  SpecValueCounter(SpecValueCounter&&) noexcept;
+  SpecValueCounter& operator=(const SpecValueCounter&) noexcept;
+  SpecValueCounter& operator=(SpecValueCounter&&) noexcept;
+  SpecValueCounter() noexcept
+                   : comp(static_cast<Comp::type>(0)),
+                     v(0) {
+  }
+
+  virtual ~SpecValueCounter() noexcept;
+  /**
+   * Logical comparator to Apply
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  /**
+   * The int64 to match against the Cell value
+   */
+  int64_t v;
+
+  _SpecValueCounter__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_v(const int64_t val);
+
+  bool operator == (const SpecValueCounter & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecValueCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecValueCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecValueCounter &a, SpecValueCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecValueCounter& obj);
+
 typedef struct _SpecValueSerial__isset {
   _SpecValueSerial__isset() : comp(false), fields(false) {}
   bool comp :1;
@@ -2633,6 +2392,503 @@ void swap(SpecValueSerial &a, SpecValueSerial &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecValueSerial& obj);
 
+typedef struct _SpecFraction__isset {
+  _SpecFraction__isset() : comp(false), f(false) {}
+  bool comp :1;
+  bool f :1;
+} _SpecFraction__isset;
+
+/**
+ * The Fraction Specifications
+ */
+class SpecFraction : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecFraction(const SpecFraction&);
+  SpecFraction(SpecFraction&&) noexcept;
+  SpecFraction& operator=(const SpecFraction&);
+  SpecFraction& operator=(SpecFraction&&) noexcept;
+  SpecFraction() noexcept
+               : comp(static_cast<Comp::type>(0)),
+                 f() {
+  }
+
+  virtual ~SpecFraction() noexcept;
+  /**
+   * Logical comparator to Apply
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  /**
+   * The binary(bytes) to match against a fraction of a Cell-Key
+   */
+  std::string f;
+
+  _SpecFraction__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_f(const std::string& val);
+
+  bool operator == (const SpecFraction & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(f == rhs.f))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecFraction &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecFraction & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecFraction &a, SpecFraction &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecFraction& obj);
+
+typedef struct _SpecTimestamp__isset {
+  _SpecTimestamp__isset() : comp(false), ts(false) {}
+  bool comp :1;
+  bool ts :1;
+} _SpecTimestamp__isset;
+
+/**
+ * The Timestamp Specifications
+ */
+class SpecTimestamp : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecTimestamp(const SpecTimestamp&) noexcept;
+  SpecTimestamp(SpecTimestamp&&) noexcept;
+  SpecTimestamp& operator=(const SpecTimestamp&) noexcept;
+  SpecTimestamp& operator=(SpecTimestamp&&) noexcept;
+  SpecTimestamp() noexcept
+                : comp(static_cast<Comp::type>(0)),
+                  ts(0) {
+  }
+
+  virtual ~SpecTimestamp() noexcept;
+  /**
+   * Logical comparator to Apply
+   * 
+   * @see Comp
+   */
+  Comp::type comp;
+  /**
+   * The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+   */
+  int64_t ts;
+
+  _SpecTimestamp__isset __isset;
+
+  void __set_comp(const Comp::type val);
+
+  void __set_ts(const int64_t val);
+
+  bool operator == (const SpecTimestamp & rhs) const
+  {
+    if (!(comp == rhs.comp))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecTimestamp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecTimestamp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecTimestamp &a, SpecTimestamp &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecTimestamp& obj);
+
+typedef struct _SpecKeyInterval__isset {
+  _SpecKeyInterval__isset() : start(false), finish(false) {}
+  bool start :1;
+  bool finish :1;
+} _SpecKeyInterval__isset;
+
+/**
+ * The Key Interval Specifications
+ */
+class SpecKeyInterval : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecKeyInterval(const SpecKeyInterval&);
+  SpecKeyInterval(SpecKeyInterval&&) noexcept;
+  SpecKeyInterval& operator=(const SpecKeyInterval&);
+  SpecKeyInterval& operator=(SpecKeyInterval&&) noexcept;
+  SpecKeyInterval() noexcept {
+  }
+
+  virtual ~SpecKeyInterval() noexcept;
+  /**
+   * The Key Start Spec, the start of cells-interval key match
+   */
+  SpecKey start;
+  /**
+   * The Key Finish Spec, the finish of cells-interval key match
+   */
+  SpecKey finish;
+
+  _SpecKeyInterval__isset __isset;
+
+  void __set_start(const SpecKey& val);
+
+  void __set_finish(const SpecKey& val);
+
+  bool operator == (const SpecKeyInterval & rhs) const
+  {
+    if (!(start == rhs.start))
+      return false;
+    if (!(finish == rhs.finish))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecKeyInterval &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecKeyInterval & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecKeyInterval &a, SpecKeyInterval &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecKeyInterval& obj);
+
+typedef struct _SpecIntervalPlain__isset {
+  _SpecIntervalPlain__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false), options(false), updating(false) {}
+  bool range_begin :1;
+  bool range_end :1;
+  bool offset_key :1;
+  bool offset_rev :1;
+  bool key_intervals :1;
+  bool values :1;
+  bool ts_start :1;
+  bool ts_finish :1;
+  bool flags :1;
+  bool options :1;
+  bool updating :1;
+} _SpecIntervalPlain__isset;
+
+/**
+ * The Cells Interval Plain type Specifications with interval-scope Flags
+ */
+class SpecIntervalPlain : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecIntervalPlain(const SpecIntervalPlain&);
+  SpecIntervalPlain(SpecIntervalPlain&&) noexcept;
+  SpecIntervalPlain& operator=(const SpecIntervalPlain&);
+  SpecIntervalPlain& operator=(SpecIntervalPlain&&) noexcept;
+  SpecIntervalPlain() noexcept
+                    : offset_rev(0),
+                      options(static_cast<SpecIntervalOptions::type>(0)) {
+  }
+
+  virtual ~SpecIntervalPlain() noexcept;
+  /**
+   * Begin of Ranges evaluation with this Key inclusive
+   */
+  Key range_begin;
+  /**
+   * End of Ranges evaluation with this Key inclusive
+   */
+  Key range_end;
+  /**
+   * Offset Cell Key of a Scan, select cells from this key inclusive
+   */
+  Key offset_key;
+  /**
+   * Offset Cell Timestamp of a Scan, select cells after this timestamp
+   */
+  int64_t offset_rev;
+  /**
+   * The Key Intervals
+   */
+  SpecKeyIntervals key_intervals;
+  /**
+   * The Cell Value Specifications, cell-value match for plain type
+   */
+  SpecValuesPlain values;
+  /**
+   * The Timestamp Start Spec, the start of cells-interval timestamp match
+   */
+  SpecTimestamp ts_start;
+  /**
+   * The Timestamp Finish Spec, the finish of cells-interval timestamp match
+   */
+  SpecTimestamp ts_finish;
+  /**
+   * The Interval Flags Specification
+   */
+  SpecFlags flags;
+  /**
+   * The Interval Options Specification
+   * 
+   * @see SpecIntervalOptions
+   */
+  SpecIntervalOptions::type options;
+  /**
+   * The Value spec of an Updating Interval
+   */
+  SpecIntervalUpdatePlain updating;
+
+  _SpecIntervalPlain__isset __isset;
+
+  void __set_range_begin(const Key& val);
+
+  void __set_range_end(const Key& val);
+
+  void __set_offset_key(const Key& val);
+
+  void __set_offset_rev(const int64_t val);
+
+  void __set_key_intervals(const SpecKeyIntervals& val);
+
+  void __set_values(const SpecValuesPlain& val);
+
+  void __set_ts_start(const SpecTimestamp& val);
+
+  void __set_ts_finish(const SpecTimestamp& val);
+
+  void __set_flags(const SpecFlags& val);
+
+  void __set_options(const SpecIntervalOptions::type val);
+
+  void __set_updating(const SpecIntervalUpdatePlain& val);
+
+  bool operator == (const SpecIntervalPlain & rhs) const
+  {
+    if (!(range_begin == rhs.range_begin))
+      return false;
+    if (!(range_end == rhs.range_end))
+      return false;
+    if (!(offset_key == rhs.offset_key))
+      return false;
+    if (__isset.offset_rev != rhs.__isset.offset_rev)
+      return false;
+    else if (__isset.offset_rev && !(offset_rev == rhs.offset_rev))
+      return false;
+    if (!(key_intervals == rhs.key_intervals))
+      return false;
+    if (!(values == rhs.values))
+      return false;
+    if (__isset.ts_start != rhs.__isset.ts_start)
+      return false;
+    else if (__isset.ts_start && !(ts_start == rhs.ts_start))
+      return false;
+    if (__isset.ts_finish != rhs.__isset.ts_finish)
+      return false;
+    else if (__isset.ts_finish && !(ts_finish == rhs.ts_finish))
+      return false;
+    if (__isset.flags != rhs.__isset.flags)
+      return false;
+    else if (__isset.flags && !(flags == rhs.flags))
+      return false;
+    if (__isset.options != rhs.__isset.options)
+      return false;
+    else if (__isset.options && !(options == rhs.options))
+      return false;
+    if (__isset.updating != rhs.__isset.updating)
+      return false;
+    else if (__isset.updating && !(updating == rhs.updating))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecIntervalPlain &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecIntervalPlain & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecIntervalPlain &a, SpecIntervalPlain &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalPlain& obj);
+
+typedef struct _SpecIntervalCounter__isset {
+  _SpecIntervalCounter__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false), options(false), updating(false) {}
+  bool range_begin :1;
+  bool range_end :1;
+  bool offset_key :1;
+  bool offset_rev :1;
+  bool key_intervals :1;
+  bool values :1;
+  bool ts_start :1;
+  bool ts_finish :1;
+  bool flags :1;
+  bool options :1;
+  bool updating :1;
+} _SpecIntervalCounter__isset;
+
+/**
+ * The Cells Interval Counter type Specifications with interval-scope Flags
+ */
+class SpecIntervalCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecIntervalCounter(const SpecIntervalCounter&);
+  SpecIntervalCounter(SpecIntervalCounter&&) noexcept;
+  SpecIntervalCounter& operator=(const SpecIntervalCounter&);
+  SpecIntervalCounter& operator=(SpecIntervalCounter&&) noexcept;
+  SpecIntervalCounter() noexcept
+                      : offset_rev(0),
+                        options(static_cast<SpecIntervalOptions::type>(0)) {
+  }
+
+  virtual ~SpecIntervalCounter() noexcept;
+  /**
+   * Begin of Ranges evaluation with this Key inclusive
+   */
+  Key range_begin;
+  /**
+   * End of Ranges evaluation with this Key inclusive
+   */
+  Key range_end;
+  /**
+   * Offset Cell Key of a Scan, select cells from this key inclusive
+   */
+  Key offset_key;
+  /**
+   * Offset Cell Timestamp of a Scan, select cells after this timestamp
+   */
+  int64_t offset_rev;
+  /**
+   * The Key Intervals
+   */
+  SpecKeyIntervals key_intervals;
+  /**
+   * The Cell Value Specifications, cell-value match for counter type
+   */
+  SpecValuesCounter values;
+  /**
+   * The Timestamp Start Spec, the start of cells-interval timestamp match
+   */
+  SpecTimestamp ts_start;
+  /**
+   * The Timestamp Finish Spec, the finish of cells-interval timestamp match
+   */
+  SpecTimestamp ts_finish;
+  /**
+   * The Interval Flags Specification
+   */
+  SpecFlags flags;
+  /**
+   * The Interval Options Specification
+   * 
+   * @see SpecIntervalOptions
+   */
+  SpecIntervalOptions::type options;
+  /**
+   * The Value spec of an Updating Interval
+   */
+  SpecIntervalUpdateCounter updating;
+
+  _SpecIntervalCounter__isset __isset;
+
+  void __set_range_begin(const Key& val);
+
+  void __set_range_end(const Key& val);
+
+  void __set_offset_key(const Key& val);
+
+  void __set_offset_rev(const int64_t val);
+
+  void __set_key_intervals(const SpecKeyIntervals& val);
+
+  void __set_values(const SpecValuesCounter& val);
+
+  void __set_ts_start(const SpecTimestamp& val);
+
+  void __set_ts_finish(const SpecTimestamp& val);
+
+  void __set_flags(const SpecFlags& val);
+
+  void __set_options(const SpecIntervalOptions::type val);
+
+  void __set_updating(const SpecIntervalUpdateCounter& val);
+
+  bool operator == (const SpecIntervalCounter & rhs) const
+  {
+    if (!(range_begin == rhs.range_begin))
+      return false;
+    if (!(range_end == rhs.range_end))
+      return false;
+    if (!(offset_key == rhs.offset_key))
+      return false;
+    if (__isset.offset_rev != rhs.__isset.offset_rev)
+      return false;
+    else if (__isset.offset_rev && !(offset_rev == rhs.offset_rev))
+      return false;
+    if (!(key_intervals == rhs.key_intervals))
+      return false;
+    if (!(values == rhs.values))
+      return false;
+    if (__isset.ts_start != rhs.__isset.ts_start)
+      return false;
+    else if (__isset.ts_start && !(ts_start == rhs.ts_start))
+      return false;
+    if (__isset.ts_finish != rhs.__isset.ts_finish)
+      return false;
+    else if (__isset.ts_finish && !(ts_finish == rhs.ts_finish))
+      return false;
+    if (__isset.flags != rhs.__isset.flags)
+      return false;
+    else if (__isset.flags && !(flags == rhs.flags))
+      return false;
+    if (__isset.options != rhs.__isset.options)
+      return false;
+    else if (__isset.options && !(options == rhs.options))
+      return false;
+    if (__isset.updating != rhs.__isset.updating)
+      return false;
+    else if (__isset.updating && !(updating == rhs.updating))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecIntervalCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecIntervalCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecIntervalCounter &a, SpecIntervalCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecIntervalCounter& obj);
+
 typedef struct _SpecIntervalSerial__isset {
   _SpecIntervalSerial__isset() : range_begin(false), range_end(false), offset_key(false), offset_rev(false), key_intervals(false), values(false), ts_start(false), ts_finish(false), flags(false), options(false), updating(false) {}
   bool range_begin :1;
@@ -2649,7 +2905,7 @@ typedef struct _SpecIntervalSerial__isset {
 } _SpecIntervalSerial__isset;
 
 /**
- * The Serial Value Cells Interval Specifications with interval-scope Flags
+ * The Cells Interval Serial type Specifications with interval-scope Flags
  */
 class SpecIntervalSerial : public virtual ::apache::thrift::TBase {
  public:
@@ -2789,6 +3045,126 @@ void swap(SpecIntervalSerial &a, SpecIntervalSerial &b);
 
 std::ostream& operator<<(std::ostream& out, const SpecIntervalSerial& obj);
 
+typedef struct _SpecColumnPlain__isset {
+  _SpecColumnPlain__isset() : cid(false), intervals(false) {}
+  bool cid :1;
+  bool intervals :1;
+} _SpecColumnPlain__isset;
+
+/**
+ * The Column Specifications, the Cells-Intervals(SpecIntervalPlain/s) specification for a PLAIN Type column
+ */
+class SpecColumnPlain : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecColumnPlain(const SpecColumnPlain&);
+  SpecColumnPlain(SpecColumnPlain&&) noexcept;
+  SpecColumnPlain& operator=(const SpecColumnPlain&);
+  SpecColumnPlain& operator=(SpecColumnPlain&&) noexcept;
+  SpecColumnPlain() noexcept
+                  : cid(0) {
+  }
+
+  virtual ~SpecColumnPlain() noexcept;
+  /**
+   * The Column ID
+   */
+  int64_t cid;
+  /**
+   * The Cells Interval in a list-container
+   */
+  std::vector<SpecIntervalPlain>  intervals;
+
+  _SpecColumnPlain__isset __isset;
+
+  void __set_cid(const int64_t val);
+
+  void __set_intervals(const std::vector<SpecIntervalPlain> & val);
+
+  bool operator == (const SpecColumnPlain & rhs) const
+  {
+    if (!(cid == rhs.cid))
+      return false;
+    if (!(intervals == rhs.intervals))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecColumnPlain &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecColumnPlain & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecColumnPlain &a, SpecColumnPlain &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecColumnPlain& obj);
+
+typedef struct _SpecColumnCounter__isset {
+  _SpecColumnCounter__isset() : cid(false), intervals(false) {}
+  bool cid :1;
+  bool intervals :1;
+} _SpecColumnCounter__isset;
+
+/**
+ * The Column Specifications, the Cells-Intervals(SpecIntervalCounter/s) specification for a COUNTER Type column
+ */
+class SpecColumnCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  SpecColumnCounter(const SpecColumnCounter&);
+  SpecColumnCounter(SpecColumnCounter&&) noexcept;
+  SpecColumnCounter& operator=(const SpecColumnCounter&);
+  SpecColumnCounter& operator=(SpecColumnCounter&&) noexcept;
+  SpecColumnCounter() noexcept
+                    : cid(0) {
+  }
+
+  virtual ~SpecColumnCounter() noexcept;
+  /**
+   * The Column ID
+   */
+  int64_t cid;
+  /**
+   * The Cells Interval in a list-container
+   */
+  std::vector<SpecIntervalCounter>  intervals;
+
+  _SpecColumnCounter__isset __isset;
+
+  void __set_cid(const int64_t val);
+
+  void __set_intervals(const std::vector<SpecIntervalCounter> & val);
+
+  bool operator == (const SpecColumnCounter & rhs) const
+  {
+    if (!(cid == rhs.cid))
+      return false;
+    if (!(intervals == rhs.intervals))
+      return false;
+    return true;
+  }
+  bool operator != (const SpecColumnCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SpecColumnCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SpecColumnCounter &a, SpecColumnCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const SpecColumnCounter& obj);
+
 typedef struct _SpecColumnSerial__isset {
   _SpecColumnSerial__isset() : cid(false), intervals(false) {}
   bool cid :1;
@@ -2796,7 +3172,7 @@ typedef struct _SpecColumnSerial__isset {
 } _SpecColumnSerial__isset;
 
 /**
- * The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column
+ * The Column Specifications, the Cells-Intervals(SpecIntervalSerial/s) specification for a SERIAL Type Column
  */
 class SpecColumnSerial : public virtual ::apache::thrift::TBase {
  public:
@@ -2850,8 +3226,9 @@ void swap(SpecColumnSerial &a, SpecColumnSerial &b);
 std::ostream& operator<<(std::ostream& out, const SpecColumnSerial& obj);
 
 typedef struct _SpecScan__isset {
-  _SpecScan__isset() : columns(false), columns_serial(false), flags(false) {}
-  bool columns :1;
+  _SpecScan__isset() : columns_plain(false), columns_counter(false), columns_serial(false), flags(false) {}
+  bool columns_plain :1;
+  bool columns_counter :1;
   bool columns_serial :1;
   bool flags :1;
 } _SpecScan__isset;
@@ -2871,9 +3248,13 @@ class SpecScan : public virtual ::apache::thrift::TBase {
 
   virtual ~SpecScan() noexcept;
   /**
-   * The Column Intervals(SpecColumn) in a list-container
+   * The Plain Column Intervals(SpecColumnPlain) in a list-container
    */
-  std::vector<SpecColumn>  columns;
+  std::vector<SpecColumnPlain>  columns_plain;
+  /**
+   * The Counter Column Intervals(SpecColumnCounter) in a list-container
+   */
+  std::vector<SpecColumnCounter>  columns_counter;
   /**
    * The Serial Column Intervals(SpecColumnSerial) in a list-container
    */
@@ -2885,7 +3266,9 @@ class SpecScan : public virtual ::apache::thrift::TBase {
 
   _SpecScan__isset __isset;
 
-  void __set_columns(const std::vector<SpecColumn> & val);
+  void __set_columns_plain(const std::vector<SpecColumnPlain> & val);
+
+  void __set_columns_counter(const std::vector<SpecColumnCounter> & val);
 
   void __set_columns_serial(const std::vector<SpecColumnSerial> & val);
 
@@ -2893,7 +3276,9 @@ class SpecScan : public virtual ::apache::thrift::TBase {
 
   bool operator == (const SpecScan & rhs) const
   {
-    if (!(columns == rhs.columns))
+    if (!(columns_plain == rhs.columns_plain))
+      return false;
+    if (!(columns_counter == rhs.columns_counter))
       return false;
     if (!(columns_serial == rhs.columns_serial))
       return false;

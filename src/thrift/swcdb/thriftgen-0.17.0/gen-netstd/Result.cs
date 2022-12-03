@@ -104,23 +104,23 @@ public partial class Result : TBase
 
   public Result DeepCopy()
   {
-    var tmp498 = new Result();
+    var tmp546 = new Result();
     if((Schemas != null) && __isset.schemas)
     {
-      tmp498.Schemas = this.Schemas.DeepCopy();
+      tmp546.Schemas = this.Schemas.DeepCopy();
     }
-    tmp498.__isset.schemas = this.__isset.schemas;
+    tmp546.__isset.schemas = this.__isset.schemas;
     if((Cells != null) && __isset.cells)
     {
-      tmp498.Cells = (Cells)this.Cells.DeepCopy();
+      tmp546.Cells = (Cells)this.Cells.DeepCopy();
     }
-    tmp498.__isset.cells = this.__isset.cells;
+    tmp546.__isset.cells = this.__isset.cells;
     if((Compact != null) && __isset.compact)
     {
-      tmp498.Compact = this.Compact.DeepCopy();
+      tmp546.Compact = this.Compact.DeepCopy();
     }
-    tmp498.__isset.compact = this.__isset.compact;
-    return tmp498;
+    tmp546.__isset.compact = this.__isset.compact;
+    return tmp546;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -144,14 +144,14 @@ public partial class Result : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list499 = await iprot.ReadListBeginAsync(cancellationToken);
-                Schemas = new List<Schema>(_list499.Count);
-                for(int _i500 = 0; _i500 < _list499.Count; ++_i500)
+                var _list547 = await iprot.ReadListBeginAsync(cancellationToken);
+                Schemas = new List<Schema>(_list547.Count);
+                for(int _i548 = 0; _i548 < _list547.Count; ++_i548)
                 {
-                  Schema _elem501;
-                  _elem501 = new Schema();
-                  await _elem501.ReadAsync(iprot, cancellationToken);
-                  Schemas.Add(_elem501);
+                  Schema _elem549;
+                  _elem549 = new Schema();
+                  await _elem549.ReadAsync(iprot, cancellationToken);
+                  Schemas.Add(_elem549);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -176,14 +176,14 @@ public partial class Result : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list502 = await iprot.ReadListBeginAsync(cancellationToken);
-                Compact = new List<CompactResult>(_list502.Count);
-                for(int _i503 = 0; _i503 < _list502.Count; ++_i503)
+                var _list550 = await iprot.ReadListBeginAsync(cancellationToken);
+                Compact = new List<CompactResult>(_list550.Count);
+                for(int _i551 = 0; _i551 < _list550.Count; ++_i551)
                 {
-                  CompactResult _elem504;
-                  _elem504 = new CompactResult();
-                  await _elem504.ReadAsync(iprot, cancellationToken);
-                  Compact.Add(_elem504);
+                  CompactResult _elem552;
+                  _elem552 = new CompactResult();
+                  await _elem552.ReadAsync(iprot, cancellationToken);
+                  Compact.Add(_elem552);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -214,42 +214,42 @@ public partial class Result : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp505 = new TStruct("Result");
-      await oprot.WriteStructBeginAsync(tmp505, cancellationToken);
-      var tmp506 = new TField();
+      var tmp553 = new TStruct("Result");
+      await oprot.WriteStructBeginAsync(tmp553, cancellationToken);
+      var tmp554 = new TField();
       if((Schemas != null) && __isset.schemas)
       {
-        tmp506.Name = "schemas";
-        tmp506.Type = TType.List;
-        tmp506.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp506, cancellationToken);
+        tmp554.Name = "schemas";
+        tmp554.Type = TType.List;
+        tmp554.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp554, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, Schemas.Count), cancellationToken);
-        foreach (Schema _iter507 in Schemas)
+        foreach (Schema _iter555 in Schemas)
         {
-          await _iter507.WriteAsync(oprot, cancellationToken);
+          await _iter555.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Cells != null) && __isset.cells)
       {
-        tmp506.Name = "cells";
-        tmp506.Type = TType.Struct;
-        tmp506.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp506, cancellationToken);
+        tmp554.Name = "cells";
+        tmp554.Type = TType.Struct;
+        tmp554.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp554, cancellationToken);
         await Cells.WriteAsync(oprot, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Compact != null) && __isset.compact)
       {
-        tmp506.Name = "compact";
-        tmp506.Type = TType.List;
-        tmp506.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp506, cancellationToken);
+        tmp554.Name = "compact";
+        tmp554.Type = TType.List;
+        tmp554.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp554, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, Compact.Count), cancellationToken);
-        foreach (CompactResult _iter508 in Compact)
+        foreach (CompactResult _iter556 in Compact)
         {
-          await _iter508.WriteAsync(oprot, cancellationToken);
+          await _iter556.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -293,28 +293,28 @@ public partial class Result : TBase
 
   public override string ToString()
   {
-    var tmp509 = new StringBuilder("Result(");
-    int tmp510 = 0;
+    var tmp557 = new StringBuilder("Result(");
+    int tmp558 = 0;
     if((Schemas != null) && __isset.schemas)
     {
-      if(0 < tmp510++) { tmp509.Append(", "); }
-      tmp509.Append("Schemas: ");
-      Schemas.ToString(tmp509);
+      if(0 < tmp558++) { tmp557.Append(", "); }
+      tmp557.Append("Schemas: ");
+      Schemas.ToString(tmp557);
     }
     if((Cells != null) && __isset.cells)
     {
-      if(0 < tmp510++) { tmp509.Append(", "); }
-      tmp509.Append("Cells: ");
-      Cells.ToString(tmp509);
+      if(0 < tmp558++) { tmp557.Append(", "); }
+      tmp557.Append("Cells: ");
+      Cells.ToString(tmp557);
     }
     if((Compact != null) && __isset.compact)
     {
-      if(0 < tmp510++) { tmp509.Append(", "); }
-      tmp509.Append("Compact: ");
-      Compact.ToString(tmp509);
+      if(0 < tmp558++) { tmp557.Append(", "); }
+      tmp557.Append("Compact: ");
+      Compact.ToString(tmp557);
     }
-    tmp509.Append(')');
-    return tmp509.ToString();
+    tmp557.Append(')');
+    return tmp557.ToString();
   }
 }
 

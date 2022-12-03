@@ -135,15 +135,6 @@ module Swcdb
         VALID_VALUES = Set.new([NONE, LIMIT_BY_KEYS, OFFSET_BY_KEYS, ONLY_KEYS, ONLY_DELETES]).freeze
       end
 
-      module SpecIntervalOptions
-        # Update Bit Option
-        UPDATING = 4
-        # Delete Bit Option
-        DELETING = 8
-        VALUE_MAP = {4 => "UPDATING", 8 => "DELETING"}
-        VALID_VALUES = Set.new([UPDATING, DELETING]).freeze
-      end
-
       module UpdateOP
         # The OP supported by column-types: PLAIN, SERIAL, COUNTER. Replaces with the update value (_default as well if other OP not supported by the col-type_)
         REPLACE = 0
@@ -159,6 +150,15 @@ module Swcdb
         SERIAL = 5
         VALUE_MAP = {0 => "REPLACE", 1 => "APPEND", 2 => "PREPEND", 3 => "INSERT", 4 => "OVERWRITE", 5 => "SERIAL"}
         VALID_VALUES = Set.new([REPLACE, APPEND, PREPEND, INSERT, OVERWRITE, SERIAL]).freeze
+      end
+
+      module SpecIntervalOptions
+        # Update Bit Option
+        UPDATING = 4
+        # Delete Bit Option
+        DELETING = 8
+        VALUE_MAP = {4 => "UPDATING", 8 => "DELETING"}
+        VALID_VALUES = Set.new([UPDATING, DELETING]).freeze
       end
 
       module Flag
@@ -237,23 +237,13 @@ module Swcdb
 
       class SpecFlags; end
 
-      class SpecFraction; end
-
-      class SpecTimestamp; end
-
-      class SpecKeyInterval; end
-
-      class SpecValue; end
-
       class SpecUpdateOP; end
 
-      class SpecIntervalUpdate; end
+      class SpecIntervalUpdatePlain; end
+
+      class SpecIntervalUpdateCounter; end
 
       class SpecIntervalUpdateSerial; end
-
-      class SpecInterval; end
-
-      class SpecColumn; end
 
       class SpecValueSerial_INT64; end
 
@@ -269,9 +259,27 @@ module Swcdb
 
       class SpecValueSerialField; end
 
+      class SpecValuePlain; end
+
+      class SpecValueCounter; end
+
       class SpecValueSerial; end
 
+      class SpecFraction; end
+
+      class SpecTimestamp; end
+
+      class SpecKeyInterval; end
+
+      class SpecIntervalPlain; end
+
+      class SpecIntervalCounter; end
+
       class SpecIntervalSerial; end
+
+      class SpecColumnPlain; end
+
+      class SpecColumnCounter; end
 
       class SpecColumnSerial; end
 
@@ -552,99 +560,6 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Fraction Specifications
-      class SpecFraction
-        include ::Thrift::Struct, ::Thrift::Struct_Union
-        COMP = 1
-        F = 2
-
-        FIELDS = {
-          # Logical comparator to Apply
-          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :enum_class => ::Swcdb::Thrift::Gen::Comp},
-          # The binary(bytes) to match against a fraction of a Cell-Key
-          F => {:type => ::Thrift::Types::STRING, :name => 'f', :binary => true}
-        }
-
-        def struct_fields; FIELDS; end
-
-        def validate
-          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
-            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
-          end
-        end
-
-        ::Thrift::Struct.generate_accessors self
-      end
-
-      # The Timestamp Specifications
-      class SpecTimestamp
-        include ::Thrift::Struct, ::Thrift::Struct_Union
-        COMP = 1
-        TS = 2
-
-        FIELDS = {
-          # Logical comparator to Apply
-          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :enum_class => ::Swcdb::Thrift::Gen::Comp},
-          # The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
-          TS => {:type => ::Thrift::Types::I64, :name => 'ts'}
-        }
-
-        def struct_fields; FIELDS; end
-
-        def validate
-          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
-            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
-          end
-        end
-
-        ::Thrift::Struct.generate_accessors self
-      end
-
-      # The Key Interval Specifications
-      class SpecKeyInterval
-        include ::Thrift::Struct, ::Thrift::Struct_Union
-        START = 1
-        FINISH = 2
-
-        FIELDS = {
-          # The Key Start Spec, the start of cells-interval key match
-          START => {:type => ::Thrift::Types::LIST, :name => 'start', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecFraction}},
-          # The Key Finish Spec, the finish of cells-interval key match
-          FINISH => {:type => ::Thrift::Types::LIST, :name => 'finish', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecFraction}}
-        }
-
-        def struct_fields; FIELDS; end
-
-        def validate
-        end
-
-        ::Thrift::Struct.generate_accessors self
-      end
-
-      # The Value Specifications, option to use with Extended Logical Comparators
-      class SpecValue
-        include ::Thrift::Struct, ::Thrift::Struct_Union
-        COMP = 1
-        V = 2
-
-        FIELDS = {
-          # Logical comparator to Apply
-          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :enum_class => ::Swcdb::Thrift::Gen::Comp},
-          # The binary(bytes) to match against the Cell value
-          V => {:type => ::Thrift::Types::STRING, :name => 'v', :binary => true}
-        }
-
-        def struct_fields; FIELDS; end
-
-        def validate
-          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
-            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
-          end
-        end
-
-        ::Thrift::Struct.generate_accessors self
-      end
-
       class SpecUpdateOP
         include ::Thrift::Struct, ::Thrift::Struct_Union
         OP = 1
@@ -668,8 +583,8 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Value specs for an Updating Interval of 'updating' in SpecInterval
-      class SpecIntervalUpdate
+      # The Value specs for an Updating Interval of 'updating' in SpecIntervalPlain
+      class SpecIntervalUpdatePlain
         include ::Thrift::Struct, ::Thrift::Struct_Union
         V = 1
         TS = 2
@@ -677,7 +592,7 @@ module Swcdb
         UPDATE_OP = 4
 
         FIELDS = {
-          # The value for the updated cell
+          # The bytes value for the updated cell
           V => {:type => ::Thrift::Types::STRING, :name => 'v', :binary => true},
           # The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
           TS => {:type => ::Thrift::Types::I64, :name => 'ts', :optional => true},
@@ -693,6 +608,33 @@ module Swcdb
           unless @encoder.nil? || ::Swcdb::Thrift::Gen::EncodingType::VALID_VALUES.include?(@encoder)
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field encoder!')
           end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Value specs for an Updating Interval of 'updating' in SpecIntervalCounter
+      class SpecIntervalUpdateCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        V = 1
+        OP = 2
+        TS = 3
+        UPDATE_OP = 4
+
+        FIELDS = {
+          # The int64 value for the updated cell
+          V => {:type => ::Thrift::Types::I64, :name => 'v'},
+          # The Opration pf Counter, available: COUNTER_OP_EQUAL
+          OP => {:type => ::Thrift::Types::I64, :name => 'op', :default => 0},
+          # The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set)
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts', :optional => true},
+          # Optionally the operaton of value update
+          UPDATE_OP => {:type => ::Thrift::Types::STRUCT, :name => 'update_op', :class => ::Swcdb::Thrift::Gen::SpecUpdateOP, :optional => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
         end
 
         ::Thrift::Struct.generate_accessors self
@@ -726,78 +668,6 @@ module Swcdb
           unless @encoder.nil? || ::Swcdb::Thrift::Gen::EncodingType::VALID_VALUES.include?(@encoder)
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field encoder!')
           end
-        end
-
-        ::Thrift::Struct.generate_accessors self
-      end
-
-      # The Cells Interval Specifications with interval-scope Flags
-      class SpecInterval
-        include ::Thrift::Struct, ::Thrift::Struct_Union
-        RANGE_BEGIN = 1
-        RANGE_END = 2
-        OFFSET_KEY = 3
-        OFFSET_REV = 4
-        KEY_INTERVALS = 5
-        VALUES = 6
-        TS_START = 7
-        TS_FINISH = 8
-        FLAGS = 9
-        OPTIONS = 10
-        UPDATING = 11
-
-        FIELDS = {
-          # Begin of Ranges evaluation with this Key inclusive
-          RANGE_BEGIN => {:type => ::Thrift::Types::LIST, :name => 'range_begin', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
-          # End of Ranges evaluation with this Key inclusive
-          RANGE_END => {:type => ::Thrift::Types::LIST, :name => 'range_end', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
-          # Offset Cell Key of a Scan, select cells from this key inclusive
-          OFFSET_KEY => {:type => ::Thrift::Types::LIST, :name => 'offset_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
-          # Offset Cell Timestamp of a Scan, select cells after this timestamp
-          OFFSET_REV => {:type => ::Thrift::Types::I64, :name => 'offset_rev', :optional => true},
-          # The Key Intervals
-          KEY_INTERVALS => {:type => ::Thrift::Types::LIST, :name => 'key_intervals', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecKeyInterval}},
-          # The Cell Value Specifications, cell-value match
-          VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecValue}},
-          # The Timestamp Start Spec, the start of cells-interval timestamp match
-          TS_START => {:type => ::Thrift::Types::STRUCT, :name => 'ts_start', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
-          # The Timestamp Finish Spec, the finish of cells-interval timestamp match
-          TS_FINISH => {:type => ::Thrift::Types::STRUCT, :name => 'ts_finish', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
-          # The Interval Flags Specification
-          FLAGS => {:type => ::Thrift::Types::STRUCT, :name => 'flags', :class => ::Swcdb::Thrift::Gen::SpecFlags, :optional => true},
-          # The Interval Options Specification
-          OPTIONS => {:type => ::Thrift::Types::I32, :name => 'options', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::SpecIntervalOptions},
-          # The Value spec of an Updating Interval
-          UPDATING => {:type => ::Thrift::Types::STRUCT, :name => 'updating', :class => ::Swcdb::Thrift::Gen::SpecIntervalUpdate, :optional => true}
-        }
-
-        def struct_fields; FIELDS; end
-
-        def validate
-          unless @options.nil? || ::Swcdb::Thrift::Gen::SpecIntervalOptions::VALID_VALUES.include?(@options)
-            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field options!')
-          end
-        end
-
-        ::Thrift::Struct.generate_accessors self
-      end
-
-      # The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column
-      class SpecColumn
-        include ::Thrift::Struct, ::Thrift::Struct_Union
-        CID = 1
-        INTERVALS = 2
-
-        FIELDS = {
-          # The Column ID
-          CID => {:type => ::Thrift::Types::I64, :name => 'cid'},
-          # The Cells Interval in a list-container
-          INTERVALS => {:type => ::Thrift::Types::LIST, :name => 'intervals', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecInterval}}
-        }
-
-        def struct_fields; FIELDS; end
-
-        def validate
         end
 
         ::Thrift::Struct.generate_accessors self
@@ -982,6 +852,54 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
+      # The Plain Value Specifications, option to use with Extended Logical Comparators
+      class SpecValuePlain
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        COMP = 1
+        V = 2
+
+        FIELDS = {
+          # Logical comparator to Apply
+          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :enum_class => ::Swcdb::Thrift::Gen::Comp},
+          # The binary(bytes) to match against the Cell value
+          V => {:type => ::Thrift::Types::STRING, :name => 'v', :binary => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Counter Value Specifications, option to use with Extended Logical Comparators
+      class SpecValueCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        COMP = 1
+        V = 2
+
+        FIELDS = {
+          # Logical comparator to Apply
+          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :enum_class => ::Swcdb::Thrift::Gen::Comp},
+          # The int64 to match against the Cell value
+          V => {:type => ::Thrift::Types::I64, :name => 'v'}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
       # The Serial Value Specifications
       class SpecValueSerial
         include ::Thrift::Struct, ::Thrift::Struct_Union
@@ -1006,7 +924,178 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Serial Value Cells Interval Specifications with interval-scope Flags
+      # The Fraction Specifications
+      class SpecFraction
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        COMP = 1
+        F = 2
+
+        FIELDS = {
+          # Logical comparator to Apply
+          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :enum_class => ::Swcdb::Thrift::Gen::Comp},
+          # The binary(bytes) to match against a fraction of a Cell-Key
+          F => {:type => ::Thrift::Types::STRING, :name => 'f', :binary => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Timestamp Specifications
+      class SpecTimestamp
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        COMP = 1
+        TS = 2
+
+        FIELDS = {
+          # Logical comparator to Apply
+          COMP => {:type => ::Thrift::Types::I32, :name => 'comp', :enum_class => ::Swcdb::Thrift::Gen::Comp},
+          # The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision)
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts'}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @comp.nil? || ::Swcdb::Thrift::Gen::Comp::VALID_VALUES.include?(@comp)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field comp!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Key Interval Specifications
+      class SpecKeyInterval
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        START = 1
+        FINISH = 2
+
+        FIELDS = {
+          # The Key Start Spec, the start of cells-interval key match
+          START => {:type => ::Thrift::Types::LIST, :name => 'start', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecFraction}},
+          # The Key Finish Spec, the finish of cells-interval key match
+          FINISH => {:type => ::Thrift::Types::LIST, :name => 'finish', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecFraction}}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Cells Interval Plain type Specifications with interval-scope Flags
+      class SpecIntervalPlain
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        RANGE_BEGIN = 1
+        RANGE_END = 2
+        OFFSET_KEY = 3
+        OFFSET_REV = 4
+        KEY_INTERVALS = 5
+        VALUES = 6
+        TS_START = 7
+        TS_FINISH = 8
+        FLAGS = 9
+        OPTIONS = 10
+        UPDATING = 11
+
+        FIELDS = {
+          # Begin of Ranges evaluation with this Key inclusive
+          RANGE_BEGIN => {:type => ::Thrift::Types::LIST, :name => 'range_begin', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # End of Ranges evaluation with this Key inclusive
+          RANGE_END => {:type => ::Thrift::Types::LIST, :name => 'range_end', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # Offset Cell Key of a Scan, select cells from this key inclusive
+          OFFSET_KEY => {:type => ::Thrift::Types::LIST, :name => 'offset_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # Offset Cell Timestamp of a Scan, select cells after this timestamp
+          OFFSET_REV => {:type => ::Thrift::Types::I64, :name => 'offset_rev', :optional => true},
+          # The Key Intervals
+          KEY_INTERVALS => {:type => ::Thrift::Types::LIST, :name => 'key_intervals', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecKeyInterval}},
+          # The Cell Value Specifications, cell-value match for plain type
+          VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecValuePlain}},
+          # The Timestamp Start Spec, the start of cells-interval timestamp match
+          TS_START => {:type => ::Thrift::Types::STRUCT, :name => 'ts_start', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
+          # The Timestamp Finish Spec, the finish of cells-interval timestamp match
+          TS_FINISH => {:type => ::Thrift::Types::STRUCT, :name => 'ts_finish', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
+          # The Interval Flags Specification
+          FLAGS => {:type => ::Thrift::Types::STRUCT, :name => 'flags', :class => ::Swcdb::Thrift::Gen::SpecFlags, :optional => true},
+          # The Interval Options Specification
+          OPTIONS => {:type => ::Thrift::Types::I32, :name => 'options', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::SpecIntervalOptions},
+          # The Value spec of an Updating Interval
+          UPDATING => {:type => ::Thrift::Types::STRUCT, :name => 'updating', :class => ::Swcdb::Thrift::Gen::SpecIntervalUpdatePlain, :optional => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @options.nil? || ::Swcdb::Thrift::Gen::SpecIntervalOptions::VALID_VALUES.include?(@options)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field options!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Cells Interval Counter type Specifications with interval-scope Flags
+      class SpecIntervalCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        RANGE_BEGIN = 1
+        RANGE_END = 2
+        OFFSET_KEY = 3
+        OFFSET_REV = 4
+        KEY_INTERVALS = 5
+        VALUES = 6
+        TS_START = 7
+        TS_FINISH = 8
+        FLAGS = 9
+        OPTIONS = 10
+        UPDATING = 11
+
+        FIELDS = {
+          # Begin of Ranges evaluation with this Key inclusive
+          RANGE_BEGIN => {:type => ::Thrift::Types::LIST, :name => 'range_begin', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # End of Ranges evaluation with this Key inclusive
+          RANGE_END => {:type => ::Thrift::Types::LIST, :name => 'range_end', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # Offset Cell Key of a Scan, select cells from this key inclusive
+          OFFSET_KEY => {:type => ::Thrift::Types::LIST, :name => 'offset_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # Offset Cell Timestamp of a Scan, select cells after this timestamp
+          OFFSET_REV => {:type => ::Thrift::Types::I64, :name => 'offset_rev', :optional => true},
+          # The Key Intervals
+          KEY_INTERVALS => {:type => ::Thrift::Types::LIST, :name => 'key_intervals', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecKeyInterval}},
+          # The Cell Value Specifications, cell-value match for counter type
+          VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecValueCounter}},
+          # The Timestamp Start Spec, the start of cells-interval timestamp match
+          TS_START => {:type => ::Thrift::Types::STRUCT, :name => 'ts_start', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
+          # The Timestamp Finish Spec, the finish of cells-interval timestamp match
+          TS_FINISH => {:type => ::Thrift::Types::STRUCT, :name => 'ts_finish', :class => ::Swcdb::Thrift::Gen::SpecTimestamp, :optional => true},
+          # The Interval Flags Specification
+          FLAGS => {:type => ::Thrift::Types::STRUCT, :name => 'flags', :class => ::Swcdb::Thrift::Gen::SpecFlags, :optional => true},
+          # The Interval Options Specification
+          OPTIONS => {:type => ::Thrift::Types::I32, :name => 'options', :optional => true, :enum_class => ::Swcdb::Thrift::Gen::SpecIntervalOptions},
+          # The Value spec of an Updating Interval
+          UPDATING => {:type => ::Thrift::Types::STRUCT, :name => 'updating', :class => ::Swcdb::Thrift::Gen::SpecIntervalUpdateCounter, :optional => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+          unless @options.nil? || ::Swcdb::Thrift::Gen::SpecIntervalOptions::VALID_VALUES.include?(@options)
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field options!')
+          end
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Cells Interval Serial type Specifications with interval-scope Flags
       class SpecIntervalSerial
         include ::Thrift::Struct, ::Thrift::Struct_Union
         RANGE_BEGIN = 1
@@ -1057,7 +1146,49 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column
+      # The Column Specifications, the Cells-Intervals(SpecIntervalPlain/s) specification for a PLAIN Type column
+      class SpecColumnPlain
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        CID = 1
+        INTERVALS = 2
+
+        FIELDS = {
+          # The Column ID
+          CID => {:type => ::Thrift::Types::I64, :name => 'cid'},
+          # The Cells Interval in a list-container
+          INTERVALS => {:type => ::Thrift::Types::LIST, :name => 'intervals', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecIntervalPlain}}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Column Specifications, the Cells-Intervals(SpecIntervalCounter/s) specification for a COUNTER Type column
+      class SpecColumnCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        CID = 1
+        INTERVALS = 2
+
+        FIELDS = {
+          # The Column ID
+          CID => {:type => ::Thrift::Types::I64, :name => 'cid'},
+          # The Cells Interval in a list-container
+          INTERVALS => {:type => ::Thrift::Types::LIST, :name => 'intervals', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecIntervalCounter}}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Column Specifications, the Cells-Intervals(SpecIntervalSerial/s) specification for a SERIAL Type Column
       class SpecColumnSerial
         include ::Thrift::Struct, ::Thrift::Struct_Union
         CID = 1
@@ -1081,13 +1212,16 @@ module Swcdb
       # The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope Flags
       class SpecScan
         include ::Thrift::Struct, ::Thrift::Struct_Union
-        COLUMNS = 1
-        COLUMNS_SERIAL = 2
-        FLAGS = 3
+        COLUMNS_PLAIN = 1
+        COLUMNS_COUNTER = 2
+        COLUMNS_SERIAL = 3
+        FLAGS = 4
 
         FIELDS = {
-          # The Column Intervals(SpecColumn) in a list-container
-          COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecColumn}},
+          # The Plain Column Intervals(SpecColumnPlain) in a list-container
+          COLUMNS_PLAIN => {:type => ::Thrift::Types::LIST, :name => 'columns_plain', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecColumnPlain}},
+          # The Counter Column Intervals(SpecColumnCounter) in a list-container
+          COLUMNS_COUNTER => {:type => ::Thrift::Types::LIST, :name => 'columns_counter', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecColumnCounter}},
           # The Serial Column Intervals(SpecColumnSerial) in a list-container
           COLUMNS_SERIAL => {:type => ::Thrift::Types::LIST, :name => 'columns_serial', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::SpecColumnSerial}},
           # The Global Flags Specification

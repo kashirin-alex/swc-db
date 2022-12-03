@@ -85,18 +85,18 @@ public partial class SpecUpdateOP : TBase
 
   public SpecUpdateOP DeepCopy()
   {
-    var tmp83 = new SpecUpdateOP();
+    var tmp55 = new SpecUpdateOP();
     if(__isset.op)
     {
-      tmp83.Op = this.Op;
+      tmp55.Op = this.Op;
     }
-    tmp83.__isset.op = this.__isset.op;
+    tmp55.__isset.op = this.__isset.op;
     if(__isset.pos)
     {
-      tmp83.Pos = this.Pos;
+      tmp55.Pos = this.Pos;
     }
-    tmp83.__isset.pos = this.__isset.pos;
-    return tmp83;
+    tmp55.__isset.pos = this.__isset.pos;
+    return tmp55;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -157,24 +157,24 @@ public partial class SpecUpdateOP : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp84 = new TStruct("SpecUpdateOP");
-      await oprot.WriteStructBeginAsync(tmp84, cancellationToken);
-      var tmp85 = new TField();
+      var tmp56 = new TStruct("SpecUpdateOP");
+      await oprot.WriteStructBeginAsync(tmp56, cancellationToken);
+      var tmp57 = new TField();
       if(__isset.op)
       {
-        tmp85.Name = "op";
-        tmp85.Type = TType.I32;
-        tmp85.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp85, cancellationToken);
+        tmp57.Name = "op";
+        tmp57.Type = TType.I32;
+        tmp57.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp57, cancellationToken);
         await oprot.WriteI32Async((int)Op, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.pos)
       {
-        tmp85.Name = "pos";
-        tmp85.Type = TType.I32;
-        tmp85.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp85, cancellationToken);
+        tmp57.Name = "pos";
+        tmp57.Type = TType.I32;
+        tmp57.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp57, cancellationToken);
         await oprot.WriteI32Async(Pos, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -212,22 +212,22 @@ public partial class SpecUpdateOP : TBase
 
   public override string ToString()
   {
-    var tmp86 = new StringBuilder("SpecUpdateOP(");
-    int tmp87 = 0;
+    var tmp58 = new StringBuilder("SpecUpdateOP(");
+    int tmp59 = 0;
     if(__isset.op)
     {
-      if(0 < tmp87++) { tmp86.Append(", "); }
-      tmp86.Append("Op: ");
-      Op.ToString(tmp86);
+      if(0 < tmp59++) { tmp58.Append(", "); }
+      tmp58.Append("Op: ");
+      Op.ToString(tmp58);
     }
     if(__isset.pos)
     {
-      if(0 < tmp87++) { tmp86.Append(", "); }
-      tmp86.Append("Pos: ");
-      Pos.ToString(tmp86);
+      if(0 < tmp59++) { tmp58.Append(", "); }
+      tmp58.Append("Pos: ");
+      Pos.ToString(tmp58);
     }
-    tmp86.Append(')');
-    return tmp86.ToString();
+    tmp58.Append(')');
+    return tmp58.ToString();
   }
 }
 

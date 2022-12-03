@@ -33,42 +33,44 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column
+/// The Counter Value Specifications, option to use with Extended Logical Comparators
 /// </summary>
-public partial class SpecColumn : TBase
+public partial class SpecValueCounter : TBase
 {
-  private long _cid;
-  private List<SpecInterval> _intervals;
+  private Comp _comp;
+  private long _v;
 
   /// <summary>
-  /// The Column ID
+  /// Logical comparator to Apply
+  /// 
+  /// <seealso cref="global::.Comp"/>
   /// </summary>
-  public long Cid
+  public Comp Comp
   {
     get
     {
-      return _cid;
+      return _comp;
     }
     set
     {
-      __isset.cid = true;
-      this._cid = value;
+      __isset.comp = true;
+      this._comp = value;
     }
   }
 
   /// <summary>
-  /// The Cells Interval in a list-container
+  /// The int64 to match against the Cell value
   /// </summary>
-  public List<SpecInterval> Intervals
+  public long V
   {
     get
     {
-      return _intervals;
+      return _v;
     }
     set
     {
-      __isset.intervals = true;
-      this._intervals = value;
+      __isset.v = true;
+      this._v = value;
     }
   }
 
@@ -76,28 +78,28 @@ public partial class SpecColumn : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool cid;
-    public bool intervals;
+    public bool comp;
+    public bool v;
   }
 
-  public SpecColumn()
+  public SpecValueCounter()
   {
   }
 
-  public SpecColumn DeepCopy()
+  public SpecValueCounter DeepCopy()
   {
-    var tmp131 = new SpecColumn();
-    if(__isset.cid)
+    var tmp135 = new SpecValueCounter();
+    if(__isset.comp)
     {
-      tmp131.Cid = this.Cid;
+      tmp135.Comp = this.Comp;
     }
-    tmp131.__isset.cid = this.__isset.cid;
-    if((Intervals != null) && __isset.intervals)
+    tmp135.__isset.comp = this.__isset.comp;
+    if(__isset.v)
     {
-      tmp131.Intervals = this.Intervals.DeepCopy();
+      tmp135.V = this.V;
     }
-    tmp131.__isset.intervals = this.__isset.intervals;
-    return tmp131;
+    tmp135.__isset.v = this.__isset.v;
+    return tmp135;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -118,9 +120,9 @@ public partial class SpecColumn : TBase
         switch (field.ID)
         {
           case 1:
-            if (field.Type == TType.I64)
+            if (field.Type == TType.I32)
             {
-              Cid = await iprot.ReadI64Async(cancellationToken);
+              Comp = (Comp)await iprot.ReadI32Async(cancellationToken);
             }
             else
             {
@@ -128,20 +130,9 @@ public partial class SpecColumn : TBase
             }
             break;
           case 2:
-            if (field.Type == TType.List)
+            if (field.Type == TType.I64)
             {
-              {
-                var _list132 = await iprot.ReadListBeginAsync(cancellationToken);
-                Intervals = new List<SpecInterval>(_list132.Count);
-                for(int _i133 = 0; _i133 < _list132.Count; ++_i133)
-                {
-                  SpecInterval _elem134;
-                  _elem134 = new SpecInterval();
-                  await _elem134.ReadAsync(iprot, cancellationToken);
-                  Intervals.Add(_elem134);
-                }
-                await iprot.ReadListEndAsync(cancellationToken);
-              }
+              V = await iprot.ReadI64Async(cancellationToken);
             }
             else
             {
@@ -169,30 +160,25 @@ public partial class SpecColumn : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp135 = new TStruct("SpecColumn");
-      await oprot.WriteStructBeginAsync(tmp135, cancellationToken);
-      var tmp136 = new TField();
-      if(__isset.cid)
+      var tmp136 = new TStruct("SpecValueCounter");
+      await oprot.WriteStructBeginAsync(tmp136, cancellationToken);
+      var tmp137 = new TField();
+      if(__isset.comp)
       {
-        tmp136.Name = "cid";
-        tmp136.Type = TType.I64;
-        tmp136.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp136, cancellationToken);
-        await oprot.WriteI64Async(Cid, cancellationToken);
+        tmp137.Name = "comp";
+        tmp137.Type = TType.I32;
+        tmp137.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp137, cancellationToken);
+        await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if((Intervals != null) && __isset.intervals)
+      if(__isset.v)
       {
-        tmp136.Name = "intervals";
-        tmp136.Type = TType.List;
-        tmp136.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp136, cancellationToken);
-        await oprot.WriteListBeginAsync(new TList(TType.Struct, Intervals.Count), cancellationToken);
-        foreach (SpecInterval _iter137 in Intervals)
-        {
-          await _iter137.WriteAsync(oprot, cancellationToken);
-        }
-        await oprot.WriteListEndAsync(cancellationToken);
+        tmp137.Name = "v";
+        tmp137.Type = TType.I64;
+        tmp137.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp137, cancellationToken);
+        await oprot.WriteI64Async(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       await oprot.WriteFieldStopAsync(cancellationToken);
@@ -206,22 +192,22 @@ public partial class SpecColumn : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is SpecColumn other)) return false;
+    if (!(that is SpecValueCounter other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.cid == other.__isset.cid) && ((!__isset.cid) || (global::System.Object.Equals(Cid, other.Cid))))
-      && ((__isset.intervals == other.__isset.intervals) && ((!__isset.intervals) || (TCollections.Equals(Intervals, other.Intervals))));
+    return ((__isset.comp == other.__isset.comp) && ((!__isset.comp) || (global::System.Object.Equals(Comp, other.Comp))))
+      && ((__isset.v == other.__isset.v) && ((!__isset.v) || (global::System.Object.Equals(V, other.V))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if(__isset.cid)
+      if(__isset.comp)
       {
-        hashcode = (hashcode * 397) + Cid.GetHashCode();
+        hashcode = (hashcode * 397) + Comp.GetHashCode();
       }
-      if((Intervals != null) && __isset.intervals)
+      if(__isset.v)
       {
-        hashcode = (hashcode * 397) + TCollections.GetHashCode(Intervals);
+        hashcode = (hashcode * 397) + V.GetHashCode();
       }
     }
     return hashcode;
@@ -229,19 +215,19 @@ public partial class SpecColumn : TBase
 
   public override string ToString()
   {
-    var tmp138 = new StringBuilder("SpecColumn(");
+    var tmp138 = new StringBuilder("SpecValueCounter(");
     int tmp139 = 0;
-    if(__isset.cid)
+    if(__isset.comp)
     {
       if(0 < tmp139++) { tmp138.Append(", "); }
-      tmp138.Append("Cid: ");
-      Cid.ToString(tmp138);
+      tmp138.Append("Comp: ");
+      Comp.ToString(tmp138);
     }
-    if((Intervals != null) && __isset.intervals)
+    if(__isset.v)
     {
       if(0 < tmp139++) { tmp138.Append(", "); }
-      tmp138.Append("Intervals: ");
-      Intervals.ToString(tmp138);
+      tmp138.Append("V: ");
+      V.ToString(tmp138);
     }
     tmp138.Append(')');
     return tmp138.ToString();

@@ -88,18 +88,18 @@ public partial class SpecTimestamp : TBase
 
   public SpecTimestamp DeepCopy()
   {
-    var tmp60 = new SpecTimestamp();
+    var tmp154 = new SpecTimestamp();
     if(__isset.comp)
     {
-      tmp60.Comp = this.Comp;
+      tmp154.Comp = this.Comp;
     }
-    tmp60.__isset.comp = this.__isset.comp;
+    tmp154.__isset.comp = this.__isset.comp;
     if(__isset.ts)
     {
-      tmp60.Ts = this.Ts;
+      tmp154.Ts = this.Ts;
     }
-    tmp60.__isset.ts = this.__isset.ts;
-    return tmp60;
+    tmp154.__isset.ts = this.__isset.ts;
+    return tmp154;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -160,24 +160,24 @@ public partial class SpecTimestamp : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp61 = new TStruct("SpecTimestamp");
-      await oprot.WriteStructBeginAsync(tmp61, cancellationToken);
-      var tmp62 = new TField();
+      var tmp155 = new TStruct("SpecTimestamp");
+      await oprot.WriteStructBeginAsync(tmp155, cancellationToken);
+      var tmp156 = new TField();
       if(__isset.comp)
       {
-        tmp62.Name = "comp";
-        tmp62.Type = TType.I32;
-        tmp62.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp62, cancellationToken);
+        tmp156.Name = "comp";
+        tmp156.Type = TType.I32;
+        tmp156.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp156, cancellationToken);
         await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp62.Name = "ts";
-        tmp62.Type = TType.I64;
-        tmp62.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp62, cancellationToken);
+        tmp156.Name = "ts";
+        tmp156.Type = TType.I64;
+        tmp156.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp156, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -215,22 +215,22 @@ public partial class SpecTimestamp : TBase
 
   public override string ToString()
   {
-    var tmp63 = new StringBuilder("SpecTimestamp(");
-    int tmp64 = 0;
+    var tmp157 = new StringBuilder("SpecTimestamp(");
+    int tmp158 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp64++) { tmp63.Append(", "); }
-      tmp63.Append("Comp: ");
-      Comp.ToString(tmp63);
+      if(0 < tmp158++) { tmp157.Append(", "); }
+      tmp157.Append("Comp: ");
+      Comp.ToString(tmp157);
     }
     if(__isset.ts)
     {
-      if(0 < tmp64++) { tmp63.Append(", "); }
-      tmp63.Append("Ts: ");
-      Ts.ToString(tmp63);
+      if(0 < tmp158++) { tmp157.Append(", "); }
+      tmp157.Append("Ts: ");
+      Ts.ToString(tmp157);
     }
-    tmp63.Append(')');
-    return tmp63.ToString();
+    tmp157.Append(')');
+    return tmp157.ToString();
   }
 }
 

@@ -162,17 +162,17 @@ class Test(object):
     def select_cells(self, schema, n_cells):
         # print("# select_cells", "cid:", schema.cid, "cells:", n_cells)
         specs = service.SpecScan(
-            columns=[
-                service.SpecColumn(
+            columns_plain=[
+                service.SpecColumnPlain(
                     cid=schema.cid,
-                    intervals=[service.SpecInterval()]
+                    intervals=[service.SpecIntervalPlain()]
                 )
             ],
             flags=None
         )
         container = self.client.scan(specs)
-        assert (len(container.cells) == n_cells)
-        return container.cells
+        assert (len(container.plain_cells) == n_cells)
+        return container.plain_cells
         #
 
     def select_cells_cell_a_time(self, schema, n_cells):
@@ -180,11 +180,11 @@ class Test(object):
         results = []
         for n in range(0, n_cells, 1):
             specs = service.SpecScan(
-                columns=[
-                    service.SpecColumn(
+                columns_plain=[
+                    service.SpecColumnPlain(
                         cid=schema.cid,
                         intervals=[
-                            service.SpecInterval(
+                            service.SpecIntervalPlain(
                                 key_intervals=[
                                     service.SpecKeyInterval(
                                         start=[
@@ -203,7 +203,7 @@ class Test(object):
                 flags=None
             )
             container = self.client.scan(specs)
-            results += container.cells
+            results += container.plain_cells
         assert (len(results) == n_cells)
         return results
         #

@@ -88,18 +88,18 @@ public partial class SpecValueSerial_BYTES : TBase
 
   public SpecValueSerial_BYTES DeepCopy()
   {
-    var tmp150 = new SpecValueSerial_BYTES();
+    var tmp93 = new SpecValueSerial_BYTES();
     if(__isset.comp)
     {
-      tmp150.Comp = this.Comp;
+      tmp93.Comp = this.Comp;
     }
-    tmp150.__isset.comp = this.__isset.comp;
+    tmp93.__isset.comp = this.__isset.comp;
     if((V != null) && __isset.v)
     {
-      tmp150.V = this.V.ToArray();
+      tmp93.V = this.V.ToArray();
     }
-    tmp150.__isset.v = this.__isset.v;
-    return tmp150;
+    tmp93.__isset.v = this.__isset.v;
+    return tmp93;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -160,24 +160,24 @@ public partial class SpecValueSerial_BYTES : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp151 = new TStruct("SpecValueSerial_BYTES");
-      await oprot.WriteStructBeginAsync(tmp151, cancellationToken);
-      var tmp152 = new TField();
+      var tmp94 = new TStruct("SpecValueSerial_BYTES");
+      await oprot.WriteStructBeginAsync(tmp94, cancellationToken);
+      var tmp95 = new TField();
       if(__isset.comp)
       {
-        tmp152.Name = "comp";
-        tmp152.Type = TType.I32;
-        tmp152.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp152, cancellationToken);
+        tmp95.Name = "comp";
+        tmp95.Type = TType.I32;
+        tmp95.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp95, cancellationToken);
         await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp152.Name = "v";
-        tmp152.Type = TType.String;
-        tmp152.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp152, cancellationToken);
+        tmp95.Name = "v";
+        tmp95.Type = TType.String;
+        tmp95.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp95, cancellationToken);
         await oprot.WriteBinaryAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -215,22 +215,22 @@ public partial class SpecValueSerial_BYTES : TBase
 
   public override string ToString()
   {
-    var tmp153 = new StringBuilder("SpecValueSerial_BYTES(");
-    int tmp154 = 0;
+    var tmp96 = new StringBuilder("SpecValueSerial_BYTES(");
+    int tmp97 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp154++) { tmp153.Append(", "); }
-      tmp153.Append("Comp: ");
-      Comp.ToString(tmp153);
+      if(0 < tmp97++) { tmp96.Append(", "); }
+      tmp96.Append("Comp: ");
+      Comp.ToString(tmp96);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp154++) { tmp153.Append(", "); }
-      tmp153.Append("V: ");
-      V.ToString(tmp153);
+      if(0 < tmp97++) { tmp96.Append(", "); }
+      tmp96.Append("V: ");
+      V.ToString(tmp96);
     }
-    tmp153.Append(')');
-    return tmp153.ToString();
+    tmp96.Append(')');
+    return tmp96.ToString();
   }
 }
 

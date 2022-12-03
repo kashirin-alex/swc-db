@@ -86,18 +86,18 @@ public partial class SpecKeyInterval : TBase
 
   public SpecKeyInterval DeepCopy()
   {
-    var tmp65 = new SpecKeyInterval();
+    var tmp159 = new SpecKeyInterval();
     if((Start != null) && __isset.start)
     {
-      tmp65.Start = this.Start.DeepCopy();
+      tmp159.Start = this.Start.DeepCopy();
     }
-    tmp65.__isset.start = this.__isset.start;
+    tmp159.__isset.start = this.__isset.start;
     if((Finish != null) && __isset.finish)
     {
-      tmp65.Finish = this.Finish.DeepCopy();
+      tmp159.Finish = this.Finish.DeepCopy();
     }
-    tmp65.__isset.finish = this.__isset.finish;
-    return tmp65;
+    tmp159.__isset.finish = this.__isset.finish;
+    return tmp159;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -121,14 +121,14 @@ public partial class SpecKeyInterval : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list66 = await iprot.ReadListBeginAsync(cancellationToken);
-                Start = new List<SpecFraction>(_list66.Count);
-                for(int _i67 = 0; _i67 < _list66.Count; ++_i67)
+                var _list160 = await iprot.ReadListBeginAsync(cancellationToken);
+                Start = new List<SpecFraction>(_list160.Count);
+                for(int _i161 = 0; _i161 < _list160.Count; ++_i161)
                 {
-                  SpecFraction _elem68;
-                  _elem68 = new SpecFraction();
-                  await _elem68.ReadAsync(iprot, cancellationToken);
-                  Start.Add(_elem68);
+                  SpecFraction _elem162;
+                  _elem162 = new SpecFraction();
+                  await _elem162.ReadAsync(iprot, cancellationToken);
+                  Start.Add(_elem162);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -142,14 +142,14 @@ public partial class SpecKeyInterval : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list69 = await iprot.ReadListBeginAsync(cancellationToken);
-                Finish = new List<SpecFraction>(_list69.Count);
-                for(int _i70 = 0; _i70 < _list69.Count; ++_i70)
+                var _list163 = await iprot.ReadListBeginAsync(cancellationToken);
+                Finish = new List<SpecFraction>(_list163.Count);
+                for(int _i164 = 0; _i164 < _list163.Count; ++_i164)
                 {
-                  SpecFraction _elem71;
-                  _elem71 = new SpecFraction();
-                  await _elem71.ReadAsync(iprot, cancellationToken);
-                  Finish.Add(_elem71);
+                  SpecFraction _elem165;
+                  _elem165 = new SpecFraction();
+                  await _elem165.ReadAsync(iprot, cancellationToken);
+                  Finish.Add(_elem165);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -180,33 +180,33 @@ public partial class SpecKeyInterval : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp72 = new TStruct("SpecKeyInterval");
-      await oprot.WriteStructBeginAsync(tmp72, cancellationToken);
-      var tmp73 = new TField();
+      var tmp166 = new TStruct("SpecKeyInterval");
+      await oprot.WriteStructBeginAsync(tmp166, cancellationToken);
+      var tmp167 = new TField();
       if((Start != null) && __isset.start)
       {
-        tmp73.Name = "start";
-        tmp73.Type = TType.List;
-        tmp73.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp73, cancellationToken);
+        tmp167.Name = "start";
+        tmp167.Type = TType.List;
+        tmp167.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp167, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, Start.Count), cancellationToken);
-        foreach (SpecFraction _iter74 in Start)
+        foreach (SpecFraction _iter168 in Start)
         {
-          await _iter74.WriteAsync(oprot, cancellationToken);
+          await _iter168.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((Finish != null) && __isset.finish)
       {
-        tmp73.Name = "finish";
-        tmp73.Type = TType.List;
-        tmp73.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp73, cancellationToken);
+        tmp167.Name = "finish";
+        tmp167.Type = TType.List;
+        tmp167.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp167, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, Finish.Count), cancellationToken);
-        foreach (SpecFraction _iter75 in Finish)
+        foreach (SpecFraction _iter169 in Finish)
         {
-          await _iter75.WriteAsync(oprot, cancellationToken);
+          await _iter169.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -245,22 +245,22 @@ public partial class SpecKeyInterval : TBase
 
   public override string ToString()
   {
-    var tmp76 = new StringBuilder("SpecKeyInterval(");
-    int tmp77 = 0;
+    var tmp170 = new StringBuilder("SpecKeyInterval(");
+    int tmp171 = 0;
     if((Start != null) && __isset.start)
     {
-      if(0 < tmp77++) { tmp76.Append(", "); }
-      tmp76.Append("Start: ");
-      Start.ToString(tmp76);
+      if(0 < tmp171++) { tmp170.Append(", "); }
+      tmp170.Append("Start: ");
+      Start.ToString(tmp170);
     }
     if((Finish != null) && __isset.finish)
     {
-      if(0 < tmp77++) { tmp76.Append(", "); }
-      tmp76.Append("Finish: ");
-      Finish.ToString(tmp76);
+      if(0 < tmp171++) { tmp170.Append(", "); }
+      tmp170.Append("Finish: ");
+      Finish.ToString(tmp170);
     }
-    tmp76.Append(')');
-    return tmp76.ToString();
+    tmp170.Append(')');
+    return tmp170.ToString();
   }
 }
 

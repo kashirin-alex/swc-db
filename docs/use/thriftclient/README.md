@@ -48,28 +48,29 @@ _**Some of use cases can be found at**_:
 ||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)|[FU_CTRL_DEFAULT](#constant-fu_ctrl_default)|
 ||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
 ||	[ &bull; sql_select_plain](#function-servicesql_select_plain)|[SpecFlagsOpt](#enumeration-specflagsopt)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
-||	[ &bull; sql_select_counter](#function-servicesql_select_counter)|[SpecIntervalOptions](#enumeration-specintervaloptions)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
-||	[ &bull; sql_select_serial](#function-servicesql_select_serial)|[UpdateOP](#enumeration-updateop)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
+||	[ &bull; sql_select_counter](#function-servicesql_select_counter)|[UpdateOP](#enumeration-updateop)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
+||	[ &bull; sql_select_serial](#function-servicesql_select_serial)|[SpecIntervalOptions](#enumeration-specintervaloptions)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
 ||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[Flag](#enumeration-flag)||
 ||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[FU_MATH_OP](#enumeration-fu_math_op)||
 ||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[FU_LIST_OP](#enumeration-fu_list_op)||
 ||	[ &bull; sql_query](#function-servicesql_query)|[CellsResult](#enumeration-cellsresult)||
 ||	[ &bull; sql_update](#function-servicesql_update)|[Schemas](#typedef-schemas)||
 ||	[ &bull; exec_sql](#function-serviceexec_sql)|[Key](#typedef-key)||
-||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecKey](#typedef-speckey)||
-||	[ &bull; updater_close](#function-serviceupdater_close)|[SpecKeyIntervals](#typedef-speckeyintervals)||
-||	[ &bull; update_plain](#function-serviceupdate_plain)|[SpecValues](#typedef-specvalues)||
-||	[ &bull; update_counter](#function-serviceupdate_counter)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
-||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecValuesSerial](#typedef-specvaluesserial)||
-||	[ &bull; update_by_types](#function-serviceupdate_by_types)|[UCellsPlain](#typedef-ucellsplain)||
-||	[ &bull; mng_column](#function-servicemng_column)|[UCCellsPlain](#typedef-uccellsplain)||
-||	[ &bull; list_columns](#function-servicelist_columns)|[UCellsCounter](#typedef-ucellscounter)||
-||	[ &bull; compact_columns](#function-servicecompact_columns)|[UCCellsCounter](#typedef-uccellscounter)||
-||	[ &bull; scan](#function-servicescan)|[CellValuesSerial](#typedef-cellvaluesserial)||
-||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[CellValuesSerialOp](#typedef-cellvaluesserialop)||
-||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[UCellsSerial](#typedef-ucellsserial)||
-||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[UCCellsSerial](#typedef-uccellsserial)||
-||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[CellsPlain](#typedef-cellsplain)||
+||	[ &bull; updater_create](#function-serviceupdater_create)|[SpecValueSerialFields](#typedef-specvalueserialfields)||
+||	[ &bull; updater_close](#function-serviceupdater_close)|[SpecValuesPlain](#typedef-specvaluesplain)||
+||	[ &bull; update_plain](#function-serviceupdate_plain)|[SpecValuesCounter](#typedef-specvaluescounter)||
+||	[ &bull; update_counter](#function-serviceupdate_counter)|[SpecValuesSerial](#typedef-specvaluesserial)||
+||	[ &bull; update_serial](#function-serviceupdate_serial)|[SpecKey](#typedef-speckey)||
+||	[ &bull; update_by_types](#function-serviceupdate_by_types)|[SpecKeyIntervals](#typedef-speckeyintervals)||
+||	[ &bull; mng_column](#function-servicemng_column)|[UCellsPlain](#typedef-ucellsplain)||
+||	[ &bull; list_columns](#function-servicelist_columns)|[UCCellsPlain](#typedef-uccellsplain)||
+||	[ &bull; compact_columns](#function-servicecompact_columns)|[UCellsCounter](#typedef-ucellscounter)||
+||	[ &bull; scan](#function-servicescan)|[UCCellsCounter](#typedef-uccellscounter)||
+||	[ &bull; scan_rslt_on_column](#function-servicescan_rslt_on_column)|[CellValuesSerial](#typedef-cellvaluesserial)||
+||	[ &bull; scan_rslt_on_key](#function-servicescan_rslt_on_key)|[CellValuesSerialOp](#typedef-cellvaluesserialop)||
+||	[ &bull; scan_rslt_on_fraction](#function-servicescan_rslt_on_fraction)|[UCellsSerial](#typedef-ucellsserial)||
+||	[ &bull; scan_rslt_on](#function-servicescan_rslt_on)|[UCCellsSerial](#typedef-uccellsserial)||
+|||[CellsPlain](#typedef-cellsplain)||
 |||[CellsCounter](#typedef-cellscounter)||
 |||[CellsSerial](#typedef-cellsserial)||
 |||[CCells](#typedef-ccells)||
@@ -82,15 +83,10 @@ _**Some of use cases can be found at**_:
 |||[SchemaPatterns](#struct-schemapatterns)||
 |||[SpecSchemas](#struct-specschemas)||
 |||[SpecFlags](#struct-specflags)||
-|||[SpecFraction](#struct-specfraction)||
-|||[SpecTimestamp](#struct-spectimestamp)||
-|||[SpecKeyInterval](#struct-speckeyinterval)||
-|||[SpecValue](#struct-specvalue)||
 |||[SpecUpdateOP](#struct-specupdateop)||
-|||[SpecIntervalUpdate](#struct-specintervalupdate)||
+|||[SpecIntervalUpdatePlain](#struct-specintervalupdateplain)||
+|||[SpecIntervalUpdateCounter](#struct-specintervalupdatecounter)||
 |||[SpecIntervalUpdateSerial](#struct-specintervalupdateserial)||
-|||[SpecInterval](#struct-specinterval)||
-|||[SpecColumn](#struct-speccolumn)||
 |||[SpecValueSerial_INT64](#struct-specvalueserial_int64)||
 |||[SpecValueSerial_DOUBLE](#struct-specvalueserial_double)||
 |||[SpecValueSerial_BYTES](#struct-specvalueserial_bytes)||
@@ -98,8 +94,17 @@ _**Some of use cases can be found at**_:
 |||[SpecValueSerial_LI](#struct-specvalueserial_li)||
 |||[SpecValueSerial_LB](#struct-specvalueserial_lb)||
 |||[SpecValueSerialField](#struct-specvalueserialfield)||
+|||[SpecValuePlain](#struct-specvalueplain)||
+|||[SpecValueCounter](#struct-specvaluecounter)||
 |||[SpecValueSerial](#struct-specvalueserial)||
+|||[SpecFraction](#struct-specfraction)||
+|||[SpecTimestamp](#struct-spectimestamp)||
+|||[SpecKeyInterval](#struct-speckeyinterval)||
+|||[SpecIntervalPlain](#struct-specintervalplain)||
+|||[SpecIntervalCounter](#struct-specintervalcounter)||
 |||[SpecIntervalSerial](#struct-specintervalserial)||
+|||[SpecColumnPlain](#struct-speccolumnplain)||
+|||[SpecColumnCounter](#struct-speccolumncounter)||
 |||[SpecColumnSerial](#struct-speccolumnserial)||
 |||[SpecScan](#struct-specscan)||
 |||[UCellPlain](#struct-ucellplain)||
@@ -231,14 +236,6 @@ The Scan options Flags Specifications for the SpecFlags 'options' bit
 |```ONLY_KEYS```|```8```|Select Cells Only Keys without Value data |
 |```ONLY_DELETES```|```10```|Select Cells Only with DELETE(cell-flag) |
 
-### Enumeration: SpecIntervalOptions
-The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'options' bit 
-
-|Name|Value|Description|
-|---|---|---|
-|```UPDATING```|```4```|Update Bit Option |
-|```DELETING```|```8```|Delete Bit Option |
-
 ### Enumeration: UpdateOP
 
 
@@ -250,6 +247,14 @@ The Scan Interval Specs Options for the SpecInterval and SpecIntervalSerial 'opt
 |```INSERT```|```3```|The OP supported by column-type PLAIN. Inserts the update value at position in current value (appends if pos above value) |
 |```OVERWRITE```|```4```|The OP supported by column-type PLAIN. Overwrites the current value at position with new value (appends if pos above value) |
 |```SERIAL```|```5```|The OP supported by column-type SERIAL. update is done by the inner serial-fields defintions |
+
+### Enumeration: SpecIntervalOptions
+The Scan Interval Specs Options for the SpecIntervalPlain, SpecIntervalCounter and SpecIntervalSerial 'options' bit 
+
+|Name|Value|Description|
+|---|---|---|
+|```UPDATING```|```4```|Update Bit Option |
+|```DELETING```|```8```|Delete Bit Option |
 
 ### Enumeration: Flag
 The Cell Flag 
@@ -311,6 +316,30 @@ A Cell Key defined as binary(bytes) items in a list-container
 _Base type_: **list&lt;```binary```&gt;**
 
 
+### Typedef: SpecValueSerialFields
+The Serial Cell Value Specifications defined as SpecValueSerialField items in a list-container 
+
+_Base type_: **list&lt;[```SpecValueSerialField```](#struct-specvalueserialfield)&gt;**
+
+
+### Typedef: SpecValuesPlain
+The Cell Value Specifications defined as SpecValuePlain items in a list-container 
+
+_Base type_: **list&lt;[```SpecValuePlain```](#struct-specvalueplain)&gt;**
+
+
+### Typedef: SpecValuesCounter
+The Cell Value Specifications defined as SpecValueCounter items in a list-container 
+
+_Base type_: **list&lt;[```SpecValueCounter```](#struct-specvaluecounter)&gt;**
+
+
+### Typedef: SpecValuesSerial
+The Cell Value Specifications defined as SpecValueSerial items in a list-container 
+
+_Base type_: **list&lt;[```SpecValueSerial```](#struct-specvalueserial)&gt;**
+
+
 ### Typedef: SpecKey
 The Key Specifications defined as SpecFraction items in a list-container 
 
@@ -321,24 +350,6 @@ _Base type_: **list&lt;[```SpecFraction```](#struct-specfraction)&gt;**
 The Key Intervals Specifications defined as SpecKeyInterval items in a list-container 
 
 _Base type_: **list&lt;[```SpecKeyInterval```](#struct-speckeyinterval)&gt;**
-
-
-### Typedef: SpecValues
-The Cell Value Specifications defined as SpecValue items in a list-container 
-
-_Base type_: **list&lt;[```SpecValue```](#struct-specvalue)&gt;**
-
-
-### Typedef: SpecValueSerialFields
-The Serial Cell Value Specifications defined as SpecValueSerialField items in a list-container 
-
-_Base type_: **list&lt;[```SpecValueSerialField```](#struct-specvalueserialfield)&gt;**
-
-
-### Typedef: SpecValuesSerial
-The Cell Value Specifications defined as SpecValueSerial items in a list-container 
-
-_Base type_: **list&lt;[```SpecValueSerial```](#struct-specvalueserial)&gt;**
 
 
 ### Typedef: UCellsPlain
@@ -504,38 +515,6 @@ The Scan Specifications Flags
 |4|max_buffer|```i32```|return results with reach of this Buffer size in bytes |optional||
 |5|options|```i8```|The options bit by SpecFlagsOpt |optional||
 
-### Struct: SpecFraction
-The Fraction Specifications 
-
-| Key | Field | Type | Description | Requiredness | Default value |
-| --- | --- | --- | --- | --- | --- |
-|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
-|2|f|```binary```|The binary(bytes) to match against a fraction of a Cell-Key |default||
-
-### Struct: SpecTimestamp
-The Timestamp Specifications 
-
-| Key | Field | Type | Description | Requiredness | Default value |
-| --- | --- | --- | --- | --- | --- |
-|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
-|2|ts|```i64```|The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision) |default||
-
-### Struct: SpecKeyInterval
-The Key Interval Specifications 
-
-| Key | Field | Type | Description | Requiredness | Default value |
-| --- | --- | --- | --- | --- | --- |
-|1|start|[```SpecKey```](#typedef-speckey)|The Key Start Spec, the start of cells-interval key match |default||
-|2|finish|[```SpecKey```](#typedef-speckey)|The Key Finish Spec, the finish of cells-interval key match |default||
-
-### Struct: SpecValue
-The Value Specifications, option to use with Extended Logical Comparators 
-
-| Key | Field | Type | Description | Requiredness | Default value |
-| --- | --- | --- | --- | --- | --- |
-|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
-|2|v|```binary```|The binary(bytes) to match against the Cell value |default||
-
 ### Struct: SpecUpdateOP
 
 
@@ -544,14 +523,24 @@ The Value Specifications, option to use with Extended Logical Comparators
 |1|op|[```UpdateOP```](#enumeration-updateop)|The Operation of update |default||
 |2|pos|```i32```|The position/index of INSERT and OVERWRITE update operations |optional||
 
-### Struct: SpecIntervalUpdate
-The Value specs for an Updating Interval of 'updating' in SpecInterval 
+### Struct: SpecIntervalUpdatePlain
+The Value specs for an Updating Interval of 'updating' in SpecIntervalPlain 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|v|```binary```|The value for the updated cell |default||
+|1|v|```binary```|The bytes value for the updated cell |default||
 |2|ts|```i64```|The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set) |optional||
 |3|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
+|4|update_op|[```SpecUpdateOP```](#struct-specupdateop)|Optionally the operaton of value update |optional||
+
+### Struct: SpecIntervalUpdateCounter
+The Value specs for an Updating Interval of 'updating' in SpecIntervalCounter 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|v|```i64```|The int64 value for the updated cell |default||
+|2|op|```i64```|The Opration pf Counter, available: COUNTER_OP_EQUAL |default|``````0``````|
+|3|ts|```i64```|The timestamp for the updated cell NULL: MIN_INT64+1, AUTO:MIN_INT64+2 (or not-set) |optional||
 |4|update_op|[```SpecUpdateOP```](#struct-specupdateop)|Optionally the operaton of value update |optional||
 
 ### Struct: SpecIntervalUpdateSerial
@@ -564,31 +553,6 @@ The Value specs for an Updating Interval of 'updating' in SpecIntervalSerial
 |3|v_op|[```CellValuesSerialOp```](#typedef-cellvaluesserialop)|The values of serial-fields for the the SERIAL operation update |default||
 |4|encoder|[```EncodingType```](#enumeration-encodingtype)|Optionally the Cell Value Encoding Type: ZLIB/SNAPPY/ZSTD |optional||
 |5|update_op|[```SpecUpdateOP```](#struct-specupdateop)|Optionally the operaton of value update |optional||
-
-### Struct: SpecInterval
-The Cells Interval Specifications with interval-scope Flags 
-
-| Key | Field | Type | Description | Requiredness | Default value |
-| --- | --- | --- | --- | --- | --- |
-|1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |default||
-|2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |default||
-|3|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
-|4|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
-|5|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
-|6|values|[```SpecValues```](#typedef-specvalues)|The Cell Value Specifications, cell-value match |default||
-|7|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
-|8|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
-|9|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
-|10|options|[```SpecIntervalOptions```](#enumeration-specintervaloptions)|The Interval Options Specification |optional||
-|11|updating|[```SpecIntervalUpdate```](#struct-specintervalupdate)|The Value spec of an Updating Interval |optional||
-
-### Struct: SpecColumn
-The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a column 
-
-| Key | Field | Type | Description | Requiredness | Default value |
-| --- | --- | --- | --- | --- | --- |
-|1|cid|```i64```|The Column ID |default||
-|2|intervals|list&lt;[```SpecInterval```](#struct-specinterval)&gt;|The Cells Interval in a list-container |default||
 
 ### Struct: SpecValueSerial_INT64
 The Specifications of INT64 Serial Value Field 
@@ -651,6 +615,22 @@ The Specifications of LIST_BYTES(LB) Serial Value Field
 |6|spec_li|[```SpecValueSerial_LI```](#struct-specvalueserial_li)|The specifications of List Int64 for the field |default||
 |7|spec_lb|[```SpecValueSerial_LB```](#struct-specvalueserial_lb)|The specifications of List Bytes for the field |default||
 
+### Struct: SpecValuePlain
+The Plain Value Specifications, option to use with Extended Logical Comparators 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|```binary```|The binary(bytes) to match against the Cell value |default||
+
+### Struct: SpecValueCounter
+The Counter Value Specifications, option to use with Extended Logical Comparators 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|v|```i64```|The int64 to match against the Cell value |default||
+
 ### Struct: SpecValueSerial
 The Serial Value Specifications 
 
@@ -659,8 +639,66 @@ The Serial Value Specifications
 |1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
 |2|fields|[```SpecValueSerialFields```](#typedef-specvalueserialfields)|The Serial Value Specifications to match against the SERIAL Cell value fields |default||
 
+### Struct: SpecFraction
+The Fraction Specifications 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|f|```binary```|The binary(bytes) to match against a fraction of a Cell-Key |default||
+
+### Struct: SpecTimestamp
+The Timestamp Specifications 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|comp|[```Comp```](#enumeration-comp)|Logical comparator to Apply |default||
+|2|ts|```i64```|The timestamp in nanoseconds to match against the Cell timestamp/version (not the revision) |default||
+
+### Struct: SpecKeyInterval
+The Key Interval Specifications 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|start|[```SpecKey```](#typedef-speckey)|The Key Start Spec, the start of cells-interval key match |default||
+|2|finish|[```SpecKey```](#typedef-speckey)|The Key Finish Spec, the finish of cells-interval key match |default||
+
+### Struct: SpecIntervalPlain
+The Cells Interval Plain type Specifications with interval-scope Flags 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |default||
+|2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |default||
+|3|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
+|4|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
+|5|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
+|6|values|[```SpecValuesPlain```](#typedef-specvaluesplain)|The Cell Value Specifications, cell-value match for plain type |default||
+|7|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
+|8|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
+|9|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
+|10|options|[```SpecIntervalOptions```](#enumeration-specintervaloptions)|The Interval Options Specification |optional||
+|11|updating|[```SpecIntervalUpdatePlain```](#struct-specintervalupdateplain)|The Value spec of an Updating Interval |optional||
+
+### Struct: SpecIntervalCounter
+The Cells Interval Counter type Specifications with interval-scope Flags 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|range_begin|[```Key```](#typedef-key)|Begin of Ranges evaluation with this Key inclusive |default||
+|2|range_end|[```Key```](#typedef-key)|End of Ranges evaluation with this Key inclusive |default||
+|3|offset_key|[```Key```](#typedef-key)|Offset Cell Key of a Scan, select cells from this key inclusive |default||
+|4|offset_rev|```i64```|Offset Cell Timestamp of a Scan, select cells after this timestamp |optional||
+|5|key_intervals|[```SpecKeyIntervals```](#typedef-speckeyintervals)|The Key Intervals |default||
+|6|values|[```SpecValuesCounter```](#typedef-specvaluescounter)|The Cell Value Specifications, cell-value match for counter type |default||
+|7|ts_start|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Start Spec, the start of cells-interval timestamp match |optional||
+|8|ts_finish|[```SpecTimestamp```](#struct-spectimestamp)|The Timestamp Finish Spec, the finish of cells-interval timestamp match |optional||
+|9|flags|[```SpecFlags```](#struct-specflags)|The Interval Flags Specification |optional||
+|10|options|[```SpecIntervalOptions```](#enumeration-specintervaloptions)|The Interval Options Specification |optional||
+|11|updating|[```SpecIntervalUpdateCounter```](#struct-specintervalupdatecounter)|The Value spec of an Updating Interval |optional||
+
 ### Struct: SpecIntervalSerial
-The Serial Value Cells Interval Specifications with interval-scope Flags 
+The Cells Interval Serial type Specifications with interval-scope Flags 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -676,8 +714,24 @@ The Serial Value Cells Interval Specifications with interval-scope Flags
 |10|options|[```SpecIntervalOptions```](#enumeration-specintervaloptions)|The Interval Options Specification |optional||
 |11|updating|[```SpecIntervalUpdateSerial```](#struct-specintervalupdateserial)|The Serial-Value spec of an Updating Interval |optional||
 
+### Struct: SpecColumnPlain
+The Column Specifications, the Cells-Intervals(SpecIntervalPlain/s) specification for a PLAIN Type column 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cid|```i64```|The Column ID |default||
+|2|intervals|list&lt;[```SpecIntervalPlain```](#struct-specintervalplain)&gt;|The Cells Interval in a list-container |default||
+
+### Struct: SpecColumnCounter
+The Column Specifications, the Cells-Intervals(SpecIntervalCounter/s) specification for a COUNTER Type column 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|cid|```i64```|The Column ID |default||
+|2|intervals|list&lt;[```SpecIntervalCounter```](#struct-specintervalcounter)&gt;|The Cells Interval in a list-container |default||
+
 ### Struct: SpecColumnSerial
-The Column Specifications, the Cells-Intervals(SpecInterval/s) specification for a SERIAL Type Column 
+The Column Specifications, the Cells-Intervals(SpecIntervalSerial/s) specification for a SERIAL Type Column 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -689,9 +743,10 @@ The Scan Specifications, the Columns-Intervals(SpecColumn/s) with global-scope F
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|columns|list&lt;[```SpecColumn```](#struct-speccolumn)&gt;|The Column Intervals(SpecColumn) in a list-container |default||
-|2|columns_serial|list&lt;[```SpecColumnSerial```](#struct-speccolumnserial)&gt;|The Serial Column Intervals(SpecColumnSerial) in a list-container |default||
-|3|flags|[```SpecFlags```](#struct-specflags)|The Global Flags Specification |optional||
+|1|columns_plain|list&lt;[```SpecColumnPlain```](#struct-speccolumnplain)&gt;|The Plain Column Intervals(SpecColumnPlain) in a list-container |default||
+|2|columns_counter|list&lt;[```SpecColumnCounter```](#struct-speccolumncounter)&gt;|The Counter Column Intervals(SpecColumnCounter) in a list-container |default||
+|3|columns_serial|list&lt;[```SpecColumnSerial```](#struct-speccolumnserial)&gt;|The Serial Column Intervals(SpecColumnSerial) in a list-container |default||
+|4|flags|[```SpecFlags```](#struct-specflags)|The Global Flags Specification |optional||
 
 ### Struct: UCellPlain
 The Cell data for using with Update of PLAIN Column Type 
@@ -1278,7 +1333,6 @@ The method to select cells with result set by the request's type of CellsResult.
 
 * exceptions:
   * Exception - The Base Exception 
-
 
 
 

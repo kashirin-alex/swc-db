@@ -464,14 +464,14 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
           case 1: // START
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list40 = iprot.readListBegin();
-                struct.start = new java.util.ArrayList<SpecFraction>(_list40.size);
-                @org.apache.thrift.annotation.Nullable SpecFraction _elem41;
-                for (int _i42 = 0; _i42 < _list40.size; ++_i42)
+                org.apache.thrift.protocol.TList _list88 = iprot.readListBegin();
+                struct.start = new java.util.ArrayList<SpecFraction>(_list88.size);
+                @org.apache.thrift.annotation.Nullable SpecFraction _elem89;
+                for (int _i90 = 0; _i90 < _list88.size; ++_i90)
                 {
-                  _elem41 = new SpecFraction();
-                  _elem41.read(iprot);
-                  struct.start.add(_elem41);
+                  _elem89 = new SpecFraction();
+                  _elem89.read(iprot);
+                  struct.start.add(_elem89);
                 }
                 iprot.readListEnd();
               }
@@ -483,14 +483,14 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
           case 2: // FINISH
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list43 = iprot.readListBegin();
-                struct.finish = new java.util.ArrayList<SpecFraction>(_list43.size);
-                @org.apache.thrift.annotation.Nullable SpecFraction _elem44;
-                for (int _i45 = 0; _i45 < _list43.size; ++_i45)
+                org.apache.thrift.protocol.TList _list91 = iprot.readListBegin();
+                struct.finish = new java.util.ArrayList<SpecFraction>(_list91.size);
+                @org.apache.thrift.annotation.Nullable SpecFraction _elem92;
+                for (int _i93 = 0; _i93 < _list91.size; ++_i93)
                 {
-                  _elem44 = new SpecFraction();
-                  _elem44.read(iprot);
-                  struct.finish.add(_elem44);
+                  _elem92 = new SpecFraction();
+                  _elem92.read(iprot);
+                  struct.finish.add(_elem92);
                 }
                 iprot.readListEnd();
               }
@@ -519,9 +519,9 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
         oprot.writeFieldBegin(START_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.start.size()));
-          for (SpecFraction _iter46 : struct.start)
+          for (SpecFraction _iter94 : struct.start)
           {
-            _iter46.write(oprot);
+            _iter94.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -531,9 +531,9 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
         oprot.writeFieldBegin(FINISH_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.finish.size()));
-          for (SpecFraction _iter47 : struct.finish)
+          for (SpecFraction _iter95 : struct.finish)
           {
-            _iter47.write(oprot);
+            _iter95.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -568,18 +568,18 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
       if (struct.isSetStart()) {
         {
           oprot.writeI32(struct.start.size());
-          for (SpecFraction _iter48 : struct.start)
+          for (SpecFraction _iter96 : struct.start)
           {
-            _iter48.write(oprot);
+            _iter96.write(oprot);
           }
         }
       }
       if (struct.isSetFinish()) {
         {
           oprot.writeI32(struct.finish.size());
-          for (SpecFraction _iter49 : struct.finish)
+          for (SpecFraction _iter97 : struct.finish)
           {
-            _iter49.write(oprot);
+            _iter97.write(oprot);
           }
         }
       }
@@ -591,28 +591,28 @@ public class SpecKeyInterval implements org.apache.thrift.TBase<SpecKeyInterval,
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list50 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.start = new java.util.ArrayList<SpecFraction>(_list50.size);
-          @org.apache.thrift.annotation.Nullable SpecFraction _elem51;
-          for (int _i52 = 0; _i52 < _list50.size; ++_i52)
+          org.apache.thrift.protocol.TList _list98 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.start = new java.util.ArrayList<SpecFraction>(_list98.size);
+          @org.apache.thrift.annotation.Nullable SpecFraction _elem99;
+          for (int _i100 = 0; _i100 < _list98.size; ++_i100)
           {
-            _elem51 = new SpecFraction();
-            _elem51.read(iprot);
-            struct.start.add(_elem51);
+            _elem99 = new SpecFraction();
+            _elem99.read(iprot);
+            struct.start.add(_elem99);
           }
         }
         struct.setStartIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list53 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.finish = new java.util.ArrayList<SpecFraction>(_list53.size);
-          @org.apache.thrift.annotation.Nullable SpecFraction _elem54;
-          for (int _i55 = 0; _i55 < _list53.size; ++_i55)
+          org.apache.thrift.protocol.TList _list101 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.finish = new java.util.ArrayList<SpecFraction>(_list101.size);
+          @org.apache.thrift.annotation.Nullable SpecFraction _elem102;
+          for (int _i103 = 0; _i103 < _list101.size; ++_i103)
           {
-            _elem54 = new SpecFraction();
-            _elem54.read(iprot);
-            struct.finish.add(_elem54);
+            _elem102 = new SpecFraction();
+            _elem102.read(iprot);
+            struct.finish.add(_elem102);
           }
         }
         struct.setFinishIsSet(true);

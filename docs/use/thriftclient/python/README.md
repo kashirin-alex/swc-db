@@ -178,7 +178,7 @@ assert(schema.col_name == test_colm_name)
 
 # Update with 100000 cells
 n_cells = 100000
-client.update(
+client.update_plain(
     {
         schema.cid:  [
             service.UCell(
@@ -195,10 +195,10 @@ client.update(
 
 # Select all the cells, expect in Volume Sequence
 specs = service.SpecScan(
-    columns=[
-        service.SpecColumn(
+    columns_plain=[
+        service.SpecColumnPlain(
             cid=schema.cid,
-            intervals=[service.SpecInterval()]
+            intervals=[service.SpecIntervalPlain()]
         )
     ],
     flags=None

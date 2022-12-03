@@ -104,23 +104,23 @@ public partial class FCellSerial : TBase
 
   public FCellSerial DeepCopy()
   {
-    var tmp452 = new FCellSerial();
+    var tmp500 = new FCellSerial();
     if((C != null) && __isset.c)
     {
-      tmp452.C = this.C;
+      tmp500.C = this.C;
     }
-    tmp452.__isset.c = this.__isset.c;
+    tmp500.__isset.c = this.__isset.c;
     if(__isset.ts)
     {
-      tmp452.Ts = this.Ts;
+      tmp500.Ts = this.Ts;
     }
-    tmp452.__isset.ts = this.__isset.ts;
+    tmp500.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp452.V = this.V.DeepCopy();
+      tmp500.V = this.V.DeepCopy();
     }
-    tmp452.__isset.v = this.__isset.v;
-    return tmp452;
+    tmp500.__isset.v = this.__isset.v;
+    return tmp500;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -164,14 +164,14 @@ public partial class FCellSerial : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list453 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<CellValueSerial>(_list453.Count);
-                for(int _i454 = 0; _i454 < _list453.Count; ++_i454)
+                var _list501 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<CellValueSerial>(_list501.Count);
+                for(int _i502 = 0; _i502 < _list501.Count; ++_i502)
                 {
-                  CellValueSerial _elem455;
-                  _elem455 = new CellValueSerial();
-                  await _elem455.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem455);
+                  CellValueSerial _elem503;
+                  _elem503 = new CellValueSerial();
+                  await _elem503.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem503);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -202,37 +202,37 @@ public partial class FCellSerial : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp456 = new TStruct("FCellSerial");
-      await oprot.WriteStructBeginAsync(tmp456, cancellationToken);
-      var tmp457 = new TField();
+      var tmp504 = new TStruct("FCellSerial");
+      await oprot.WriteStructBeginAsync(tmp504, cancellationToken);
+      var tmp505 = new TField();
       if((C != null) && __isset.c)
       {
-        tmp457.Name = "c";
-        tmp457.Type = TType.String;
-        tmp457.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp457, cancellationToken);
+        tmp505.Name = "c";
+        tmp505.Type = TType.String;
+        tmp505.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp505, cancellationToken);
         await oprot.WriteStringAsync(C, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp457.Name = "ts";
-        tmp457.Type = TType.I64;
-        tmp457.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp457, cancellationToken);
+        tmp505.Name = "ts";
+        tmp505.Type = TType.I64;
+        tmp505.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp505, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp457.Name = "v";
-        tmp457.Type = TType.List;
-        tmp457.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp457, cancellationToken);
+        tmp505.Name = "v";
+        tmp505.Type = TType.List;
+        tmp505.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp505, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-        foreach (CellValueSerial _iter458 in V)
+        foreach (CellValueSerial _iter506 in V)
         {
-          await _iter458.WriteAsync(oprot, cancellationToken);
+          await _iter506.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -276,28 +276,28 @@ public partial class FCellSerial : TBase
 
   public override string ToString()
   {
-    var tmp459 = new StringBuilder("FCellSerial(");
-    int tmp460 = 0;
+    var tmp507 = new StringBuilder("FCellSerial(");
+    int tmp508 = 0;
     if((C != null) && __isset.c)
     {
-      if(0 < tmp460++) { tmp459.Append(", "); }
-      tmp459.Append("C: ");
-      C.ToString(tmp459);
+      if(0 < tmp508++) { tmp507.Append(", "); }
+      tmp507.Append("C: ");
+      C.ToString(tmp507);
     }
     if(__isset.ts)
     {
-      if(0 < tmp460++) { tmp459.Append(", "); }
-      tmp459.Append("Ts: ");
-      Ts.ToString(tmp459);
+      if(0 < tmp508++) { tmp507.Append(", "); }
+      tmp507.Append("Ts: ");
+      Ts.ToString(tmp507);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp460++) { tmp459.Append(", "); }
-      tmp459.Append("V: ");
-      V.ToString(tmp459);
+      if(0 < tmp508++) { tmp507.Append(", "); }
+      tmp507.Append("V: ");
+      V.ToString(tmp507);
     }
-    tmp459.Append(')');
-    return tmp459.ToString();
+    tmp507.Append(')');
+    return tmp507.ToString();
   }
 }
 

@@ -88,18 +88,18 @@ public partial class SpecValueSerial_KEY : TBase
 
   public SpecValueSerial_KEY DeepCopy()
   {
-    var tmp155 = new SpecValueSerial_KEY();
+    var tmp98 = new SpecValueSerial_KEY();
     if(__isset.seq)
     {
-      tmp155.Seq = this.Seq;
+      tmp98.Seq = this.Seq;
     }
-    tmp155.__isset.seq = this.__isset.seq;
+    tmp98.__isset.seq = this.__isset.seq;
     if((V != null) && __isset.v)
     {
-      tmp155.V = this.V.DeepCopy();
+      tmp98.V = this.V.DeepCopy();
     }
-    tmp155.__isset.v = this.__isset.v;
-    return tmp155;
+    tmp98.__isset.v = this.__isset.v;
+    return tmp98;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -133,14 +133,14 @@ public partial class SpecValueSerial_KEY : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list156 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<SpecFraction>(_list156.Count);
-                for(int _i157 = 0; _i157 < _list156.Count; ++_i157)
+                var _list99 = await iprot.ReadListBeginAsync(cancellationToken);
+                V = new List<SpecFraction>(_list99.Count);
+                for(int _i100 = 0; _i100 < _list99.Count; ++_i100)
                 {
-                  SpecFraction _elem158;
-                  _elem158 = new SpecFraction();
-                  await _elem158.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem158);
+                  SpecFraction _elem101;
+                  _elem101 = new SpecFraction();
+                  await _elem101.ReadAsync(iprot, cancellationToken);
+                  V.Add(_elem101);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -171,28 +171,28 @@ public partial class SpecValueSerial_KEY : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp159 = new TStruct("SpecValueSerial_KEY");
-      await oprot.WriteStructBeginAsync(tmp159, cancellationToken);
-      var tmp160 = new TField();
+      var tmp102 = new TStruct("SpecValueSerial_KEY");
+      await oprot.WriteStructBeginAsync(tmp102, cancellationToken);
+      var tmp103 = new TField();
       if(__isset.seq)
       {
-        tmp160.Name = "seq";
-        tmp160.Type = TType.I32;
-        tmp160.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp160, cancellationToken);
+        tmp103.Name = "seq";
+        tmp103.Type = TType.I32;
+        tmp103.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp103, cancellationToken);
         await oprot.WriteI32Async((int)Seq, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp160.Name = "v";
-        tmp160.Type = TType.List;
-        tmp160.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp160, cancellationToken);
+        tmp103.Name = "v";
+        tmp103.Type = TType.List;
+        tmp103.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp103, cancellationToken);
         await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-        foreach (SpecFraction _iter161 in V)
+        foreach (SpecFraction _iter104 in V)
         {
-          await _iter161.WriteAsync(oprot, cancellationToken);
+          await _iter104.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -231,22 +231,22 @@ public partial class SpecValueSerial_KEY : TBase
 
   public override string ToString()
   {
-    var tmp162 = new StringBuilder("SpecValueSerial_KEY(");
-    int tmp163 = 0;
+    var tmp105 = new StringBuilder("SpecValueSerial_KEY(");
+    int tmp106 = 0;
     if(__isset.seq)
     {
-      if(0 < tmp163++) { tmp162.Append(", "); }
-      tmp162.Append("Seq: ");
-      Seq.ToString(tmp162);
+      if(0 < tmp106++) { tmp105.Append(", "); }
+      tmp105.Append("Seq: ");
+      Seq.ToString(tmp105);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp163++) { tmp162.Append(", "); }
-      tmp162.Append("V: ");
-      V.ToString(tmp162);
+      if(0 < tmp106++) { tmp105.Append(", "); }
+      tmp105.Append("V: ");
+      V.ToString(tmp105);
     }
-    tmp162.Append(')');
-    return tmp162.ToString();
+    tmp105.Append(')');
+    return tmp105.ToString();
   }
 }
 

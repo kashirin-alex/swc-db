@@ -111,16 +111,6 @@ typedef enum _swcdb_thriftSpecFlagsOpt swcdb_thriftSpecFlagsOpt;
 const char *
 toString_SpecFlagsOpt(int value); 
 
-enum _swcdb_thriftSpecIntervalOptions {
-  SWCDB_THRIFT_SPEC_INTERVAL_OPTIONS_UPDATING = 4,
-  SWCDB_THRIFT_SPEC_INTERVAL_OPTIONS_DELETING = 8
-};
-typedef enum _swcdb_thriftSpecIntervalOptions swcdb_thriftSpecIntervalOptions;
-
-/* return the name of the constant */
-const char *
-toString_SpecIntervalOptions(int value); 
-
 enum _swcdb_thriftUpdateOP {
   SWCDB_THRIFT_UPDATE_O_P_REPLACE = 0,
   SWCDB_THRIFT_UPDATE_O_P_APPEND = 1,
@@ -134,6 +124,16 @@ typedef enum _swcdb_thriftUpdateOP swcdb_thriftUpdateOP;
 /* return the name of the constant */
 const char *
 toString_UpdateOP(int value); 
+
+enum _swcdb_thriftSpecIntervalOptions {
+  SWCDB_THRIFT_SPEC_INTERVAL_OPTIONS_UPDATING = 4,
+  SWCDB_THRIFT_SPEC_INTERVAL_OPTIONS_DELETING = 8
+};
+typedef enum _swcdb_thriftSpecIntervalOptions swcdb_thriftSpecIntervalOptions;
+
+/* return the name of the constant */
+const char *
+toString_SpecIntervalOptions(int value); 
 
 enum _swcdb_thriftFlag {
   SWCDB_THRIFT_FLAG_NONE = 0,
@@ -192,15 +192,17 @@ typedef GPtrArray swcdb_thriftSchemas;
 
 typedef GPtrArray swcdb_thriftKey;
 
+typedef GPtrArray swcdb_thriftSpecValueSerialFields;
+
+typedef GPtrArray swcdb_thriftSpecValuesPlain;
+
+typedef GPtrArray swcdb_thriftSpecValuesCounter;
+
+typedef GPtrArray swcdb_thriftSpecValuesSerial;
+
 typedef GPtrArray swcdb_thriftSpecKey;
 
 typedef GPtrArray swcdb_thriftSpecKeyIntervals;
-
-typedef GPtrArray swcdb_thriftSpecValues;
-
-typedef GPtrArray swcdb_thriftSpecValueSerialFields;
-
-typedef GPtrArray swcdb_thriftSpecValuesSerial;
 
 typedef GPtrArray swcdb_thriftUCellsPlain;
 
@@ -468,114 +470,6 @@ GType swcdb_thrift_spec_flags_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_FLAGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_FLAGS))
 #define SWCDB_THRIFT_SPEC_FLAGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_FLAGS, swcdb_thriftSpecFlagsClass))
 
-/* struct SpecFraction */
-struct _swcdb_thriftSpecFraction
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  swcdb_thriftComp comp;
-  gboolean __isset_comp;
-  GByteArray * f;
-  gboolean __isset_f;
-};
-typedef struct _swcdb_thriftSpecFraction swcdb_thriftSpecFraction;
-
-struct _swcdb_thriftSpecFractionClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftSpecFractionClass swcdb_thriftSpecFractionClass;
-
-GType swcdb_thrift_spec_fraction_get_type (void);
-#define SWCDB_THRIFT_TYPE_SPEC_FRACTION (swcdb_thrift_spec_fraction_get_type())
-#define SWCDB_THRIFT_SPEC_FRACTION(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION, swcdb_thriftSpecFraction))
-#define SWCDB_THRIFT_SPEC_FRACTION_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_FRACTION, swcdb_thriftSpecFractionClass))
-#define SWCDB_THRIFT_IS_SPEC_FRACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION))
-#define SWCDB_THRIFT_IS_SPEC_FRACTION_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_FRACTION))
-#define SWCDB_THRIFT_SPEC_FRACTION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION, swcdb_thriftSpecFractionClass))
-
-/* struct SpecTimestamp */
-struct _swcdb_thriftSpecTimestamp
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  swcdb_thriftComp comp;
-  gboolean __isset_comp;
-  gint64 ts;
-  gboolean __isset_ts;
-};
-typedef struct _swcdb_thriftSpecTimestamp swcdb_thriftSpecTimestamp;
-
-struct _swcdb_thriftSpecTimestampClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftSpecTimestampClass swcdb_thriftSpecTimestampClass;
-
-GType swcdb_thrift_spec_timestamp_get_type (void);
-#define SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP (swcdb_thrift_spec_timestamp_get_type())
-#define SWCDB_THRIFT_SPEC_TIMESTAMP(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestamp))
-#define SWCDB_THRIFT_SPEC_TIMESTAMP_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestampClass))
-#define SWCDB_THRIFT_IS_SPEC_TIMESTAMP(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP))
-#define SWCDB_THRIFT_IS_SPEC_TIMESTAMP_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP))
-#define SWCDB_THRIFT_SPEC_TIMESTAMP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestampClass))
-
-/* struct SpecKeyInterval */
-struct _swcdb_thriftSpecKeyInterval
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  GPtrArray * start;
-  gboolean __isset_start;
-  GPtrArray * finish;
-  gboolean __isset_finish;
-};
-typedef struct _swcdb_thriftSpecKeyInterval swcdb_thriftSpecKeyInterval;
-
-struct _swcdb_thriftSpecKeyIntervalClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftSpecKeyIntervalClass swcdb_thriftSpecKeyIntervalClass;
-
-GType swcdb_thrift_spec_key_interval_get_type (void);
-#define SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL (swcdb_thrift_spec_key_interval_get_type())
-#define SWCDB_THRIFT_SPEC_KEY_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyInterval))
-#define SWCDB_THRIFT_SPEC_KEY_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyIntervalClass))
-#define SWCDB_THRIFT_IS_SPEC_KEY_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL))
-#define SWCDB_THRIFT_IS_SPEC_KEY_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL))
-#define SWCDB_THRIFT_SPEC_KEY_INTERVAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyIntervalClass))
-
-/* struct SpecValue */
-struct _swcdb_thriftSpecValue
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  swcdb_thriftComp comp;
-  gboolean __isset_comp;
-  GByteArray * v;
-  gboolean __isset_v;
-};
-typedef struct _swcdb_thriftSpecValue swcdb_thriftSpecValue;
-
-struct _swcdb_thriftSpecValueClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftSpecValueClass swcdb_thriftSpecValueClass;
-
-GType swcdb_thrift_spec_value_get_type (void);
-#define SWCDB_THRIFT_TYPE_SPEC_VALUE (swcdb_thrift_spec_value_get_type())
-#define SWCDB_THRIFT_SPEC_VALUE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE, swcdb_thriftSpecValue))
-#define SWCDB_THRIFT_SPEC_VALUE_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_VALUE, swcdb_thriftSpecValueClass))
-#define SWCDB_THRIFT_IS_SPEC_VALUE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE))
-#define SWCDB_THRIFT_IS_SPEC_VALUE_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_VALUE))
-#define SWCDB_THRIFT_SPEC_VALUE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE, swcdb_thriftSpecValueClass))
-
 /* struct SpecUpdateOP */
 struct _swcdb_thriftSpecUpdateOP
 { 
@@ -603,8 +497,8 @@ GType swcdb_thrift_spec_update_o_p_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_UPDATE_O_P_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_UPDATE_O_P))
 #define SWCDB_THRIFT_SPEC_UPDATE_O_P_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_UPDATE_O_P, swcdb_thriftSpecUpdateOPClass))
 
-/* struct SpecIntervalUpdate */
-struct _swcdb_thriftSpecIntervalUpdate
+/* struct SpecIntervalUpdatePlain */
+struct _swcdb_thriftSpecIntervalUpdatePlain
 { 
   ThriftStruct parent; 
 
@@ -618,21 +512,52 @@ struct _swcdb_thriftSpecIntervalUpdate
   swcdb_thriftSpecUpdateOP * update_op;
   gboolean __isset_update_op;
 };
-typedef struct _swcdb_thriftSpecIntervalUpdate swcdb_thriftSpecIntervalUpdate;
+typedef struct _swcdb_thriftSpecIntervalUpdatePlain swcdb_thriftSpecIntervalUpdatePlain;
 
-struct _swcdb_thriftSpecIntervalUpdateClass
+struct _swcdb_thriftSpecIntervalUpdatePlainClass
 {
   ThriftStructClass parent;
 };
-typedef struct _swcdb_thriftSpecIntervalUpdateClass swcdb_thriftSpecIntervalUpdateClass;
+typedef struct _swcdb_thriftSpecIntervalUpdatePlainClass swcdb_thriftSpecIntervalUpdatePlainClass;
 
-GType swcdb_thrift_spec_interval_update_get_type (void);
-#define SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE (swcdb_thrift_spec_interval_update_get_type())
-#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE, swcdb_thriftSpecIntervalUpdate))
-#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_INTERVAL_UPDATE, swcdb_thriftSpecIntervalUpdateClass))
-#define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE))
-#define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE))
-#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE, swcdb_thriftSpecIntervalUpdateClass))
+GType swcdb_thrift_spec_interval_update_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_PLAIN (swcdb_thrift_spec_interval_update_plain_get_type())
+#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_PLAIN, swcdb_thriftSpecIntervalUpdatePlain))
+#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_INTERVAL_UPDATE_PLAIN, swcdb_thriftSpecIntervalUpdatePlainClass))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_PLAIN))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_PLAIN))
+#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_PLAIN, swcdb_thriftSpecIntervalUpdatePlainClass))
+
+/* struct SpecIntervalUpdateCounter */
+struct _swcdb_thriftSpecIntervalUpdateCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint64 v;
+  gboolean __isset_v;
+  gint64 op;
+  gboolean __isset_op;
+  gint64 ts;
+  gboolean __isset_ts;
+  swcdb_thriftSpecUpdateOP * update_op;
+  gboolean __isset_update_op;
+};
+typedef struct _swcdb_thriftSpecIntervalUpdateCounter swcdb_thriftSpecIntervalUpdateCounter;
+
+struct _swcdb_thriftSpecIntervalUpdateCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecIntervalUpdateCounterClass swcdb_thriftSpecIntervalUpdateCounterClass;
+
+GType swcdb_thrift_spec_interval_update_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_COUNTER (swcdb_thrift_spec_interval_update_counter_get_type())
+#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_COUNTER, swcdb_thriftSpecIntervalUpdateCounter))
+#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_INTERVAL_UPDATE_COUNTER, swcdb_thriftSpecIntervalUpdateCounterClass))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_COUNTER))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_COUNTER))
+#define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_COUNTER, swcdb_thriftSpecIntervalUpdateCounterClass))
 
 /* struct SpecIntervalUpdateSerial */
 struct _swcdb_thriftSpecIntervalUpdateSerial
@@ -666,78 +591,6 @@ GType swcdb_thrift_spec_interval_update_serial_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE_SERIAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_SERIAL))
 #define SWCDB_THRIFT_IS_SPEC_INTERVAL_UPDATE_SERIAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_SERIAL))
 #define SWCDB_THRIFT_SPEC_INTERVAL_UPDATE_SERIAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_UPDATE_SERIAL, swcdb_thriftSpecIntervalUpdateSerialClass))
-
-/* struct SpecInterval */
-struct _swcdb_thriftSpecInterval
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  GPtrArray * range_begin;
-  gboolean __isset_range_begin;
-  GPtrArray * range_end;
-  gboolean __isset_range_end;
-  GPtrArray * offset_key;
-  gboolean __isset_offset_key;
-  gint64 offset_rev;
-  gboolean __isset_offset_rev;
-  GPtrArray * key_intervals;
-  gboolean __isset_key_intervals;
-  GPtrArray * values;
-  gboolean __isset_values;
-  swcdb_thriftSpecTimestamp * ts_start;
-  gboolean __isset_ts_start;
-  swcdb_thriftSpecTimestamp * ts_finish;
-  gboolean __isset_ts_finish;
-  swcdb_thriftSpecFlags * flags;
-  gboolean __isset_flags;
-  swcdb_thriftSpecIntervalOptions options;
-  gboolean __isset_options;
-  swcdb_thriftSpecIntervalUpdate * updating;
-  gboolean __isset_updating;
-};
-typedef struct _swcdb_thriftSpecInterval swcdb_thriftSpecInterval;
-
-struct _swcdb_thriftSpecIntervalClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftSpecIntervalClass swcdb_thriftSpecIntervalClass;
-
-GType swcdb_thrift_spec_interval_get_type (void);
-#define SWCDB_THRIFT_TYPE_SPEC_INTERVAL (swcdb_thrift_spec_interval_get_type())
-#define SWCDB_THRIFT_SPEC_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL, swcdb_thriftSpecInterval))
-#define SWCDB_THRIFT_SPEC_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_INTERVAL, swcdb_thriftSpecIntervalClass))
-#define SWCDB_THRIFT_IS_SPEC_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL))
-#define SWCDB_THRIFT_IS_SPEC_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL))
-#define SWCDB_THRIFT_SPEC_INTERVAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL, swcdb_thriftSpecIntervalClass))
-
-/* struct SpecColumn */
-struct _swcdb_thriftSpecColumn
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  gint64 cid;
-  gboolean __isset_cid;
-  GPtrArray * intervals;
-  gboolean __isset_intervals;
-};
-typedef struct _swcdb_thriftSpecColumn swcdb_thriftSpecColumn;
-
-struct _swcdb_thriftSpecColumnClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftSpecColumnClass swcdb_thriftSpecColumnClass;
-
-GType swcdb_thrift_spec_column_get_type (void);
-#define SWCDB_THRIFT_TYPE_SPEC_COLUMN (swcdb_thrift_spec_column_get_type())
-#define SWCDB_THRIFT_SPEC_COLUMN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN, swcdb_thriftSpecColumn))
-#define SWCDB_THRIFT_SPEC_COLUMN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_COLUMN, swcdb_thriftSpecColumnClass))
-#define SWCDB_THRIFT_IS_SPEC_COLUMN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN))
-#define SWCDB_THRIFT_IS_SPEC_COLUMN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_COLUMN))
-#define SWCDB_THRIFT_SPEC_COLUMN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN, swcdb_thriftSpecColumnClass))
 
 /* struct SpecValueSerial_INT64 */
 struct _swcdb_thriftSpecValueSerial_INT64
@@ -938,6 +791,60 @@ GType swcdb_thrift_spec_value_serial_field_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_VALUE_SERIAL_FIELD_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL_FIELD))
 #define SWCDB_THRIFT_SPEC_VALUE_SERIAL_FIELD_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL_FIELD, swcdb_thriftSpecValueSerialFieldClass))
 
+/* struct SpecValuePlain */
+struct _swcdb_thriftSpecValuePlain
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  GByteArray * v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftSpecValuePlain swcdb_thriftSpecValuePlain;
+
+struct _swcdb_thriftSpecValuePlainClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecValuePlainClass swcdb_thriftSpecValuePlainClass;
+
+GType swcdb_thrift_spec_value_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_VALUE_PLAIN (swcdb_thrift_spec_value_plain_get_type())
+#define SWCDB_THRIFT_SPEC_VALUE_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_PLAIN, swcdb_thriftSpecValuePlain))
+#define SWCDB_THRIFT_SPEC_VALUE_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_VALUE_PLAIN, swcdb_thriftSpecValuePlainClass))
+#define SWCDB_THRIFT_IS_SPEC_VALUE_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_PLAIN))
+#define SWCDB_THRIFT_IS_SPEC_VALUE_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_VALUE_PLAIN))
+#define SWCDB_THRIFT_SPEC_VALUE_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_PLAIN, swcdb_thriftSpecValuePlainClass))
+
+/* struct SpecValueCounter */
+struct _swcdb_thriftSpecValueCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  gint64 v;
+  gboolean __isset_v;
+};
+typedef struct _swcdb_thriftSpecValueCounter swcdb_thriftSpecValueCounter;
+
+struct _swcdb_thriftSpecValueCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecValueCounterClass swcdb_thriftSpecValueCounterClass;
+
+GType swcdb_thrift_spec_value_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_VALUE_COUNTER (swcdb_thrift_spec_value_counter_get_type())
+#define SWCDB_THRIFT_SPEC_VALUE_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_COUNTER, swcdb_thriftSpecValueCounter))
+#define SWCDB_THRIFT_SPEC_VALUE_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_VALUE_COUNTER, swcdb_thriftSpecValueCounterClass))
+#define SWCDB_THRIFT_IS_SPEC_VALUE_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_COUNTER))
+#define SWCDB_THRIFT_IS_SPEC_VALUE_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_VALUE_COUNTER))
+#define SWCDB_THRIFT_SPEC_VALUE_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_COUNTER, swcdb_thriftSpecValueCounterClass))
+
 /* struct SpecValueSerial */
 struct _swcdb_thriftSpecValueSerial
 { 
@@ -964,6 +871,177 @@ GType swcdb_thrift_spec_value_serial_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_VALUE_SERIAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL))
 #define SWCDB_THRIFT_IS_SPEC_VALUE_SERIAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL))
 #define SWCDB_THRIFT_SPEC_VALUE_SERIAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_VALUE_SERIAL, swcdb_thriftSpecValueSerialClass))
+
+/* struct SpecFraction */
+struct _swcdb_thriftSpecFraction
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  GByteArray * f;
+  gboolean __isset_f;
+};
+typedef struct _swcdb_thriftSpecFraction swcdb_thriftSpecFraction;
+
+struct _swcdb_thriftSpecFractionClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecFractionClass swcdb_thriftSpecFractionClass;
+
+GType swcdb_thrift_spec_fraction_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_FRACTION (swcdb_thrift_spec_fraction_get_type())
+#define SWCDB_THRIFT_SPEC_FRACTION(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION, swcdb_thriftSpecFraction))
+#define SWCDB_THRIFT_SPEC_FRACTION_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_FRACTION, swcdb_thriftSpecFractionClass))
+#define SWCDB_THRIFT_IS_SPEC_FRACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION))
+#define SWCDB_THRIFT_IS_SPEC_FRACTION_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_FRACTION))
+#define SWCDB_THRIFT_SPEC_FRACTION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_FRACTION, swcdb_thriftSpecFractionClass))
+
+/* struct SpecTimestamp */
+struct _swcdb_thriftSpecTimestamp
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftComp comp;
+  gboolean __isset_comp;
+  gint64 ts;
+  gboolean __isset_ts;
+};
+typedef struct _swcdb_thriftSpecTimestamp swcdb_thriftSpecTimestamp;
+
+struct _swcdb_thriftSpecTimestampClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecTimestampClass swcdb_thriftSpecTimestampClass;
+
+GType swcdb_thrift_spec_timestamp_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP (swcdb_thrift_spec_timestamp_get_type())
+#define SWCDB_THRIFT_SPEC_TIMESTAMP(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestamp))
+#define SWCDB_THRIFT_SPEC_TIMESTAMP_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestampClass))
+#define SWCDB_THRIFT_IS_SPEC_TIMESTAMP(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP))
+#define SWCDB_THRIFT_IS_SPEC_TIMESTAMP_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP))
+#define SWCDB_THRIFT_SPEC_TIMESTAMP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_TIMESTAMP, swcdb_thriftSpecTimestampClass))
+
+/* struct SpecKeyInterval */
+struct _swcdb_thriftSpecKeyInterval
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * start;
+  gboolean __isset_start;
+  GPtrArray * finish;
+  gboolean __isset_finish;
+};
+typedef struct _swcdb_thriftSpecKeyInterval swcdb_thriftSpecKeyInterval;
+
+struct _swcdb_thriftSpecKeyIntervalClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecKeyIntervalClass swcdb_thriftSpecKeyIntervalClass;
+
+GType swcdb_thrift_spec_key_interval_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL (swcdb_thrift_spec_key_interval_get_type())
+#define SWCDB_THRIFT_SPEC_KEY_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyInterval))
+#define SWCDB_THRIFT_SPEC_KEY_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyIntervalClass))
+#define SWCDB_THRIFT_IS_SPEC_KEY_INTERVAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL))
+#define SWCDB_THRIFT_IS_SPEC_KEY_INTERVAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL))
+#define SWCDB_THRIFT_SPEC_KEY_INTERVAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_KEY_INTERVAL, swcdb_thriftSpecKeyIntervalClass))
+
+/* struct SpecIntervalPlain */
+struct _swcdb_thriftSpecIntervalPlain
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * range_begin;
+  gboolean __isset_range_begin;
+  GPtrArray * range_end;
+  gboolean __isset_range_end;
+  GPtrArray * offset_key;
+  gboolean __isset_offset_key;
+  gint64 offset_rev;
+  gboolean __isset_offset_rev;
+  GPtrArray * key_intervals;
+  gboolean __isset_key_intervals;
+  GPtrArray * values;
+  gboolean __isset_values;
+  swcdb_thriftSpecTimestamp * ts_start;
+  gboolean __isset_ts_start;
+  swcdb_thriftSpecTimestamp * ts_finish;
+  gboolean __isset_ts_finish;
+  swcdb_thriftSpecFlags * flags;
+  gboolean __isset_flags;
+  swcdb_thriftSpecIntervalOptions options;
+  gboolean __isset_options;
+  swcdb_thriftSpecIntervalUpdatePlain * updating;
+  gboolean __isset_updating;
+};
+typedef struct _swcdb_thriftSpecIntervalPlain swcdb_thriftSpecIntervalPlain;
+
+struct _swcdb_thriftSpecIntervalPlainClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecIntervalPlainClass swcdb_thriftSpecIntervalPlainClass;
+
+GType swcdb_thrift_spec_interval_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_INTERVAL_PLAIN (swcdb_thrift_spec_interval_plain_get_type())
+#define SWCDB_THRIFT_SPEC_INTERVAL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_PLAIN, swcdb_thriftSpecIntervalPlain))
+#define SWCDB_THRIFT_SPEC_INTERVAL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_INTERVAL_PLAIN, swcdb_thriftSpecIntervalPlainClass))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_PLAIN))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_PLAIN))
+#define SWCDB_THRIFT_SPEC_INTERVAL_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_PLAIN, swcdb_thriftSpecIntervalPlainClass))
+
+/* struct SpecIntervalCounter */
+struct _swcdb_thriftSpecIntervalCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  GPtrArray * range_begin;
+  gboolean __isset_range_begin;
+  GPtrArray * range_end;
+  gboolean __isset_range_end;
+  GPtrArray * offset_key;
+  gboolean __isset_offset_key;
+  gint64 offset_rev;
+  gboolean __isset_offset_rev;
+  GPtrArray * key_intervals;
+  gboolean __isset_key_intervals;
+  GPtrArray * values;
+  gboolean __isset_values;
+  swcdb_thriftSpecTimestamp * ts_start;
+  gboolean __isset_ts_start;
+  swcdb_thriftSpecTimestamp * ts_finish;
+  gboolean __isset_ts_finish;
+  swcdb_thriftSpecFlags * flags;
+  gboolean __isset_flags;
+  swcdb_thriftSpecIntervalOptions options;
+  gboolean __isset_options;
+  swcdb_thriftSpecIntervalUpdateCounter * updating;
+  gboolean __isset_updating;
+};
+typedef struct _swcdb_thriftSpecIntervalCounter swcdb_thriftSpecIntervalCounter;
+
+struct _swcdb_thriftSpecIntervalCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecIntervalCounterClass swcdb_thriftSpecIntervalCounterClass;
+
+GType swcdb_thrift_spec_interval_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_INTERVAL_COUNTER (swcdb_thrift_spec_interval_counter_get_type())
+#define SWCDB_THRIFT_SPEC_INTERVAL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_COUNTER, swcdb_thriftSpecIntervalCounter))
+#define SWCDB_THRIFT_SPEC_INTERVAL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_INTERVAL_COUNTER, swcdb_thriftSpecIntervalCounterClass))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_COUNTER))
+#define SWCDB_THRIFT_IS_SPEC_INTERVAL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_COUNTER))
+#define SWCDB_THRIFT_SPEC_INTERVAL_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_COUNTER, swcdb_thriftSpecIntervalCounterClass))
 
 /* struct SpecIntervalSerial */
 struct _swcdb_thriftSpecIntervalSerial
@@ -1010,6 +1088,60 @@ GType swcdb_thrift_spec_interval_serial_get_type (void);
 #define SWCDB_THRIFT_IS_SPEC_INTERVAL_SERIAL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_SERIAL))
 #define SWCDB_THRIFT_SPEC_INTERVAL_SERIAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_INTERVAL_SERIAL, swcdb_thriftSpecIntervalSerialClass))
 
+/* struct SpecColumnPlain */
+struct _swcdb_thriftSpecColumnPlain
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint64 cid;
+  gboolean __isset_cid;
+  GPtrArray * intervals;
+  gboolean __isset_intervals;
+};
+typedef struct _swcdb_thriftSpecColumnPlain swcdb_thriftSpecColumnPlain;
+
+struct _swcdb_thriftSpecColumnPlainClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecColumnPlainClass swcdb_thriftSpecColumnPlainClass;
+
+GType swcdb_thrift_spec_column_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_COLUMN_PLAIN (swcdb_thrift_spec_column_plain_get_type())
+#define SWCDB_THRIFT_SPEC_COLUMN_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN_PLAIN, swcdb_thriftSpecColumnPlain))
+#define SWCDB_THRIFT_SPEC_COLUMN_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_COLUMN_PLAIN, swcdb_thriftSpecColumnPlainClass))
+#define SWCDB_THRIFT_IS_SPEC_COLUMN_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN_PLAIN))
+#define SWCDB_THRIFT_IS_SPEC_COLUMN_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_COLUMN_PLAIN))
+#define SWCDB_THRIFT_SPEC_COLUMN_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN_PLAIN, swcdb_thriftSpecColumnPlainClass))
+
+/* struct SpecColumnCounter */
+struct _swcdb_thriftSpecColumnCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gint64 cid;
+  gboolean __isset_cid;
+  GPtrArray * intervals;
+  gboolean __isset_intervals;
+};
+typedef struct _swcdb_thriftSpecColumnCounter swcdb_thriftSpecColumnCounter;
+
+struct _swcdb_thriftSpecColumnCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftSpecColumnCounterClass swcdb_thriftSpecColumnCounterClass;
+
+GType swcdb_thrift_spec_column_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_SPEC_COLUMN_COUNTER (swcdb_thrift_spec_column_counter_get_type())
+#define SWCDB_THRIFT_SPEC_COLUMN_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN_COUNTER, swcdb_thriftSpecColumnCounter))
+#define SWCDB_THRIFT_SPEC_COLUMN_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SPEC_COLUMN_COUNTER, swcdb_thriftSpecColumnCounterClass))
+#define SWCDB_THRIFT_IS_SPEC_COLUMN_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN_COUNTER))
+#define SWCDB_THRIFT_IS_SPEC_COLUMN_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SPEC_COLUMN_COUNTER))
+#define SWCDB_THRIFT_SPEC_COLUMN_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SPEC_COLUMN_COUNTER, swcdb_thriftSpecColumnCounterClass))
+
 /* struct SpecColumnSerial */
 struct _swcdb_thriftSpecColumnSerial
 { 
@@ -1043,8 +1175,10 @@ struct _swcdb_thriftSpecScan
   ThriftStruct parent; 
 
   /* public */
-  GPtrArray * columns;
-  gboolean __isset_columns;
+  GPtrArray * columns_plain;
+  gboolean __isset_columns_plain;
+  GPtrArray * columns_counter;
+  gboolean __isset_columns_counter;
   GPtrArray * columns_serial;
   gboolean __isset_columns_serial;
   swcdb_thriftSpecFlags * flags;

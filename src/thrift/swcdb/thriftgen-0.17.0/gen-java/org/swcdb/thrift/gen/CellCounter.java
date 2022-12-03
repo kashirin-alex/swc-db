@@ -716,13 +716,13 @@ public class CellCounter implements org.apache.thrift.TBase<CellCounter, CellCou
           case 2: // K
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list304 = iprot.readListBegin();
-                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list304.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem305;
-                for (int _i306 = 0; _i306 < _list304.size; ++_i306)
+                org.apache.thrift.protocol.TList _list360 = iprot.readListBegin();
+                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list360.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem361;
+                for (int _i362 = 0; _i362 < _list360.size; ++_i362)
                 {
-                  _elem305 = iprot.readBinary();
-                  struct.k.add(_elem305);
+                  _elem361 = iprot.readBinary();
+                  struct.k.add(_elem361);
                 }
                 iprot.readListEnd();
               }
@@ -780,9 +780,9 @@ public class CellCounter implements org.apache.thrift.TBase<CellCounter, CellCou
         oprot.writeFieldBegin(K_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.k.size()));
-          for (java.nio.ByteBuffer _iter307 : struct.k)
+          for (java.nio.ByteBuffer _iter363 : struct.k)
           {
-            oprot.writeBinary(_iter307);
+            oprot.writeBinary(_iter363);
           }
           oprot.writeListEnd();
         }
@@ -840,9 +840,9 @@ public class CellCounter implements org.apache.thrift.TBase<CellCounter, CellCou
       if (struct.isSetK()) {
         {
           oprot.writeI32(struct.k.size());
-          for (java.nio.ByteBuffer _iter308 : struct.k)
+          for (java.nio.ByteBuffer _iter364 : struct.k)
           {
-            oprot.writeBinary(_iter308);
+            oprot.writeBinary(_iter364);
           }
         }
       }
@@ -867,13 +867,13 @@ public class CellCounter implements org.apache.thrift.TBase<CellCounter, CellCou
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list309 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list309.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem310;
-          for (int _i311 = 0; _i311 < _list309.size; ++_i311)
+          org.apache.thrift.protocol.TList _list365 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list365.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem366;
+          for (int _i367 = 0; _i367 < _list365.size; ++_i367)
           {
-            _elem310 = iprot.readBinary();
-            struct.k.add(_elem310);
+            _elem366 = iprot.readBinary();
+            struct.k.add(_elem366);
           }
         }
         struct.setKIsSet(true);

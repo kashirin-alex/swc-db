@@ -33,44 +33,42 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Specifications of LIST_INT64(LI) Serial Value Field
+/// The Column Specifications, the Cells-Intervals(SpecIntervalPlain/s) specification for a PLAIN Type column
 /// </summary>
-public partial class SpecValueSerial_LI : TBase
+public partial class SpecColumnPlain : TBase
 {
-  private Comp _comp;
-  private List<SpecValueSerial_INT64> _v;
+  private long _cid;
+  private List<SpecIntervalPlain> _intervals;
 
   /// <summary>
-  /// Logical comparator to Apply
-  /// 
-  /// <seealso cref="global::.Comp"/>
+  /// The Column ID
   /// </summary>
-  public Comp Comp
+  public long Cid
   {
     get
     {
-      return _comp;
+      return _cid;
     }
     set
     {
-      __isset.comp = true;
-      this._comp = value;
+      __isset.cid = true;
+      this._cid = value;
     }
   }
 
   /// <summary>
-  /// The List of Int64 to match against the value field
+  /// The Cells Interval in a list-container
   /// </summary>
-  public List<SpecValueSerial_INT64> V
+  public List<SpecIntervalPlain> Intervals
   {
     get
     {
-      return _v;
+      return _intervals;
     }
     set
     {
-      __isset.v = true;
-      this._v = value;
+      __isset.intervals = true;
+      this._intervals = value;
     }
   }
 
@@ -78,28 +76,28 @@ public partial class SpecValueSerial_LI : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool comp;
-    public bool v;
+    public bool cid;
+    public bool intervals;
   }
 
-  public SpecValueSerial_LI()
+  public SpecColumnPlain()
   {
   }
 
-  public SpecValueSerial_LI DeepCopy()
+  public SpecColumnPlain DeepCopy()
   {
-    var tmp107 = new SpecValueSerial_LI();
-    if(__isset.comp)
+    var tmp247 = new SpecColumnPlain();
+    if(__isset.cid)
     {
-      tmp107.Comp = this.Comp;
+      tmp247.Cid = this.Cid;
     }
-    tmp107.__isset.comp = this.__isset.comp;
-    if((V != null) && __isset.v)
+    tmp247.__isset.cid = this.__isset.cid;
+    if((Intervals != null) && __isset.intervals)
     {
-      tmp107.V = this.V.DeepCopy();
+      tmp247.Intervals = this.Intervals.DeepCopy();
     }
-    tmp107.__isset.v = this.__isset.v;
-    return tmp107;
+    tmp247.__isset.intervals = this.__isset.intervals;
+    return tmp247;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -120,9 +118,9 @@ public partial class SpecValueSerial_LI : TBase
         switch (field.ID)
         {
           case 1:
-            if (field.Type == TType.I32)
+            if (field.Type == TType.I64)
             {
-              Comp = (Comp)await iprot.ReadI32Async(cancellationToken);
+              Cid = await iprot.ReadI64Async(cancellationToken);
             }
             else
             {
@@ -133,14 +131,14 @@ public partial class SpecValueSerial_LI : TBase
             if (field.Type == TType.List)
             {
               {
-                var _list108 = await iprot.ReadListBeginAsync(cancellationToken);
-                V = new List<SpecValueSerial_INT64>(_list108.Count);
-                for(int _i109 = 0; _i109 < _list108.Count; ++_i109)
+                var _list248 = await iprot.ReadListBeginAsync(cancellationToken);
+                Intervals = new List<SpecIntervalPlain>(_list248.Count);
+                for(int _i249 = 0; _i249 < _list248.Count; ++_i249)
                 {
-                  SpecValueSerial_INT64 _elem110;
-                  _elem110 = new SpecValueSerial_INT64();
-                  await _elem110.ReadAsync(iprot, cancellationToken);
-                  V.Add(_elem110);
+                  SpecIntervalPlain _elem250;
+                  _elem250 = new SpecIntervalPlain();
+                  await _elem250.ReadAsync(iprot, cancellationToken);
+                  Intervals.Add(_elem250);
                 }
                 await iprot.ReadListEndAsync(cancellationToken);
               }
@@ -171,28 +169,28 @@ public partial class SpecValueSerial_LI : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp111 = new TStruct("SpecValueSerial_LI");
-      await oprot.WriteStructBeginAsync(tmp111, cancellationToken);
-      var tmp112 = new TField();
-      if(__isset.comp)
+      var tmp251 = new TStruct("SpecColumnPlain");
+      await oprot.WriteStructBeginAsync(tmp251, cancellationToken);
+      var tmp252 = new TField();
+      if(__isset.cid)
       {
-        tmp112.Name = "comp";
-        tmp112.Type = TType.I32;
-        tmp112.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp112, cancellationToken);
-        await oprot.WriteI32Async((int)Comp, cancellationToken);
+        tmp252.Name = "cid";
+        tmp252.Type = TType.I64;
+        tmp252.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp252, cancellationToken);
+        await oprot.WriteI64Async(Cid, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
-      if((V != null) && __isset.v)
+      if((Intervals != null) && __isset.intervals)
       {
-        tmp112.Name = "v";
-        tmp112.Type = TType.List;
-        tmp112.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp112, cancellationToken);
-        await oprot.WriteListBeginAsync(new TList(TType.Struct, V.Count), cancellationToken);
-        foreach (SpecValueSerial_INT64 _iter113 in V)
+        tmp252.Name = "intervals";
+        tmp252.Type = TType.List;
+        tmp252.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp252, cancellationToken);
+        await oprot.WriteListBeginAsync(new TList(TType.Struct, Intervals.Count), cancellationToken);
+        foreach (SpecIntervalPlain _iter253 in Intervals)
         {
-          await _iter113.WriteAsync(oprot, cancellationToken);
+          await _iter253.WriteAsync(oprot, cancellationToken);
         }
         await oprot.WriteListEndAsync(cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
@@ -208,22 +206,22 @@ public partial class SpecValueSerial_LI : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is SpecValueSerial_LI other)) return false;
+    if (!(that is SpecColumnPlain other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.comp == other.__isset.comp) && ((!__isset.comp) || (global::System.Object.Equals(Comp, other.Comp))))
-      && ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))));
+    return ((__isset.cid == other.__isset.cid) && ((!__isset.cid) || (global::System.Object.Equals(Cid, other.Cid))))
+      && ((__isset.intervals == other.__isset.intervals) && ((!__isset.intervals) || (TCollections.Equals(Intervals, other.Intervals))));
   }
 
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if(__isset.comp)
+      if(__isset.cid)
       {
-        hashcode = (hashcode * 397) + Comp.GetHashCode();
+        hashcode = (hashcode * 397) + Cid.GetHashCode();
       }
-      if((V != null) && __isset.v)
+      if((Intervals != null) && __isset.intervals)
       {
-        hashcode = (hashcode * 397) + TCollections.GetHashCode(V);
+        hashcode = (hashcode * 397) + TCollections.GetHashCode(Intervals);
       }
     }
     return hashcode;
@@ -231,22 +229,22 @@ public partial class SpecValueSerial_LI : TBase
 
   public override string ToString()
   {
-    var tmp114 = new StringBuilder("SpecValueSerial_LI(");
-    int tmp115 = 0;
-    if(__isset.comp)
+    var tmp254 = new StringBuilder("SpecColumnPlain(");
+    int tmp255 = 0;
+    if(__isset.cid)
     {
-      if(0 < tmp115++) { tmp114.Append(", "); }
-      tmp114.Append("Comp: ");
-      Comp.ToString(tmp114);
+      if(0 < tmp255++) { tmp254.Append(", "); }
+      tmp254.Append("Cid: ");
+      Cid.ToString(tmp254);
     }
-    if((V != null) && __isset.v)
+    if((Intervals != null) && __isset.intervals)
     {
-      if(0 < tmp115++) { tmp114.Append(", "); }
-      tmp114.Append("V: ");
-      V.ToString(tmp114);
+      if(0 < tmp255++) { tmp254.Append(", "); }
+      tmp254.Append("Intervals: ");
+      Intervals.ToString(tmp254);
     }
-    tmp114.Append(')');
-    return tmp114.ToString();
+    tmp254.Append(')');
+    return tmp254.ToString();
   }
 }
 

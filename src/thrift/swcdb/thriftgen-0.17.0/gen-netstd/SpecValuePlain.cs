@@ -33,9 +33,9 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Value Specifications, option to use with Extended Logical Comparators
+/// The Plain Value Specifications, option to use with Extended Logical Comparators
 /// </summary>
-public partial class SpecValue : TBase
+public partial class SpecValuePlain : TBase
 {
   private Comp _comp;
   private byte[] _v;
@@ -82,24 +82,24 @@ public partial class SpecValue : TBase
     public bool v;
   }
 
-  public SpecValue()
+  public SpecValuePlain()
   {
   }
 
-  public SpecValue DeepCopy()
+  public SpecValuePlain DeepCopy()
   {
-    var tmp78 = new SpecValue();
+    var tmp130 = new SpecValuePlain();
     if(__isset.comp)
     {
-      tmp78.Comp = this.Comp;
+      tmp130.Comp = this.Comp;
     }
-    tmp78.__isset.comp = this.__isset.comp;
+    tmp130.__isset.comp = this.__isset.comp;
     if((V != null) && __isset.v)
     {
-      tmp78.V = this.V.ToArray();
+      tmp130.V = this.V.ToArray();
     }
-    tmp78.__isset.v = this.__isset.v;
-    return tmp78;
+    tmp130.__isset.v = this.__isset.v;
+    return tmp130;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -160,24 +160,24 @@ public partial class SpecValue : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp79 = new TStruct("SpecValue");
-      await oprot.WriteStructBeginAsync(tmp79, cancellationToken);
-      var tmp80 = new TField();
+      var tmp131 = new TStruct("SpecValuePlain");
+      await oprot.WriteStructBeginAsync(tmp131, cancellationToken);
+      var tmp132 = new TField();
       if(__isset.comp)
       {
-        tmp80.Name = "comp";
-        tmp80.Type = TType.I32;
-        tmp80.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp80, cancellationToken);
+        tmp132.Name = "comp";
+        tmp132.Type = TType.I32;
+        tmp132.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp132, cancellationToken);
         await oprot.WriteI32Async((int)Comp, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp80.Name = "v";
-        tmp80.Type = TType.String;
-        tmp80.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp80, cancellationToken);
+        tmp132.Name = "v";
+        tmp132.Type = TType.String;
+        tmp132.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp132, cancellationToken);
         await oprot.WriteBinaryAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -192,7 +192,7 @@ public partial class SpecValue : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is SpecValue other)) return false;
+    if (!(that is SpecValuePlain other)) return false;
     if (ReferenceEquals(this, other)) return true;
     return ((__isset.comp == other.__isset.comp) && ((!__isset.comp) || (global::System.Object.Equals(Comp, other.Comp))))
       && ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))));
@@ -215,22 +215,22 @@ public partial class SpecValue : TBase
 
   public override string ToString()
   {
-    var tmp81 = new StringBuilder("SpecValue(");
-    int tmp82 = 0;
+    var tmp133 = new StringBuilder("SpecValuePlain(");
+    int tmp134 = 0;
     if(__isset.comp)
     {
-      if(0 < tmp82++) { tmp81.Append(", "); }
-      tmp81.Append("Comp: ");
-      Comp.ToString(tmp81);
+      if(0 < tmp134++) { tmp133.Append(", "); }
+      tmp133.Append("Comp: ");
+      Comp.ToString(tmp133);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp82++) { tmp81.Append(", "); }
-      tmp81.Append("V: ");
-      V.ToString(tmp81);
+      if(0 < tmp134++) { tmp133.Append(", "); }
+      tmp133.Append("V: ");
+      V.ToString(tmp133);
     }
-    tmp81.Append(')');
-    return tmp81.ToString();
+    tmp133.Append(')');
+    return tmp133.ToString();
   }
 }
 

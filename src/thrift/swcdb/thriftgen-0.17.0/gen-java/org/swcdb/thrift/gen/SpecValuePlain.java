@@ -7,17 +7,17 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Value Specifications, option to use with Extended Logical Comparators
+ * The Plain Value Specifications, option to use with Extended Logical Comparators
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._Fields>, java.io.Serializable, Cloneable, Comparable<SpecValue> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecValue");
+public class SpecValuePlain implements org.apache.thrift.TBase<SpecValuePlain, SpecValuePlain._Fields>, java.io.Serializable, Cloneable, Comparable<SpecValuePlain> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SpecValuePlain");
 
   private static final org.apache.thrift.protocol.TField COMP_FIELD_DESC = new org.apache.thrift.protocol.TField("comp", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)2);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecValueStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecValueTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SpecValuePlainStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SpecValuePlainTupleSchemeFactory();
 
   /**
    * Logical comparator to Apply
@@ -112,13 +112,13 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecValue.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SpecValuePlain.class, metaDataMap);
   }
 
-  public SpecValue() {
+  public SpecValuePlain() {
   }
 
-  public SpecValue(
+  public SpecValuePlain(
     Comp comp,
     java.nio.ByteBuffer v)
   {
@@ -130,7 +130,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public SpecValue(SpecValue other) {
+  public SpecValuePlain(SpecValuePlain other) {
     if (other.isSetComp()) {
       this.comp = other.comp;
     }
@@ -140,8 +140,8 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
   }
 
   @Override
-  public SpecValue deepCopy() {
-    return new SpecValue(this);
+  public SpecValuePlain deepCopy() {
+    return new SpecValuePlain(this);
   }
 
   @Override
@@ -165,7 +165,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
    * 
    * @see Comp
    */
-  public SpecValue setComp(@org.apache.thrift.annotation.Nullable Comp comp) {
+  public SpecValuePlain setComp(@org.apache.thrift.annotation.Nullable Comp comp) {
     this.comp = comp;
     return this;
   }
@@ -200,12 +200,12 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
   /**
    * The binary(bytes) to match against the Cell value
    */
-  public SpecValue setV(byte[] v) {
+  public SpecValuePlain setV(byte[] v) {
     this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
     return this;
   }
 
-  public SpecValue setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
+  public SpecValuePlain setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
     this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
     return this;
   }
@@ -283,12 +283,12 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof SpecValue)
-      return this.equals((SpecValue)that);
+    if (that instanceof SpecValuePlain)
+      return this.equals((SpecValuePlain)that);
     return false;
   }
 
-  public boolean equals(SpecValue that) {
+  public boolean equals(SpecValuePlain that) {
     if (that == null)
       return false;
     if (this == that)
@@ -331,7 +331,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
   }
 
   @Override
-  public int compareTo(SpecValue other) {
+  public int compareTo(SpecValuePlain other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -379,7 +379,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecValue(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("SpecValuePlain(");
     boolean first = true;
 
     sb.append("comp:");
@@ -422,17 +422,17 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
     }
   }
 
-  private static class SpecValueStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SpecValuePlainStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public SpecValueStandardScheme getScheme() {
-      return new SpecValueStandardScheme();
+    public SpecValuePlainStandardScheme getScheme() {
+      return new SpecValuePlainStandardScheme();
     }
   }
 
-  private static class SpecValueStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecValue> {
+  private static class SpecValuePlainStandardScheme extends org.apache.thrift.scheme.StandardScheme<SpecValuePlain> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecValue struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, SpecValuePlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -470,7 +470,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecValue struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, SpecValuePlain struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -490,17 +490,17 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
 
   }
 
-  private static class SpecValueTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SpecValuePlainTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public SpecValueTupleScheme getScheme() {
-      return new SpecValueTupleScheme();
+    public SpecValuePlainTupleScheme getScheme() {
+      return new SpecValuePlainTupleScheme();
     }
   }
 
-  private static class SpecValueTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecValue> {
+  private static class SpecValuePlainTupleScheme extends org.apache.thrift.scheme.TupleScheme<SpecValuePlain> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, SpecValue struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, SpecValuePlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetComp()) {
@@ -519,7 +519,7 @@ public class SpecValue implements org.apache.thrift.TBase<SpecValue, SpecValue._
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, SpecValue struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, SpecValuePlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {

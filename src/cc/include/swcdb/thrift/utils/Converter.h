@@ -276,23 +276,25 @@ void set(const SpecTimestamp& spec, DB::Specs::Timestamp& dbspec) {
   dbspec.set(spec.ts, Condition::Comp(spec.comp));
 }
 
-
-void set(const SpecValue& spec, DB::Specs::Value& dbspec) {
-  dbspec.set(spec.v, Condition::Comp(spec.comp));
-}
-
 void set(const SpecUpdateOP& spec, DB::Specs::UpdateOP& dbspec) {
   dbspec.set_op(uint8_t(spec.op));
   if(spec.__isset.pos && dbspec.has_pos())
     dbspec.set_pos(spec.pos);
 }
 
-void set(const SpecValues& spec, DB::Specs::Values& dbspec) {
+
+// SpecIntervalPlain
+
+void set(const SpecValuePlain& spec, DB::Specs::Value& dbspec) {
+  dbspec.set(spec.v, Condition::Comp(spec.comp));
+}
+
+void set(const SpecValuesPlain& spec, DB::Specs::Values& dbspec) {
   for(const auto& value : spec)
     set(value, dbspec.add());
 }
 
-void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
+void set(const SpecIntervalPlain& intval, DB::Specs::Interval& dbintval) {
   if(!intval.range_begin.empty())
     set(intval.range_begin, dbintval.range_begin);
 
@@ -331,29 +333,11 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
     if(intval.__isset.updating) {
       dbintval.set_opt__updating();
       DB::Cells::Cell dbcell;
-      switch(dbintval.values.col_type) {
-        case DB::Types::Column::COUNTER_I64:
-        case DB::Types::Column::COUNTER_I32:
-        case DB::Types::Column::COUNTER_I16:
-        case DB::Types::Column::COUNTER_I8:  {
-          const uint8_t* valp = reinterpret_cast<const uint8_t*>(intval.updating.v.c_str());
-          size_t _remain = intval.updating.v.length();
-          uint8_t op;
-          int64_t v;
-          int err = DB::Cells::Cell::counter_from_str(&valp, &_remain, op, v);
-          if(err)
-            exception(err, "Bad Counter Value");
-          dbcell.set_counter(op, v, dbintval.values.col_type);
-          break;
-        }
-        default: {
-          intval.updating.__isset.encoder
-            ? dbcell.set_value(
-                DB::Types::Encoder(uint8_t(intval.updating.encoder)), intval.updating.v)
-            : dbcell.set_value(intval.updating.v);
-          break;
-        }
-      }
+      intval.updating.__isset.encoder
+        ? dbcell.set_value(
+            DB::Types::Encoder(uint8_t(intval.updating.encoder)), intval.updating.v)
+        : dbcell.set_value(intval.updating.v);
+
       DB::Specs::UpdateOP update_op;
       if(intval.updating.__isset.update_op)
         set(intval.updating.update_op, update_op);
@@ -374,6 +358,86 @@ void set(const SpecInterval& intval, DB::Specs::Interval& dbintval) {
   }
 }
 
+
+// SpecIntervalCounter
+
+void set(const SpecValueCounter& spec, DB::Specs::Value& dbspec) {
+  dbspec.set_counter(spec.v, Condition::Comp(spec.comp));
+}
+
+void set(const SpecValuesCounter& spec, DB::Specs::Values& dbspec) {
+  for(const auto& value : spec)
+    set(value, dbspec.add());
+}
+
+void set(const SpecIntervalCounter& intval, DB::Specs::Interval& dbintval) {
+  if(!intval.range_begin.empty())
+    set(intval.range_begin, dbintval.range_begin);
+
+  if(!intval.range_end.empty())
+    set(intval.range_end, dbintval.range_end);
+
+  if(!intval.offset_key.empty())
+    set(intval.offset_key, dbintval.offset_key);
+
+  if(intval.__isset.offset_rev)
+    dbintval.offset_rev = intval.offset_rev;
+
+  dbintval.key_intervals.resize(intval.key_intervals.size());
+  size_t n = 0;
+  for(const auto& key_intval : intval.key_intervals) {
+    if(!key_intval.start.empty())
+      set(key_intval.start, dbintval.key_intervals[n].start);
+    if(!key_intval.finish.empty())
+      set(key_intval.finish, dbintval.key_intervals[n].finish);
+    ++n;
+  }
+
+  if(intval.__isset.ts_start)
+    set(intval.ts_start, dbintval.ts_start);
+
+  if(intval.__isset.ts_finish)
+    set(intval.ts_finish, dbintval.ts_finish);
+
+  if(intval.__isset.flags)
+    set(intval.flags, dbintval.flags);
+
+  if(!intval.values.empty())
+    set(intval.values, dbintval.values);
+
+  if(intval.options & SpecIntervalOptions::type::UPDATING) {
+    if(intval.__isset.updating) {
+      dbintval.set_opt__updating();
+      DB::Cells::Cell dbcell;
+      dbcell.set_counter(
+        uint8_t(intval.updating.op),
+        intval.updating.v,
+        dbintval.values.col_type
+      );
+
+      DB::Specs::UpdateOP update_op;
+      if(intval.updating.__isset.update_op)
+        set(intval.updating.update_op, update_op);
+      dbintval.updating.reset(new DB::Specs::IntervalUpdate(
+        dbcell.value,
+        dbcell.vlen,
+        intval.updating.__isset.ts
+          ? intval.updating.ts
+          : DB::Cells::TIMESTAMP_AUTO,
+        update_op,
+        false
+      ));
+      dbcell.value = nullptr;
+      dbcell.vlen = 0;
+    }
+  } else if(intval.options & SpecIntervalOptions::type::DELETING) {
+    dbintval.set_opt__deleting();
+  }
+}
+
+
+
+// SpecIntervalSerial
 
 void set(const SpecValueSerial& spec, DB::Specs::Value& dbspec) {
   DB::Specs::Serial::Value::Fields dbfields;
