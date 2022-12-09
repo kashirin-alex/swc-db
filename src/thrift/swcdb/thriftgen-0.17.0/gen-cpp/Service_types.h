@@ -3606,13 +3606,21 @@ class CellValueSerial : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.v_double && !(v_double == rhs.v_double))
       return false;
-    if (!(v_bytes == rhs.v_bytes))
+    if (__isset.v_bytes != rhs.__isset.v_bytes)
       return false;
-    if (!(v_key == rhs.v_key))
+    else if (__isset.v_bytes && !(v_bytes == rhs.v_bytes))
       return false;
-    if (!(v_li == rhs.v_li))
+    if (__isset.v_key != rhs.__isset.v_key)
       return false;
-    if (!(v_lb == rhs.v_lb))
+    else if (__isset.v_key && !(v_key == rhs.v_key))
+      return false;
+    if (__isset.v_li != rhs.__isset.v_li)
+      return false;
+    else if (__isset.v_li && !(v_li == rhs.v_li))
+      return false;
+    if (__isset.v_lb != rhs.__isset.v_lb)
+      return false;
+    else if (__isset.v_lb && !(v_lb == rhs.v_lb))
       return false;
     return true;
   }
@@ -4131,7 +4139,9 @@ class CellValueSerialOp : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.v_bytes && !(v_bytes == rhs.v_bytes))
       return false;
-    if (!(v_key == rhs.v_key))
+    if (__isset.v_key != rhs.__isset.v_key)
+      return false;
+    else if (__isset.v_key && !(v_key == rhs.v_key))
       return false;
     if (__isset.v_li != rhs.__isset.v_li)
       return false;

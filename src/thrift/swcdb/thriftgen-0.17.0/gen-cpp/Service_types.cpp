@@ -7420,18 +7420,22 @@ __isset.v_double = true;
 
 void CellValueSerial::__set_v_bytes(const std::string& val) {
   this->v_bytes = val;
+__isset.v_bytes = true;
 }
 
 void CellValueSerial::__set_v_key(const Key& val) {
   this->v_key = val;
+__isset.v_key = true;
 }
 
 void CellValueSerial::__set_v_li(const std::vector<int64_t> & val) {
   this->v_li = val;
+__isset.v_li = true;
 }
 
 void CellValueSerial::__set_v_lb(const std::vector<std::string> & val) {
   this->v_lb = val;
+__isset.v_lb = true;
 }
 std::ostream& operator<<(std::ostream& out, const CellValueSerial& obj)
 {
@@ -7584,46 +7588,50 @@ uint32_t CellValueSerial::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeDouble(this->v_double);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("v_bytes", ::apache::thrift::protocol::T_STRING, 4);
-  xfer += oprot->writeBinary(this->v_bytes);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("v_key", ::apache::thrift::protocol::T_LIST, 5);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->v_key.size()));
-    std::vector<std::string> ::const_iterator _iter388;
-    for (_iter388 = this->v_key.begin(); _iter388 != this->v_key.end(); ++_iter388)
-    {
-      xfer += oprot->writeBinary((*_iter388));
-    }
-    xfer += oprot->writeListEnd();
+  if (this->__isset.v_bytes) {
+    xfer += oprot->writeFieldBegin("v_bytes", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeBinary(this->v_bytes);
+    xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("v_li", ::apache::thrift::protocol::T_LIST, 6);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->v_li.size()));
-    std::vector<int64_t> ::const_iterator _iter389;
-    for (_iter389 = this->v_li.begin(); _iter389 != this->v_li.end(); ++_iter389)
+  if (this->__isset.v_key) {
+    xfer += oprot->writeFieldBegin("v_key", ::apache::thrift::protocol::T_LIST, 5);
     {
-      xfer += oprot->writeI64((*_iter389));
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->v_key.size()));
+      std::vector<std::string> ::const_iterator _iter388;
+      for (_iter388 = this->v_key.begin(); _iter388 != this->v_key.end(); ++_iter388)
+      {
+        xfer += oprot->writeBinary((*_iter388));
+      }
+      xfer += oprot->writeListEnd();
     }
-    xfer += oprot->writeListEnd();
+    xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("v_lb", ::apache::thrift::protocol::T_LIST, 7);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->v_lb.size()));
-    std::vector<std::string> ::const_iterator _iter390;
-    for (_iter390 = this->v_lb.begin(); _iter390 != this->v_lb.end(); ++_iter390)
+  if (this->__isset.v_li) {
+    xfer += oprot->writeFieldBegin("v_li", ::apache::thrift::protocol::T_LIST, 6);
     {
-      xfer += oprot->writeBinary((*_iter390));
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->v_li.size()));
+      std::vector<int64_t> ::const_iterator _iter389;
+      for (_iter389 = this->v_li.begin(); _iter389 != this->v_li.end(); ++_iter389)
+      {
+        xfer += oprot->writeI64((*_iter389));
+      }
+      xfer += oprot->writeListEnd();
     }
-    xfer += oprot->writeListEnd();
+    xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.v_lb) {
+    xfer += oprot->writeFieldBegin("v_lb", ::apache::thrift::protocol::T_LIST, 7);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->v_lb.size()));
+      std::vector<std::string> ::const_iterator _iter390;
+      for (_iter390 = this->v_lb.begin(); _iter390 != this->v_lb.end(); ++_iter390)
+      {
+        xfer += oprot->writeBinary((*_iter390));
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -7689,10 +7697,10 @@ void CellValueSerial::printTo(std::ostream& out) const {
   out << "field_id=" << to_string(field_id);
   out << ", " << "v_int64="; (__isset.v_int64 ? (out << to_string(v_int64)) : (out << "<null>"));
   out << ", " << "v_double="; (__isset.v_double ? (out << to_string(v_double)) : (out << "<null>"));
-  out << ", " << "v_bytes=" << to_string(v_bytes);
-  out << ", " << "v_key=" << to_string(v_key);
-  out << ", " << "v_li=" << to_string(v_li);
-  out << ", " << "v_lb=" << to_string(v_lb);
+  out << ", " << "v_bytes="; (__isset.v_bytes ? (out << to_string(v_bytes)) : (out << "<null>"));
+  out << ", " << "v_key="; (__isset.v_key ? (out << to_string(v_key)) : (out << "<null>"));
+  out << ", " << "v_li="; (__isset.v_li ? (out << to_string(v_li)) : (out << "<null>"));
+  out << ", " << "v_lb="; (__isset.v_lb ? (out << to_string(v_lb)) : (out << "<null>"));
   out << ")";
 }
 
@@ -8695,6 +8703,7 @@ __isset.v_bytes = true;
 
 void CellValueSerialOp::__set_v_key(const Key& val) {
   this->v_key = val;
+__isset.v_key = true;
 }
 
 void CellValueSerialOp::__set_v_li(const FU_LI& val) {
@@ -8838,18 +8847,19 @@ uint32_t CellValueSerialOp::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += this->v_bytes.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("v_key", ::apache::thrift::protocol::T_LIST, 5);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->v_key.size()));
-    std::vector<std::string> ::const_iterator _iter440;
-    for (_iter440 = this->v_key.begin(); _iter440 != this->v_key.end(); ++_iter440)
+  if (this->__isset.v_key) {
+    xfer += oprot->writeFieldBegin("v_key", ::apache::thrift::protocol::T_LIST, 5);
     {
-      xfer += oprot->writeBinary((*_iter440));
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->v_key.size()));
+      std::vector<std::string> ::const_iterator _iter440;
+      for (_iter440 = this->v_key.begin(); _iter440 != this->v_key.end(); ++_iter440)
+      {
+        xfer += oprot->writeBinary((*_iter440));
+      }
+      xfer += oprot->writeListEnd();
     }
-    xfer += oprot->writeListEnd();
+    xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldEnd();
-
   if (this->__isset.v_li) {
     xfer += oprot->writeFieldBegin("v_li", ::apache::thrift::protocol::T_STRUCT, 6);
     xfer += this->v_li.write(oprot);
@@ -8926,7 +8936,7 @@ void CellValueSerialOp::printTo(std::ostream& out) const {
   out << ", " << "v_int64="; (__isset.v_int64 ? (out << to_string(v_int64)) : (out << "<null>"));
   out << ", " << "v_double="; (__isset.v_double ? (out << to_string(v_double)) : (out << "<null>"));
   out << ", " << "v_bytes="; (__isset.v_bytes ? (out << to_string(v_bytes)) : (out << "<null>"));
-  out << ", " << "v_key=" << to_string(v_key);
+  out << ", " << "v_key="; (__isset.v_key ? (out << to_string(v_key)) : (out << "<null>"));
   out << ", " << "v_li="; (__isset.v_li ? (out << to_string(v_li)) : (out << "<null>"));
   out << ", " << "v_lb="; (__isset.v_lb ? (out << to_string(v_lb)) : (out << "<null>"));
   out << ")";

@@ -837,25 +837,25 @@ typedef map<i64, UCellsCounter> UCCellsCounter
 /** The Serial Value Cell field */
 struct CellValueSerial {
   /** The Field ID, a single ID can have any/all the field types */
-  1: i32             field_id
+  1: i32                      field_id
 
   /** The INT64 type field */
-  2: optional i64    v_int64
+  2: optional i64             v_int64
 
   /** The DOUBLE type field */
-  3: optional double v_double
+  3: optional double          v_double
 
   /** The BYTES type field */
-  4: binary          v_bytes
+  4: optional binary          v_bytes
 
   /** The Cell KEY type field */
-  5: Key             v_key
+  5: optional Key             v_key
 
   /** The LIST INT64 type field */
-  6: list<i64>       v_li
+  6: optional list<i64>       v_li
 
   /** The LIST BYTES type field */
-  7: list<binary>    v_lb
+  7: optional list<binary>    v_lb
 }
 /** The Serial Cell Value Fields defined as CellValueSerial items in a list-container */
 typedef list<CellValueSerial> CellValuesSerial
@@ -981,7 +981,7 @@ struct CellValueSerialOp {
   4: optional FU_BYTES        v_bytes
 
   /** The Cell KEY type update-field */
-  5: Key                      v_key
+  5: optional Key             v_key
 
   /** The LIST INT64 type update-field */
   6: optional FU_LI           v_li
@@ -1042,7 +1042,6 @@ struct CellPlain {
 typedef list<CellPlain>   CellsPlain
 
 
-
 /** The Counter Cell for results list of scan */
 struct CellCounter {
   /** The Column Name */
@@ -1062,6 +1061,7 @@ struct CellCounter {
 }
 /** A list-container of Counter Cells */
 typedef list<CellCounter> CellsCounter
+
 
 /** The Serial Cell for results list of scan */
 struct CellSerial {

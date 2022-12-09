@@ -39,19 +39,19 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
   /**
    * The BYTES type field
    */
-  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v_bytes; // required
+  public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v_bytes; // optional
   /**
    * The Cell KEY type field
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_key; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_key; // optional
   /**
    * The LIST INT64 type field
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> v_li; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> v_li; // optional
   /**
    * The LIST BYTES type field
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_lb; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_lb; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -159,7 +159,7 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
   private static final int __V_INT64_ISSET_ID = 1;
   private static final int __V_DOUBLE_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.V_INT64,_Fields.V_DOUBLE};
+  private static final _Fields optionals[] = {_Fields.V_INT64,_Fields.V_DOUBLE,_Fields.V_BYTES,_Fields.V_KEY,_Fields.V_LI,_Fields.V_LB};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -169,14 +169,14 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.V_DOUBLE, new org.apache.thrift.meta_data.FieldMetaData("v_double", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
-    tmpMap.put(_Fields.V_BYTES, new org.apache.thrift.meta_data.FieldMetaData("v_bytes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.V_BYTES, new org.apache.thrift.meta_data.FieldMetaData("v_bytes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
-    tmpMap.put(_Fields.V_KEY, new org.apache.thrift.meta_data.FieldMetaData("v_key", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.V_KEY, new org.apache.thrift.meta_data.FieldMetaData("v_key", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "Key")));
-    tmpMap.put(_Fields.V_LI, new org.apache.thrift.meta_data.FieldMetaData("v_li", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.V_LI, new org.apache.thrift.meta_data.FieldMetaData("v_li", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
-    tmpMap.put(_Fields.V_LB, new org.apache.thrift.meta_data.FieldMetaData("v_lb", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.V_LB, new org.apache.thrift.meta_data.FieldMetaData("v_lb", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING            , true))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -187,19 +187,11 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
   }
 
   public CellValueSerial(
-    int field_id,
-    java.nio.ByteBuffer v_bytes,
-    java.util.List<java.nio.ByteBuffer> v_key,
-    java.util.List<java.lang.Long> v_li,
-    java.util.List<java.nio.ByteBuffer> v_lb)
+    int field_id)
   {
     this();
     this.field_id = field_id;
     setField_idIsSet(true);
-    this.v_bytes = org.apache.thrift.TBaseHelper.copyBinary(v_bytes);
-    this.v_key = v_key;
-    this.v_li = v_li;
-    this.v_lb = v_lb;
   }
 
   /**
@@ -864,38 +856,46 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
       sb.append(this.v_double);
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("v_bytes:");
-    if (this.v_bytes == null) {
-      sb.append("null");
-    } else {
-      org.apache.thrift.TBaseHelper.toString(this.v_bytes, sb);
+    if (isSetV_bytes()) {
+      if (!first) sb.append(", ");
+      sb.append("v_bytes:");
+      if (this.v_bytes == null) {
+        sb.append("null");
+      } else {
+        org.apache.thrift.TBaseHelper.toString(this.v_bytes, sb);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("v_key:");
-    if (this.v_key == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.v_key);
+    if (isSetV_key()) {
+      if (!first) sb.append(", ");
+      sb.append("v_key:");
+      if (this.v_key == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.v_key);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("v_li:");
-    if (this.v_li == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.v_li);
+    if (isSetV_li()) {
+      if (!first) sb.append(", ");
+      sb.append("v_li:");
+      if (this.v_li == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.v_li);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("v_lb:");
-    if (this.v_lb == null) {
-      sb.append("null");
-    } else {
-      org.apache.thrift.TBaseHelper.toString(this.v_lb, sb);
+    if (isSetV_lb()) {
+      if (!first) sb.append(", ");
+      sb.append("v_lb:");
+      if (this.v_lb == null) {
+        sb.append("null");
+      } else {
+        org.apache.thrift.TBaseHelper.toString(this.v_lb, sb);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -1059,45 +1059,53 @@ public class CellValueSerial implements org.apache.thrift.TBase<CellValueSerial,
         oprot.writeFieldEnd();
       }
       if (struct.v_bytes != null) {
-        oprot.writeFieldBegin(V_BYTES_FIELD_DESC);
-        oprot.writeBinary(struct.v_bytes);
-        oprot.writeFieldEnd();
+        if (struct.isSetV_bytes()) {
+          oprot.writeFieldBegin(V_BYTES_FIELD_DESC);
+          oprot.writeBinary(struct.v_bytes);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.v_key != null) {
-        oprot.writeFieldBegin(V_KEY_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.v_key.size()));
-          for (java.nio.ByteBuffer _iter297 : struct.v_key)
+        if (struct.isSetV_key()) {
+          oprot.writeFieldBegin(V_KEY_FIELD_DESC);
           {
-            oprot.writeBinary(_iter297);
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.v_key.size()));
+            for (java.nio.ByteBuffer _iter297 : struct.v_key)
+            {
+              oprot.writeBinary(_iter297);
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       if (struct.v_li != null) {
-        oprot.writeFieldBegin(V_LI_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.v_li.size()));
-          for (long _iter298 : struct.v_li)
+        if (struct.isSetV_li()) {
+          oprot.writeFieldBegin(V_LI_FIELD_DESC);
           {
-            oprot.writeI64(_iter298);
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.v_li.size()));
+            for (long _iter298 : struct.v_li)
+            {
+              oprot.writeI64(_iter298);
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       if (struct.v_lb != null) {
-        oprot.writeFieldBegin(V_LB_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.v_lb.size()));
-          for (java.nio.ByteBuffer _iter299 : struct.v_lb)
+        if (struct.isSetV_lb()) {
+          oprot.writeFieldBegin(V_LB_FIELD_DESC);
           {
-            oprot.writeBinary(_iter299);
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.v_lb.size()));
+            for (java.nio.ByteBuffer _iter299 : struct.v_lb)
+            {
+              oprot.writeBinary(_iter299);
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();

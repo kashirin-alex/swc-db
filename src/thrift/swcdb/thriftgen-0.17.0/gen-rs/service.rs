@@ -5085,10 +5085,10 @@ impl TSerializable for CellValueSerial {
     let mut f_1: Option<i32> = Some(0);
     let mut f_2: Option<i64> = None;
     let mut f_3: Option<OrderedFloat<f64>> = None;
-    let mut f_4: Option<Vec<u8>> = Some(Vec::new());
-    let mut f_5: Option<Key> = Some(Vec::new());
-    let mut f_6: Option<Vec<i64>> = Some(Vec::new());
-    let mut f_7: Option<Vec<Vec<u8>>> = Some(Vec::new());
+    let mut f_4: Option<Vec<u8>> = None;
+    let mut f_5: Option<Key> = None;
+    let mut f_6: Option<Vec<i64>> = None;
+    let mut f_7: Option<Vec<Vec<u8>>> = None;
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -5875,7 +5875,7 @@ impl TSerializable for CellValueSerialOp {
     let mut f_2: Option<FUINT64> = None;
     let mut f_3: Option<FUDOUBLE> = None;
     let mut f_4: Option<FUBYTES> = None;
-    let mut f_5: Option<Key> = Some(Vec::new());
+    let mut f_5: Option<Key> = None;
     let mut f_6: Option<FULI> = None;
     let mut f_7: Option<FULB> = None;
     loop {

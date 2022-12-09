@@ -102,7 +102,7 @@ void set(const CellValuesSerialOp& value,
     if(fields.__isset.v_bytes) {
       len += fields.v_bytes.v.size() + 16;
     }
-    if(!fields.v_key.empty()) {
+    if(fields.__isset.v_key) {
       len += fields.v_key.size() + 16;
     }
     if(fields.__isset.v_li) {
@@ -159,7 +159,7 @@ void set(const CellValuesSerialOp& value,
       );
       wfields.add(&ufield);
     }
-    if(!fields.v_key.empty()) {
+    if(fields.__isset.v_key) {
       DB::Cell::Serial::Value::Field_KEY field;
       field.fid = fields.field_id;
       set(fields.v_key, field.key);
@@ -692,24 +692,28 @@ void set(const DB::Cells::Cell& dbcell, CellValuesSerial& values) {
       case DB::Cell::Serial::Value::Type::BYTES: {
         DB::Cell::Serial::Value::Field_BYTES dbfield(&ptr, &remain);
         auto& fields = get_fields(dbfield.fid, values);
+        fields.__isset.v_bytes = true;
         dbfield.convert_to(fields.v_bytes);
         break;
       }
       case DB::Cell::Serial::Value::Type::KEY: {
         DB::Cell::Serial::Value::Field_KEY dbfield(&ptr, &remain);
         auto& fields = get_fields(dbfield.fid, values);
+        fields.__isset.v_key = true;
         dbfield.key.convert_to(fields.v_key);
         break;
       }
       case DB::Cell::Serial::Value::Type::LIST_INT64: {
         DB::Cell::Serial::Value::Field_LIST_INT64 dbfield(&ptr, &remain);
         auto& fields = get_fields(dbfield.fid, values);
+        fields.__isset.v_li = true;
         dbfield.convert_to(fields.v_li);
         break;
       }
       case DB::Cell::Serial::Value::Type::LIST_BYTES: {
         DB::Cell::Serial::Value::Field_LIST_BYTES dbfield(&ptr, &remain);
         auto& fields = get_fields(dbfield.fid, values);
+        fields.__isset.v_lb = true;
         dbfield.convert_to(fields.v_lb);
         break;
       }

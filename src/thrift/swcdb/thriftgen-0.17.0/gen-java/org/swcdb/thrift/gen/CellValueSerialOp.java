@@ -43,7 +43,7 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
   /**
    * The Cell KEY type update-field
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_key; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> v_key; // optional
   /**
    * The LIST INT64 type update-field
    */
@@ -157,7 +157,7 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
   // isset id assignments
   private static final int __FIELD_ID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.V_INT64,_Fields.V_DOUBLE,_Fields.V_BYTES,_Fields.V_LI,_Fields.V_LB};
+  private static final _Fields optionals[] = {_Fields.V_INT64,_Fields.V_DOUBLE,_Fields.V_BYTES,_Fields.V_KEY,_Fields.V_LI,_Fields.V_LB};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -169,7 +169,7 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FU_DOUBLE.class)));
     tmpMap.put(_Fields.V_BYTES, new org.apache.thrift.meta_data.FieldMetaData("v_bytes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FU_BYTES.class)));
-    tmpMap.put(_Fields.V_KEY, new org.apache.thrift.meta_data.FieldMetaData("v_key", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.V_KEY, new org.apache.thrift.meta_data.FieldMetaData("v_key", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "Key")));
     tmpMap.put(_Fields.V_LI, new org.apache.thrift.meta_data.FieldMetaData("v_li", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FU_LI.class)));
@@ -183,13 +183,11 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
   }
 
   public CellValueSerialOp(
-    int field_id,
-    java.util.List<java.nio.ByteBuffer> v_key)
+    int field_id)
   {
     this();
     this.field_id = field_id;
     setField_idIsSet(true);
-    this.v_key = v_key;
   }
 
   /**
@@ -831,14 +829,16 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
       }
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("v_key:");
-    if (this.v_key == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.v_key);
+    if (isSetV_key()) {
+      if (!first) sb.append(", ");
+      sb.append("v_key:");
+      if (this.v_key == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.v_key);
+      }
+      first = false;
     }
-    first = false;
     if (isSetV_li()) {
       if (!first) sb.append(", ");
       sb.append("v_li:");
@@ -1033,16 +1033,18 @@ public class CellValueSerialOp implements org.apache.thrift.TBase<CellValueSeria
         }
       }
       if (struct.v_key != null) {
-        oprot.writeFieldBegin(V_KEY_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.v_key.size()));
-          for (java.nio.ByteBuffer _iter331 : struct.v_key)
+        if (struct.isSetV_key()) {
+          oprot.writeFieldBegin(V_KEY_FIELD_DESC);
           {
-            oprot.writeBinary(_iter331);
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.v_key.size()));
+            for (java.nio.ByteBuffer _iter331 : struct.v_key)
+            {
+              oprot.writeBinary(_iter331);
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       if (struct.v_li != null) {
         if (struct.isSetV_li()) {

@@ -14821,85 +14821,93 @@ swcdb_thrift_cell_value_serial_write (ThriftStruct *object, ThriftProtocol *prot
       return -1;
     xfer += ret;
   }
-  if ((ret = thrift_protocol_write_field_begin (protocol, "v_bytes", T_STRING, 4, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_binary (protocol, this_object->v_bytes ? ((GByteArray *) this_object->v_bytes)->data : NULL, this_object->v_bytes ? ((GByteArray *) this_object->v_bytes)->len : 0, error)) < 0)
-    return -1;
-  xfer += ret;
-
-  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_field_begin (protocol, "v_key", T_LIST, 5, error)) < 0)
-    return -1;
-  xfer += ret;
-  {
-    guint i100;
-
-    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_key ? this_object->v_key->len : 0), error)) < 0)
+  if (this_object->__isset_v_bytes == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "v_bytes", T_STRING, 4, error)) < 0)
       return -1;
     xfer += ret;
-    for (i100 = 0; i100 < (this_object->v_key ? this_object->v_key->len : 0); i100++)
-    {
-      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)))->len : 0, error)) < 0)
-        return -1;
-      xfer += ret;
+    if ((ret = thrift_protocol_write_binary (protocol, this_object->v_bytes ? ((GByteArray *) this_object->v_bytes)->data : NULL, this_object->v_bytes ? ((GByteArray *) this_object->v_bytes)->len : 0, error)) < 0)
+      return -1;
+    xfer += ret;
 
-    }
-    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_field_begin (protocol, "v_li", T_LIST, 6, error)) < 0)
-    return -1;
-  xfer += ret;
-  {
-    guint i101;
-
-    if ((ret = thrift_protocol_write_list_begin (protocol, T_I64, (gint32) (this_object->v_li ? this_object->v_li->len : 0), error)) < 0)
+  if (this_object->__isset_v_key == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "v_key", T_LIST, 5, error)) < 0)
       return -1;
     xfer += ret;
-    for (i101 = 0; i101 < (this_object->v_li ? this_object->v_li->len : 0); i101++)
     {
-      if ((ret = thrift_protocol_write_i64 (protocol, (g_array_index (this_object->v_li, gint64, i101)), error)) < 0)
+      guint i100;
+
+      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_key ? this_object->v_key->len : 0), error)) < 0)
         return -1;
       xfer += ret;
+      for (i100 = 0; i100 < (this_object->v_key ? this_object->v_key->len : 0); i100++)
+      {
+        if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i100)))->len : 0, error)) < 0)
+          return -1;
+        xfer += ret;
 
+      }
+      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+        return -1;
+      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
-  if ((ret = thrift_protocol_write_field_begin (protocol, "v_lb", T_LIST, 7, error)) < 0)
-    return -1;
-  xfer += ret;
-  {
-    guint i102;
-
-    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_lb ? this_object->v_lb->len : 0), error)) < 0)
+  if (this_object->__isset_v_li == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "v_li", T_LIST, 6, error)) < 0)
       return -1;
     xfer += ret;
-    for (i102 = 0; i102 < (this_object->v_lb ? this_object->v_lb->len : 0); i102++)
     {
-      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)))->len : 0, error)) < 0)
+      guint i101;
+
+      if ((ret = thrift_protocol_write_list_begin (protocol, T_I64, (gint32) (this_object->v_li ? this_object->v_li->len : 0), error)) < 0)
         return -1;
       xfer += ret;
+      for (i101 = 0; i101 < (this_object->v_li ? this_object->v_li->len : 0); i101++)
+      {
+        if ((ret = thrift_protocol_write_i64 (protocol, (g_array_index (this_object->v_li, gint64, i101)), error)) < 0)
+          return -1;
+        xfer += ret;
 
+      }
+      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+        return -1;
+      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
+  if (this_object->__isset_v_lb == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "v_lb", T_LIST, 7, error)) < 0)
+      return -1;
+    xfer += ret;
+    {
+      guint i102;
+
+      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_lb ? this_object->v_lb->len : 0), error)) < 0)
+        return -1;
+      xfer += ret;
+      for (i102 = 0; i102 < (this_object->v_lb ? this_object->v_lb->len : 0); i102++)
+      {
+        if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_lb, i102)))->len : 0, error)) < 0)
+          return -1;
+        xfer += ret;
+
+      }
+      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+        return -1;
+      xfer += ret;
+    }
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
+      return -1;
+    xfer += ret;
+  }
   if ((ret = thrift_protocol_write_field_stop (protocol, error)) < 0)
     return -1;
   xfer += ret;
@@ -17546,29 +17554,31 @@ swcdb_thrift_cell_value_serial_op_write (ThriftStruct *object, ThriftProtocol *p
       return -1;
     xfer += ret;
   }
-  if ((ret = thrift_protocol_write_field_begin (protocol, "v_key", T_LIST, 5, error)) < 0)
-    return -1;
-  xfer += ret;
-  {
-    guint i116;
-
-    if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_key ? this_object->v_key->len : 0), error)) < 0)
+  if (this_object->__isset_v_key == TRUE) {
+    if ((ret = thrift_protocol_write_field_begin (protocol, "v_key", T_LIST, 5, error)) < 0)
       return -1;
     xfer += ret;
-    for (i116 = 0; i116 < (this_object->v_key ? this_object->v_key->len : 0); i116++)
     {
-      if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)))->len : 0, error)) < 0)
+      guint i116;
+
+      if ((ret = thrift_protocol_write_list_begin (protocol, T_STRING, (gint32) (this_object->v_key ? this_object->v_key->len : 0), error)) < 0)
         return -1;
       xfer += ret;
+      for (i116 = 0; i116 < (this_object->v_key ? this_object->v_key->len : 0); i116++)
+      {
+        if ((ret = thrift_protocol_write_binary (protocol, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)))->data : NULL, ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)) ? ((GByteArray *) ((gchar*)g_ptr_array_index ((GPtrArray *) this_object->v_key, i116)))->len : 0, error)) < 0)
+          return -1;
+        xfer += ret;
 
+      }
+      if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+        return -1;
+      xfer += ret;
     }
-    if ((ret = thrift_protocol_write_list_end (protocol, error)) < 0)
+    if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
       return -1;
     xfer += ret;
   }
-  if ((ret = thrift_protocol_write_field_end (protocol, error)) < 0)
-    return -1;
-  xfer += ret;
   if (this_object->__isset_v_li == TRUE) {
     if ((ret = thrift_protocol_write_field_begin (protocol, "v_li", T_STRUCT, 6, error)) < 0)
       return -1;

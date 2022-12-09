@@ -1330,13 +1330,13 @@ module Swcdb
           # The DOUBLE type field
           V_DOUBLE => {:type => ::Thrift::Types::DOUBLE, :name => 'v_double', :optional => true},
           # The BYTES type field
-          V_BYTES => {:type => ::Thrift::Types::STRING, :name => 'v_bytes', :binary => true},
+          V_BYTES => {:type => ::Thrift::Types::STRING, :name => 'v_bytes', :binary => true, :optional => true},
           # The Cell KEY type field
-          V_KEY => {:type => ::Thrift::Types::LIST, :name => 'v_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          V_KEY => {:type => ::Thrift::Types::LIST, :name => 'v_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}, :optional => true},
           # The LIST INT64 type field
-          V_LI => {:type => ::Thrift::Types::LIST, :name => 'v_li', :element => {:type => ::Thrift::Types::I64}},
+          V_LI => {:type => ::Thrift::Types::LIST, :name => 'v_li', :element => {:type => ::Thrift::Types::I64}, :optional => true},
           # The LIST BYTES type field
-          V_LB => {:type => ::Thrift::Types::LIST, :name => 'v_lb', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
+          V_LB => {:type => ::Thrift::Types::LIST, :name => 'v_lb', :element => {:type => ::Thrift::Types::STRING, :binary => true}, :optional => true}
         }
 
         def struct_fields; FIELDS; end
@@ -1513,7 +1513,7 @@ module Swcdb
           # The BYTES type update-field
           V_BYTES => {:type => ::Thrift::Types::STRUCT, :name => 'v_bytes', :class => ::Swcdb::Thrift::Gen::FU_BYTES, :optional => true},
           # The Cell KEY type update-field
-          V_KEY => {:type => ::Thrift::Types::LIST, :name => 'v_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          V_KEY => {:type => ::Thrift::Types::LIST, :name => 'v_key', :element => {:type => ::Thrift::Types::STRING, :binary => true}, :optional => true},
           # The LIST INT64 type update-field
           V_LI => {:type => ::Thrift::Types::STRUCT, :name => 'v_li', :class => ::Swcdb::Thrift::Gen::FU_LI, :optional => true},
           # The LIST BYTES type update-field
