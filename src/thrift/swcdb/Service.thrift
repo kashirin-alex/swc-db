@@ -1096,8 +1096,8 @@ struct Cells {
 
 
 
-/** The Column Cell for results on Columns of scan */
-struct CCell {
+/** The Plain column type Cell for results on Columns of scan */
+struct CCellPlain {
   /** The Cell Key */
   1: Key              k
 
@@ -1108,7 +1108,22 @@ struct CCell {
   3: binary           v
 }
 
-/** The Column Serial Cell for results on Columns of scan */
+/** The Counter column type Cell for results on Columns of scan */
+struct CCellCounter {
+  /** The Cell Key */
+  1: Key              k
+
+  /** The Cell Timestamp */
+  2: i64              ts
+
+  /** The Cell Counter Value */
+  3: i64              v
+
+  /** The Counter EQ since ts */
+  4: optional i64     eq
+}
+
+/** The Serial column type Cell for results on Columns of scan */
 struct CCellSerial {
   /** The Cell Key */
   1: Key              k
@@ -1122,11 +1137,14 @@ struct CCellSerial {
 
 /** The Column Cells for results on Columns of scan */
 struct ColCells {
-  /** The Cells, defined as CCell items in a list-container */
-  1: list<CCell>       cells
+  /** The Plain type Cells, defined as CCellPlain items in a list-container */
+  1: list<CCellPlain>       plain_cells
 
-  /** The Serial Cells, defined as CCellSerial items in a list-container */
-  2: list<CCellSerial> serial_cells
+  /** The Counter type Cells, defined as CCellCounter items in a list-container */
+  2: list<CCellCounter>     counter_cells
+
+  /** The Serial type Cells, defined as CCellSerial items in a list-container */
+  3: list<CCellSerial>      serial_cells
 }
 
 /** The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name */

@@ -694,7 +694,9 @@ class CellSerial;
 
 class Cells;
 
-class CCell;
+class CCellPlain;
+
+class CCellCounter;
 
 class CCellSerial;
 
@@ -4597,29 +4599,29 @@ void swap(Cells &a, Cells &b);
 
 std::ostream& operator<<(std::ostream& out, const Cells& obj);
 
-typedef struct _CCell__isset {
-  _CCell__isset() : k(false), ts(false), v(false) {}
+typedef struct _CCellPlain__isset {
+  _CCellPlain__isset() : k(false), ts(false), v(false) {}
   bool k :1;
   bool ts :1;
   bool v :1;
-} _CCell__isset;
+} _CCellPlain__isset;
 
 /**
- * The Column Cell for results on Columns of scan
+ * The Plain column type Cell for results on Columns of scan
  */
-class CCell : public virtual ::apache::thrift::TBase {
+class CCellPlain : public virtual ::apache::thrift::TBase {
  public:
 
-  CCell(const CCell&);
-  CCell(CCell&&) noexcept;
-  CCell& operator=(const CCell&);
-  CCell& operator=(CCell&&) noexcept;
-  CCell() noexcept
-        : ts(0),
-          v() {
+  CCellPlain(const CCellPlain&);
+  CCellPlain(CCellPlain&&) noexcept;
+  CCellPlain& operator=(const CCellPlain&);
+  CCellPlain& operator=(CCellPlain&&) noexcept;
+  CCellPlain() noexcept
+             : ts(0),
+               v() {
   }
 
-  virtual ~CCell() noexcept;
+  virtual ~CCellPlain() noexcept;
   /**
    * The Cell Key
    */
@@ -4633,7 +4635,7 @@ class CCell : public virtual ::apache::thrift::TBase {
    */
   std::string v;
 
-  _CCell__isset __isset;
+  _CCellPlain__isset __isset;
 
   void __set_k(const Key& val);
 
@@ -4641,7 +4643,7 @@ class CCell : public virtual ::apache::thrift::TBase {
 
   void __set_v(const std::string& val);
 
-  bool operator == (const CCell & rhs) const
+  bool operator == (const CCellPlain & rhs) const
   {
     if (!(k == rhs.k))
       return false;
@@ -4651,11 +4653,11 @@ class CCell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const CCell &rhs) const {
+  bool operator != (const CCellPlain &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const CCell & ) const;
+  bool operator < (const CCellPlain & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
@@ -4663,9 +4665,91 @@ class CCell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(CCell &a, CCell &b);
+void swap(CCellPlain &a, CCellPlain &b);
 
-std::ostream& operator<<(std::ostream& out, const CCell& obj);
+std::ostream& operator<<(std::ostream& out, const CCellPlain& obj);
+
+typedef struct _CCellCounter__isset {
+  _CCellCounter__isset() : k(false), ts(false), v(false), eq(false) {}
+  bool k :1;
+  bool ts :1;
+  bool v :1;
+  bool eq :1;
+} _CCellCounter__isset;
+
+/**
+ * The Counter column type Cell for results on Columns of scan
+ */
+class CCellCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  CCellCounter(const CCellCounter&);
+  CCellCounter(CCellCounter&&) noexcept;
+  CCellCounter& operator=(const CCellCounter&);
+  CCellCounter& operator=(CCellCounter&&) noexcept;
+  CCellCounter() noexcept
+               : ts(0),
+                 v(0),
+                 eq(0) {
+  }
+
+  virtual ~CCellCounter() noexcept;
+  /**
+   * The Cell Key
+   */
+  Key k;
+  /**
+   * The Cell Timestamp
+   */
+  int64_t ts;
+  /**
+   * The Cell Counter Value
+   */
+  int64_t v;
+  /**
+   * The Counter EQ since ts
+   */
+  int64_t eq;
+
+  _CCellCounter__isset __isset;
+
+  void __set_k(const Key& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const int64_t val);
+
+  void __set_eq(const int64_t val);
+
+  bool operator == (const CCellCounter & rhs) const
+  {
+    if (!(k == rhs.k))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    if (__isset.eq != rhs.__isset.eq)
+      return false;
+    else if (__isset.eq && !(eq == rhs.eq))
+      return false;
+    return true;
+  }
+  bool operator != (const CCellCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CCellCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CCellCounter &a, CCellCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const CCellCounter& obj);
 
 typedef struct _CCellSerial__isset {
   _CCellSerial__isset() : k(false), ts(false), v(false) {}
@@ -4675,7 +4759,7 @@ typedef struct _CCellSerial__isset {
 } _CCellSerial__isset;
 
 /**
- * The Column Serial Cell for results on Columns of scan
+ * The Serial column type Cell for results on Columns of scan
  */
 class CCellSerial : public virtual ::apache::thrift::TBase {
  public:
@@ -4737,8 +4821,9 @@ void swap(CCellSerial &a, CCellSerial &b);
 std::ostream& operator<<(std::ostream& out, const CCellSerial& obj);
 
 typedef struct _ColCells__isset {
-  _ColCells__isset() : cells(false), serial_cells(false) {}
-  bool cells :1;
+  _ColCells__isset() : plain_cells(false), counter_cells(false), serial_cells(false) {}
+  bool plain_cells :1;
+  bool counter_cells :1;
   bool serial_cells :1;
 } _ColCells__isset;
 
@@ -4757,23 +4842,31 @@ class ColCells : public virtual ::apache::thrift::TBase {
 
   virtual ~ColCells() noexcept;
   /**
-   * The Cells, defined as CCell items in a list-container
+   * The Plain type Cells, defined as CCellPlain items in a list-container
    */
-  std::vector<CCell>  cells;
+  std::vector<CCellPlain>  plain_cells;
   /**
-   * The Serial Cells, defined as CCellSerial items in a list-container
+   * The Counter type Cells, defined as CCellCounter items in a list-container
+   */
+  std::vector<CCellCounter>  counter_cells;
+  /**
+   * The Serial type Cells, defined as CCellSerial items in a list-container
    */
   std::vector<CCellSerial>  serial_cells;
 
   _ColCells__isset __isset;
 
-  void __set_cells(const std::vector<CCell> & val);
+  void __set_plain_cells(const std::vector<CCellPlain> & val);
+
+  void __set_counter_cells(const std::vector<CCellCounter> & val);
 
   void __set_serial_cells(const std::vector<CCellSerial> & val);
 
   bool operator == (const ColCells & rhs) const
   {
-    if (!(cells == rhs.cells))
+    if (!(plain_cells == rhs.plain_cells))
+      return false;
+    if (!(counter_cells == rhs.counter_cells))
       return false;
     if (!(serial_cells == rhs.serial_cells))
       return false;

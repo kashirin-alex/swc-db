@@ -126,11 +126,11 @@ client.sql_update(
     0)
 
 # Select all the cells, expect in Volume Sequence
-lists = client.sql_select("select where col(" + str(schema.cid) + ")=(cells=())")
-assert(len(lists.cells) == n_cells)
+result = client.sql_select("select where col(" + str(schema.cid) + ")=(cells=())")
+assert(len(result.plain_cells) == n_cells)
 
 n = 0
-for cell in lists.cells:
+for cell in result.plain_cells:
     assert(int(cell.k[0]) == n)
     n += 1
 
@@ -181,7 +181,7 @@ n_cells = 100000
 client.update_plain(
     {
         schema.cid:  [
-            service.UCell(
+            service.UCellPlain(
                 f=service.Flag.INSERT,
                 k=[bytearray(str(n), 'utf8')],
                 ts=None, ts_desc=None,
@@ -203,11 +203,11 @@ specs = service.SpecScan(
     ],
     flags=None
 )
-list = client.scan(specs)
-assert(len(list.cells) == n_cells)
+result = client.scan(specs)
+assert(len(result.plain_cells) == n_cells)
 
 n = 0
-for cell in list.cells:
+for cell in result.plain_cells:
     assert(int(cell.k[0]) == n)
     n += 1
 

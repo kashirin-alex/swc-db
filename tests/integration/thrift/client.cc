@@ -99,7 +99,8 @@ void print(const CCells& columns) {
   std::cout << "columns.size=" << columns.size() << std::endl;
   for(auto& col : columns) {
     std::cout << "column=" << col.first
-              << " cells.size=" << col.second.cells.size()
+              << " plain_cells.size=" << col.second.plain_cells.size()
+              << " counter_cells.size=" << col.second.counter_cells.size()
               << " serial_cells.size=" << col.second.serial_cells.size()
               << std::endl;
     col.second.printTo(std::cout << " ");

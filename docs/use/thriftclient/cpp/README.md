@@ -168,12 +168,12 @@ int main() {
   specs.printTo(std::cout << " Select SpecScan='");
   std::cout << "'\n";
 
-  SWC::Thrift::Cells container;
-  client.scan(container, specs);
+  SWC::Thrift::Cells result;
+  client.scan(result, specs);
 
-  std::cout << "Select cells.size()=" << container.plain_cells.size()  << "\n";
-  assert(container.plain_cells.size() == n_cells);
-  for(auto& cell : container.cells)
+  std::cout << "Select plain_cells.size()=" << result.plain_cells.size()  << "\n";
+  assert(result.plain_cells.size() == n_cells);
+  for(auto& cell : result.plain_cells)
     assert(value.compare(cell.v) == 0);
 
 

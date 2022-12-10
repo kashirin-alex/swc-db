@@ -6679,12 +6679,12 @@ impl Default for Cells {
 }
 
 //
-// CCell
+// CCellPlain
 //
 
-/// The Column Cell for results on Columns of scan
+/// The Plain column type Cell for results on Columns of scan
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct CCell {
+pub struct CCellPlain {
   /// The Cell Key
   pub k: Option<Key>,
   /// The Cell Timestamp
@@ -6693,9 +6693,9 @@ pub struct CCell {
   pub v: Option<Vec<u8>>,
 }
 
-impl CCell {
-  pub fn new<F1, F2, F3>(k: F1, ts: F2, v: F3) -> CCell where F1: Into<Option<Key>>, F2: Into<Option<i64>>, F3: Into<Option<Vec<u8>>> {
-    CCell {
+impl CCellPlain {
+  pub fn new<F1, F2, F3>(k: F1, ts: F2, v: F3) -> CCellPlain where F1: Into<Option<Key>>, F2: Into<Option<i64>>, F3: Into<Option<Vec<u8>>> {
+    CCellPlain {
       k: k.into(),
       ts: ts.into(),
       v: v.into(),
@@ -6703,8 +6703,8 @@ impl CCell {
   }
 }
 
-impl TSerializable for CCell {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<CCell> {
+impl TSerializable for CCellPlain {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<CCellPlain> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<Key> = Some(Vec::new());
     let mut f_2: Option<i64> = Some(0);
@@ -6741,7 +6741,7 @@ impl TSerializable for CCell {
       i_prot.read_field_end()?;
     }
     i_prot.read_struct_end()?;
-    let ret = CCell {
+    let ret = CCellPlain {
       k: f_1,
       ts: f_2,
       v: f_3,
@@ -6749,7 +6749,7 @@ impl TSerializable for CCell {
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("CCell");
+    let struct_ident = TStructIdentifier::new("CCellPlain");
     o_prot.write_struct_begin(&struct_ident)?;
     if let Some(ref fld_var) = self.k {
       o_prot.write_field_begin(&TFieldIdentifier::new("k", TType::List, 1))?;
@@ -6775,9 +6775,9 @@ impl TSerializable for CCell {
   }
 }
 
-impl Default for CCell {
+impl Default for CCellPlain {
   fn default() -> Self {
-    CCell{
+    CCellPlain{
       k: Some(Vec::new()),
       ts: Some(0),
       v: Some(Vec::new()),
@@ -6786,10 +6786,132 @@ impl Default for CCell {
 }
 
 //
+// CCellCounter
+//
+
+/// The Counter column type Cell for results on Columns of scan
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct CCellCounter {
+  /// The Cell Key
+  pub k: Option<Key>,
+  /// The Cell Timestamp
+  pub ts: Option<i64>,
+  /// The Cell Counter Value
+  pub v: Option<i64>,
+  /// The Counter EQ since ts
+  pub eq: Option<i64>,
+}
+
+impl CCellCounter {
+  pub fn new<F1, F2, F3, F4>(k: F1, ts: F2, v: F3, eq: F4) -> CCellCounter where F1: Into<Option<Key>>, F2: Into<Option<i64>>, F3: Into<Option<i64>>, F4: Into<Option<i64>> {
+    CCellCounter {
+      k: k.into(),
+      ts: ts.into(),
+      v: v.into(),
+      eq: eq.into(),
+    }
+  }
+}
+
+impl TSerializable for CCellCounter {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<CCellCounter> {
+    i_prot.read_struct_begin()?;
+    let mut f_1: Option<Key> = Some(Vec::new());
+    let mut f_2: Option<i64> = Some(0);
+    let mut f_3: Option<i64> = Some(0);
+    let mut f_4: Option<i64> = None;
+    loop {
+      let field_ident = i_prot.read_field_begin()?;
+      if field_ident.field_type == TType::Stop {
+        break;
+      }
+      let field_id = field_id(&field_ident)?;
+      match field_id {
+        1 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_52 = i_prot.read_bytes()?;
+            val.push(list_elem_52);
+          }
+          i_prot.read_list_end()?;
+          f_1 = Some(val);
+        },
+        2 => {
+          let val = i_prot.read_i64()?;
+          f_2 = Some(val);
+        },
+        3 => {
+          let val = i_prot.read_i64()?;
+          f_3 = Some(val);
+        },
+        4 => {
+          let val = i_prot.read_i64()?;
+          f_4 = Some(val);
+        },
+        _ => {
+          i_prot.skip(field_ident.field_type)?;
+        },
+      };
+      i_prot.read_field_end()?;
+    }
+    i_prot.read_struct_end()?;
+    let ret = CCellCounter {
+      k: f_1,
+      ts: f_2,
+      v: f_3,
+      eq: f_4,
+    };
+    Ok(ret)
+  }
+  fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
+    let struct_ident = TStructIdentifier::new("CCellCounter");
+    o_prot.write_struct_begin(&struct_ident)?;
+    if let Some(ref fld_var) = self.k {
+      o_prot.write_field_begin(&TFieldIdentifier::new("k", TType::List, 1))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::String, fld_var.len() as i32))?;
+      for e in fld_var {
+        o_prot.write_bytes(e)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.ts {
+      o_prot.write_field_begin(&TFieldIdentifier::new("ts", TType::I64, 2))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.v {
+      o_prot.write_field_begin(&TFieldIdentifier::new("v", TType::I64, 3))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    if let Some(fld_var) = self.eq {
+      o_prot.write_field_begin(&TFieldIdentifier::new("eq", TType::I64, 4))?;
+      o_prot.write_i64(fld_var)?;
+      o_prot.write_field_end()?
+    }
+    o_prot.write_field_stop()?;
+    o_prot.write_struct_end()
+  }
+}
+
+impl Default for CCellCounter {
+  fn default() -> Self {
+    CCellCounter{
+      k: Some(Vec::new()),
+      ts: Some(0),
+      v: Some(0),
+      eq: Some(0),
+    }
+  }
+}
+
+//
 // CCellSerial
 //
 
-/// The Column Serial Cell for results on Columns of scan
+/// The Serial column type Cell for results on Columns of scan
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CCellSerial {
   /// The Cell Key
@@ -6827,8 +6949,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_52 = i_prot.read_bytes()?;
-            val.push(list_elem_52);
+            let list_elem_53 = i_prot.read_bytes()?;
+            val.push(list_elem_53);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -6841,8 +6963,8 @@ impl TSerializable for CCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_53 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_53);
+            let list_elem_54 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_54);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -6909,16 +7031,19 @@ impl Default for CCellSerial {
 /// The Column Cells for results on Columns of scan
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ColCells {
-  /// The Cells, defined as CCell items in a list-container
-  pub cells: Option<Vec<CCell>>,
-  /// The Serial Cells, defined as CCellSerial items in a list-container
+  /// The Plain type Cells, defined as CCellPlain items in a list-container
+  pub plain_cells: Option<Vec<CCellPlain>>,
+  /// The Counter type Cells, defined as CCellCounter items in a list-container
+  pub counter_cells: Option<Vec<CCellCounter>>,
+  /// The Serial type Cells, defined as CCellSerial items in a list-container
   pub serial_cells: Option<Vec<CCellSerial>>,
 }
 
 impl ColCells {
-  pub fn new<F1, F2>(cells: F1, serial_cells: F2) -> ColCells where F1: Into<Option<Vec<CCell>>>, F2: Into<Option<Vec<CCellSerial>>> {
+  pub fn new<F1, F2, F3>(plain_cells: F1, counter_cells: F2, serial_cells: F3) -> ColCells where F1: Into<Option<Vec<CCellPlain>>>, F2: Into<Option<Vec<CCellCounter>>>, F3: Into<Option<Vec<CCellSerial>>> {
     ColCells {
-      cells: cells.into(),
+      plain_cells: plain_cells.into(),
+      counter_cells: counter_cells.into(),
       serial_cells: serial_cells.into(),
     }
   }
@@ -6927,8 +7052,9 @@ impl ColCells {
 impl TSerializable for ColCells {
   fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ColCells> {
     i_prot.read_struct_begin()?;
-    let mut f_1: Option<Vec<CCell>> = Some(Vec::new());
-    let mut f_2: Option<Vec<CCellSerial>> = Some(Vec::new());
+    let mut f_1: Option<Vec<CCellPlain>> = Some(Vec::new());
+    let mut f_2: Option<Vec<CCellCounter>> = Some(Vec::new());
+    let mut f_3: Option<Vec<CCellSerial>> = Some(Vec::new());
     loop {
       let field_ident = i_prot.read_field_begin()?;
       if field_ident.field_type == TType::Stop {
@@ -6938,23 +7064,33 @@ impl TSerializable for ColCells {
       match field_id {
         1 => {
           let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<CCell> = Vec::with_capacity(list_ident.size as usize);
+          let mut val: Vec<CCellPlain> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_54 = CCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_54);
+            let list_elem_55 = CCellPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_55);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
         },
         2 => {
           let list_ident = i_prot.read_list_begin()?;
-          let mut val: Vec<CCellSerial> = Vec::with_capacity(list_ident.size as usize);
+          let mut val: Vec<CCellCounter> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_55 = CCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_55);
+            let list_elem_56 = CCellCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_56);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
+        },
+        3 => {
+          let list_ident = i_prot.read_list_begin()?;
+          let mut val: Vec<CCellSerial> = Vec::with_capacity(list_ident.size as usize);
+          for _ in 0..list_ident.size {
+            let list_elem_57 = CCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_57);
+          }
+          i_prot.read_list_end()?;
+          f_3 = Some(val);
         },
         _ => {
           i_prot.skip(field_ident.field_type)?;
@@ -6964,16 +7100,26 @@ impl TSerializable for ColCells {
     }
     i_prot.read_struct_end()?;
     let ret = ColCells {
-      cells: f_1,
-      serial_cells: f_2,
+      plain_cells: f_1,
+      counter_cells: f_2,
+      serial_cells: f_3,
     };
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
     let struct_ident = TStructIdentifier::new("ColCells");
     o_prot.write_struct_begin(&struct_ident)?;
-    if let Some(ref fld_var) = self.cells {
-      o_prot.write_field_begin(&TFieldIdentifier::new("cells", TType::List, 1))?;
+    if let Some(ref fld_var) = self.plain_cells {
+      o_prot.write_field_begin(&TFieldIdentifier::new("plain_cells", TType::List, 1))?;
+      o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
+      for e in fld_var {
+        e.write_to_out_protocol(o_prot)?;
+      }
+      o_prot.write_list_end()?;
+      o_prot.write_field_end()?
+    }
+    if let Some(ref fld_var) = self.counter_cells {
+      o_prot.write_field_begin(&TFieldIdentifier::new("counter_cells", TType::List, 2))?;
       o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
       for e in fld_var {
         e.write_to_out_protocol(o_prot)?;
@@ -6982,7 +7128,7 @@ impl TSerializable for ColCells {
       o_prot.write_field_end()?
     }
     if let Some(ref fld_var) = self.serial_cells {
-      o_prot.write_field_begin(&TFieldIdentifier::new("serial_cells", TType::List, 2))?;
+      o_prot.write_field_begin(&TFieldIdentifier::new("serial_cells", TType::List, 3))?;
       o_prot.write_list_begin(&TListIdentifier::new(TType::Struct, fld_var.len() as i32))?;
       for e in fld_var {
         e.write_to_out_protocol(o_prot)?;
@@ -6998,7 +7144,8 @@ impl TSerializable for ColCells {
 impl Default for ColCells {
   fn default() -> Self {
     ColCells{
-      cells: Some(Vec::new()),
+      plain_cells: Some(Vec::new()),
+      counter_cells: Some(Vec::new()),
       serial_cells: Some(Vec::new()),
     }
   }
@@ -7151,8 +7298,8 @@ impl TSerializable for KCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_56 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_56);
+            let list_elem_58 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_58);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7250,8 +7397,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Vec<u8>> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_57 = i_prot.read_bytes()?;
-            val.push(list_elem_57);
+            let list_elem_59 = i_prot.read_bytes()?;
+            val.push(list_elem_59);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -7260,8 +7407,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_58 = KCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_58);
+            let list_elem_60 = KCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_60);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -7270,8 +7417,8 @@ impl TSerializable for KCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_59 = KCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_59);
+            let list_elem_61 = KCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_61);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7482,8 +7629,8 @@ impl TSerializable for FCellSerial {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellValueSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_60 = CellValueSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_60);
+            let list_elem_62 = CellValueSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_62);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7581,9 +7728,9 @@ impl TSerializable for FCells {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<Vec<u8>, Box<FCells>> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_61 = i_prot.read_bytes()?;
-            let map_val_62 = Box::new(FCells::read_from_in_protocol(i_prot)?);
-            val.insert(map_key_61, map_val_62);
+            let map_key_63 = i_prot.read_bytes()?;
+            let map_val_64 = Box::new(FCells::read_from_in_protocol(i_prot)?);
+            val.insert(map_key_63, map_val_64);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -7592,8 +7739,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCell> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_63 = FCell::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_63);
+            let list_elem_65 = FCell::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_65);
           }
           i_prot.read_list_end()?;
           f_2 = Some(val);
@@ -7602,8 +7749,8 @@ impl TSerializable for FCells {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<FCellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_64 = FCellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_64);
+            let list_elem_66 = FCellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_66);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7718,9 +7865,9 @@ impl TSerializable for CellsGroup {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_65 = i_prot.read_string()?;
-            let map_val_66 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_65, map_val_66);
+            let map_key_67 = i_prot.read_string()?;
+            let map_val_68 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_67, map_val_68);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -7729,8 +7876,8 @@ impl TSerializable for CellsGroup {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_67 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_67);
+            let list_elem_69 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_69);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -7926,8 +8073,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_68 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_68);
+            let list_elem_70 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_70);
           }
           i_prot.read_list_end()?;
           f_1 = Some(val);
@@ -7940,8 +8087,8 @@ impl TSerializable for Result {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_69 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_69);
+            let list_elem_71 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_71);
           }
           i_prot.read_list_end()?;
           f_3 = Some(val);
@@ -10918,8 +11065,8 @@ impl ServiceSqlListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_70 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_70);
+            let list_elem_72 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_72);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11054,8 +11201,8 @@ impl ServiceSqlCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_71 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_71);
+            let list_elem_73 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_73);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11316,8 +11463,8 @@ impl ServiceSqlSelectPlainResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellPlain> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_72 = CellPlain::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_72);
+            let list_elem_74 = CellPlain::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_74);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11452,8 +11599,8 @@ impl ServiceSqlSelectCounterResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellCounter> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_73 = CellCounter::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_73);
+            let list_elem_75 = CellCounter::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_75);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11588,8 +11735,8 @@ impl ServiceSqlSelectSerialResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CellSerial> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_74 = CellSerial::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_74);
+            let list_elem_76 = CellSerial::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_76);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -11724,9 +11871,9 @@ impl ServiceSqlSelectRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_75 = i_prot.read_string()?;
-            let map_val_76 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_75, map_val_76);
+            let map_key_77 = i_prot.read_string()?;
+            let map_val_78 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_77, map_val_78);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -11862,8 +12009,8 @@ impl ServiceSqlSelectRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_77 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_77);
+            let list_elem_79 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_79);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -12673,15 +12820,15 @@ impl ServiceUpdatePlainArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_78 = i_prot.read_i64()?;
+            let map_key_80 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_79: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_81: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_80 = UCellPlain::read_from_in_protocol(i_prot)?;
-              map_val_79.push(list_elem_80);
+              let list_elem_82 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_81.push(list_elem_82);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_78, map_val_79);
+            val.insert(map_key_80, map_val_81);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12812,15 +12959,15 @@ impl ServiceUpdateCounterArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_81 = i_prot.read_i64()?;
+            let map_key_83 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_82: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_84: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_83 = UCellCounter::read_from_in_protocol(i_prot)?;
-              map_val_82.push(list_elem_83);
+              let list_elem_85 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_84.push(list_elem_85);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_81, map_val_82);
+            val.insert(map_key_83, map_val_84);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -12951,15 +13098,15 @@ impl ServiceUpdateSerialArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_84 = i_prot.read_i64()?;
+            let map_key_86 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_85: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_87: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_86 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_85.push(list_elem_86);
+              let list_elem_88 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_87.push(list_elem_88);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_84, map_val_85);
+            val.insert(map_key_86, map_val_87);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -13096,15 +13243,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsPlain> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_87 = i_prot.read_i64()?;
+            let map_key_89 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_88: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_90: Vec<UCellPlain> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_89 = UCellPlain::read_from_in_protocol(i_prot)?;
-              map_val_88.push(list_elem_89);
+              let list_elem_91 = UCellPlain::read_from_in_protocol(i_prot)?;
+              map_val_90.push(list_elem_91);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_87, map_val_88);
+            val.insert(map_key_89, map_val_90);
           }
           i_prot.read_map_end()?;
           f_1 = Some(val);
@@ -13113,15 +13260,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsCounter> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_90 = i_prot.read_i64()?;
+            let map_key_92 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_91: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_93: Vec<UCellCounter> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_92 = UCellCounter::read_from_in_protocol(i_prot)?;
-              map_val_91.push(list_elem_92);
+              let list_elem_94 = UCellCounter::read_from_in_protocol(i_prot)?;
+              map_val_93.push(list_elem_94);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_90, map_val_91);
+            val.insert(map_key_92, map_val_93);
           }
           i_prot.read_map_end()?;
           f_2 = Some(val);
@@ -13130,15 +13277,15 @@ impl ServiceUpdateByTypesArgs {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<i64, UCellsSerial> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_93 = i_prot.read_i64()?;
+            let map_key_95 = i_prot.read_i64()?;
             let list_ident = i_prot.read_list_begin()?;
-            let mut map_val_94: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
+            let mut map_val_96: Vec<UCellSerial> = Vec::with_capacity(list_ident.size as usize);
             for _ in 0..list_ident.size {
-              let list_elem_95 = UCellSerial::read_from_in_protocol(i_prot)?;
-              map_val_94.push(list_elem_95);
+              let list_elem_97 = UCellSerial::read_from_in_protocol(i_prot)?;
+              map_val_96.push(list_elem_97);
             }
             i_prot.read_list_end()?;
-            val.insert(map_key_93, map_val_94);
+            val.insert(map_key_95, map_val_96);
           }
           i_prot.read_map_end()?;
           f_3 = Some(val);
@@ -13477,8 +13624,8 @@ impl ServiceListColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<Schema> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_96 = Schema::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_96);
+            let list_elem_98 = Schema::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_98);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -13613,8 +13760,8 @@ impl ServiceCompactColumnsResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<CompactResult> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_97 = CompactResult::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_97);
+            let list_elem_99 = CompactResult::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_99);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);
@@ -13875,9 +14022,9 @@ impl ServiceScanRsltOnColumnResult {
           let map_ident = i_prot.read_map_begin()?;
           let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
-            let map_key_98 = i_prot.read_string()?;
-            let map_val_99 = ColCells::read_from_in_protocol(i_prot)?;
-            val.insert(map_key_98, map_val_99);
+            let map_key_100 = i_prot.read_string()?;
+            let map_val_101 = ColCells::read_from_in_protocol(i_prot)?;
+            val.insert(map_key_100, map_val_101);
           }
           i_prot.read_map_end()?;
           f_0 = Some(val);
@@ -14013,8 +14160,8 @@ impl ServiceScanRsltOnKeyResult {
           let list_ident = i_prot.read_list_begin()?;
           let mut val: Vec<KCells> = Vec::with_capacity(list_ident.size as usize);
           for _ in 0..list_ident.size {
-            let list_elem_100 = KCells::read_from_in_protocol(i_prot)?;
-            val.push(list_elem_100);
+            let list_elem_102 = KCells::read_from_in_protocol(i_prot)?;
+            val.push(list_elem_102);
           }
           i_prot.read_list_end()?;
           f_0 = Some(val);

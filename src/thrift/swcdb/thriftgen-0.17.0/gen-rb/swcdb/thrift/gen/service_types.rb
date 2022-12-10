@@ -313,7 +313,9 @@ module Swcdb
 
       class Cells; end
 
-      class CCell; end
+      class CCellPlain; end
+
+      class CCellCounter; end
 
       class CCellSerial; end
 
@@ -1675,8 +1677,8 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Column Cell for results on Columns of scan
-      class CCell
+      # The Plain column type Cell for results on Columns of scan
+      class CCellPlain
         include ::Thrift::Struct, ::Thrift::Struct_Union
         K = 1
         TS = 2
@@ -1699,7 +1701,34 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Column Serial Cell for results on Columns of scan
+      # The Counter column type Cell for results on Columns of scan
+      class CCellCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        K = 1
+        TS = 2
+        V = 3
+        EQ = 4
+
+        FIELDS = {
+          # The Cell Key
+          K => {:type => ::Thrift::Types::LIST, :name => 'k', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
+          # The Cell Timestamp
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts'},
+          # The Cell Counter Value
+          V => {:type => ::Thrift::Types::I64, :name => 'v'},
+          # The Counter EQ since ts
+          EQ => {:type => ::Thrift::Types::I64, :name => 'eq', :optional => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Serial column type Cell for results on Columns of scan
       class CCellSerial
         include ::Thrift::Struct, ::Thrift::Struct_Union
         K = 1
@@ -1726,13 +1755,16 @@ module Swcdb
       # The Column Cells for results on Columns of scan
       class ColCells
         include ::Thrift::Struct, ::Thrift::Struct_Union
-        CELLS = 1
-        SERIAL_CELLS = 2
+        PLAIN_CELLS = 1
+        COUNTER_CELLS = 2
+        SERIAL_CELLS = 3
 
         FIELDS = {
-          # The Cells, defined as CCell items in a list-container
-          CELLS => {:type => ::Thrift::Types::LIST, :name => 'cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CCell}},
-          # The Serial Cells, defined as CCellSerial items in a list-container
+          # The Plain type Cells, defined as CCellPlain items in a list-container
+          PLAIN_CELLS => {:type => ::Thrift::Types::LIST, :name => 'plain_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CCellPlain}},
+          # The Counter type Cells, defined as CCellCounter items in a list-container
+          COUNTER_CELLS => {:type => ::Thrift::Types::LIST, :name => 'counter_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CCellCounter}},
+          # The Serial type Cells, defined as CCellSerial items in a list-container
           SERIAL_CELLS => {:type => ::Thrift::Types::LIST, :name => 'serial_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CCellSerial}}
         }
 

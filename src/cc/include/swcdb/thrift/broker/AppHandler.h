@@ -1067,8 +1067,25 @@ class AppHandler final : virtual public BrokerIf {
           }
           break;
         }
+        case DB::Types::Column::COUNTER_I64:
+        case DB::Types::Column::COUNTER_I32:
+        case DB::Types::Column::COUNTER_I16:
+        case DB::Types::Column::COUNTER_I8: {
+          auto& rcells = _col.counter_cells;
+          size_t c = rcells.size();
+          rcells.resize(c + cells.size());
+          for(auto dbcell : cells) {
+            auto& cell = rcells[c++];
+            dbcell->key.convert_to(cell.k);
+            cell.ts = dbcell->get_timestamp();
+            uint8_t op = 0;
+            cell.v = dbcell->get_counter(op, cell.eq);
+            cell.__isset.eq = op == DB::Cells::OP_EQUAL;
+          }
+          break;
+        }
         default: {
-          auto& rcells = _col.cells;
+          auto& rcells = _col.plain_cells;
           size_t c = rcells.size();
           rcells.resize(c + cells.size());
           for(auto dbcell : cells) {

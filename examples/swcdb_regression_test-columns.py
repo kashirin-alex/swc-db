@@ -111,13 +111,13 @@ class Test(object):
             delete_time = 0
             n_cells = 0
             for numcells in range(self.cells_step, self.cells_max + self.cells_step, self.cells_step):
-                n_cells += numcells
+                n_cells += self.cells_step
                 ts_start = time.time()
                 self.insert_cells(schema, numcells)
                 insert_time += time.time() - ts_start
 
                 ts_start = time.time()
-                # cells = self.select_cells(schema, n_cells)
+                #cells = self.select_cells(schema, n_cells)
                 cells = self.select_cells_cell_a_time(schema, numcells)
                 select_time += time.time() - ts_start
 
@@ -145,9 +145,9 @@ class Test(object):
         # print("# insert_cells", "cid:", schema.cid, "cells:", n_cells)
         batch_sz = self.get_batch_size(n_cells)
         for batch in range(0, n_cells, batch_sz):
-            self.client.update({
+            self.client.update_plain({
                 schema.cid: [
-                    service.UCell(
+                    service.UCellPlain(
                         f=service.Flag.INSERT,
                         k=[bytearray(str(n), 'utf8')],
                         ts=None, ts_desc=None,
@@ -213,9 +213,9 @@ class Test(object):
         n_cells = len(cells)
         batch_sz = self.get_batch_size(n_cells)
         for batch in range(0, n_cells, batch_sz):
-            self.client.update({
+            self.client.update_plain({
                 schema.cid: [
-                    service.UCell(
+                    service.UCellPlain(
                         f=service.Flag.DELETE_LE,
                         k=cells[n].k,
                         ts=None, ts_desc=None, v=None, encoder=None)

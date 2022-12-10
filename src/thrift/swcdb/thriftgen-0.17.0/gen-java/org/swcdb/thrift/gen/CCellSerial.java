@@ -7,7 +7,7 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Column Serial Cell for results on Columns of scan
+ * The Serial column type Cell for results on Columns of scan
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSerial._Fields>, java.io.Serializable, Cloneable, Comparable<CCellSerial> {
@@ -552,13 +552,13 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
           case 1: // K
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list416 = iprot.readListBegin();
-                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list416.size);
-                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem417;
-                for (int _i418 = 0; _i418 < _list416.size; ++_i418)
+                org.apache.thrift.protocol.TList _list424 = iprot.readListBegin();
+                struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list424.size);
+                @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem425;
+                for (int _i426 = 0; _i426 < _list424.size; ++_i426)
                 {
-                  _elem417 = iprot.readBinary();
-                  struct.k.add(_elem417);
+                  _elem425 = iprot.readBinary();
+                  struct.k.add(_elem425);
                 }
                 iprot.readListEnd();
               }
@@ -578,14 +578,14 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
           case 3: // V
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list419 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<CellValueSerial>(_list419.size);
-                @org.apache.thrift.annotation.Nullable CellValueSerial _elem420;
-                for (int _i421 = 0; _i421 < _list419.size; ++_i421)
+                org.apache.thrift.protocol.TList _list427 = iprot.readListBegin();
+                struct.v = new java.util.ArrayList<CellValueSerial>(_list427.size);
+                @org.apache.thrift.annotation.Nullable CellValueSerial _elem428;
+                for (int _i429 = 0; _i429 < _list427.size; ++_i429)
                 {
-                  _elem420 = new CellValueSerial();
-                  _elem420.read(iprot);
-                  struct.v.add(_elem420);
+                  _elem428 = new CellValueSerial();
+                  _elem428.read(iprot);
+                  struct.v.add(_elem428);
                 }
                 iprot.readListEnd();
               }
@@ -614,9 +614,9 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
         oprot.writeFieldBegin(K_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.k.size()));
-          for (java.nio.ByteBuffer _iter422 : struct.k)
+          for (java.nio.ByteBuffer _iter430 : struct.k)
           {
-            oprot.writeBinary(_iter422);
+            oprot.writeBinary(_iter430);
           }
           oprot.writeListEnd();
         }
@@ -629,9 +629,9 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
         oprot.writeFieldBegin(V_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (CellValueSerial _iter423 : struct.v)
+          for (CellValueSerial _iter431 : struct.v)
           {
-            _iter423.write(oprot);
+            _iter431.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -669,9 +669,9 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
       if (struct.isSetK()) {
         {
           oprot.writeI32(struct.k.size());
-          for (java.nio.ByteBuffer _iter424 : struct.k)
+          for (java.nio.ByteBuffer _iter432 : struct.k)
           {
-            oprot.writeBinary(_iter424);
+            oprot.writeBinary(_iter432);
           }
         }
       }
@@ -681,9 +681,9 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
       if (struct.isSetV()) {
         {
           oprot.writeI32(struct.v.size());
-          for (CellValueSerial _iter425 : struct.v)
+          for (CellValueSerial _iter433 : struct.v)
           {
-            _iter425.write(oprot);
+            _iter433.write(oprot);
           }
         }
       }
@@ -695,13 +695,13 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list426 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list426.size);
-          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem427;
-          for (int _i428 = 0; _i428 < _list426.size; ++_i428)
+          org.apache.thrift.protocol.TList _list434 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.k = new java.util.ArrayList<java.nio.ByteBuffer>(_list434.size);
+          @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem435;
+          for (int _i436 = 0; _i436 < _list434.size; ++_i436)
           {
-            _elem427 = iprot.readBinary();
-            struct.k.add(_elem427);
+            _elem435 = iprot.readBinary();
+            struct.k.add(_elem435);
           }
         }
         struct.setKIsSet(true);
@@ -712,14 +712,14 @@ public class CCellSerial implements org.apache.thrift.TBase<CCellSerial, CCellSe
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list429 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<CellValueSerial>(_list429.size);
-          @org.apache.thrift.annotation.Nullable CellValueSerial _elem430;
-          for (int _i431 = 0; _i431 < _list429.size; ++_i431)
+          org.apache.thrift.protocol.TList _list437 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.v = new java.util.ArrayList<CellValueSerial>(_list437.size);
+          @org.apache.thrift.annotation.Nullable CellValueSerial _elem438;
+          for (int _i439 = 0; _i439 < _list437.size; ++_i439)
           {
-            _elem430 = new CellValueSerial();
-            _elem430.read(iprot);
-            struct.v.add(_elem430);
+            _elem438 = new CellValueSerial();
+            _elem438.read(iprot);
+            struct.v.add(_elem438);
           }
         }
         struct.setVIsSet(true);
