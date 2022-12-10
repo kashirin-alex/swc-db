@@ -1010,7 +1010,7 @@ module Swcdb
           E = 1
 
           FIELDS = {
-            SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::ColCells}},
+            SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CCells}},
             E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
           }
 
@@ -1589,7 +1589,7 @@ module Swcdb
           E = 1
 
           FIELDS = {
-            SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::ColCells}},
+            SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CCells}},
             E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
           }
 

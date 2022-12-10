@@ -6144,7 +6144,7 @@ class CCellSerial(object):
         return not (self == other)
 
 
-class ColCells(object):
+class cCells(object):
     """
     The Column Cells for results on Columns of scan
 
@@ -6218,7 +6218,7 @@ class ColCells(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('ColCells')
+        oprot.writeStructBegin('cCells')
         if self.plain_cells is not None:
             oprot.writeFieldBegin('plain_cells', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.plain_cells))
@@ -7162,7 +7162,7 @@ class CellsGroup(object):
 
     Attributes:
      - cells: The Cells in a list, defined as Cell items in a list-container
-     - ccells: The Columns Cells in a map-container, defined as ColCells items by Column Name
+     - ccells: The Columns Cells in a map-container, defined as cCells items by Column Name
      - kcells: The Keys Cells in a list, defined as kCells items in a list-container
      - fcells: The Fraction Cells in struct FCells
 
@@ -7203,7 +7203,7 @@ class CellsGroup(object):
                     (_ktype479, _vtype480, _size478) = iprot.readMapBegin()
                     for _i482 in range(_size478):
                         _key483 = iprot.readString()
-                        _val484 = ColCells()
+                        _val484 = cCells()
                         _val484.read(iprot)
                         self.ccells[_key483] = _val484
                     iprot.readMapEnd()
@@ -7873,8 +7873,8 @@ CCellSerial.thrift_spec = (
     (2, TType.I64, 'ts', None, None, ),  # 2
     (3, TType.LIST, 'v', (TType.STRUCT, [CellValueSerial, None], False), None, ),  # 3
 )
-all_structs.append(ColCells)
-ColCells.thrift_spec = (
+all_structs.append(cCells)
+cCells.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'plain_cells', (TType.STRUCT, [CCellPlain, None], False), None, ),  # 1
     (2, TType.LIST, 'counter_cells', (TType.STRUCT, [CCellCounter, None], False), None, ),  # 2
@@ -7944,7 +7944,7 @@ all_structs.append(CellsGroup)
 CellsGroup.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'cells', [Cells, None], None, ),  # 1
-    (2, TType.MAP, 'ccells', (TType.STRING, None, TType.STRUCT, [ColCells, None], False), None, ),  # 2
+    (2, TType.MAP, 'ccells', (TType.STRING, None, TType.STRUCT, [cCells, None], False), None, ),  # 2
     (3, TType.LIST, 'kcells', (TType.STRUCT, [kCells, None], False), None, ),  # 3
     (4, TType.STRUCT, 'fcells', [FCells, None], None, ),  # 4
 )

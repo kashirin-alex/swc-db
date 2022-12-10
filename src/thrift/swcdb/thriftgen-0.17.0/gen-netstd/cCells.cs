@@ -35,7 +35,7 @@ using Thrift.Processor;
 /// <summary>
 /// The Column Cells for results on Columns of scan
 /// </summary>
-public partial class ColCells : TBase
+public partial class cCells : TBase
 {
   private List<CCellPlain> _plain_cells;
   private List<CCellCounter> _counter_cells;
@@ -98,13 +98,13 @@ public partial class ColCells : TBase
     public bool serial_cells;
   }
 
-  public ColCells()
+  public cCells()
   {
   }
 
-  public ColCells DeepCopy()
+  public cCells DeepCopy()
   {
-    var tmp460 = new ColCells();
+    var tmp460 = new cCells();
     if((Plain_cells != null) && __isset.plain_cells)
     {
       tmp460.Plain_cells = this.Plain_cells.DeepCopy();
@@ -224,7 +224,7 @@ public partial class ColCells : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp470 = new TStruct("ColCells");
+      var tmp470 = new TStruct("cCells");
       await oprot.WriteStructBeginAsync(tmp470, cancellationToken);
       var tmp471 = new TField();
       if((Plain_cells != null) && __isset.plain_cells)
@@ -280,7 +280,7 @@ public partial class ColCells : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is ColCells other)) return false;
+    if (!(that is cCells other)) return false;
     if (ReferenceEquals(this, other)) return true;
     return ((__isset.plain_cells == other.__isset.plain_cells) && ((!__isset.plain_cells) || (TCollections.Equals(Plain_cells, other.Plain_cells))))
       && ((__isset.counter_cells == other.__isset.counter_cells) && ((!__isset.counter_cells) || (TCollections.Equals(Counter_cells, other.Counter_cells))))
@@ -308,7 +308,7 @@ public partial class ColCells : TBase
 
   public override string ToString()
   {
-    var tmp475 = new StringBuilder("ColCells(");
+    var tmp475 = new StringBuilder("cCells(");
     int tmp476 = 0;
     if((Plain_cells != null) && __isset.plain_cells)
     {

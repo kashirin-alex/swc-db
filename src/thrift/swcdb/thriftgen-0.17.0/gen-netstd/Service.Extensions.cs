@@ -135,27 +135,27 @@ public static class ServiceExtensions
   }
 
 
-  public static bool Equals(this Dictionary<string, ColCells> instance, object that)
+  public static bool Equals(this Dictionary<string, cCells> instance, object that)
   {
-    if (!(that is Dictionary<string, ColCells> other)) return false;
+    if (!(that is Dictionary<string, cCells> other)) return false;
     if (ReferenceEquals(instance, other)) return true;
 
     return TCollections.Equals(instance, other);
   }
 
 
-  public static int GetHashCode(this Dictionary<string, ColCells> instance)
+  public static int GetHashCode(this Dictionary<string, cCells> instance)
   {
     return TCollections.GetHashCode(instance);
   }
 
 
-  public static Dictionary<string, ColCells> DeepCopy(this Dictionary<string, ColCells> source)
+  public static Dictionary<string, cCells> DeepCopy(this Dictionary<string, cCells> source)
   {
     if (source == null)
       return null;
 
-    var tmp1234 = new Dictionary<string, ColCells>(source.Count);
+    var tmp1234 = new Dictionary<string, cCells>(source.Count);
     foreach (var pair in source)
       tmp1234.Add((pair.Key != null) ? pair.Key : null, (pair.Value != null) ? pair.Value.DeepCopy() : null);
     return tmp1234;

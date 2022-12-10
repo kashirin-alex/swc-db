@@ -319,7 +319,7 @@ module Swcdb
 
       class CCellSerial; end
 
-      class ColCells; end
+      class CCells; end
 
       class KCellPlain; end
 
@@ -1757,7 +1757,7 @@ module Swcdb
       end
 
       # The Column Cells for results on Columns of scan
-      class ColCells
+      class CCells
         include ::Thrift::Struct, ::Thrift::Struct_Union
         PLAIN_CELLS = 1
         COUNTER_CELLS = 2
@@ -1995,8 +1995,8 @@ module Swcdb
         FIELDS = {
           # The Cells in a list, defined as Cell items in a list-container
           CELLS => {:type => ::Thrift::Types::STRUCT, :name => 'cells', :class => ::Swcdb::Thrift::Gen::Cells},
-          # The Columns Cells in a map-container, defined as ColCells items by Column Name
-          CCELLS => {:type => ::Thrift::Types::MAP, :name => 'ccells', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::ColCells}},
+          # The Columns Cells in a map-container, defined as cCells items by Column Name
+          CCELLS => {:type => ::Thrift::Types::MAP, :name => 'ccells', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CCells}},
           # The Keys Cells in a list, defined as kCells items in a list-container
           KCELLS => {:type => ::Thrift::Types::LIST, :name => 'kcells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::KCells}},
           # The Fraction Cells in struct FCells

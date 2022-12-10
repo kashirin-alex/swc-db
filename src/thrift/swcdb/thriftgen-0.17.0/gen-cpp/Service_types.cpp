@@ -10553,29 +10553,29 @@ void CCellSerial::printTo(std::ostream& out) const {
 }
 
 
-ColCells::~ColCells() noexcept {
+cCells::~cCells() noexcept {
 }
 
 
-void ColCells::__set_plain_cells(const std::vector<CCellPlain> & val) {
+void cCells::__set_plain_cells(const std::vector<CCellPlain> & val) {
   this->plain_cells = val;
 }
 
-void ColCells::__set_counter_cells(const std::vector<CCellCounter> & val) {
+void cCells::__set_counter_cells(const std::vector<CCellCounter> & val) {
   this->counter_cells = val;
 }
 
-void ColCells::__set_serial_cells(const std::vector<CCellSerial> & val) {
+void cCells::__set_serial_cells(const std::vector<CCellSerial> & val) {
   this->serial_cells = val;
 }
-std::ostream& operator<<(std::ostream& out, const ColCells& obj)
+std::ostream& operator<<(std::ostream& out, const cCells& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t ColCells::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t cCells::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -10668,10 +10668,10 @@ uint32_t ColCells::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t ColCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t cCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ColCells");
+  xfer += oprot->writeStructBegin("cCells");
 
   xfer += oprot->writeFieldBegin("plain_cells", ::apache::thrift::protocol::T_LIST, 1);
   {
@@ -10714,7 +10714,7 @@ uint32_t ColCells::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
-void swap(ColCells &a, ColCells &b) {
+void swap(cCells &a, cCells &b) {
   using ::std::swap;
   swap(a.plain_cells, b.plain_cells);
   swap(a.counter_cells, b.counter_cells);
@@ -10722,35 +10722,35 @@ void swap(ColCells &a, ColCells &b) {
   swap(a.__isset, b.__isset);
 }
 
-ColCells::ColCells(const ColCells& other575) {
+cCells::cCells(const cCells& other575) {
   plain_cells = other575.plain_cells;
   counter_cells = other575.counter_cells;
   serial_cells = other575.serial_cells;
   __isset = other575.__isset;
 }
-ColCells::ColCells(ColCells&& other576) noexcept {
+cCells::cCells(cCells&& other576) noexcept {
   plain_cells = std::move(other576.plain_cells);
   counter_cells = std::move(other576.counter_cells);
   serial_cells = std::move(other576.serial_cells);
   __isset = other576.__isset;
 }
-ColCells& ColCells::operator=(const ColCells& other577) {
+cCells& cCells::operator=(const cCells& other577) {
   plain_cells = other577.plain_cells;
   counter_cells = other577.counter_cells;
   serial_cells = other577.serial_cells;
   __isset = other577.__isset;
   return *this;
 }
-ColCells& ColCells::operator=(ColCells&& other578) noexcept {
+cCells& cCells::operator=(cCells&& other578) noexcept {
   plain_cells = std::move(other578.plain_cells);
   counter_cells = std::move(other578.counter_cells);
   serial_cells = std::move(other578.serial_cells);
   __isset = other578.__isset;
   return *this;
 }
-void ColCells::printTo(std::ostream& out) const {
+void cCells::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "ColCells(";
+  out << "cCells(";
   out << "plain_cells=" << to_string(plain_cells);
   out << ", " << "counter_cells=" << to_string(counter_cells);
   out << ", " << "serial_cells=" << to_string(serial_cells);
@@ -12282,7 +12282,7 @@ uint32_t CellsGroup::read(::apache::thrift::protocol::TProtocol* iprot) {
             {
               std::string _key678;
               xfer += iprot->readString(_key678);
-              ColCells& _val679 = this->ccells[_key678];
+              cCells& _val679 = this->ccells[_key678];
               xfer += _val679.read(iprot);
             }
             xfer += iprot->readMapEnd();
@@ -12344,7 +12344,7 @@ uint32_t CellsGroup::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("ccells", ::apache::thrift::protocol::T_MAP, 2);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->ccells.size()));
-    std::map<std::string, ColCells> ::const_iterator _iter685;
+    std::map<std::string, cCells> ::const_iterator _iter685;
     for (_iter685 = this->ccells.begin(); _iter685 != this->ccells.end(); ++_iter685)
     {
       xfer += oprot->writeString(_iter685->first);

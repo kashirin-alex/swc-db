@@ -3359,7 +3359,7 @@ class sql_select_rslt_on_column_result(object):
                     (_ktype544, _vtype545, _size543) = iprot.readMapBegin()
                     for _i547 in range(_size543):
                         _key548 = iprot.readString()
-                        _val549 = ColCells()
+                        _val549 = cCells()
                         _val549.read(iprot)
                         self.success[_key548] = _val549
                     iprot.readMapEnd()
@@ -3417,7 +3417,7 @@ class sql_select_rslt_on_column_result(object):
         return not (self == other)
 all_structs.append(sql_select_rslt_on_column_result)
 sql_select_rslt_on_column_result.thrift_spec = (
-    (0, TType.MAP, 'success', (TType.STRING, None, TType.STRUCT, [ColCells, None], False), None, ),  # 0
+    (0, TType.MAP, 'success', (TType.STRING, None, TType.STRUCT, [cCells, None], False), None, ),  # 0
     (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
 )
 
@@ -6081,7 +6081,7 @@ class scan_rslt_on_column_result(object):
                     (_ktype670, _vtype671, _size669) = iprot.readMapBegin()
                     for _i673 in range(_size669):
                         _key674 = iprot.readString()
-                        _val675 = ColCells()
+                        _val675 = cCells()
                         _val675.read(iprot)
                         self.success[_key674] = _val675
                     iprot.readMapEnd()
@@ -6139,7 +6139,7 @@ class scan_rslt_on_column_result(object):
         return not (self == other)
 all_structs.append(scan_rslt_on_column_result)
 scan_rslt_on_column_result.thrift_spec = (
-    (0, TType.MAP, 'success', (TType.STRING, None, TType.STRUCT, [ColCells, None], False), None, ),  # 0
+    (0, TType.MAP, 'success', (TType.STRING, None, TType.STRUCT, [cCells, None], False), None, ),  # 0
     (1, TType.STRUCT, 'e', [Exception, None], None, ),  # 1
 )
 

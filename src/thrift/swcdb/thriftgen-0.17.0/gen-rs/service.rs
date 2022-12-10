@@ -922,7 +922,7 @@ pub type CellsCounter = Vec<CellCounter>;
 
 pub type CellsSerial = Vec<CellSerial>;
 
-pub type CCells = BTreeMap<String, ColCells>;
+pub type CCells = BTreeMap<String, CCells>;
 
 pub type KCells = Vec<KCells>;
 
@@ -7025,12 +7025,12 @@ impl Default for CCellSerial {
 }
 
 //
-// ColCells
+// CCells
 //
 
 /// The Column Cells for results on Columns of scan
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ColCells {
+pub struct CCells {
   /// The Plain type Cells, defined as CCellPlain items in a list-container
   pub plain_cells: Option<Vec<CCellPlain>>,
   /// The Counter type Cells, defined as CCellCounter items in a list-container
@@ -7039,9 +7039,9 @@ pub struct ColCells {
   pub serial_cells: Option<Vec<CCellSerial>>,
 }
 
-impl ColCells {
-  pub fn new<F1, F2, F3>(plain_cells: F1, counter_cells: F2, serial_cells: F3) -> ColCells where F1: Into<Option<Vec<CCellPlain>>>, F2: Into<Option<Vec<CCellCounter>>>, F3: Into<Option<Vec<CCellSerial>>> {
-    ColCells {
+impl CCells {
+  pub fn new<F1, F2, F3>(plain_cells: F1, counter_cells: F2, serial_cells: F3) -> CCells where F1: Into<Option<Vec<CCellPlain>>>, F2: Into<Option<Vec<CCellCounter>>>, F3: Into<Option<Vec<CCellSerial>>> {
+    CCells {
       plain_cells: plain_cells.into(),
       counter_cells: counter_cells.into(),
       serial_cells: serial_cells.into(),
@@ -7049,8 +7049,8 @@ impl ColCells {
   }
 }
 
-impl TSerializable for ColCells {
-  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<ColCells> {
+impl TSerializable for CCells {
+  fn read_from_in_protocol(i_prot: &mut dyn TInputProtocol) -> thrift::Result<CCells> {
     i_prot.read_struct_begin()?;
     let mut f_1: Option<Vec<CCellPlain>> = Some(Vec::new());
     let mut f_2: Option<Vec<CCellCounter>> = Some(Vec::new());
@@ -7099,7 +7099,7 @@ impl TSerializable for ColCells {
       i_prot.read_field_end()?;
     }
     i_prot.read_struct_end()?;
-    let ret = ColCells {
+    let ret = CCells {
       plain_cells: f_1,
       counter_cells: f_2,
       serial_cells: f_3,
@@ -7107,7 +7107,7 @@ impl TSerializable for ColCells {
     Ok(ret)
   }
   fn write_to_out_protocol(&self, o_prot: &mut dyn TOutputProtocol) -> thrift::Result<()> {
-    let struct_ident = TStructIdentifier::new("ColCells");
+    let struct_ident = TStructIdentifier::new("cCells");
     o_prot.write_struct_begin(&struct_ident)?;
     if let Some(ref fld_var) = self.plain_cells {
       o_prot.write_field_begin(&TFieldIdentifier::new("plain_cells", TType::List, 1))?;
@@ -7141,9 +7141,9 @@ impl TSerializable for ColCells {
   }
 }
 
-impl Default for ColCells {
+impl Default for CCells {
   fn default() -> Self {
-    ColCells{
+    CCells{
       plain_cells: Some(Vec::new()),
       counter_cells: Some(Vec::new()),
       serial_cells: Some(Vec::new()),
@@ -8098,7 +8098,7 @@ impl Default for FCells {
 pub struct CellsGroup {
   /// The Cells in a list, defined as Cell items in a list-container
   pub cells: Option<Cells>,
-  /// The Columns Cells in a map-container, defined as ColCells items by Column Name
+  /// The Columns Cells in a map-container, defined as cCells items by Column Name
   pub ccells: Option<CCells>,
   /// The Keys Cells in a list, defined as kCells items in a list-container
   pub kcells: Option<KCells>,
@@ -8137,10 +8137,10 @@ impl TSerializable for CellsGroup {
         },
         2 => {
           let map_ident = i_prot.read_map_begin()?;
-          let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
+          let mut val: BTreeMap<String, CCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
             let map_key_69 = i_prot.read_string()?;
-            let map_val_70 = ColCells::read_from_in_protocol(i_prot)?;
+            let map_val_70 = CCells::read_from_in_protocol(i_prot)?;
             val.insert(map_key_69, map_val_70);
           }
           i_prot.read_map_end()?;
@@ -12143,10 +12143,10 @@ impl ServiceSqlSelectRsltOnColumnResult {
       match field_id {
         0 => {
           let map_ident = i_prot.read_map_begin()?;
-          let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
+          let mut val: BTreeMap<String, CCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
             let map_key_79 = i_prot.read_string()?;
-            let map_val_80 = ColCells::read_from_in_protocol(i_prot)?;
+            let map_val_80 = CCells::read_from_in_protocol(i_prot)?;
             val.insert(map_key_79, map_val_80);
           }
           i_prot.read_map_end()?;
@@ -14294,10 +14294,10 @@ impl ServiceScanRsltOnColumnResult {
       match field_id {
         0 => {
           let map_ident = i_prot.read_map_begin()?;
-          let mut val: BTreeMap<String, ColCells> = BTreeMap::new();
+          let mut val: BTreeMap<String, CCells> = BTreeMap::new();
           for _ in 0..map_ident.size {
             let map_key_102 = i_prot.read_string()?;
-            let map_val_103 = ColCells::read_from_in_protocol(i_prot)?;
+            let map_val_103 = CCells::read_from_in_protocol(i_prot)?;
             val.insert(map_key_102, map_val_103);
           }
           i_prot.read_map_end()?;

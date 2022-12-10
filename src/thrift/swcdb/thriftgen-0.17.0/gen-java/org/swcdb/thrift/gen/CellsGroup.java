@@ -26,9 +26,9 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
    */
   public @org.apache.thrift.annotation.Nullable Cells cells; // required
   /**
-   * The Columns Cells in a map-container, defined as ColCells items by Column Name
+   * The Columns Cells in a map-container, defined as cCells items by Column Name
    */
-  public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,ColCells> ccells; // required
+  public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,cCells> ccells; // required
   /**
    * The Keys Cells in a list, defined as kCells items in a list-container
    */
@@ -45,7 +45,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
      */
     CELLS((short)1, "cells"),
     /**
-     * The Columns Cells in a map-container, defined as ColCells items by Column Name
+     * The Columns Cells in a map-container, defined as cCells items by Column Name
      */
     CCELLS((short)2, "ccells"),
     /**
@@ -142,7 +142,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
 
   public CellsGroup(
     Cells cells,
-    java.util.Map<java.lang.String,ColCells> ccells,
+    java.util.Map<java.lang.String,cCells> ccells,
     java.util.List<kCells> kcells,
     FCells fcells)
   {
@@ -161,15 +161,15 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       this.cells = new Cells(other.cells);
     }
     if (other.isSetCcells()) {
-      java.util.Map<java.lang.String,ColCells> __this__ccells = new java.util.HashMap<java.lang.String,ColCells>(other.ccells.size());
-      for (java.util.Map.Entry<java.lang.String, ColCells> other_element : other.ccells.entrySet()) {
+      java.util.Map<java.lang.String,cCells> __this__ccells = new java.util.HashMap<java.lang.String,cCells>(other.ccells.size());
+      for (java.util.Map.Entry<java.lang.String, cCells> other_element : other.ccells.entrySet()) {
 
         java.lang.String other_element_key = other_element.getKey();
-        ColCells other_element_value = other_element.getValue();
+        cCells other_element_value = other_element.getValue();
 
         java.lang.String __this__ccells_copy_key = other_element_key;
 
-        ColCells __this__ccells_copy_value = new ColCells(other_element_value);
+        cCells __this__ccells_copy_value = new cCells(other_element_value);
 
         __this__ccells.put(__this__ccells_copy_key, __this__ccells_copy_value);
       }
@@ -235,25 +235,25 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
     return (this.ccells == null) ? 0 : this.ccells.size();
   }
 
-  public void putToCcells(java.lang.String key, ColCells val) {
+  public void putToCcells(java.lang.String key, cCells val) {
     if (this.ccells == null) {
-      this.ccells = new java.util.HashMap<java.lang.String,ColCells>();
+      this.ccells = new java.util.HashMap<java.lang.String,cCells>();
     }
     this.ccells.put(key, val);
   }
 
   /**
-   * The Columns Cells in a map-container, defined as ColCells items by Column Name
+   * The Columns Cells in a map-container, defined as cCells items by Column Name
    */
   @org.apache.thrift.annotation.Nullable
-  public java.util.Map<java.lang.String,ColCells> getCcells() {
+  public java.util.Map<java.lang.String,cCells> getCcells() {
     return this.ccells;
   }
 
   /**
-   * The Columns Cells in a map-container, defined as ColCells items by Column Name
+   * The Columns Cells in a map-container, defined as cCells items by Column Name
    */
-  public CellsGroup setCcells(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,ColCells> ccells) {
+  public CellsGroup setCcells(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,cCells> ccells) {
     this.ccells = ccells;
     return this;
   }
@@ -366,7 +366,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       if (value == null) {
         unsetCcells();
       } else {
-        setCcells((java.util.Map<java.lang.String,ColCells>)value);
+        setCcells((java.util.Map<java.lang.String,cCells>)value);
       }
       break;
 
@@ -671,13 +671,13 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
                 org.apache.thrift.protocol.TMap _map546 = iprot.readMapBegin();
-                struct.ccells = new java.util.HashMap<java.lang.String,ColCells>(2*_map546.size);
+                struct.ccells = new java.util.HashMap<java.lang.String,cCells>(2*_map546.size);
                 @org.apache.thrift.annotation.Nullable java.lang.String _key547;
-                @org.apache.thrift.annotation.Nullable ColCells _val548;
+                @org.apache.thrift.annotation.Nullable cCells _val548;
                 for (int _i549 = 0; _i549 < _map546.size; ++_i549)
                 {
                   _key547 = iprot.readString();
-                  _val548 = new ColCells();
+                  _val548 = new cCells();
                   _val548.read(iprot);
                   struct.ccells.put(_key547, _val548);
                 }
@@ -741,7 +741,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
         oprot.writeFieldBegin(CCELLS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.ccells.size()));
-          for (java.util.Map.Entry<java.lang.String, ColCells> _iter553 : struct.ccells.entrySet())
+          for (java.util.Map.Entry<java.lang.String, cCells> _iter553 : struct.ccells.entrySet())
           {
             oprot.writeString(_iter553.getKey());
             _iter553.getValue().write(oprot);
@@ -805,7 +805,7 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       if (struct.isSetCcells()) {
         {
           oprot.writeI32(struct.ccells.size());
-          for (java.util.Map.Entry<java.lang.String, ColCells> _iter555 : struct.ccells.entrySet())
+          for (java.util.Map.Entry<java.lang.String, cCells> _iter555 : struct.ccells.entrySet())
           {
             oprot.writeString(_iter555.getKey());
             _iter555.getValue().write(oprot);
@@ -838,13 +838,13 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       if (incoming.get(1)) {
         {
           org.apache.thrift.protocol.TMap _map557 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-          struct.ccells = new java.util.HashMap<java.lang.String,ColCells>(2*_map557.size);
+          struct.ccells = new java.util.HashMap<java.lang.String,cCells>(2*_map557.size);
           @org.apache.thrift.annotation.Nullable java.lang.String _key558;
-          @org.apache.thrift.annotation.Nullable ColCells _val559;
+          @org.apache.thrift.annotation.Nullable cCells _val559;
           for (int _i560 = 0; _i560 < _map557.size; ++_i560)
           {
             _key558 = iprot.readString();
-            _val559 = new ColCells();
+            _val559 = new cCells();
             _val559.read(iprot);
             struct.ccells.put(_key558, _val559);
           }

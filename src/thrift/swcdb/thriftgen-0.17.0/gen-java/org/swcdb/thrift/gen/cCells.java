@@ -10,15 +10,15 @@ package org.swcdb.thrift.gen;
  * The Column Cells for results on Columns of scan
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fields>, java.io.Serializable, Cloneable, Comparable<ColCells> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ColCells");
+public class cCells implements org.apache.thrift.TBase<cCells, cCells._Fields>, java.io.Serializable, Cloneable, Comparable<cCells> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("cCells");
 
   private static final org.apache.thrift.protocol.TField PLAIN_CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("plain_cells", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField COUNTER_CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("counter_cells", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField SERIAL_CELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("serial_cells", org.apache.thrift.protocol.TType.LIST, (short)3);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ColCellsStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ColCellsTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new cCellsStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new cCellsTupleSchemeFactory();
 
   /**
    * The Plain type Cells, defined as CCellPlain items in a list-container
@@ -124,13 +124,13 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CCellSerial.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColCells.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(cCells.class, metaDataMap);
   }
 
-  public ColCells() {
+  public cCells() {
   }
 
-  public ColCells(
+  public cCells(
     java.util.List<CCellPlain> plain_cells,
     java.util.List<CCellCounter> counter_cells,
     java.util.List<CCellSerial> serial_cells)
@@ -144,7 +144,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public ColCells(ColCells other) {
+  public cCells(cCells other) {
     if (other.isSetPlain_cells()) {
       java.util.List<CCellPlain> __this__plain_cells = new java.util.ArrayList<CCellPlain>(other.plain_cells.size());
       for (CCellPlain other_element : other.plain_cells) {
@@ -169,8 +169,8 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   }
 
   @Override
-  public ColCells deepCopy() {
-    return new ColCells(this);
+  public cCells deepCopy() {
+    return new cCells(this);
   }
 
   @Override
@@ -207,7 +207,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   /**
    * The Plain type Cells, defined as CCellPlain items in a list-container
    */
-  public ColCells setPlain_cells(@org.apache.thrift.annotation.Nullable java.util.List<CCellPlain> plain_cells) {
+  public cCells setPlain_cells(@org.apache.thrift.annotation.Nullable java.util.List<CCellPlain> plain_cells) {
     this.plain_cells = plain_cells;
     return this;
   }
@@ -254,7 +254,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   /**
    * The Counter type Cells, defined as CCellCounter items in a list-container
    */
-  public ColCells setCounter_cells(@org.apache.thrift.annotation.Nullable java.util.List<CCellCounter> counter_cells) {
+  public cCells setCounter_cells(@org.apache.thrift.annotation.Nullable java.util.List<CCellCounter> counter_cells) {
     this.counter_cells = counter_cells;
     return this;
   }
@@ -301,7 +301,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   /**
    * The Serial type Cells, defined as CCellSerial items in a list-container
    */
-  public ColCells setSerial_cells(@org.apache.thrift.annotation.Nullable java.util.List<CCellSerial> serial_cells) {
+  public cCells setSerial_cells(@org.apache.thrift.annotation.Nullable java.util.List<CCellSerial> serial_cells) {
     this.serial_cells = serial_cells;
     return this;
   }
@@ -388,12 +388,12 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof ColCells)
-      return this.equals((ColCells)that);
+    if (that instanceof cCells)
+      return this.equals((cCells)that);
     return false;
   }
 
-  public boolean equals(ColCells that) {
+  public boolean equals(cCells that) {
     if (that == null)
       return false;
     if (this == that)
@@ -449,7 +449,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
   }
 
   @Override
-  public int compareTo(ColCells other) {
+  public int compareTo(cCells other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -507,7 +507,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("ColCells(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("cCells(");
     boolean first = true;
 
     sb.append("plain_cells:");
@@ -558,17 +558,17 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
     }
   }
 
-  private static class ColCellsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class cCellsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public ColCellsStandardScheme getScheme() {
-      return new ColCellsStandardScheme();
+    public cCellsStandardScheme getScheme() {
+      return new cCellsStandardScheme();
     }
   }
 
-  private static class ColCellsStandardScheme extends org.apache.thrift.scheme.StandardScheme<ColCells> {
+  private static class cCellsStandardScheme extends org.apache.thrift.scheme.StandardScheme<cCells> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, ColCells struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, cCells struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -647,7 +647,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, ColCells struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, cCells struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -693,17 +693,17 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
 
   }
 
-  private static class ColCellsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class cCellsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public ColCellsTupleScheme getScheme() {
-      return new ColCellsTupleScheme();
+    public cCellsTupleScheme getScheme() {
+      return new cCellsTupleScheme();
     }
   }
 
-  private static class ColCellsTupleScheme extends org.apache.thrift.scheme.TupleScheme<ColCells> {
+  private static class cCellsTupleScheme extends org.apache.thrift.scheme.TupleScheme<cCells> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, ColCells struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, cCells struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetPlain_cells()) {
@@ -746,7 +746,7 @@ public class ColCells implements org.apache.thrift.TBase<ColCells, ColCells._Fie
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, ColCells struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, cCells struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {

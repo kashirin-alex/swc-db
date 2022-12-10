@@ -84,7 +84,7 @@ public partial class Service
     /// The direct SQL method to select cells with result in Columns Cells map.
     /// </summary>
     /// <param name="sql">The SQL string to Execute</param>
-    global::System.Threading.Tasks.Task<Dictionary<string, ColCells>> sql_select_rslt_on_column(string sql, CancellationToken cancellationToken = default);
+    global::System.Threading.Tasks.Task<Dictionary<string, cCells>> sql_select_rslt_on_column(string sql, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// The direct SQL method to select cells with result in Key Cells list.
@@ -193,7 +193,7 @@ public partial class Service
     /// The direct method to select cells with result in Columns Cells map.
     /// </summary>
     /// <param name="spec">The Scan Specifications for the scan</param>
-    global::System.Threading.Tasks.Task<Dictionary<string, ColCells>> scan_rslt_on_column(SpecScan spec, CancellationToken cancellationToken = default);
+    global::System.Threading.Tasks.Task<Dictionary<string, cCells>> scan_rslt_on_column(SpecScan spec, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// The direct method to select cells with result in Key Cells list.
@@ -533,7 +533,7 @@ public partial class Service
       throw new TApplicationException(TApplicationException.ExceptionType.MissingResult, "sql_select failed: unknown result");
     }
 
-    public async global::System.Threading.Tasks.Task<Dictionary<string, ColCells>> sql_select_rslt_on_column(string sql, CancellationToken cancellationToken = default)
+    public async global::System.Threading.Tasks.Task<Dictionary<string, cCells>> sql_select_rslt_on_column(string sql, CancellationToken cancellationToken = default)
     {
       await send_sql_select_rslt_on_column(sql, cancellationToken);
       return await recv_sql_select_rslt_on_column(cancellationToken);
@@ -552,7 +552,7 @@ public partial class Service
       await OutputProtocol.Transport.FlushAsync(cancellationToken);
     }
 
-    public async global::System.Threading.Tasks.Task<Dictionary<string, ColCells>> recv_sql_select_rslt_on_column(CancellationToken cancellationToken = default)
+    public async global::System.Threading.Tasks.Task<Dictionary<string, cCells>> recv_sql_select_rslt_on_column(CancellationToken cancellationToken = default)
     {
       
       var tmp619 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
@@ -1211,7 +1211,7 @@ public partial class Service
       throw new TApplicationException(TApplicationException.ExceptionType.MissingResult, "scan failed: unknown result");
     }
 
-    public async global::System.Threading.Tasks.Task<Dictionary<string, ColCells>> scan_rslt_on_column(SpecScan spec, CancellationToken cancellationToken = default)
+    public async global::System.Threading.Tasks.Task<Dictionary<string, cCells>> scan_rslt_on_column(SpecScan spec, CancellationToken cancellationToken = default)
     {
       await send_scan_rslt_on_column(spec, cancellationToken);
       return await recv_scan_rslt_on_column(cancellationToken);
@@ -1230,7 +1230,7 @@ public partial class Service
       await OutputProtocol.Transport.FlushAsync(cancellationToken);
     }
 
-    public async global::System.Threading.Tasks.Task<Dictionary<string, ColCells>> recv_scan_rslt_on_column(CancellationToken cancellationToken = default)
+    public async global::System.Threading.Tasks.Task<Dictionary<string, cCells>> recv_scan_rslt_on_column(CancellationToken cancellationToken = default)
     {
       
       var tmp683 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
@@ -5088,10 +5088,10 @@ public partial class Service
 
     public partial class sql_select_rslt_on_column_result : TBase
     {
-      private Dictionary<string, ColCells> _success;
+      private Dictionary<string, cCells> _success;
       private Exception _e;
 
-      public Dictionary<string, ColCells> Success
+      public Dictionary<string, cCells> Success
       {
         get
         {
@@ -5167,13 +5167,13 @@ public partial class Service
                 {
                   {
                     var _map956 = await iprot.ReadMapBeginAsync(cancellationToken);
-                    Success = new Dictionary<string, ColCells>(_map956.Count);
+                    Success = new Dictionary<string, cCells>(_map956.Count);
                     for(int _i957 = 0; _i957 < _map956.Count; ++_i957)
                     {
                       string _key958;
-                      ColCells _val959;
+                      cCells _val959;
                       _key958 = await iprot.ReadStringAsync(cancellationToken);
-                      _val959 = new ColCells();
+                      _val959 = new cCells();
                       await _val959.ReadAsync(iprot, cancellationToken);
                       Success[_key958] = _val959;
                     }
@@ -11005,10 +11005,10 @@ public partial class Service
 
     public partial class scan_rslt_on_column_result : TBase
     {
-      private Dictionary<string, ColCells> _success;
+      private Dictionary<string, cCells> _success;
       private Exception _e;
 
-      public Dictionary<string, ColCells> Success
+      public Dictionary<string, cCells> Success
       {
         get
         {
@@ -11084,13 +11084,13 @@ public partial class Service
                 {
                   {
                     var _map1187 = await iprot.ReadMapBeginAsync(cancellationToken);
-                    Success = new Dictionary<string, ColCells>(_map1187.Count);
+                    Success = new Dictionary<string, cCells>(_map1187.Count);
                     for(int _i1188 = 0; _i1188 < _map1187.Count; ++_i1188)
                     {
                       string _key1189;
-                      ColCells _val1190;
+                      cCells _val1190;
                       _key1189 = await iprot.ReadStringAsync(cancellationToken);
-                      _val1190 = new ColCells();
+                      _val1190 = new cCells();
                       await _val1190.ReadAsync(iprot, cancellationToken);
                       Success[_key1189] = _val1190;
                     }

@@ -590,9 +590,9 @@ typedef std::vector<class CellCounter>  CellsCounter;
 typedef std::vector<class CellSerial>  CellsSerial;
 
 /**
- * The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name
+ * The Columns Cells for results on Columns of scan, defined as cCells items in a map-container by Column Name
  */
-typedef std::map<std::string, class ColCells>  CCells;
+typedef std::map<std::string, class cCells>  CCells;
 
 /**
  * The Keys Cells for results on Key of scan, defined as kCells items in a list-container
@@ -700,7 +700,7 @@ class CCellCounter;
 
 class CCellSerial;
 
-class ColCells;
+class cCells;
 
 class KCellPlain;
 
@@ -4824,27 +4824,27 @@ void swap(CCellSerial &a, CCellSerial &b);
 
 std::ostream& operator<<(std::ostream& out, const CCellSerial& obj);
 
-typedef struct _ColCells__isset {
-  _ColCells__isset() : plain_cells(false), counter_cells(false), serial_cells(false) {}
+typedef struct _cCells__isset {
+  _cCells__isset() : plain_cells(false), counter_cells(false), serial_cells(false) {}
   bool plain_cells :1;
   bool counter_cells :1;
   bool serial_cells :1;
-} _ColCells__isset;
+} _cCells__isset;
 
 /**
  * The Column Cells for results on Columns of scan
  */
-class ColCells : public virtual ::apache::thrift::TBase {
+class cCells : public virtual ::apache::thrift::TBase {
  public:
 
-  ColCells(const ColCells&);
-  ColCells(ColCells&&) noexcept;
-  ColCells& operator=(const ColCells&);
-  ColCells& operator=(ColCells&&) noexcept;
-  ColCells() noexcept {
+  cCells(const cCells&);
+  cCells(cCells&&) noexcept;
+  cCells& operator=(const cCells&);
+  cCells& operator=(cCells&&) noexcept;
+  cCells() noexcept {
   }
 
-  virtual ~ColCells() noexcept;
+  virtual ~cCells() noexcept;
   /**
    * The Plain type Cells, defined as CCellPlain items in a list-container
    */
@@ -4858,7 +4858,7 @@ class ColCells : public virtual ::apache::thrift::TBase {
    */
   std::vector<CCellSerial>  serial_cells;
 
-  _ColCells__isset __isset;
+  _cCells__isset __isset;
 
   void __set_plain_cells(const std::vector<CCellPlain> & val);
 
@@ -4866,7 +4866,7 @@ class ColCells : public virtual ::apache::thrift::TBase {
 
   void __set_serial_cells(const std::vector<CCellSerial> & val);
 
-  bool operator == (const ColCells & rhs) const
+  bool operator == (const cCells & rhs) const
   {
     if (!(plain_cells == rhs.plain_cells))
       return false;
@@ -4876,11 +4876,11 @@ class ColCells : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const ColCells &rhs) const {
+  bool operator != (const cCells &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const ColCells & ) const;
+  bool operator < (const cCells & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
@@ -4888,9 +4888,9 @@ class ColCells : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(ColCells &a, ColCells &b);
+void swap(cCells &a, cCells &b);
 
-std::ostream& operator<<(std::ostream& out, const ColCells& obj);
+std::ostream& operator<<(std::ostream& out, const cCells& obj);
 
 typedef struct _KCellPlain__isset {
   _KCellPlain__isset() : c(false), ts(false), v(false) {}
@@ -5521,7 +5521,7 @@ class CellsGroup : public virtual ::apache::thrift::TBase {
    */
   Cells cells;
   /**
-   * The Columns Cells in a map-container, defined as ColCells items by Column Name
+   * The Columns Cells in a map-container, defined as cCells items by Column Name
    */
   CCells ccells;
   /**

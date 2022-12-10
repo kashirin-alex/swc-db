@@ -1715,7 +1715,7 @@ uint32_t Service_sql_select_rslt_on_column_result::read(::apache::thrift::protoc
             {
               std::string _key771;
               xfer += iprot->readString(_key771);
-              ColCells& _val772 = this->success[_key771];
+              cCells& _val772 = this->success[_key771];
               xfer += _val772.read(iprot);
             }
             xfer += iprot->readMapEnd();
@@ -1755,7 +1755,7 @@ uint32_t Service_sql_select_rslt_on_column_result::write(::apache::thrift::proto
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::map<std::string, ColCells> ::const_iterator _iter773;
+      std::map<std::string, cCells> ::const_iterator _iter773;
       for (_iter773 = this->success.begin(); _iter773 != this->success.end(); ++_iter773)
       {
         xfer += oprot->writeString(_iter773->first);
@@ -1813,7 +1813,7 @@ uint32_t Service_sql_select_rslt_on_column_presult::read(::apache::thrift::proto
             {
               std::string _key779;
               xfer += iprot->readString(_key779);
-              ColCells& _val780 = (*(this->success))[_key779];
+              cCells& _val780 = (*(this->success))[_key779];
               xfer += _val780.read(iprot);
             }
             xfer += iprot->readMapEnd();
@@ -5536,7 +5536,7 @@ uint32_t Service_scan_rslt_on_column_result::read(::apache::thrift::protocol::TP
             {
               std::string _key917;
               xfer += iprot->readString(_key917);
-              ColCells& _val918 = this->success[_key917];
+              cCells& _val918 = this->success[_key917];
               xfer += _val918.read(iprot);
             }
             xfer += iprot->readMapEnd();
@@ -5576,7 +5576,7 @@ uint32_t Service_scan_rslt_on_column_result::write(::apache::thrift::protocol::T
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::map<std::string, ColCells> ::const_iterator _iter919;
+      std::map<std::string, cCells> ::const_iterator _iter919;
       for (_iter919 = this->success.begin(); _iter919 != this->success.end(); ++_iter919)
       {
         xfer += oprot->writeString(_iter919->first);
@@ -5634,7 +5634,7 @@ uint32_t Service_scan_rslt_on_column_presult::read(::apache::thrift::protocol::T
             {
               std::string _key925;
               xfer += iprot->readString(_key925);
-              ColCells& _val926 = (*(this->success))[_key925];
+              cCells& _val926 = (*(this->success))[_key925];
               xfer += _val926.read(iprot);
             }
             xfer += iprot->readMapEnd();

@@ -38,7 +38,7 @@ using Thrift.Processor;
 public partial class CellsGroup : TBase
 {
   private Cells _cells;
-  private Dictionary<string, ColCells> _ccells;
+  private Dictionary<string, cCells> _ccells;
   private List<kCells> _kcells;
   private FCells _fcells;
 
@@ -59,9 +59,9 @@ public partial class CellsGroup : TBase
   }
 
   /// <summary>
-  /// The Columns Cells in a map-container, defined as ColCells items by Column Name
+  /// The Columns Cells in a map-container, defined as cCells items by Column Name
   /// </summary>
-  public Dictionary<string, ColCells> Ccells
+  public Dictionary<string, cCells> Ccells
   {
     get
     {
@@ -179,13 +179,13 @@ public partial class CellsGroup : TBase
             {
               {
                 var _map559 = await iprot.ReadMapBeginAsync(cancellationToken);
-                Ccells = new Dictionary<string, ColCells>(_map559.Count);
+                Ccells = new Dictionary<string, cCells>(_map559.Count);
                 for(int _i560 = 0; _i560 < _map559.Count; ++_i560)
                 {
                   string _key561;
-                  ColCells _val562;
+                  cCells _val562;
                   _key561 = await iprot.ReadStringAsync(cancellationToken);
-                  _val562 = new ColCells();
+                  _val562 = new cCells();
                   await _val562.ReadAsync(iprot, cancellationToken);
                   Ccells[_key561] = _val562;
                 }

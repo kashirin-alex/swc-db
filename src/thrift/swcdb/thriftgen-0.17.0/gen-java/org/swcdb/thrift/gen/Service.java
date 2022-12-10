@@ -68,7 +68,7 @@ public class Service {
      * 
      * @param sql The SQL string to Execute
      */
-    public java.util.Map<java.lang.String,ColCells> sql_select_rslt_on_column(java.lang.String sql) throws Exception, org.apache.thrift.TException;
+    public java.util.Map<java.lang.String,cCells> sql_select_rslt_on_column(java.lang.String sql) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct SQL method to select cells with result in Key Cells list.
@@ -202,7 +202,7 @@ public class Service {
      * 
      * @param spec The Scan Specifications for the scan
      */
-    public java.util.Map<java.lang.String,ColCells> scan_rslt_on_column(SpecScan spec) throws Exception, org.apache.thrift.TException;
+    public java.util.Map<java.lang.String,cCells> scan_rslt_on_column(SpecScan spec) throws Exception, org.apache.thrift.TException;
 
     /**
      * The direct method to select cells with result in Key Cells list.
@@ -245,7 +245,7 @@ public class Service {
 
     public void sql_select(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<Cells> resultHandler) throws org.apache.thrift.TException;
 
-    public void sql_select_rslt_on_column(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException;
+    public void sql_select_rslt_on_column(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler) throws org.apache.thrift.TException;
 
     public void sql_select_rslt_on_key(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.List<kCells>> resultHandler) throws org.apache.thrift.TException;
 
@@ -277,7 +277,7 @@ public class Service {
 
     public void scan(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<Cells> resultHandler) throws org.apache.thrift.TException;
 
-    public void scan_rslt_on_column(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException;
+    public void scan_rslt_on_column(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler) throws org.apache.thrift.TException;
 
     public void scan_rslt_on_key(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<java.util.List<kCells>> resultHandler) throws org.apache.thrift.TException;
 
@@ -496,7 +496,7 @@ public class Service {
     }
 
     @Override
-    public java.util.Map<java.lang.String,ColCells> sql_select_rslt_on_column(java.lang.String sql) throws Exception, org.apache.thrift.TException
+    public java.util.Map<java.lang.String,cCells> sql_select_rslt_on_column(java.lang.String sql) throws Exception, org.apache.thrift.TException
     {
       send_sql_select_rslt_on_column(sql);
       return recv_sql_select_rslt_on_column();
@@ -509,7 +509,7 @@ public class Service {
       sendBase("sql_select_rslt_on_column", args);
     }
 
-    public java.util.Map<java.lang.String,ColCells> recv_sql_select_rslt_on_column() throws Exception, org.apache.thrift.TException
+    public java.util.Map<java.lang.String,cCells> recv_sql_select_rslt_on_column() throws Exception, org.apache.thrift.TException
     {
       sql_select_rslt_on_column_result result = new sql_select_rslt_on_column_result();
       receiveBase(result, "sql_select_rslt_on_column");
@@ -916,7 +916,7 @@ public class Service {
     }
 
     @Override
-    public java.util.Map<java.lang.String,ColCells> scan_rslt_on_column(SpecScan spec) throws Exception, org.apache.thrift.TException
+    public java.util.Map<java.lang.String,cCells> scan_rslt_on_column(SpecScan spec) throws Exception, org.apache.thrift.TException
     {
       send_scan_rslt_on_column(spec);
       return recv_scan_rslt_on_column();
@@ -929,7 +929,7 @@ public class Service {
       sendBase("scan_rslt_on_column", args);
     }
 
-    public java.util.Map<java.lang.String,ColCells> recv_scan_rslt_on_column() throws Exception, org.apache.thrift.TException
+    public java.util.Map<java.lang.String,cCells> recv_scan_rslt_on_column() throws Exception, org.apache.thrift.TException
     {
       scan_rslt_on_column_result result = new scan_rslt_on_column_result();
       receiveBase(result, "scan_rslt_on_column");
@@ -1290,16 +1290,16 @@ public class Service {
     }
 
     @Override
-    public void sql_select_rslt_on_column(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException {
+    public void sql_select_rslt_on_column(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       sql_select_rslt_on_column_call method_call = new sql_select_rslt_on_column_call(sql, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class sql_select_rslt_on_column_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.Map<java.lang.String,ColCells>> {
+    public static class sql_select_rslt_on_column_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.Map<java.lang.String,cCells>> {
       private java.lang.String sql;
-      public sql_select_rslt_on_column_call(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public sql_select_rslt_on_column_call(java.lang.String sql, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.sql = sql;
       }
@@ -1314,7 +1314,7 @@ public class Service {
       }
 
       @Override
-      public java.util.Map<java.lang.String,ColCells> getResult() throws Exception, org.apache.thrift.TException {
+      public java.util.Map<java.lang.String,cCells> getResult() throws Exception, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new java.lang.IllegalStateException("Method call not finished!");
         }
@@ -1884,16 +1884,16 @@ public class Service {
     }
 
     @Override
-    public void scan_rslt_on_column(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException {
+    public void scan_rslt_on_column(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       scan_rslt_on_column_call method_call = new scan_rslt_on_column_call(spec, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class scan_rslt_on_column_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.Map<java.lang.String,ColCells>> {
+    public static class scan_rslt_on_column_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.Map<java.lang.String,cCells>> {
       private SpecScan spec;
-      public scan_rslt_on_column_call(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public scan_rslt_on_column_call(SpecScan spec, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.spec = spec;
       }
@@ -1908,7 +1908,7 @@ public class Service {
       }
 
       @Override
-      public java.util.Map<java.lang.String,ColCells> getResult() throws Exception, org.apache.thrift.TException {
+      public java.util.Map<java.lang.String,cCells> getResult() throws Exception, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new java.lang.IllegalStateException("Method call not finished!");
         }
@@ -3473,7 +3473,7 @@ public class Service {
       }
     }
 
-    public static class sql_select_rslt_on_column<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, sql_select_rslt_on_column_args, java.util.Map<java.lang.String,ColCells>> {
+    public static class sql_select_rslt_on_column<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, sql_select_rslt_on_column_args, java.util.Map<java.lang.String,cCells>> {
       public sql_select_rslt_on_column() {
         super("sql_select_rslt_on_column");
       }
@@ -3484,11 +3484,11 @@ public class Service {
       }
 
       @Override
-      public org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+      public org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>>() { 
+        return new org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>>() { 
           @Override
-          public void onComplete(java.util.Map<java.lang.String,ColCells> o) {
+          public void onComplete(java.util.Map<java.lang.String,cCells> o) {
             sql_select_rslt_on_column_result result = new sql_select_rslt_on_column_result();
             result.success = o;
             try {
@@ -3539,7 +3539,7 @@ public class Service {
       }
 
       @Override
-      public void start(I iface, sql_select_rslt_on_column_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException {
+      public void start(I iface, sql_select_rslt_on_column_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler) throws org.apache.thrift.TException {
         iface.sql_select_rslt_on_column(args.sql,resultHandler);
       }
     }
@@ -4603,7 +4603,7 @@ public class Service {
       }
     }
 
-    public static class scan_rslt_on_column<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, scan_rslt_on_column_args, java.util.Map<java.lang.String,ColCells>> {
+    public static class scan_rslt_on_column<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, scan_rslt_on_column_args, java.util.Map<java.lang.String,cCells>> {
       public scan_rslt_on_column() {
         super("scan_rslt_on_column");
       }
@@ -4614,11 +4614,11 @@ public class Service {
       }
 
       @Override
-      public org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
+      public org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>>() { 
+        return new org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>>() { 
           @Override
-          public void onComplete(java.util.Map<java.lang.String,ColCells> o) {
+          public void onComplete(java.util.Map<java.lang.String,cCells> o) {
             scan_rslt_on_column_result result = new scan_rslt_on_column_result();
             result.success = o;
             try {
@@ -4669,7 +4669,7 @@ public class Service {
       }
 
       @Override
-      public void start(I iface, scan_rslt_on_column_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,ColCells>> resultHandler) throws org.apache.thrift.TException {
+      public void start(I iface, scan_rslt_on_column_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.Map<java.lang.String,cCells>> resultHandler) throws org.apache.thrift.TException {
         iface.scan_rslt_on_column(args.spec,resultHandler);
       }
     }
@@ -11592,7 +11592,7 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new sql_select_rslt_on_column_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new sql_select_rslt_on_column_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,ColCells> success; // required
+    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,cCells> success; // required
     public @org.apache.thrift.annotation.Nullable Exception e; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -11676,7 +11676,7 @@ public class Service {
     }
 
     public sql_select_rslt_on_column_result(
-      java.util.Map<java.lang.String,ColCells> success,
+      java.util.Map<java.lang.String,cCells> success,
       Exception e)
     {
       this();
@@ -11689,15 +11689,15 @@ public class Service {
      */
     public sql_select_rslt_on_column_result(sql_select_rslt_on_column_result other) {
       if (other.isSetSuccess()) {
-        java.util.Map<java.lang.String,ColCells> __this__success = new java.util.HashMap<java.lang.String,ColCells>(other.success.size());
-        for (java.util.Map.Entry<java.lang.String, ColCells> other_element : other.success.entrySet()) {
+        java.util.Map<java.lang.String,cCells> __this__success = new java.util.HashMap<java.lang.String,cCells>(other.success.size());
+        for (java.util.Map.Entry<java.lang.String, cCells> other_element : other.success.entrySet()) {
 
           java.lang.String other_element_key = other_element.getKey();
-          ColCells other_element_value = other_element.getValue();
+          cCells other_element_value = other_element.getValue();
 
           java.lang.String __this__success_copy_key = other_element_key;
 
-          ColCells __this__success_copy_value = new ColCells(other_element_value);
+          cCells __this__success_copy_value = new cCells(other_element_value);
 
           __this__success.put(__this__success_copy_key, __this__success_copy_value);
         }
@@ -11723,19 +11723,19 @@ public class Service {
       return (this.success == null) ? 0 : this.success.size();
     }
 
-    public void putToSuccess(java.lang.String key, ColCells val) {
+    public void putToSuccess(java.lang.String key, cCells val) {
       if (this.success == null) {
-        this.success = new java.util.HashMap<java.lang.String,ColCells>();
+        this.success = new java.util.HashMap<java.lang.String,cCells>();
       }
       this.success.put(key, val);
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.util.Map<java.lang.String,ColCells> getSuccess() {
+    public java.util.Map<java.lang.String,cCells> getSuccess() {
       return this.success;
     }
 
-    public sql_select_rslt_on_column_result setSuccess(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,ColCells> success) {
+    public sql_select_rslt_on_column_result setSuccess(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,cCells> success) {
       this.success = success;
       return this;
     }
@@ -11787,7 +11787,7 @@ public class Service {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((java.util.Map<java.lang.String,ColCells>)value);
+          setSuccess((java.util.Map<java.lang.String,cCells>)value);
         }
         break;
 
@@ -11996,13 +11996,13 @@ public class Service {
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
                   org.apache.thrift.protocol.TMap _map620 = iprot.readMapBegin();
-                  struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map620.size);
+                  struct.success = new java.util.HashMap<java.lang.String,cCells>(2*_map620.size);
                   @org.apache.thrift.annotation.Nullable java.lang.String _key621;
-                  @org.apache.thrift.annotation.Nullable ColCells _val622;
+                  @org.apache.thrift.annotation.Nullable cCells _val622;
                   for (int _i623 = 0; _i623 < _map620.size; ++_i623)
                   {
                     _key621 = iprot.readString();
-                    _val622 = new ColCells();
+                    _val622 = new cCells();
                     _val622.read(iprot);
                     struct.success.put(_key621, _val622);
                   }
@@ -12042,7 +12042,7 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter624 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, cCells> _iter624 : struct.success.entrySet())
             {
               oprot.writeString(_iter624.getKey());
               _iter624.getValue().write(oprot);
@@ -12085,7 +12085,7 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter625 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, cCells> _iter625 : struct.success.entrySet())
             {
               oprot.writeString(_iter625.getKey());
               _iter625.getValue().write(oprot);
@@ -12104,13 +12104,13 @@ public class Service {
         if (incoming.get(0)) {
           {
             org.apache.thrift.protocol.TMap _map626 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-            struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map626.size);
+            struct.success = new java.util.HashMap<java.lang.String,cCells>(2*_map626.size);
             @org.apache.thrift.annotation.Nullable java.lang.String _key627;
-            @org.apache.thrift.annotation.Nullable ColCells _val628;
+            @org.apache.thrift.annotation.Nullable cCells _val628;
             for (int _i629 = 0; _i629 < _map626.size; ++_i629)
             {
               _key627 = iprot.readString();
-              _val628 = new ColCells();
+              _val628 = new cCells();
               _val628.read(iprot);
               struct.success.put(_key627, _val628);
             }
@@ -26754,7 +26754,7 @@ public class Service {
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new scan_rslt_on_column_resultStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new scan_rslt_on_column_resultTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,ColCells> success; // required
+    public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,cCells> success; // required
     public @org.apache.thrift.annotation.Nullable Exception e; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -26838,7 +26838,7 @@ public class Service {
     }
 
     public scan_rslt_on_column_result(
-      java.util.Map<java.lang.String,ColCells> success,
+      java.util.Map<java.lang.String,cCells> success,
       Exception e)
     {
       this();
@@ -26851,15 +26851,15 @@ public class Service {
      */
     public scan_rslt_on_column_result(scan_rslt_on_column_result other) {
       if (other.isSetSuccess()) {
-        java.util.Map<java.lang.String,ColCells> __this__success = new java.util.HashMap<java.lang.String,ColCells>(other.success.size());
-        for (java.util.Map.Entry<java.lang.String, ColCells> other_element : other.success.entrySet()) {
+        java.util.Map<java.lang.String,cCells> __this__success = new java.util.HashMap<java.lang.String,cCells>(other.success.size());
+        for (java.util.Map.Entry<java.lang.String, cCells> other_element : other.success.entrySet()) {
 
           java.lang.String other_element_key = other_element.getKey();
-          ColCells other_element_value = other_element.getValue();
+          cCells other_element_value = other_element.getValue();
 
           java.lang.String __this__success_copy_key = other_element_key;
 
-          ColCells __this__success_copy_value = new ColCells(other_element_value);
+          cCells __this__success_copy_value = new cCells(other_element_value);
 
           __this__success.put(__this__success_copy_key, __this__success_copy_value);
         }
@@ -26885,19 +26885,19 @@ public class Service {
       return (this.success == null) ? 0 : this.success.size();
     }
 
-    public void putToSuccess(java.lang.String key, ColCells val) {
+    public void putToSuccess(java.lang.String key, cCells val) {
       if (this.success == null) {
-        this.success = new java.util.HashMap<java.lang.String,ColCells>();
+        this.success = new java.util.HashMap<java.lang.String,cCells>();
       }
       this.success.put(key, val);
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.util.Map<java.lang.String,ColCells> getSuccess() {
+    public java.util.Map<java.lang.String,cCells> getSuccess() {
       return this.success;
     }
 
-    public scan_rslt_on_column_result setSuccess(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,ColCells> success) {
+    public scan_rslt_on_column_result setSuccess(@org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,cCells> success) {
       this.success = success;
       return this;
     }
@@ -26949,7 +26949,7 @@ public class Service {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((java.util.Map<java.lang.String,ColCells>)value);
+          setSuccess((java.util.Map<java.lang.String,cCells>)value);
         }
         break;
 
@@ -27158,13 +27158,13 @@ public class Service {
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
                   org.apache.thrift.protocol.TMap _map762 = iprot.readMapBegin();
-                  struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map762.size);
+                  struct.success = new java.util.HashMap<java.lang.String,cCells>(2*_map762.size);
                   @org.apache.thrift.annotation.Nullable java.lang.String _key763;
-                  @org.apache.thrift.annotation.Nullable ColCells _val764;
+                  @org.apache.thrift.annotation.Nullable cCells _val764;
                   for (int _i765 = 0; _i765 < _map762.size; ++_i765)
                   {
                     _key763 = iprot.readString();
-                    _val764 = new ColCells();
+                    _val764 = new cCells();
                     _val764.read(iprot);
                     struct.success.put(_key763, _val764);
                   }
@@ -27204,7 +27204,7 @@ public class Service {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter766 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, cCells> _iter766 : struct.success.entrySet())
             {
               oprot.writeString(_iter766.getKey());
               _iter766.getValue().write(oprot);
@@ -27247,7 +27247,7 @@ public class Service {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (java.util.Map.Entry<java.lang.String, ColCells> _iter767 : struct.success.entrySet())
+            for (java.util.Map.Entry<java.lang.String, cCells> _iter767 : struct.success.entrySet())
             {
               oprot.writeString(_iter767.getKey());
               _iter767.getValue().write(oprot);
@@ -27266,13 +27266,13 @@ public class Service {
         if (incoming.get(0)) {
           {
             org.apache.thrift.protocol.TMap _map768 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-            struct.success = new java.util.HashMap<java.lang.String,ColCells>(2*_map768.size);
+            struct.success = new java.util.HashMap<java.lang.String,cCells>(2*_map768.size);
             @org.apache.thrift.annotation.Nullable java.lang.String _key769;
-            @org.apache.thrift.annotation.Nullable ColCells _val770;
+            @org.apache.thrift.annotation.Nullable cCells _val770;
             for (int _i771 = 0; _i771 < _map768.size; ++_i771)
             {
               _key769 = iprot.readString();
-              _val770 = new ColCells();
+              _val770 = new cCells();
               _val770.read(iprot);
               struct.success.put(_key769, _val770);
             }

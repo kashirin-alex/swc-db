@@ -1135,7 +1135,7 @@ struct CCellSerial {
 }
 
 /** The Column Cells for results on Columns of scan */
-struct ColCells {
+struct cCells {
   /** The Plain type Cells, defined as CCellPlain items in a list-container */
   1: list<CCellPlain>       plain_cells
 
@@ -1146,8 +1146,8 @@ struct ColCells {
   3: list<CCellSerial>      serial_cells
 }
 
-/** The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name */
-typedef map<string, ColCells> CCells
+/** The Columns Cells for results on Columns of scan, defined as cCells items in a map-container by Column Name */
+typedef map<string, cCells> CCells
 
 
 
@@ -1274,7 +1274,7 @@ struct CellsGroup {
   /** The Cells in a list, defined as Cell items in a list-container */
   1: Cells   cells
 
-  /** The Columns Cells in a map-container, defined as ColCells items by Column Name */
+  /** The Columns Cells in a map-container, defined as cCells items by Column Name */
   2: CCells  ccells
 
   /** The Keys Cells in a list, defined as kCells items in a list-container */
@@ -1395,7 +1395,6 @@ service Service {
   ) throws (1:Exception e),
 
 
-
   /** The direct SQL method to select cells with result in Cells List. */
   Cells sql_select(
 
@@ -1403,6 +1402,7 @@ service Service {
     1:string sql
 
   ) throws (1:Exception e),
+
 
 
   /** The direct SQL method to select cells with result in Columns Cells map. */
@@ -1442,6 +1442,7 @@ service Service {
     2:CellsResult rslt
 
   ) throws (1:Exception e),
+
 
 
   /** The direct SQL method to update cells optionally to work with updater-id. */
