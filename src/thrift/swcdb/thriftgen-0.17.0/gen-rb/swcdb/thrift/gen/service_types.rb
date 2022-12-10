@@ -329,7 +329,9 @@ module Swcdb
 
       class KCells; end
 
-      class FCell; end
+      class FCellPlain; end
+
+      class FCellCounter; end
 
       class FCellSerial; end
 
@@ -1880,8 +1882,8 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Fraction Cell for results on Fraction of scan
-      class FCell
+      # The Plain column type Fraction Cell for results on Fraction of scan
+      class FCellPlain
         include ::Thrift::Struct, ::Thrift::Struct_Union
         C = 1
         TS = 2
@@ -1904,7 +1906,34 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Fraction Serial Cell for results on Fraction of scan
+      # The Counter column type Fraction Cell for results on Fraction of scan
+      class FCellCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        C = 1
+        TS = 2
+        V = 3
+        EQ = 4
+
+        FIELDS = {
+          # The Column Name
+          C => {:type => ::Thrift::Types::STRING, :name => 'c'},
+          # The Cell Timestamp
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts'},
+          # The Cell Counter Value
+          V => {:type => ::Thrift::Types::I64, :name => 'v'},
+          # The Counter EQ since ts
+          EQ => {:type => ::Thrift::Types::I64, :name => 'eq', :optional => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Serial column type Fraction Cell for results on Fraction of scan
       class FCellSerial
         include ::Thrift::Struct, ::Thrift::Struct_Union
         C = 1
@@ -1932,14 +1961,17 @@ module Swcdb
       class FCells
         include ::Thrift::Struct, ::Thrift::Struct_Union
         F = 1
-        CELLS = 2
-        SERIAL_CELLS = 3
+        PLAIN_CELLS = 2
+        COUNTER_CELLS = 3
+        SERIAL_CELLS = 4
 
         FIELDS = {
           # The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes
           F => {:type => ::Thrift::Types::MAP, :name => 'f', :key => {:type => ::Thrift::Types::STRING, :binary => true}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::FCells}},
-          # The current Fraction's Cells, defined as FCell items in a list-container
-          CELLS => {:type => ::Thrift::Types::LIST, :name => 'cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::FCell}},
+          # The current Fraction's Cells, defined as FCellPlain items in a list-container
+          PLAIN_CELLS => {:type => ::Thrift::Types::LIST, :name => 'plain_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::FCellPlain}},
+          # The current Fraction's Cells, defined as FCellCounter items in a list-container
+          COUNTER_CELLS => {:type => ::Thrift::Types::LIST, :name => 'counter_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::FCellCounter}},
           # The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
           SERIAL_CELLS => {:type => ::Thrift::Types::LIST, :name => 'serial_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::FCellSerial}}
         }

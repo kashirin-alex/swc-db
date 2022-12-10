@@ -120,7 +120,8 @@ void print(FCells* fcells, Key& key) {
   for(auto& f : fcells->f) {
     key.emplace_back(f.first);
     std::cout << "fraction='" << f.first << "'"
-              << " cells.size=" << f.second.cells.size()
+              << " plain_cells.size=" << f.second.plain_cells.size()
+              << " counter_cells.size=" << f.second.counter_cells.size()
               << " serial_cells.size=" << f.second.serial_cells.size()
               << " key.size=" << key.size() << " ";
     for(auto& fraction : key)

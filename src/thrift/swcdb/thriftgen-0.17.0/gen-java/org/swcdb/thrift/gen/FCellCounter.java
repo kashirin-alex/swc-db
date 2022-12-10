@@ -7,18 +7,19 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Serial column type Fraction Cell for results on Fraction of scan
+ * The Counter column type Fraction Cell for results on Fraction of scan
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSerial._Fields>, java.io.Serializable, Cloneable, Comparable<FCellSerial> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FCellSerial");
+public class FCellCounter implements org.apache.thrift.TBase<FCellCounter, FCellCounter._Fields>, java.io.Serializable, Cloneable, Comparable<FCellCounter> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FCellCounter");
 
   private static final org.apache.thrift.protocol.TField C_FIELD_DESC = new org.apache.thrift.protocol.TField("c", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField EQ_FIELD_DESC = new org.apache.thrift.protocol.TField("eq", org.apache.thrift.protocol.TType.I64, (short)4);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FCellSerialStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FCellSerialTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FCellCounterStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FCellCounterTupleSchemeFactory();
 
   /**
    * The Column Name
@@ -29,9 +30,13 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
    */
   public long ts; // required
   /**
-   * The Cell Serial Value
+   * The Cell Counter Value
    */
-  public @org.apache.thrift.annotation.Nullable java.util.List<CellValueSerial> v; // required
+  public long v; // required
+  /**
+   * The Counter EQ since ts
+   */
+  public long eq; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -44,9 +49,13 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
      */
     TS((short)2, "ts"),
     /**
-     * The Cell Serial Value
+     * The Cell Counter Value
      */
-    V((short)3, "v");
+    V((short)3, "v"),
+    /**
+     * The Counter EQ since ts
+     */
+    EQ((short)4, "eq");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -68,6 +77,8 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
           return TS;
         case 3: // V
           return V;
+        case 4: // EQ
+          return EQ;
         default:
           return null;
       }
@@ -112,7 +123,10 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
 
   // isset id assignments
   private static final int __TS_ISSET_ID = 0;
+  private static final int __V_ISSET_ID = 1;
+  private static final int __EQ_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.EQ};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -121,47 +135,45 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
     tmpMap.put(_Fields.TS, new org.apache.thrift.meta_data.FieldMetaData("ts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "CellValuesSerial")));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.EQ, new org.apache.thrift.meta_data.FieldMetaData("eq", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FCellSerial.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FCellCounter.class, metaDataMap);
   }
 
-  public FCellSerial() {
+  public FCellCounter() {
   }
 
-  public FCellSerial(
+  public FCellCounter(
     java.lang.String c,
     long ts,
-    java.util.List<CellValueSerial> v)
+    long v)
   {
     this();
     this.c = c;
     this.ts = ts;
     setTsIsSet(true);
     this.v = v;
+    setVIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public FCellSerial(FCellSerial other) {
+  public FCellCounter(FCellCounter other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetC()) {
       this.c = other.c;
     }
     this.ts = other.ts;
-    if (other.isSetV()) {
-      java.util.List<CellValueSerial> __this__v = new java.util.ArrayList<CellValueSerial>(other.v.size());
-      for (CellValueSerial other_element : other.v) {
-        __this__v.add(new CellValueSerial(other_element));
-      }
-      this.v = __this__v;
-    }
+    this.v = other.v;
+    this.eq = other.eq;
   }
 
   @Override
-  public FCellSerial deepCopy() {
-    return new FCellSerial(this);
+  public FCellCounter deepCopy() {
+    return new FCellCounter(this);
   }
 
   @Override
@@ -169,7 +181,10 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
     this.c = null;
     setTsIsSet(false);
     this.ts = 0;
-    this.v = null;
+    setVIsSet(false);
+    this.v = 0;
+    setEqIsSet(false);
+    this.eq = 0;
   }
 
   /**
@@ -183,7 +198,7 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
   /**
    * The Column Name
    */
-  public FCellSerial setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
+  public FCellCounter setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
     this.c = c;
     return this;
   }
@@ -213,7 +228,7 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
   /**
    * The Cell Timestamp
    */
-  public FCellSerial setTs(long ts) {
+  public FCellCounter setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
     return this;
@@ -232,51 +247,62 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TS_ISSET_ID, value);
   }
 
-  public int getVSize() {
-    return (this.v == null) ? 0 : this.v.size();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<CellValueSerial> getVIterator() {
-    return (this.v == null) ? null : this.v.iterator();
-  }
-
-  public void addToV(CellValueSerial elem) {
-    if (this.v == null) {
-      this.v = new java.util.ArrayList<CellValueSerial>();
-    }
-    this.v.add(elem);
-  }
-
   /**
-   * The Cell Serial Value
+   * The Cell Counter Value
    */
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<CellValueSerial> getV() {
+  public long getV() {
     return this.v;
   }
 
   /**
-   * The Cell Serial Value
+   * The Cell Counter Value
    */
-  public FCellSerial setV(@org.apache.thrift.annotation.Nullable java.util.List<CellValueSerial> v) {
+  public FCellCounter setV(long v) {
     this.v = v;
+    setVIsSet(true);
     return this;
   }
 
   public void unsetV() {
-    this.v = null;
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __V_ISSET_ID);
   }
 
   /** Returns true if field v is set (has been assigned a value) and false otherwise */
   public boolean isSetV() {
-    return this.v != null;
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __V_ISSET_ID);
   }
 
   public void setVIsSet(boolean value) {
-    if (!value) {
-      this.v = null;
-    }
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __V_ISSET_ID, value);
+  }
+
+  /**
+   * The Counter EQ since ts
+   */
+  public long getEq() {
+    return this.eq;
+  }
+
+  /**
+   * The Counter EQ since ts
+   */
+  public FCellCounter setEq(long eq) {
+    this.eq = eq;
+    setEqIsSet(true);
+    return this;
+  }
+
+  public void unsetEq() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __EQ_ISSET_ID);
+  }
+
+  /** Returns true if field eq is set (has been assigned a value) and false otherwise */
+  public boolean isSetEq() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __EQ_ISSET_ID);
+  }
+
+  public void setEqIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __EQ_ISSET_ID, value);
   }
 
   @Override
@@ -302,7 +328,15 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
       if (value == null) {
         unsetV();
       } else {
-        setV((java.util.List<CellValueSerial>)value);
+        setV((java.lang.Long)value);
+      }
+      break;
+
+    case EQ:
+      if (value == null) {
+        unsetEq();
+      } else {
+        setEq((java.lang.Long)value);
       }
       break;
 
@@ -322,6 +356,9 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
     case V:
       return getV();
 
+    case EQ:
+      return getEq();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -340,18 +377,20 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
       return isSetTs();
     case V:
       return isSetV();
+    case EQ:
+      return isSetEq();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof FCellSerial)
-      return this.equals((FCellSerial)that);
+    if (that instanceof FCellCounter)
+      return this.equals((FCellCounter)that);
     return false;
   }
 
-  public boolean equals(FCellSerial that) {
+  public boolean equals(FCellCounter that) {
     if (that == null)
       return false;
     if (this == that)
@@ -375,12 +414,21 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
         return false;
     }
 
-    boolean this_present_v = true && this.isSetV();
-    boolean that_present_v = true && that.isSetV();
+    boolean this_present_v = true;
+    boolean that_present_v = true;
     if (this_present_v || that_present_v) {
       if (!(this_present_v && that_present_v))
         return false;
-      if (!this.v.equals(that.v))
+      if (this.v != that.v)
+        return false;
+    }
+
+    boolean this_present_eq = true && this.isSetEq();
+    boolean that_present_eq = true && that.isSetEq();
+    if (this_present_eq || that_present_eq) {
+      if (!(this_present_eq && that_present_eq))
+        return false;
+      if (this.eq != that.eq)
         return false;
     }
 
@@ -397,15 +445,17 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(ts);
 
-    hashCode = hashCode * 8191 + ((isSetV()) ? 131071 : 524287);
-    if (isSetV())
-      hashCode = hashCode * 8191 + v.hashCode();
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(v);
+
+    hashCode = hashCode * 8191 + ((isSetEq()) ? 131071 : 524287);
+    if (isSetEq())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(eq);
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(FCellSerial other) {
+  public int compareTo(FCellCounter other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -442,6 +492,16 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetEq(), other.isSetEq());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEq()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.eq, other.eq);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -463,7 +523,7 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("FCellSerial(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("FCellCounter(");
     boolean first = true;
 
     sb.append("c:");
@@ -479,12 +539,14 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
     first = false;
     if (!first) sb.append(", ");
     sb.append("v:");
-    if (this.v == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.v);
-    }
+    sb.append(this.v);
     first = false;
+    if (isSetEq()) {
+      if (!first) sb.append(", ");
+      sb.append("eq:");
+      sb.append(this.eq);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -512,17 +574,17 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
     }
   }
 
-  private static class FCellSerialStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FCellCounterStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FCellSerialStandardScheme getScheme() {
-      return new FCellSerialStandardScheme();
+    public FCellCounterStandardScheme getScheme() {
+      return new FCellCounterStandardScheme();
     }
   }
 
-  private static class FCellSerialStandardScheme extends org.apache.thrift.scheme.StandardScheme<FCellSerial> {
+  private static class FCellCounterStandardScheme extends org.apache.thrift.scheme.StandardScheme<FCellCounter> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, FCellSerial struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, FCellCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -549,20 +611,17 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
             }
             break;
           case 3: // V
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list504 = iprot.readListBegin();
-                struct.v = new java.util.ArrayList<CellValueSerial>(_list504.size);
-                @org.apache.thrift.annotation.Nullable CellValueSerial _elem505;
-                for (int _i506 = 0; _i506 < _list504.size; ++_i506)
-                {
-                  _elem505 = new CellValueSerial();
-                  _elem505.read(iprot);
-                  struct.v.add(_elem505);
-                }
-                iprot.readListEnd();
-              }
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.v = iprot.readI64();
               struct.setVIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // EQ
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.eq = iprot.readI64();
+              struct.setEqIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -579,7 +638,7 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, FCellSerial struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, FCellCounter struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -591,16 +650,12 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
       oprot.writeFieldBegin(TS_FIELD_DESC);
       oprot.writeI64(struct.ts);
       oprot.writeFieldEnd();
-      if (struct.v != null) {
-        oprot.writeFieldBegin(V_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.v.size()));
-          for (CellValueSerial _iter507 : struct.v)
-          {
-            _iter507.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
+      oprot.writeFieldBegin(V_FIELD_DESC);
+      oprot.writeI64(struct.v);
+      oprot.writeFieldEnd();
+      if (struct.isSetEq()) {
+        oprot.writeFieldBegin(EQ_FIELD_DESC);
+        oprot.writeI64(struct.eq);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -609,17 +664,17 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
 
   }
 
-  private static class FCellSerialTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FCellCounterTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FCellSerialTupleScheme getScheme() {
-      return new FCellSerialTupleScheme();
+    public FCellCounterTupleScheme getScheme() {
+      return new FCellCounterTupleScheme();
     }
   }
 
-  private static class FCellSerialTupleScheme extends org.apache.thrift.scheme.TupleScheme<FCellSerial> {
+  private static class FCellCounterTupleScheme extends org.apache.thrift.scheme.TupleScheme<FCellCounter> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, FCellSerial struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, FCellCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetC()) {
@@ -631,7 +686,10 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
       if (struct.isSetV()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetEq()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetC()) {
         oprot.writeString(struct.c);
       }
@@ -639,20 +697,17 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
         oprot.writeI64(struct.ts);
       }
       if (struct.isSetV()) {
-        {
-          oprot.writeI32(struct.v.size());
-          for (CellValueSerial _iter508 : struct.v)
-          {
-            _iter508.write(oprot);
-          }
-        }
+        oprot.writeI64(struct.v);
+      }
+      if (struct.isSetEq()) {
+        oprot.writeI64(struct.eq);
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, FCellSerial struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, FCellCounter struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.c = iprot.readString();
         struct.setCIsSet(true);
@@ -662,18 +717,12 @@ public class FCellSerial implements org.apache.thrift.TBase<FCellSerial, FCellSe
         struct.setTsIsSet(true);
       }
       if (incoming.get(2)) {
-        {
-          org.apache.thrift.protocol.TList _list509 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.v = new java.util.ArrayList<CellValueSerial>(_list509.size);
-          @org.apache.thrift.annotation.Nullable CellValueSerial _elem510;
-          for (int _i511 = 0; _i511 < _list509.size; ++_i511)
-          {
-            _elem510 = new CellValueSerial();
-            _elem510.read(iprot);
-            struct.v.add(_elem510);
-          }
-        }
+        struct.v = iprot.readI64();
         struct.setVIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.eq = iprot.readI64();
+        struct.setEqIsSet(true);
       }
     }
   }

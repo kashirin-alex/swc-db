@@ -1226,6 +1226,30 @@ class AppHandler final : virtual public BrokerIf {
           }
           break;
         }
+        case DB::Types::Column::COUNTER_I64:
+        case DB::Types::Column::COUNTER_I32:
+        case DB::Types::Column::COUNTER_I16:
+        case DB::Types::Column::COUNTER_I8: {
+          FCells* fraction_cells;
+          for(auto dbcell : cells) {
+            fraction_cells = &_return;
+            key.clear();
+            dbcell->key.convert_to(key);
+            for(auto& f : key)
+              fraction_cells = &fraction_cells->f[f];
+            auto& cell = fraction_cells->counter_cells.emplace_back();
+            cell.c = schema->col_name;
+            cell.ts = dbcell->get_timestamp();
+            uint8_t op = 0;
+            cell.v = dbcell->get_counter(op, cell.eq);
+            if(op & DB::Cells::OP_EQUAL) {
+              cell.__isset.eq = true;
+              if(!(op & DB::Cells::HAVE_REVISION))
+                cell.eq = cell.ts;
+            }
+          }
+          break;
+        }
         default: {
           FCells* fraction_cells;
           for(auto dbcell : cells) {
@@ -1234,7 +1258,7 @@ class AppHandler final : virtual public BrokerIf {
             dbcell->key.convert_to(key);
             for(auto& f : key)
               fraction_cells = &fraction_cells->f[f];
-            auto& cell = fraction_cells->cells.emplace_back();
+            auto& cell = fraction_cells->plain_cells.emplace_back();
             cell.c = schema->col_name;
             cell.ts = dbcell->get_timestamp();
             dbcell->get_value(cell.v);

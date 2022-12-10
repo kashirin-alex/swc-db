@@ -33,9 +33,9 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Fraction Cell for results on Fraction of scan
+/// The Plain column type Fraction Cell for results on Fraction of scan
 /// </summary>
-public partial class FCell : TBase
+public partial class FCellPlain : TBase
 {
   private string _c;
   private long _ts;
@@ -98,13 +98,13 @@ public partial class FCell : TBase
     public bool v;
   }
 
-  public FCell()
+  public FCellPlain()
   {
   }
 
-  public FCell DeepCopy()
+  public FCellPlain DeepCopy()
   {
-    var tmp517 = new FCell();
+    var tmp517 = new FCellPlain();
     if((C != null) && __isset.c)
     {
       tmp517.C = this.C;
@@ -191,7 +191,7 @@ public partial class FCell : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp518 = new TStruct("FCell");
+      var tmp518 = new TStruct("FCellPlain");
       await oprot.WriteStructBeginAsync(tmp518, cancellationToken);
       var tmp519 = new TField();
       if((C != null) && __isset.c)
@@ -232,7 +232,7 @@ public partial class FCell : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is FCell other)) return false;
+    if (!(that is FCellPlain other)) return false;
     if (ReferenceEquals(this, other)) return true;
     return ((__isset.c == other.__isset.c) && ((!__isset.c) || (global::System.Object.Equals(C, other.C))))
       && ((__isset.ts == other.__isset.ts) && ((!__isset.ts) || (global::System.Object.Equals(Ts, other.Ts))))
@@ -260,7 +260,7 @@ public partial class FCell : TBase
 
   public override string ToString()
   {
-    var tmp520 = new StringBuilder("FCell(");
+    var tmp520 = new StringBuilder("FCellPlain(");
     int tmp521 = 0;
     if((C != null) && __isset.c)
     {

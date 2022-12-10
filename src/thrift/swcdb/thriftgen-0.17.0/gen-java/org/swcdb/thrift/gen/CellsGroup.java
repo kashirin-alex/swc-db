@@ -670,16 +670,16 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
           case 2: // CCELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map538 = iprot.readMapBegin();
-                struct.ccells = new java.util.HashMap<java.lang.String,ColCells>(2*_map538.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key539;
-                @org.apache.thrift.annotation.Nullable ColCells _val540;
-                for (int _i541 = 0; _i541 < _map538.size; ++_i541)
+                org.apache.thrift.protocol.TMap _map546 = iprot.readMapBegin();
+                struct.ccells = new java.util.HashMap<java.lang.String,ColCells>(2*_map546.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key547;
+                @org.apache.thrift.annotation.Nullable ColCells _val548;
+                for (int _i549 = 0; _i549 < _map546.size; ++_i549)
                 {
-                  _key539 = iprot.readString();
-                  _val540 = new ColCells();
-                  _val540.read(iprot);
-                  struct.ccells.put(_key539, _val540);
+                  _key547 = iprot.readString();
+                  _val548 = new ColCells();
+                  _val548.read(iprot);
+                  struct.ccells.put(_key547, _val548);
                 }
                 iprot.readMapEnd();
               }
@@ -691,14 +691,14 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
           case 3: // KCELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list542 = iprot.readListBegin();
-                struct.kcells = new java.util.ArrayList<kCells>(_list542.size);
-                @org.apache.thrift.annotation.Nullable kCells _elem543;
-                for (int _i544 = 0; _i544 < _list542.size; ++_i544)
+                org.apache.thrift.protocol.TList _list550 = iprot.readListBegin();
+                struct.kcells = new java.util.ArrayList<kCells>(_list550.size);
+                @org.apache.thrift.annotation.Nullable kCells _elem551;
+                for (int _i552 = 0; _i552 < _list550.size; ++_i552)
                 {
-                  _elem543 = new kCells();
-                  _elem543.read(iprot);
-                  struct.kcells.add(_elem543);
+                  _elem551 = new kCells();
+                  _elem551.read(iprot);
+                  struct.kcells.add(_elem551);
                 }
                 iprot.readListEnd();
               }
@@ -741,10 +741,10 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
         oprot.writeFieldBegin(CCELLS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.ccells.size()));
-          for (java.util.Map.Entry<java.lang.String, ColCells> _iter545 : struct.ccells.entrySet())
+          for (java.util.Map.Entry<java.lang.String, ColCells> _iter553 : struct.ccells.entrySet())
           {
-            oprot.writeString(_iter545.getKey());
-            _iter545.getValue().write(oprot);
+            oprot.writeString(_iter553.getKey());
+            _iter553.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -754,9 +754,9 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
         oprot.writeFieldBegin(KCELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.kcells.size()));
-          for (kCells _iter546 : struct.kcells)
+          for (kCells _iter554 : struct.kcells)
           {
-            _iter546.write(oprot);
+            _iter554.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -805,19 +805,19 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       if (struct.isSetCcells()) {
         {
           oprot.writeI32(struct.ccells.size());
-          for (java.util.Map.Entry<java.lang.String, ColCells> _iter547 : struct.ccells.entrySet())
+          for (java.util.Map.Entry<java.lang.String, ColCells> _iter555 : struct.ccells.entrySet())
           {
-            oprot.writeString(_iter547.getKey());
-            _iter547.getValue().write(oprot);
+            oprot.writeString(_iter555.getKey());
+            _iter555.getValue().write(oprot);
           }
         }
       }
       if (struct.isSetKcells()) {
         {
           oprot.writeI32(struct.kcells.size());
-          for (kCells _iter548 : struct.kcells)
+          for (kCells _iter556 : struct.kcells)
           {
-            _iter548.write(oprot);
+            _iter556.write(oprot);
           }
         }
       }
@@ -837,30 +837,30 @@ public class CellsGroup implements org.apache.thrift.TBase<CellsGroup, CellsGrou
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TMap _map549 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-          struct.ccells = new java.util.HashMap<java.lang.String,ColCells>(2*_map549.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key550;
-          @org.apache.thrift.annotation.Nullable ColCells _val551;
-          for (int _i552 = 0; _i552 < _map549.size; ++_i552)
+          org.apache.thrift.protocol.TMap _map557 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
+          struct.ccells = new java.util.HashMap<java.lang.String,ColCells>(2*_map557.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key558;
+          @org.apache.thrift.annotation.Nullable ColCells _val559;
+          for (int _i560 = 0; _i560 < _map557.size; ++_i560)
           {
-            _key550 = iprot.readString();
-            _val551 = new ColCells();
-            _val551.read(iprot);
-            struct.ccells.put(_key550, _val551);
+            _key558 = iprot.readString();
+            _val559 = new ColCells();
+            _val559.read(iprot);
+            struct.ccells.put(_key558, _val559);
           }
         }
         struct.setCcellsIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list553 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.kcells = new java.util.ArrayList<kCells>(_list553.size);
-          @org.apache.thrift.annotation.Nullable kCells _elem554;
-          for (int _i555 = 0; _i555 < _list553.size; ++_i555)
+          org.apache.thrift.protocol.TList _list561 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.kcells = new java.util.ArrayList<kCells>(_list561.size);
+          @org.apache.thrift.annotation.Nullable kCells _elem562;
+          for (int _i563 = 0; _i563 < _list561.size; ++_i563)
           {
-            _elem554 = new kCells();
-            _elem554.read(iprot);
-            struct.kcells.add(_elem554);
+            _elem562 = new kCells();
+            _elem562.read(iprot);
+            struct.kcells.add(_elem562);
           }
         }
         struct.setKcellsIsSet(true);

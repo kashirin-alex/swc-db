@@ -561,14 +561,14 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
           case 1: // SCHEMAS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list556 = iprot.readListBegin();
-                struct.schemas = new java.util.ArrayList<Schema>(_list556.size);
-                @org.apache.thrift.annotation.Nullable Schema _elem557;
-                for (int _i558 = 0; _i558 < _list556.size; ++_i558)
+                org.apache.thrift.protocol.TList _list564 = iprot.readListBegin();
+                struct.schemas = new java.util.ArrayList<Schema>(_list564.size);
+                @org.apache.thrift.annotation.Nullable Schema _elem565;
+                for (int _i566 = 0; _i566 < _list564.size; ++_i566)
                 {
-                  _elem557 = new Schema();
-                  _elem557.read(iprot);
-                  struct.schemas.add(_elem557);
+                  _elem565 = new Schema();
+                  _elem565.read(iprot);
+                  struct.schemas.add(_elem565);
                 }
                 iprot.readListEnd();
               }
@@ -589,14 +589,14 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
           case 3: // COMPACT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list559 = iprot.readListBegin();
-                struct.compact = new java.util.ArrayList<CompactResult>(_list559.size);
-                @org.apache.thrift.annotation.Nullable CompactResult _elem560;
-                for (int _i561 = 0; _i561 < _list559.size; ++_i561)
+                org.apache.thrift.protocol.TList _list567 = iprot.readListBegin();
+                struct.compact = new java.util.ArrayList<CompactResult>(_list567.size);
+                @org.apache.thrift.annotation.Nullable CompactResult _elem568;
+                for (int _i569 = 0; _i569 < _list567.size; ++_i569)
                 {
-                  _elem560 = new CompactResult();
-                  _elem560.read(iprot);
-                  struct.compact.add(_elem560);
+                  _elem568 = new CompactResult();
+                  _elem568.read(iprot);
+                  struct.compact.add(_elem568);
                 }
                 iprot.readListEnd();
               }
@@ -625,9 +625,9 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
         oprot.writeFieldBegin(SCHEMAS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemas.size()));
-          for (Schema _iter562 : struct.schemas)
+          for (Schema _iter570 : struct.schemas)
           {
-            _iter562.write(oprot);
+            _iter570.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -642,9 +642,9 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
         oprot.writeFieldBegin(COMPACT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compact.size()));
-          for (CompactResult _iter563 : struct.compact)
+          for (CompactResult _iter571 : struct.compact)
           {
-            _iter563.write(oprot);
+            _iter571.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -682,9 +682,9 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       if (struct.isSetSchemas()) {
         {
           oprot.writeI32(struct.schemas.size());
-          for (Schema _iter564 : struct.schemas)
+          for (Schema _iter572 : struct.schemas)
           {
-            _iter564.write(oprot);
+            _iter572.write(oprot);
           }
         }
       }
@@ -694,9 +694,9 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       if (struct.isSetCompact()) {
         {
           oprot.writeI32(struct.compact.size());
-          for (CompactResult _iter565 : struct.compact)
+          for (CompactResult _iter573 : struct.compact)
           {
-            _iter565.write(oprot);
+            _iter573.write(oprot);
           }
         }
       }
@@ -708,14 +708,14 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list566 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.schemas = new java.util.ArrayList<Schema>(_list566.size);
-          @org.apache.thrift.annotation.Nullable Schema _elem567;
-          for (int _i568 = 0; _i568 < _list566.size; ++_i568)
+          org.apache.thrift.protocol.TList _list574 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.schemas = new java.util.ArrayList<Schema>(_list574.size);
+          @org.apache.thrift.annotation.Nullable Schema _elem575;
+          for (int _i576 = 0; _i576 < _list574.size; ++_i576)
           {
-            _elem567 = new Schema();
-            _elem567.read(iprot);
-            struct.schemas.add(_elem567);
+            _elem575 = new Schema();
+            _elem575.read(iprot);
+            struct.schemas.add(_elem575);
           }
         }
         struct.setSchemasIsSet(true);
@@ -727,14 +727,14 @@ public class Result implements org.apache.thrift.TBase<Result, Result._Fields>, 
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list569 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.compact = new java.util.ArrayList<CompactResult>(_list569.size);
-          @org.apache.thrift.annotation.Nullable CompactResult _elem570;
-          for (int _i571 = 0; _i571 < _list569.size; ++_i571)
+          org.apache.thrift.protocol.TList _list577 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.compact = new java.util.ArrayList<CompactResult>(_list577.size);
+          @org.apache.thrift.annotation.Nullable CompactResult _elem578;
+          for (int _i579 = 0; _i579 < _list577.size; ++_i579)
           {
-            _elem570 = new CompactResult();
-            _elem570.read(iprot);
-            struct.compact.add(_elem570);
+            _elem578 = new CompactResult();
+            _elem578.read(iprot);
+            struct.compact.add(_elem578);
           }
         }
         struct.setCompactIsSet(true);

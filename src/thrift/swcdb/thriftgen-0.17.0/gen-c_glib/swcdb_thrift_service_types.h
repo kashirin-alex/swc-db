@@ -1902,8 +1902,8 @@ GType swcdb_thrift_k_cells_get_type (void);
 #define SWCDB_THRIFT_IS_K_CELLS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_K_CELLS))
 #define SWCDB_THRIFT_K_CELLS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_K_CELLS, swcdb_thriftkCellsClass))
 
-/* struct FCell */
-struct _swcdb_thriftFCell
+/* struct FCellPlain */
+struct _swcdb_thriftFCellPlain
 { 
   ThriftStruct parent; 
 
@@ -1915,21 +1915,52 @@ struct _swcdb_thriftFCell
   GByteArray * v;
   gboolean __isset_v;
 };
-typedef struct _swcdb_thriftFCell swcdb_thriftFCell;
+typedef struct _swcdb_thriftFCellPlain swcdb_thriftFCellPlain;
 
-struct _swcdb_thriftFCellClass
+struct _swcdb_thriftFCellPlainClass
 {
   ThriftStructClass parent;
 };
-typedef struct _swcdb_thriftFCellClass swcdb_thriftFCellClass;
+typedef struct _swcdb_thriftFCellPlainClass swcdb_thriftFCellPlainClass;
 
-GType swcdb_thrift_f_cell_get_type (void);
-#define SWCDB_THRIFT_TYPE_F_CELL (swcdb_thrift_f_cell_get_type())
-#define SWCDB_THRIFT_F_CELL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_CELL, swcdb_thriftFCell))
-#define SWCDB_THRIFT_F_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_CELL, swcdb_thriftFCellClass))
-#define SWCDB_THRIFT_IS_F_CELL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_CELL))
-#define SWCDB_THRIFT_IS_F_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_CELL))
-#define SWCDB_THRIFT_F_CELL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_CELL, swcdb_thriftFCellClass))
+GType swcdb_thrift_f_cell_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_F_CELL_PLAIN (swcdb_thrift_f_cell_plain_get_type())
+#define SWCDB_THRIFT_F_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_CELL_PLAIN, swcdb_thriftFCellPlain))
+#define SWCDB_THRIFT_F_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_CELL_PLAIN, swcdb_thriftFCellPlainClass))
+#define SWCDB_THRIFT_IS_F_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_CELL_PLAIN))
+#define SWCDB_THRIFT_IS_F_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_CELL_PLAIN))
+#define SWCDB_THRIFT_F_CELL_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_CELL_PLAIN, swcdb_thriftFCellPlainClass))
+
+/* struct FCellCounter */
+struct _swcdb_thriftFCellCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * c;
+  gboolean __isset_c;
+  gint64 ts;
+  gboolean __isset_ts;
+  gint64 v;
+  gboolean __isset_v;
+  gint64 eq;
+  gboolean __isset_eq;
+};
+typedef struct _swcdb_thriftFCellCounter swcdb_thriftFCellCounter;
+
+struct _swcdb_thriftFCellCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftFCellCounterClass swcdb_thriftFCellCounterClass;
+
+GType swcdb_thrift_f_cell_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_F_CELL_COUNTER (swcdb_thrift_f_cell_counter_get_type())
+#define SWCDB_THRIFT_F_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_F_CELL_COUNTER, swcdb_thriftFCellCounter))
+#define SWCDB_THRIFT_F_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_F_CELL_COUNTER, swcdb_thriftFCellCounterClass))
+#define SWCDB_THRIFT_IS_F_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_F_CELL_COUNTER))
+#define SWCDB_THRIFT_IS_F_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_F_CELL_COUNTER))
+#define SWCDB_THRIFT_F_CELL_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_F_CELL_COUNTER, swcdb_thriftFCellCounterClass))
 
 /* struct FCellSerial */
 struct _swcdb_thriftFCellSerial
@@ -1968,8 +1999,10 @@ struct _swcdb_thriftFCells
   /* public */
   GHashTable * f;
   gboolean __isset_f;
-  GPtrArray * cells;
-  gboolean __isset_cells;
+  GPtrArray * plain_cells;
+  gboolean __isset_plain_cells;
+  GPtrArray * counter_cells;
+  gboolean __isset_counter_cells;
   GPtrArray * serial_cells;
   gboolean __isset_serial_cells;
 };

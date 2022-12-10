@@ -7,18 +7,18 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Fraction Cell for results on Fraction of scan
+ * The Plain column type Fraction Cell for results on Fraction of scan
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, java.io.Serializable, Cloneable, Comparable<FCell> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FCell");
+public class FCellPlain implements org.apache.thrift.TBase<FCellPlain, FCellPlain._Fields>, java.io.Serializable, Cloneable, Comparable<FCellPlain> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FCellPlain");
 
   private static final org.apache.thrift.protocol.TField C_FIELD_DESC = new org.apache.thrift.protocol.TField("c", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)3);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FCellStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FCellTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FCellPlainStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FCellPlainTupleSchemeFactory();
 
   /**
    * The Column Name
@@ -123,13 +123,13 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FCell.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FCellPlain.class, metaDataMap);
   }
 
-  public FCell() {
+  public FCellPlain() {
   }
 
-  public FCell(
+  public FCellPlain(
     java.lang.String c,
     long ts,
     java.nio.ByteBuffer v)
@@ -144,7 +144,7 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public FCell(FCell other) {
+  public FCellPlain(FCellPlain other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetC()) {
       this.c = other.c;
@@ -156,8 +156,8 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
   }
 
   @Override
-  public FCell deepCopy() {
-    return new FCell(this);
+  public FCellPlain deepCopy() {
+    return new FCellPlain(this);
   }
 
   @Override
@@ -179,7 +179,7 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
   /**
    * The Column Name
    */
-  public FCell setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
+  public FCellPlain setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
     this.c = c;
     return this;
   }
@@ -209,7 +209,7 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
   /**
    * The Cell Timestamp
    */
-  public FCell setTs(long ts) {
+  public FCellPlain setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
     return this;
@@ -243,12 +243,12 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
   /**
    * The Cell Value
    */
-  public FCell setV(byte[] v) {
+  public FCellPlain setV(byte[] v) {
     this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
     return this;
   }
 
-  public FCell setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
+  public FCellPlain setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
     this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
     return this;
   }
@@ -339,12 +339,12 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof FCell)
-      return this.equals((FCell)that);
+    if (that instanceof FCellPlain)
+      return this.equals((FCellPlain)that);
     return false;
   }
 
-  public boolean equals(FCell that) {
+  public boolean equals(FCellPlain that) {
     if (that == null)
       return false;
     if (this == that)
@@ -398,7 +398,7 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
   }
 
   @Override
-  public int compareTo(FCell other) {
+  public int compareTo(FCellPlain other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -456,7 +456,7 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("FCell(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("FCellPlain(");
     boolean first = true;
 
     sb.append("c:");
@@ -505,17 +505,17 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
     }
   }
 
-  private static class FCellStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FCellPlainStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FCellStandardScheme getScheme() {
-      return new FCellStandardScheme();
+    public FCellPlainStandardScheme getScheme() {
+      return new FCellPlainStandardScheme();
     }
   }
 
-  private static class FCellStandardScheme extends org.apache.thrift.scheme.StandardScheme<FCell> {
+  private static class FCellPlainStandardScheme extends org.apache.thrift.scheme.StandardScheme<FCellPlain> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, FCell struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, FCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -561,7 +561,7 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, FCell struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, FCellPlain struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -584,17 +584,17 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
 
   }
 
-  private static class FCellTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FCellPlainTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FCellTupleScheme getScheme() {
-      return new FCellTupleScheme();
+    public FCellPlainTupleScheme getScheme() {
+      return new FCellPlainTupleScheme();
     }
   }
 
-  private static class FCellTupleScheme extends org.apache.thrift.scheme.TupleScheme<FCell> {
+  private static class FCellPlainTupleScheme extends org.apache.thrift.scheme.TupleScheme<FCellPlain> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, FCell struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, FCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetC()) {
@@ -619,7 +619,7 @@ public class FCell implements org.apache.thrift.TBase<FCell, FCell._Fields>, jav
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, FCell struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, FCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {

@@ -710,7 +710,9 @@ class KCellSerial;
 
 class kCells;
 
-class FCell;
+class FCellPlain;
+
+class FCellCounter;
 
 class FCellSerial;
 
@@ -5191,30 +5193,30 @@ void swap(kCells &a, kCells &b);
 
 std::ostream& operator<<(std::ostream& out, const kCells& obj);
 
-typedef struct _FCell__isset {
-  _FCell__isset() : c(false), ts(false), v(false) {}
+typedef struct _FCellPlain__isset {
+  _FCellPlain__isset() : c(false), ts(false), v(false) {}
   bool c :1;
   bool ts :1;
   bool v :1;
-} _FCell__isset;
+} _FCellPlain__isset;
 
 /**
- * The Fraction Cell for results on Fraction of scan
+ * The Plain column type Fraction Cell for results on Fraction of scan
  */
-class FCell : public virtual ::apache::thrift::TBase {
+class FCellPlain : public virtual ::apache::thrift::TBase {
  public:
 
-  FCell(const FCell&);
-  FCell(FCell&&) noexcept;
-  FCell& operator=(const FCell&);
-  FCell& operator=(FCell&&) noexcept;
-  FCell() noexcept
-        : c(),
-          ts(0),
-          v() {
+  FCellPlain(const FCellPlain&);
+  FCellPlain(FCellPlain&&) noexcept;
+  FCellPlain& operator=(const FCellPlain&);
+  FCellPlain& operator=(FCellPlain&&) noexcept;
+  FCellPlain() noexcept
+             : c(),
+               ts(0),
+               v() {
   }
 
-  virtual ~FCell() noexcept;
+  virtual ~FCellPlain() noexcept;
   /**
    * The Column Name
    */
@@ -5228,7 +5230,7 @@ class FCell : public virtual ::apache::thrift::TBase {
    */
   std::string v;
 
-  _FCell__isset __isset;
+  _FCellPlain__isset __isset;
 
   void __set_c(const std::string& val);
 
@@ -5236,7 +5238,7 @@ class FCell : public virtual ::apache::thrift::TBase {
 
   void __set_v(const std::string& val);
 
-  bool operator == (const FCell & rhs) const
+  bool operator == (const FCellPlain & rhs) const
   {
     if (!(c == rhs.c))
       return false;
@@ -5246,11 +5248,11 @@ class FCell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const FCell &rhs) const {
+  bool operator != (const FCellPlain &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const FCell & ) const;
+  bool operator < (const FCellPlain & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
@@ -5258,9 +5260,92 @@ class FCell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(FCell &a, FCell &b);
+void swap(FCellPlain &a, FCellPlain &b);
 
-std::ostream& operator<<(std::ostream& out, const FCell& obj);
+std::ostream& operator<<(std::ostream& out, const FCellPlain& obj);
+
+typedef struct _FCellCounter__isset {
+  _FCellCounter__isset() : c(false), ts(false), v(false), eq(false) {}
+  bool c :1;
+  bool ts :1;
+  bool v :1;
+  bool eq :1;
+} _FCellCounter__isset;
+
+/**
+ * The Counter column type Fraction Cell for results on Fraction of scan
+ */
+class FCellCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  FCellCounter(const FCellCounter&);
+  FCellCounter(FCellCounter&&) noexcept;
+  FCellCounter& operator=(const FCellCounter&);
+  FCellCounter& operator=(FCellCounter&&) noexcept;
+  FCellCounter() noexcept
+               : c(),
+                 ts(0),
+                 v(0),
+                 eq(0) {
+  }
+
+  virtual ~FCellCounter() noexcept;
+  /**
+   * The Column Name
+   */
+  std::string c;
+  /**
+   * The Cell Timestamp
+   */
+  int64_t ts;
+  /**
+   * The Cell Counter Value
+   */
+  int64_t v;
+  /**
+   * The Counter EQ since ts
+   */
+  int64_t eq;
+
+  _FCellCounter__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const int64_t val);
+
+  void __set_eq(const int64_t val);
+
+  bool operator == (const FCellCounter & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    if (__isset.eq != rhs.__isset.eq)
+      return false;
+    else if (__isset.eq && !(eq == rhs.eq))
+      return false;
+    return true;
+  }
+  bool operator != (const FCellCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FCellCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FCellCounter &a, FCellCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const FCellCounter& obj);
 
 typedef struct _FCellSerial__isset {
   _FCellSerial__isset() : c(false), ts(false), v(false) {}
@@ -5270,7 +5355,7 @@ typedef struct _FCellSerial__isset {
 } _FCellSerial__isset;
 
 /**
- * The Fraction Serial Cell for results on Fraction of scan
+ * The Serial column type Fraction Cell for results on Fraction of scan
  */
 class FCellSerial : public virtual ::apache::thrift::TBase {
  public:
@@ -5333,9 +5418,10 @@ void swap(FCellSerial &a, FCellSerial &b);
 std::ostream& operator<<(std::ostream& out, const FCellSerial& obj);
 
 typedef struct _FCells__isset {
-  _FCells__isset() : f(false), cells(false), serial_cells(false) {}
+  _FCells__isset() : f(false), plain_cells(false), counter_cells(false), serial_cells(false) {}
   bool f :1;
-  bool cells :1;
+  bool plain_cells :1;
+  bool counter_cells :1;
   bool serial_cells :1;
 } _FCells__isset;
 
@@ -5358,9 +5444,13 @@ class FCells : public virtual ::apache::thrift::TBase {
    */
   std::map<std::string, FCells>  f;
   /**
-   * The current Fraction's Cells, defined as FCell items in a list-container
+   * The current Fraction's Cells, defined as FCellPlain items in a list-container
    */
-  std::vector<FCell>  cells;
+  std::vector<FCellPlain>  plain_cells;
+  /**
+   * The current Fraction's Cells, defined as FCellCounter items in a list-container
+   */
+  std::vector<FCellCounter>  counter_cells;
   /**
    * The current Fraction's Serial Cells, defined as FCellSerial items in a list-container
    */
@@ -5370,7 +5460,9 @@ class FCells : public virtual ::apache::thrift::TBase {
 
   void __set_f(const std::map<std::string, FCells> & val);
 
-  void __set_cells(const std::vector<FCell> & val);
+  void __set_plain_cells(const std::vector<FCellPlain> & val);
+
+  void __set_counter_cells(const std::vector<FCellCounter> & val);
 
   void __set_serial_cells(const std::vector<FCellSerial> & val);
 
@@ -5378,7 +5470,9 @@ class FCells : public virtual ::apache::thrift::TBase {
   {
     if (!(f == rhs.f))
       return false;
-    if (!(cells == rhs.cells))
+    if (!(plain_cells == rhs.plain_cells))
+      return false;
+    if (!(counter_cells == rhs.counter_cells))
       return false;
     if (!(serial_cells == rhs.serial_cells))
       return false;

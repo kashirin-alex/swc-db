@@ -1210,8 +1210,8 @@ typedef list<kCells> KCells
 
 
 
-/** The Fraction Cell for results on Fraction of scan */
-struct FCell {
+/** The Plain column type Fraction Cell for results on Fraction of scan */
+struct FCellPlain {
   /** The Column Name */
   1: string           c
 
@@ -1222,7 +1222,22 @@ struct FCell {
   3: binary           v
 }
 
-/** The Fraction Serial Cell for results on Fraction of scan */
+/** The Counter column type Fraction Cell for results on Fraction of scan */
+struct FCellCounter {
+  /** The Column Name */
+  1: string           c
+
+  /** The Cell Timestamp */
+  2: i64              ts
+
+  /** The Cell Counter Value */
+  3: i64              v
+
+  /** The Counter EQ since ts */
+  4: optional i64     eq
+}
+
+/** The Serial column type Fraction Cell for results on Fraction of scan */
 struct FCellSerial {
   /** The Column Name */
   1: string           c
@@ -1240,11 +1255,14 @@ struct FCells {
   /** The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes */
   1: map<binary, FCells>  f
 
-  /** The current Fraction's Cells, defined as FCell items in a list-container */
-  2: list<FCell>          cells
+  /** The current Fraction's Cells, defined as FCellPlain items in a list-container */
+  2: list<FCellPlain>     plain_cells
+
+  /** The current Fraction's Cells, defined as FCellCounter items in a list-container */
+  3: list<FCellCounter>   counter_cells
 
   /** The current Fraction's Serial Cells, defined as FCellSerial items in a list-container */
-  3: list<FCellSerial>    serial_cells
+  4: list<FCellSerial>    serial_cells
 
 }
 
