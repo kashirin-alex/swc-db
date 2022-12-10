@@ -46,10 +46,10 @@ _**Some of use cases can be found at**_:
 ||	[ &bull; sql_mng_column](#function-servicesql_mng_column)|[ColumnType](#enumeration-columntype)|[TIMESTAMP_AUTO](#constant-timestamp_auto)|
 ||	[ &bull; sql_list_columns](#function-servicesql_list_columns)|[EncodingType](#enumeration-encodingtype)|[COUNTER_OP_EQUAL](#constant-counter_op_equal)|
 ||	[ &bull; sql_compact_columns](#function-servicesql_compact_columns)|[SchemaFunc](#enumeration-schemafunc)|[FU_CTRL_DEFAULT](#constant-fu_ctrl_default)|
-||	[ &bull; sql_select](#function-servicesql_select)|[Comp](#enumeration-comp)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
-||	[ &bull; sql_select_plain](#function-servicesql_select_plain)|[SpecFlagsOpt](#enumeration-specflagsopt)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
-||	[ &bull; sql_select_counter](#function-servicesql_select_counter)|[UpdateOP](#enumeration-updateop)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
-||	[ &bull; sql_select_serial](#function-servicesql_select_serial)|[SpecIntervalOptions](#enumeration-specintervaloptions)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
+||	[ &bull; sql_select_plain](#function-servicesql_select_plain)|[Comp](#enumeration-comp)|[FU_CTRL_NO_ADD_FIELD](#constant-fu_ctrl_no_add_field)|
+||	[ &bull; sql_select_counter](#function-servicesql_select_counter)|[SpecFlagsOpt](#enumeration-specflagsopt)|[FU_CTRL_DELETE_FIELD](#constant-fu_ctrl_delete_field)|
+||	[ &bull; sql_select_serial](#function-servicesql_select_serial)|[UpdateOP](#enumeration-updateop)|[FU_CTRL_VALUE_SET](#constant-fu_ctrl_value_set)|
+||	[ &bull; sql_select](#function-servicesql_select)|[SpecIntervalOptions](#enumeration-specintervaloptions)|[FU_CTRL_VALUE_DEL](#constant-fu_ctrl_value_del)|
 ||	[ &bull; sql_select_rslt_on_column](#function-servicesql_select_rslt_on_column)|[Flag](#enumeration-flag)||
 ||	[ &bull; sql_select_rslt_on_key](#function-servicesql_select_rslt_on_key)|[FU_MATH_OP](#enumeration-fu_math_op)||
 ||	[ &bull; sql_select_rslt_on_fraction](#function-servicesql_select_rslt_on_fraction)|[FU_LIST_OP](#enumeration-fu_list_op)||
@@ -121,13 +121,16 @@ _**Some of use cases can be found at**_:
 |||[CellCounter](#struct-cellcounter)||
 |||[CellSerial](#struct-cellserial)||
 |||[Cells](#struct-cells)||
-|||[CCell](#struct-ccell)||
+|||[CCellPlain](#struct-ccellplain)||
+|||[CCellCounter](#struct-ccellcounter)||
 |||[CCellSerial](#struct-ccellserial)||
-|||[ColCells](#struct-colcells)||
-|||[KCell](#struct-kcell)||
+|||[cCells](#struct-ccells)||
+|||[KCellPlain](#struct-kcellplain)||
+|||[KCellCounter](#struct-kcellcounter)||
 |||[KCellSerial](#struct-kcellserial)||
 |||[kCells](#struct-kcells)||
-|||[FCell](#struct-fcell)||
+|||[FCellPlain](#struct-fcellplain)||
+|||[FCellCounter](#struct-fcellcounter)||
 |||[FCellSerial](#struct-fcellserial)||
 |||[FCells](#struct-fcells)||
 |||[CellsGroup](#struct-cellsgroup)||
@@ -419,9 +422,9 @@ _Base type_: **list&lt;[```CellSerial```](#struct-cellserial)&gt;**
 
 
 ### Typedef: CCells
-The Columns Cells for results on Columns of scan, defined as ColCells items in a map-container by Column Name 
+The Columns Cells for results on Columns of scan, defined as cCells items in a map-container by Column Name 
 
-_Base type_: **map&lt;```string```, [```ColCells```](#struct-colcells)&gt;**
+_Base type_: **map&lt;```string```, [```cCells```](#struct-ccells)&gt;**
 
 
 ### Typedef: KCells
@@ -780,10 +783,10 @@ The Serial Value Cell field
 |1|field_id|```i32```|The Field ID, a single ID can have any/all the field types |default||
 |2|v_int64|```i64```|The INT64 type field |optional||
 |3|v_double|```double```|The DOUBLE type field |optional||
-|4|v_bytes|```binary```|The BYTES type field |default||
-|5|v_key|[```Key```](#typedef-key)|The Cell KEY type field |default||
-|6|v_li|list&lt;```i64```&gt;|The LIST INT64 type field |default||
-|7|v_lb|list&lt;```binary```&gt;|The LIST BYTES type field |default||
+|4|v_bytes|```binary```|The BYTES type field |optional||
+|5|v_key|[```Key```](#typedef-key)|The Cell KEY type field |optional||
+|6|v_li|list&lt;```i64```&gt;|The LIST INT64 type field |optional||
+|7|v_lb|list&lt;```binary```&gt;|The LIST BYTES type field |optional||
 
 ### Struct: FU_INT64
 Serial INT64 Field Update 
@@ -847,7 +850,7 @@ The Serial Values Cell field with Update Operation
 |2|v_int64|[```FU_INT64```](#struct-fu_int64)|The INT64 type update-field |optional||
 |3|v_double|[```FU_DOUBLE```](#struct-fu_double)|The DOUBLE type update-field |optional||
 |4|v_bytes|[```FU_BYTES```](#struct-fu_bytes)|The BYTES type update-field |optional||
-|5|v_key|[```Key```](#typedef-key)|The Cell KEY type update-field |default||
+|5|v_key|[```Key```](#typedef-key)|The Cell KEY type update-field |optional||
 |6|v_li|[```FU_LI```](#struct-fu_li)|The LIST INT64 type update-field |optional||
 |7|v_lb|[```FU_LB```](#struct-fu_lb)|The LIST BYTES type update-field |optional||
 
@@ -903,8 +906,8 @@ The Cells for results list of scan
 |2|counter_cells|[```CellsCounter```](#typedef-cellscounter)|The Cells, defined as Cell items in a list-container |default||
 |3|serial_cells|[```CellsSerial```](#typedef-cellsserial)|The Serial Cells, defined as CellSerial items in a list-container |default||
 
-### Struct: CCell
-The Column Cell for results on Columns of scan 
+### Struct: CCellPlain
+The Plain column type Cell for results on Columns of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -912,8 +915,18 @@ The Column Cell for results on Columns of scan
 |2|ts|```i64```|The Cell Timestamp |default||
 |3|v|```binary```|The Cell Value |default||
 
+### Struct: CCellCounter
+The Counter column type Cell for results on Columns of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|k|[```Key```](#typedef-key)|The Cell Key |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|```i64```|The Cell Counter Value |default||
+|4|eq|```i64```|The Counter EQ since ts |optional||
+
 ### Struct: CCellSerial
-The Column Serial Cell for results on Columns of scan 
+The Serial column type Cell for results on Columns of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -921,16 +934,17 @@ The Column Serial Cell for results on Columns of scan
 |2|ts|```i64```|The Cell Timestamp |default||
 |3|v|[```CellValuesSerial```](#typedef-cellvaluesserial)|The Cell Serial Value |default||
 
-### Struct: ColCells
+### Struct: cCells
 The Column Cells for results on Columns of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
-|1|cells|list&lt;[```CCell```](#struct-ccell)&gt;|The Cells, defined as CCell items in a list-container |default||
-|2|serial_cells|list&lt;[```CCellSerial```](#struct-ccellserial)&gt;|The Serial Cells, defined as CCellSerial items in a list-container |default||
+|1|plain_cells|list&lt;[```CCellPlain```](#struct-ccellplain)&gt;|The Plain type Cells, defined as CCellPlain items in a list-container |default||
+|2|counter_cells|list&lt;[```CCellCounter```](#struct-ccellcounter)&gt;|The Counter type Cells, defined as CCellCounter items in a list-container |default||
+|3|serial_cells|list&lt;[```CCellSerial```](#struct-ccellserial)&gt;|The Serial type Cells, defined as CCellSerial items in a list-container |default||
 
-### Struct: KCell
-The Key Cell for results on Key of scan 
+### Struct: KCellPlain
+The Plain column type Key Cell for results on Key of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -938,8 +952,18 @@ The Key Cell for results on Key of scan
 |2|ts|```i64```|The Cell Timestamp |default||
 |3|v|```binary```|The Cell Value |default||
 
+### Struct: KCellCounter
+The Counter column type Key Cell for results on Key of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|```i64```|The Cell Counter Value |default||
+|4|eq|```i64```|The Counter EQ since ts |optional||
+
 ### Struct: KCellSerial
-The Key Serial Cell for results on Key of scan 
+The Serial column type Key Cell for results on Key of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -953,11 +977,12 @@ The Key Cells for results on Key of scan
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
 |1|k|[```Key```](#typedef-key)|The Cell Key |default||
-|2|cells|list&lt;[```KCell```](#struct-kcell)&gt;|The Key's Cells, defined as KCell items in a list-container |default||
-|3|serial_cells|list&lt;[```KCellSerial```](#struct-kcellserial)&gt;|The Key's Serial Cells, defined as KCellSerial items in a list-container |default||
+|2|plain_cells|list&lt;[```KCellPlain```](#struct-kcellplain)&gt;|The Plain type Key Cells, defined as KCellPlain items in a list-container |default||
+|3|counter_cells|list&lt;[```KCellCounter```](#struct-kcellcounter)&gt;|The Counter type Key Cells, defined as KCellCounter items in a list-container |default||
+|4|serial_cells|list&lt;[```KCellSerial```](#struct-kcellserial)&gt;|The Serial type Key Cells, defined as KCellSerial items in a list-container |default||
 
-### Struct: FCell
-The Fraction Cell for results on Fraction of scan 
+### Struct: FCellPlain
+The Plain column type Fraction Cell for results on Fraction of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -965,8 +990,18 @@ The Fraction Cell for results on Fraction of scan
 |2|ts|```i64```|The Cell Timestamp |default||
 |3|v|```binary```|The Cell Value |default||
 
+### Struct: FCellCounter
+The Counter column type Fraction Cell for results on Fraction of scan 
+
+| Key | Field | Type | Description | Requiredness | Default value |
+| --- | --- | --- | --- | --- | --- |
+|1|c|```string```|The Column Name |default||
+|2|ts|```i64```|The Cell Timestamp |default||
+|3|v|```i64```|The Cell Counter Value |default||
+|4|eq|```i64```|The Counter EQ since ts |optional||
+
 ### Struct: FCellSerial
-The Fraction Serial Cell for results on Fraction of scan 
+The Serial column type Fraction Cell for results on Fraction of scan 
 
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
@@ -980,8 +1015,9 @@ The Fraction Cells for results on Fraction of scan
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
 |1|f|map&lt;```binary```, [```FCells```](#typedef-fcells)&gt;|The Fraction Container for the Next Fractions Tree,  defined as FCells items in a map-container by current Fraction bytes |default||
-|2|cells|list&lt;[```FCell```](#struct-fcell)&gt;|The current Fraction's Cells, defined as FCell items in a list-container |default||
-|3|serial_cells|list&lt;[```FCellSerial```](#struct-fcellserial)&gt;|The current Fraction's Serial Cells, defined as FCellSerial items in a list-container |default||
+|2|plain_cells|list&lt;[```FCellPlain```](#struct-fcellplain)&gt;|The current Fraction's Cells, defined as FCellPlain items in a list-container |default||
+|3|counter_cells|list&lt;[```FCellCounter```](#struct-fcellcounter)&gt;|The current Fraction's Cells, defined as FCellCounter items in a list-container |default||
+|4|serial_cells|list&lt;[```FCellSerial```](#struct-fcellserial)&gt;|The current Fraction's Serial Cells, defined as FCellSerial items in a list-container |default||
 
 ### Struct: CellsGroup
 A Grouped Cells result for results of scan, determined by the request's CellsResult enum 
@@ -989,7 +1025,7 @@ A Grouped Cells result for results of scan, determined by the request's CellsRes
 | Key | Field | Type | Description | Requiredness | Default value |
 | --- | --- | --- | --- | --- | --- |
 |1|cells|[```Cells```](#struct-cells)|The Cells in a list, defined as Cell items in a list-container |default||
-|2|ccells|[```CCells```](#typedef-ccells)|The Columns Cells in a map-container, defined as ColCells items by Column Name |default||
+|2|ccells|[```CCells```](#typedef-ccells)|The Columns Cells in a map-container, defined as cCells items by Column Name |default||
 |3|kcells|[```KCells```](#typedef-kcells)|The Keys Cells in a list, defined as kCells items in a list-container |default||
 |4|fcells|[```FCells```](#struct-fcells)|The Fraction Cells in struct FCells |default||
 
@@ -1048,17 +1084,6 @@ The direct SQL method to Compact Columns
 1. sql - The SQL string to Execute 
 
 
-#### Function: Service.sql_select
-The direct SQL method to select cells with result in Cells List. 
-
-[```Cells```](#struct-cells)
- _sql_select_(```string``` sql)
-> throws [```Exception```](#exception-exception)
-
-* parameters:
-1. sql - The SQL string to Execute 
-
-
 #### Function: Service.sql_select_plain
 The direct SQL method to select cells with result in CellsPlain. 
 
@@ -1086,6 +1111,17 @@ The direct SQL method to select cells with result in CellsSerial.
 
 [```CellsSerial```](#typedef-cellsserial)
  _sql_select_serial_(```string``` sql)
+> throws [```Exception```](#exception-exception)
+
+* parameters:
+1. sql - The SQL string to Execute 
+
+
+#### Function: Service.sql_select
+The direct SQL method to select cells with result in Cells List. 
+
+[```Cells```](#struct-cells)
+ _sql_select_(```string``` sql)
 > throws [```Exception```](#exception-exception)
 
 * parameters:
