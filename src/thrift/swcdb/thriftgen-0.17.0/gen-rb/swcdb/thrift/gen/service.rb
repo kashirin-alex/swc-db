@@ -61,22 +61,6 @@ module Swcdb
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_compact_columns failed: unknown result')
           end
 
-          def sql_select(sql)
-            send_sql_select(sql)
-            return recv_sql_select()
-          end
-
-          def send_sql_select(sql)
-            send_message('sql_select', Sql_select_args, :sql => sql)
-          end
-
-          def recv_sql_select()
-            result = receive_message(Sql_select_result)
-            return result.success unless result.success.nil?
-            raise result.e unless result.e.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_select failed: unknown result')
-          end
-
           def sql_select_plain(sql)
             send_sql_select_plain(sql)
             return recv_sql_select_plain()
@@ -123,6 +107,22 @@ module Swcdb
             return result.success unless result.success.nil?
             raise result.e unless result.e.nil?
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_select_serial failed: unknown result')
+          end
+
+          def sql_select(sql)
+            send_sql_select(sql)
+            return recv_sql_select()
+          end
+
+          def send_sql_select(sql)
+            send_message('sql_select', Sql_select_args, :sql => sql)
+          end
+
+          def recv_sql_select()
+            result = receive_message(Sql_select_result)
+            return result.success unless result.success.nil?
+            raise result.e unless result.e.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'sql_select failed: unknown result')
           end
 
           def sql_select_rslt_on_column(sql)
@@ -476,17 +476,6 @@ module Swcdb
             write_result(result, oprot, 'sql_compact_columns', seqid)
           end
 
-          def process_sql_select(seqid, iprot, oprot)
-            args = read_args(iprot, Sql_select_args)
-            result = Sql_select_result.new()
-            begin
-              result.success = @handler.sql_select(args.sql)
-            rescue ::Swcdb::Thrift::Gen::Exception => e
-              result.e = e
-            end
-            write_result(result, oprot, 'sql_select', seqid)
-          end
-
           def process_sql_select_plain(seqid, iprot, oprot)
             args = read_args(iprot, Sql_select_plain_args)
             result = Sql_select_plain_result.new()
@@ -518,6 +507,17 @@ module Swcdb
               result.e = e
             end
             write_result(result, oprot, 'sql_select_serial', seqid)
+          end
+
+          def process_sql_select(seqid, iprot, oprot)
+            args = read_args(iprot, Sql_select_args)
+            result = Sql_select_result.new()
+            begin
+              result.success = @handler.sql_select(args.sql)
+            rescue ::Swcdb::Thrift::Gen::Exception => e
+              result.e = e
+            end
+            write_result(result, oprot, 'sql_select', seqid)
           end
 
           def process_sql_select_rslt_on_column(seqid, iprot, oprot)
@@ -847,41 +847,6 @@ module Swcdb
           ::Thrift::Struct.generate_accessors self
         end
 
-        class Sql_select_args
-          include ::Thrift::Struct, ::Thrift::Struct_Union
-          SQL = 1
-
-          FIELDS = {
-            # The SQL string to Execute
-            SQL => {:type => ::Thrift::Types::STRING, :name => 'sql'}
-          }
-
-          def struct_fields; FIELDS; end
-
-          def validate
-          end
-
-          ::Thrift::Struct.generate_accessors self
-        end
-
-        class Sql_select_result
-          include ::Thrift::Struct, ::Thrift::Struct_Union
-          SUCCESS = 0
-          E = 1
-
-          FIELDS = {
-            SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Swcdb::Thrift::Gen::Cells},
-            E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
-          }
-
-          def struct_fields; FIELDS; end
-
-          def validate
-          end
-
-          ::Thrift::Struct.generate_accessors self
-        end
-
         class Sql_select_plain_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SQL = 1
@@ -976,6 +941,41 @@ module Swcdb
 
           FIELDS = {
             SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::CellSerial}},
+            E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SQL = 1
+
+          FIELDS = {
+            # The SQL string to Execute
+            SQL => {:type => ::Thrift::Types::STRING, :name => 'sql'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Sql_select_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          E = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Swcdb::Thrift::Gen::Cells},
             E => {:type => ::Thrift::Types::STRUCT, :name => 'e', :class => ::Swcdb::Thrift::Gen::Exception}
           }
 

@@ -702,7 +702,9 @@ class CCellSerial;
 
 class ColCells;
 
-class KCell;
+class KCellPlain;
+
+class KCellCounter;
 
 class KCellSerial;
 
@@ -4888,30 +4890,30 @@ void swap(ColCells &a, ColCells &b);
 
 std::ostream& operator<<(std::ostream& out, const ColCells& obj);
 
-typedef struct _KCell__isset {
-  _KCell__isset() : c(false), ts(false), v(false) {}
+typedef struct _KCellPlain__isset {
+  _KCellPlain__isset() : c(false), ts(false), v(false) {}
   bool c :1;
   bool ts :1;
   bool v :1;
-} _KCell__isset;
+} _KCellPlain__isset;
 
 /**
- * The Key Cell for results on Key of scan
+ * The Plain column type Key Cell for results on Key of scan
  */
-class KCell : public virtual ::apache::thrift::TBase {
+class KCellPlain : public virtual ::apache::thrift::TBase {
  public:
 
-  KCell(const KCell&);
-  KCell(KCell&&) noexcept;
-  KCell& operator=(const KCell&);
-  KCell& operator=(KCell&&) noexcept;
-  KCell() noexcept
-        : c(),
-          ts(0),
-          v() {
+  KCellPlain(const KCellPlain&);
+  KCellPlain(KCellPlain&&) noexcept;
+  KCellPlain& operator=(const KCellPlain&);
+  KCellPlain& operator=(KCellPlain&&) noexcept;
+  KCellPlain() noexcept
+             : c(),
+               ts(0),
+               v() {
   }
 
-  virtual ~KCell() noexcept;
+  virtual ~KCellPlain() noexcept;
   /**
    * The Column Name
    */
@@ -4925,7 +4927,7 @@ class KCell : public virtual ::apache::thrift::TBase {
    */
   std::string v;
 
-  _KCell__isset __isset;
+  _KCellPlain__isset __isset;
 
   void __set_c(const std::string& val);
 
@@ -4933,7 +4935,7 @@ class KCell : public virtual ::apache::thrift::TBase {
 
   void __set_v(const std::string& val);
 
-  bool operator == (const KCell & rhs) const
+  bool operator == (const KCellPlain & rhs) const
   {
     if (!(c == rhs.c))
       return false;
@@ -4943,11 +4945,11 @@ class KCell : public virtual ::apache::thrift::TBase {
       return false;
     return true;
   }
-  bool operator != (const KCell &rhs) const {
+  bool operator != (const KCellPlain &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const KCell & ) const;
+  bool operator < (const KCellPlain & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
@@ -4955,9 +4957,92 @@ class KCell : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(KCell &a, KCell &b);
+void swap(KCellPlain &a, KCellPlain &b);
 
-std::ostream& operator<<(std::ostream& out, const KCell& obj);
+std::ostream& operator<<(std::ostream& out, const KCellPlain& obj);
+
+typedef struct _KCellCounter__isset {
+  _KCellCounter__isset() : c(false), ts(false), v(false), eq(false) {}
+  bool c :1;
+  bool ts :1;
+  bool v :1;
+  bool eq :1;
+} _KCellCounter__isset;
+
+/**
+ * The Counter column type Key Cell for results on Key of scan
+ */
+class KCellCounter : public virtual ::apache::thrift::TBase {
+ public:
+
+  KCellCounter(const KCellCounter&);
+  KCellCounter(KCellCounter&&) noexcept;
+  KCellCounter& operator=(const KCellCounter&);
+  KCellCounter& operator=(KCellCounter&&) noexcept;
+  KCellCounter() noexcept
+               : c(),
+                 ts(0),
+                 v(0),
+                 eq(0) {
+  }
+
+  virtual ~KCellCounter() noexcept;
+  /**
+   * The Column Name
+   */
+  std::string c;
+  /**
+   * The Cell Timestamp
+   */
+  int64_t ts;
+  /**
+   * The Cell Counter Value
+   */
+  int64_t v;
+  /**
+   * The Counter EQ since ts
+   */
+  int64_t eq;
+
+  _KCellCounter__isset __isset;
+
+  void __set_c(const std::string& val);
+
+  void __set_ts(const int64_t val);
+
+  void __set_v(const int64_t val);
+
+  void __set_eq(const int64_t val);
+
+  bool operator == (const KCellCounter & rhs) const
+  {
+    if (!(c == rhs.c))
+      return false;
+    if (!(ts == rhs.ts))
+      return false;
+    if (!(v == rhs.v))
+      return false;
+    if (__isset.eq != rhs.__isset.eq)
+      return false;
+    else if (__isset.eq && !(eq == rhs.eq))
+      return false;
+    return true;
+  }
+  bool operator != (const KCellCounter &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const KCellCounter & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(KCellCounter &a, KCellCounter &b);
+
+std::ostream& operator<<(std::ostream& out, const KCellCounter& obj);
 
 typedef struct _KCellSerial__isset {
   _KCellSerial__isset() : c(false), ts(false), v(false) {}
@@ -4967,7 +5052,7 @@ typedef struct _KCellSerial__isset {
 } _KCellSerial__isset;
 
 /**
- * The Key Serial Cell for results on Key of scan
+ * The Serial column type Key Cell for results on Key of scan
  */
 class KCellSerial : public virtual ::apache::thrift::TBase {
  public:
@@ -5030,9 +5115,10 @@ void swap(KCellSerial &a, KCellSerial &b);
 std::ostream& operator<<(std::ostream& out, const KCellSerial& obj);
 
 typedef struct _kCells__isset {
-  _kCells__isset() : k(false), cells(false), serial_cells(false) {}
+  _kCells__isset() : k(false), plain_cells(false), counter_cells(false), serial_cells(false) {}
   bool k :1;
-  bool cells :1;
+  bool plain_cells :1;
+  bool counter_cells :1;
   bool serial_cells :1;
 } _kCells__isset;
 
@@ -5055,11 +5141,15 @@ class kCells : public virtual ::apache::thrift::TBase {
    */
   Key k;
   /**
-   * The Key's Cells, defined as KCell items in a list-container
+   * The Plain type Key Cells, defined as KCellPlain items in a list-container
    */
-  std::vector<KCell>  cells;
+  std::vector<KCellPlain>  plain_cells;
   /**
-   * The Key's Serial Cells, defined as KCellSerial items in a list-container
+   * The Counter type Key Cells, defined as KCellCounter items in a list-container
+   */
+  std::vector<KCellCounter>  counter_cells;
+  /**
+   * The Serial type Key Cells, defined as KCellSerial items in a list-container
    */
   std::vector<KCellSerial>  serial_cells;
 
@@ -5067,7 +5157,9 @@ class kCells : public virtual ::apache::thrift::TBase {
 
   void __set_k(const Key& val);
 
-  void __set_cells(const std::vector<KCell> & val);
+  void __set_plain_cells(const std::vector<KCellPlain> & val);
+
+  void __set_counter_cells(const std::vector<KCellCounter> & val);
 
   void __set_serial_cells(const std::vector<KCellSerial> & val);
 
@@ -5075,7 +5167,9 @@ class kCells : public virtual ::apache::thrift::TBase {
   {
     if (!(k == rhs.k))
       return false;
-    if (!(cells == rhs.cells))
+    if (!(plain_cells == rhs.plain_cells))
+      return false;
+    if (!(counter_cells == rhs.counter_cells))
       return false;
     if (!(serial_cells == rhs.serial_cells))
       return false;

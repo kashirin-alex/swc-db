@@ -939,7 +939,11 @@ class AppHandler final : virtual public BrokerIf {
             cell.ts = dbcell->get_timestamp();
             uint8_t op = 0;
             cell.v = dbcell->get_counter(op, cell.eq);
-            cell.__isset.eq = op == DB::Cells::OP_EQUAL;
+            if(op & DB::Cells::OP_EQUAL) {
+              cell.__isset.eq = true;
+              if(!(op & DB::Cells::HAVE_REVISION))
+                cell.eq = cell.ts;
+            }
           }
           break;
         }
@@ -1006,7 +1010,11 @@ class AppHandler final : virtual public BrokerIf {
         cell.ts = dbcell->get_timestamp();
         uint8_t op = 0;
         cell.v = dbcell->get_counter(op, cell.eq);
-        cell.__isset.eq = op == DB::Cells::OP_EQUAL;
+        if(op & DB::Cells::OP_EQUAL) {
+          cell.__isset.eq = true;
+          if(!(op & DB::Cells::HAVE_REVISION))
+            cell.eq = cell.ts;
+        }
       }
     }
   }
@@ -1080,7 +1088,11 @@ class AppHandler final : virtual public BrokerIf {
             cell.ts = dbcell->get_timestamp();
             uint8_t op = 0;
             cell.v = dbcell->get_counter(op, cell.eq);
-            cell.__isset.eq = op == DB::Cells::OP_EQUAL;
+            if(op & DB::Cells::OP_EQUAL) {
+              cell.__isset.eq = true;
+              if(!(op & DB::Cells::HAVE_REVISION))
+                cell.eq = cell.ts;
+            }
           }
           break;
         }
@@ -1133,6 +1145,33 @@ class AppHandler final : virtual public BrokerIf {
           }
           break;
         }
+        case DB::Types::Column::COUNTER_I64:
+        case DB::Types::Column::COUNTER_I32:
+        case DB::Types::Column::COUNTER_I16:
+        case DB::Types::Column::COUNTER_I8: {
+          for(auto dbcell : cells) {
+            auto it = std::find_if(_return.begin(), _return.end(),
+                              [dbcell](const kCells& key_cells)
+                              {return dbcell->key.equal(key_cells.k);});
+            if(it == _return.end()) {
+              _return.emplace_back();
+              it = _return.end()-1;
+              dbcell->key.convert_to(it->k);
+            }
+
+            auto& cell = it->counter_cells.emplace_back();
+            cell.c = schema->col_name;
+            cell.ts = dbcell->get_timestamp();
+            uint8_t op = 0;
+            cell.v = dbcell->get_counter(op, cell.eq);
+            if(op & DB::Cells::OP_EQUAL) {
+              cell.__isset.eq = true;
+              if(!(op & DB::Cells::HAVE_REVISION))
+                cell.eq = cell.ts;
+            }
+          }
+          break;
+        }
         default: {
           for(auto dbcell : cells) {
             auto it = std::find_if(_return.begin(), _return.end(),
@@ -1144,7 +1183,7 @@ class AppHandler final : virtual public BrokerIf {
               dbcell->key.convert_to(it->k);
             }
 
-            auto& cell = it->cells.emplace_back();
+            auto& cell = it->plain_cells.emplace_back();
             cell.c = schema->col_name;
             cell.ts = dbcell->get_timestamp();
             dbcell->get_value(cell.v);

@@ -669,6 +669,8 @@ void spec_update(Client& client, size_t updater_id=0, int batch=0) {
             cell.__set_ts(i*f*c);//now_ns());
             cell.__set_ts_desc(true);
             cell.__set_v(c * i * f * batch);
+            cell.printTo(std::cout << int64_t(c * i * f * batch) << ':');
+            std::cout << '\n';
           }
         }
       }
@@ -909,7 +911,7 @@ void test() {
 
   /** SPECS **/
   spec_create_test_column<ColumnT>(client);
-  spec_update<ColumnT>(client);
+  spec_update<ColumnT>(client, 0, 10);
   spec_select<ColumnT>(client);
   spec_compact_test_column<ColumnT>(client);
   spec_select<ColumnT>(client);

@@ -33,27 +33,27 @@ using Thrift.Processor;
 
 
 /// <summary>
-/// The Column Cell for results on Columns of scan
+/// The Plain column type Key Cell for results on Key of scan
 /// </summary>
-public partial class CCell : TBase
+public partial class KCellPlain : TBase
 {
-  private List<byte[]> _k;
+  private string _c;
   private long _ts;
   private byte[] _v;
 
   /// <summary>
-  /// The Cell Key
+  /// The Column Name
   /// </summary>
-  public List<byte[]> K
+  public string C
   {
     get
     {
-      return _k;
+      return _c;
     }
     set
     {
-      __isset.k = true;
-      this._k = value;
+      __isset.c = true;
+      this._c = value;
     }
   }
 
@@ -93,34 +93,34 @@ public partial class CCell : TBase
   public Isset __isset;
   public struct Isset
   {
-    public bool k;
+    public bool c;
     public bool ts;
     public bool v;
   }
 
-  public CCell()
+  public KCellPlain()
   {
   }
 
-  public CCell DeepCopy()
+  public KCellPlain DeepCopy()
   {
-    var tmp429 = new CCell();
-    if((K != null) && __isset.k)
+    var tmp477 = new KCellPlain();
+    if((C != null) && __isset.c)
     {
-      tmp429.K = this.K.DeepCopy();
+      tmp477.C = this.C;
     }
-    tmp429.__isset.k = this.__isset.k;
+    tmp477.__isset.c = this.__isset.c;
     if(__isset.ts)
     {
-      tmp429.Ts = this.Ts;
+      tmp477.Ts = this.Ts;
     }
-    tmp429.__isset.ts = this.__isset.ts;
+    tmp477.__isset.ts = this.__isset.ts;
     if((V != null) && __isset.v)
     {
-      tmp429.V = this.V.ToArray();
+      tmp477.V = this.V.ToArray();
     }
-    tmp429.__isset.v = this.__isset.v;
-    return tmp429;
+    tmp477.__isset.v = this.__isset.v;
+    return tmp477;
   }
 
   public async global::System.Threading.Tasks.Task ReadAsync(TProtocol iprot, CancellationToken cancellationToken)
@@ -141,19 +141,9 @@ public partial class CCell : TBase
         switch (field.ID)
         {
           case 1:
-            if (field.Type == TType.List)
+            if (field.Type == TType.String)
             {
-              {
-                var _list430 = await iprot.ReadListBeginAsync(cancellationToken);
-                K = new List<byte[]>(_list430.Count);
-                for(int _i431 = 0; _i431 < _list430.Count; ++_i431)
-                {
-                  byte[] _elem432;
-                  _elem432 = await iprot.ReadBinaryAsync(cancellationToken);
-                  K.Add(_elem432);
-                }
-                await iprot.ReadListEndAsync(cancellationToken);
-              }
+              C = await iprot.ReadStringAsync(cancellationToken);
             }
             else
             {
@@ -201,38 +191,33 @@ public partial class CCell : TBase
     oprot.IncrementRecursionDepth();
     try
     {
-      var tmp433 = new TStruct("CCell");
-      await oprot.WriteStructBeginAsync(tmp433, cancellationToken);
-      var tmp434 = new TField();
-      if((K != null) && __isset.k)
+      var tmp478 = new TStruct("KCellPlain");
+      await oprot.WriteStructBeginAsync(tmp478, cancellationToken);
+      var tmp479 = new TField();
+      if((C != null) && __isset.c)
       {
-        tmp434.Name = "k";
-        tmp434.Type = TType.List;
-        tmp434.ID = 1;
-        await oprot.WriteFieldBeginAsync(tmp434, cancellationToken);
-        await oprot.WriteListBeginAsync(new TList(TType.String, K.Count), cancellationToken);
-        foreach (byte[] _iter435 in K)
-        {
-          await oprot.WriteBinaryAsync(_iter435, cancellationToken);
-        }
-        await oprot.WriteListEndAsync(cancellationToken);
+        tmp479.Name = "c";
+        tmp479.Type = TType.String;
+        tmp479.ID = 1;
+        await oprot.WriteFieldBeginAsync(tmp479, cancellationToken);
+        await oprot.WriteStringAsync(C, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if(__isset.ts)
       {
-        tmp434.Name = "ts";
-        tmp434.Type = TType.I64;
-        tmp434.ID = 2;
-        await oprot.WriteFieldBeginAsync(tmp434, cancellationToken);
+        tmp479.Name = "ts";
+        tmp479.Type = TType.I64;
+        tmp479.ID = 2;
+        await oprot.WriteFieldBeginAsync(tmp479, cancellationToken);
         await oprot.WriteI64Async(Ts, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
       if((V != null) && __isset.v)
       {
-        tmp434.Name = "v";
-        tmp434.Type = TType.String;
-        tmp434.ID = 3;
-        await oprot.WriteFieldBeginAsync(tmp434, cancellationToken);
+        tmp479.Name = "v";
+        tmp479.Type = TType.String;
+        tmp479.ID = 3;
+        await oprot.WriteFieldBeginAsync(tmp479, cancellationToken);
         await oprot.WriteBinaryAsync(V, cancellationToken);
         await oprot.WriteFieldEndAsync(cancellationToken);
       }
@@ -247,9 +232,9 @@ public partial class CCell : TBase
 
   public override bool Equals(object that)
   {
-    if (!(that is CCell other)) return false;
+    if (!(that is KCellPlain other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return ((__isset.k == other.__isset.k) && ((!__isset.k) || (global::System.Object.Equals(K, other.K))))
+    return ((__isset.c == other.__isset.c) && ((!__isset.c) || (global::System.Object.Equals(C, other.C))))
       && ((__isset.ts == other.__isset.ts) && ((!__isset.ts) || (global::System.Object.Equals(Ts, other.Ts))))
       && ((__isset.v == other.__isset.v) && ((!__isset.v) || (TCollections.Equals(V, other.V))));
   }
@@ -257,9 +242,9 @@ public partial class CCell : TBase
   public override int GetHashCode() {
     int hashcode = 157;
     unchecked {
-      if((K != null) && __isset.k)
+      if((C != null) && __isset.c)
       {
-        hashcode = (hashcode * 397) + K.GetHashCode();
+        hashcode = (hashcode * 397) + C.GetHashCode();
       }
       if(__isset.ts)
       {
@@ -275,28 +260,28 @@ public partial class CCell : TBase
 
   public override string ToString()
   {
-    var tmp436 = new StringBuilder("CCell(");
-    int tmp437 = 0;
-    if((K != null) && __isset.k)
+    var tmp480 = new StringBuilder("KCellPlain(");
+    int tmp481 = 0;
+    if((C != null) && __isset.c)
     {
-      if(0 < tmp437++) { tmp436.Append(", "); }
-      tmp436.Append("K: ");
-      K.ToString(tmp436);
+      if(0 < tmp481++) { tmp480.Append(", "); }
+      tmp480.Append("C: ");
+      C.ToString(tmp480);
     }
     if(__isset.ts)
     {
-      if(0 < tmp437++) { tmp436.Append(", "); }
-      tmp436.Append("Ts: ");
-      Ts.ToString(tmp436);
+      if(0 < tmp481++) { tmp480.Append(", "); }
+      tmp480.Append("Ts: ");
+      Ts.ToString(tmp480);
     }
     if((V != null) && __isset.v)
     {
-      if(0 < tmp437++) { tmp436.Append(", "); }
-      tmp436.Append("V: ");
-      V.ToString(tmp436);
+      if(0 < tmp481++) { tmp480.Append(", "); }
+      tmp480.Append("V: ");
+      V.ToString(tmp480);
     }
-    tmp436.Append(')');
-    return tmp436.ToString();
+    tmp480.Append(')');
+    return tmp480.ToString();
   }
 }
 

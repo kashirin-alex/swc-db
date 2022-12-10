@@ -7,7 +7,7 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Key Serial Cell for results on Key of scan
+ * The Serial column type Key Cell for results on Key of scan
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class KCellSerial implements org.apache.thrift.TBase<KCellSerial, KCellSerial._Fields>, java.io.Serializable, Cloneable, Comparable<KCellSerial> {

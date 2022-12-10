@@ -1782,8 +1782,8 @@ GType swcdb_thrift_col_cells_get_type (void);
 #define SWCDB_THRIFT_IS_COL_CELLS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_COL_CELLS))
 #define SWCDB_THRIFT_COL_CELLS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_COL_CELLS, swcdb_thriftColCellsClass))
 
-/* struct KCell */
-struct _swcdb_thriftKCell
+/* struct KCellPlain */
+struct _swcdb_thriftKCellPlain
 { 
   ThriftStruct parent; 
 
@@ -1795,21 +1795,52 @@ struct _swcdb_thriftKCell
   GByteArray * v;
   gboolean __isset_v;
 };
-typedef struct _swcdb_thriftKCell swcdb_thriftKCell;
+typedef struct _swcdb_thriftKCellPlain swcdb_thriftKCellPlain;
 
-struct _swcdb_thriftKCellClass
+struct _swcdb_thriftKCellPlainClass
 {
   ThriftStructClass parent;
 };
-typedef struct _swcdb_thriftKCellClass swcdb_thriftKCellClass;
+typedef struct _swcdb_thriftKCellPlainClass swcdb_thriftKCellPlainClass;
 
-GType swcdb_thrift_k_cell_get_type (void);
-#define SWCDB_THRIFT_TYPE_K_CELL (swcdb_thrift_k_cell_get_type())
-#define SWCDB_THRIFT_K_CELL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_K_CELL, swcdb_thriftKCell))
-#define SWCDB_THRIFT_K_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_K_CELL, swcdb_thriftKCellClass))
-#define SWCDB_THRIFT_IS_K_CELL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_K_CELL))
-#define SWCDB_THRIFT_IS_K_CELL_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_K_CELL))
-#define SWCDB_THRIFT_K_CELL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_K_CELL, swcdb_thriftKCellClass))
+GType swcdb_thrift_k_cell_plain_get_type (void);
+#define SWCDB_THRIFT_TYPE_K_CELL_PLAIN (swcdb_thrift_k_cell_plain_get_type())
+#define SWCDB_THRIFT_K_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_K_CELL_PLAIN, swcdb_thriftKCellPlain))
+#define SWCDB_THRIFT_K_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_K_CELL_PLAIN, swcdb_thriftKCellPlainClass))
+#define SWCDB_THRIFT_IS_K_CELL_PLAIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_K_CELL_PLAIN))
+#define SWCDB_THRIFT_IS_K_CELL_PLAIN_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_K_CELL_PLAIN))
+#define SWCDB_THRIFT_K_CELL_PLAIN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_K_CELL_PLAIN, swcdb_thriftKCellPlainClass))
+
+/* struct KCellCounter */
+struct _swcdb_thriftKCellCounter
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * c;
+  gboolean __isset_c;
+  gint64 ts;
+  gboolean __isset_ts;
+  gint64 v;
+  gboolean __isset_v;
+  gint64 eq;
+  gboolean __isset_eq;
+};
+typedef struct _swcdb_thriftKCellCounter swcdb_thriftKCellCounter;
+
+struct _swcdb_thriftKCellCounterClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftKCellCounterClass swcdb_thriftKCellCounterClass;
+
+GType swcdb_thrift_k_cell_counter_get_type (void);
+#define SWCDB_THRIFT_TYPE_K_CELL_COUNTER (swcdb_thrift_k_cell_counter_get_type())
+#define SWCDB_THRIFT_K_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_K_CELL_COUNTER, swcdb_thriftKCellCounter))
+#define SWCDB_THRIFT_K_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_K_CELL_COUNTER, swcdb_thriftKCellCounterClass))
+#define SWCDB_THRIFT_IS_K_CELL_COUNTER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_K_CELL_COUNTER))
+#define SWCDB_THRIFT_IS_K_CELL_COUNTER_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_K_CELL_COUNTER))
+#define SWCDB_THRIFT_K_CELL_COUNTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_K_CELL_COUNTER, swcdb_thriftKCellCounterClass))
 
 /* struct KCellSerial */
 struct _swcdb_thriftKCellSerial
@@ -1848,8 +1879,10 @@ struct _swcdb_thriftkCells
   /* public */
   GPtrArray * k;
   gboolean __isset_k;
-  GPtrArray * cells;
-  gboolean __isset_cells;
+  GPtrArray * plain_cells;
+  gboolean __isset_plain_cells;
+  GPtrArray * counter_cells;
+  gboolean __isset_counter_cells;
   GPtrArray * serial_cells;
   gboolean __isset_serial_cells;
 };
@@ -2207,58 +2240,6 @@ GType swcdb_thrift_service_sql_compact_columns_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_SQL_COMPACT_COLUMNS_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_COMPACT_COLUMNS_RESULT))
 #define SWCDB_THRIFT_SERVICE_SQL_COMPACT_COLUMNS_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_COMPACT_COLUMNS_RESULT, swcdb_thriftServiceSqlCompactColumnsResultClass))
 
-/* struct ServiceSqlSelectArgs */
-struct _swcdb_thriftServiceSqlSelectArgs
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  gchar * sql;
-  gboolean __isset_sql;
-};
-typedef struct _swcdb_thriftServiceSqlSelectArgs swcdb_thriftServiceSqlSelectArgs;
-
-struct _swcdb_thriftServiceSqlSelectArgsClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftServiceSqlSelectArgsClass swcdb_thriftServiceSqlSelectArgsClass;
-
-GType swcdb_thrift_service_sql_select_args_get_type (void);
-#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS (swcdb_thrift_service_sql_select_args_get_type())
-#define SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS, swcdb_thriftServiceSqlSelectArgs))
-#define SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_ARGS, swcdb_thriftServiceSqlSelectArgsClass))
-#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS))
-#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS))
-#define SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS, swcdb_thriftServiceSqlSelectArgsClass))
-
-/* struct ServiceSqlSelectResult */
-struct _swcdb_thriftServiceSqlSelectResult
-{ 
-  ThriftStruct parent; 
-
-  /* public */
-  swcdb_thriftCells * success;
-  gboolean __isset_success;
-  swcdb_thriftException * e;
-  gboolean __isset_e;
-};
-typedef struct _swcdb_thriftServiceSqlSelectResult swcdb_thriftServiceSqlSelectResult;
-
-struct _swcdb_thriftServiceSqlSelectResultClass
-{
-  ThriftStructClass parent;
-};
-typedef struct _swcdb_thriftServiceSqlSelectResultClass swcdb_thriftServiceSqlSelectResultClass;
-
-GType swcdb_thrift_service_sql_select_result_get_type (void);
-#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT (swcdb_thrift_service_sql_select_result_get_type())
-#define SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT, swcdb_thriftServiceSqlSelectResult))
-#define SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_RESULT, swcdb_thriftServiceSqlSelectResultClass))
-#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT))
-#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT))
-#define SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT, swcdb_thriftServiceSqlSelectResultClass))
-
 /* struct ServiceSqlSelectPlainArgs */
 struct _swcdb_thriftServiceSqlSelectPlainArgs
 { 
@@ -2414,6 +2395,58 @@ GType swcdb_thrift_service_sql_select_serial_result_get_type (void);
 #define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_SERIAL_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT))
 #define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_SERIAL_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT))
 #define SWCDB_THRIFT_SERVICE_SQL_SELECT_SERIAL_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_SERIAL_RESULT, swcdb_thriftServiceSqlSelectSerialResultClass))
+
+/* struct ServiceSqlSelectArgs */
+struct _swcdb_thriftServiceSqlSelectArgs
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  gchar * sql;
+  gboolean __isset_sql;
+};
+typedef struct _swcdb_thriftServiceSqlSelectArgs swcdb_thriftServiceSqlSelectArgs;
+
+struct _swcdb_thriftServiceSqlSelectArgsClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectArgsClass swcdb_thriftServiceSqlSelectArgsClass;
+
+GType swcdb_thrift_service_sql_select_args_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS (swcdb_thrift_service_sql_select_args_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS, swcdb_thriftServiceSqlSelectArgs))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_ARGS, swcdb_thriftServiceSqlSelectArgsClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_ARGS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_ARGS_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_ARGS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_ARGS, swcdb_thriftServiceSqlSelectArgsClass))
+
+/* struct ServiceSqlSelectResult */
+struct _swcdb_thriftServiceSqlSelectResult
+{ 
+  ThriftStruct parent; 
+
+  /* public */
+  swcdb_thriftCells * success;
+  gboolean __isset_success;
+  swcdb_thriftException * e;
+  gboolean __isset_e;
+};
+typedef struct _swcdb_thriftServiceSqlSelectResult swcdb_thriftServiceSqlSelectResult;
+
+struct _swcdb_thriftServiceSqlSelectResultClass
+{
+  ThriftStructClass parent;
+};
+typedef struct _swcdb_thriftServiceSqlSelectResultClass swcdb_thriftServiceSqlSelectResultClass;
+
+GType swcdb_thrift_service_sql_select_result_get_type (void);
+#define SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT (swcdb_thrift_service_sql_select_result_get_type())
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT, swcdb_thriftServiceSqlSelectResult))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_CAST ((c), SWCDB_THRIFT__TYPE_SERVICE_SQL_SELECT_RESULT, swcdb_thriftServiceSqlSelectResultClass))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT))
+#define SWCDB_THRIFT_IS_SERVICE_SQL_SELECT_RESULT_CLASS(c) (G_TYPE_CHECK_CLASS_TYPE ((c), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT))
+#define SWCDB_THRIFT_SERVICE_SQL_SELECT_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SWCDB_THRIFT_TYPE_SERVICE_SQL_SELECT_RESULT, swcdb_thriftServiceSqlSelectResultClass))
 
 /* struct ServiceSqlSelectRsltOnColumnArgs */
 struct _swcdb_thriftServiceSqlSelectRsltOnColumnArgs

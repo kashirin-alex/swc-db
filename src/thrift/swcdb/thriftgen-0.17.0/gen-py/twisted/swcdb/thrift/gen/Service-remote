@@ -27,10 +27,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void sql_mng_column(string sql)')
     print('  Schemas sql_list_columns(string sql)')
     print('  CompactResults sql_compact_columns(string sql)')
-    print('  Cells sql_select(string sql)')
     print('  CellsPlain sql_select_plain(string sql)')
     print('  CellsCounter sql_select_counter(string sql)')
     print('  CellsSerial sql_select_serial(string sql)')
+    print('  Cells sql_select(string sql)')
     print('  CCells sql_select_rslt_on_column(string sql)')
     print('  KCells sql_select_rslt_on_key(string sql)')
     print('  FCells sql_select_rslt_on_fraction(string sql)')
@@ -148,12 +148,6 @@ elif cmd == 'sql_compact_columns':
         sys.exit(1)
     pp.pprint(client.sql_compact_columns(args[0],))
 
-elif cmd == 'sql_select':
-    if len(args) != 1:
-        print('sql_select requires 1 args')
-        sys.exit(1)
-    pp.pprint(client.sql_select(args[0],))
-
 elif cmd == 'sql_select_plain':
     if len(args) != 1:
         print('sql_select_plain requires 1 args')
@@ -171,6 +165,12 @@ elif cmd == 'sql_select_serial':
         print('sql_select_serial requires 1 args')
         sys.exit(1)
     pp.pprint(client.sql_select_serial(args[0],))
+
+elif cmd == 'sql_select':
+    if len(args) != 1:
+        print('sql_select requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.sql_select(args[0],))
 
 elif cmd == 'sql_select_rslt_on_column':
     if len(args) != 1:

@@ -48,13 +48,6 @@ class ServiceIf {
   virtual void sql_compact_columns(CompactResults& _return, const std::string& sql) = 0;
 
   /**
-   * The direct SQL method to select cells with result in Cells List.
-   * 
-   * @param sql The SQL string to Execute
-   */
-  virtual void sql_select(Cells& _return, const std::string& sql) = 0;
-
-  /**
    * The direct SQL method to select cells with result in CellsPlain.
    * 
    * @param sql The SQL string to Execute
@@ -74,6 +67,13 @@ class ServiceIf {
    * @param sql The SQL string to Execute
    */
   virtual void sql_select_serial(CellsSerial& _return, const std::string& sql) = 0;
+
+  /**
+   * The direct SQL method to select cells with result in Cells List.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  virtual void sql_select(Cells& _return, const std::string& sql) = 0;
 
   /**
    * The direct SQL method to select cells with result in Columns Cells map.
@@ -276,9 +276,6 @@ class ServiceNull : virtual public ServiceIf {
   void sql_compact_columns(CompactResults& /* _return */, const std::string& /* sql */) override {
     return;
   }
-  void sql_select(Cells& /* _return */, const std::string& /* sql */) override {
-    return;
-  }
   void sql_select_plain(CellsPlain& /* _return */, const std::string& /* sql */) override {
     return;
   }
@@ -286,6 +283,9 @@ class ServiceNull : virtual public ServiceIf {
     return;
   }
   void sql_select_serial(CellsSerial& /* _return */, const std::string& /* sql */) override {
+    return;
+  }
+  void sql_select(Cells& /* _return */, const std::string& /* sql */) override {
     return;
   }
   void sql_select_rslt_on_column(CCells& /* _return */, const std::string& /* sql */) override {
@@ -712,129 +712,6 @@ class Service_sql_compact_columns_presult {
 
 };
 
-typedef struct _Service_sql_select_args__isset {
-  _Service_sql_select_args__isset() : sql(false) {}
-  bool sql :1;
-} _Service_sql_select_args__isset;
-
-class Service_sql_select_args {
- public:
-
-  Service_sql_select_args(const Service_sql_select_args&);
-  Service_sql_select_args(Service_sql_select_args&&) noexcept;
-  Service_sql_select_args& operator=(const Service_sql_select_args&);
-  Service_sql_select_args& operator=(Service_sql_select_args&&) noexcept;
-  Service_sql_select_args() noexcept
-                          : sql() {
-  }
-
-  virtual ~Service_sql_select_args() noexcept;
-  /**
-   * The SQL string to Execute
-   */
-  std::string sql;
-
-  _Service_sql_select_args__isset __isset;
-
-  void __set_sql(const std::string& val);
-
-  bool operator == (const Service_sql_select_args & rhs) const
-  {
-    if (!(sql == rhs.sql))
-      return false;
-    return true;
-  }
-  bool operator != (const Service_sql_select_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Service_sql_select_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class Service_sql_select_pargs {
- public:
-
-
-  virtual ~Service_sql_select_pargs() noexcept;
-  /**
-   * The SQL string to Execute
-   */
-  const std::string* sql;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _Service_sql_select_result__isset {
-  _Service_sql_select_result__isset() : success(false), e(false) {}
-  bool success :1;
-  bool e :1;
-} _Service_sql_select_result__isset;
-
-class Service_sql_select_result {
- public:
-
-  Service_sql_select_result(const Service_sql_select_result&);
-  Service_sql_select_result(Service_sql_select_result&&) noexcept;
-  Service_sql_select_result& operator=(const Service_sql_select_result&);
-  Service_sql_select_result& operator=(Service_sql_select_result&&) noexcept;
-  Service_sql_select_result() noexcept {
-  }
-
-  virtual ~Service_sql_select_result() noexcept;
-  Cells success;
-  Exception e;
-
-  _Service_sql_select_result__isset __isset;
-
-  void __set_success(const Cells& val);
-
-  void __set_e(const Exception& val);
-
-  bool operator == (const Service_sql_select_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    if (!(e == rhs.e))
-      return false;
-    return true;
-  }
-  bool operator != (const Service_sql_select_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Service_sql_select_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _Service_sql_select_presult__isset {
-  _Service_sql_select_presult__isset() : success(false), e(false) {}
-  bool success :1;
-  bool e :1;
-} _Service_sql_select_presult__isset;
-
-class Service_sql_select_presult {
- public:
-
-
-  virtual ~Service_sql_select_presult() noexcept;
-  Cells* success;
-  Exception e;
-
-  _Service_sql_select_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 typedef struct _Service_sql_select_plain_args__isset {
   _Service_sql_select_plain_args__isset() : sql(false) {}
   bool sql :1;
@@ -1199,6 +1076,129 @@ class Service_sql_select_serial_presult {
   Exception e;
 
   _Service_sql_select_serial_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Service_sql_select_args__isset {
+  _Service_sql_select_args__isset() : sql(false) {}
+  bool sql :1;
+} _Service_sql_select_args__isset;
+
+class Service_sql_select_args {
+ public:
+
+  Service_sql_select_args(const Service_sql_select_args&);
+  Service_sql_select_args(Service_sql_select_args&&) noexcept;
+  Service_sql_select_args& operator=(const Service_sql_select_args&);
+  Service_sql_select_args& operator=(Service_sql_select_args&&) noexcept;
+  Service_sql_select_args() noexcept
+                          : sql() {
+  }
+
+  virtual ~Service_sql_select_args() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  std::string sql;
+
+  _Service_sql_select_args__isset __isset;
+
+  void __set_sql(const std::string& val);
+
+  bool operator == (const Service_sql_select_args & rhs) const
+  {
+    if (!(sql == rhs.sql))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Service_sql_select_pargs {
+ public:
+
+
+  virtual ~Service_sql_select_pargs() noexcept;
+  /**
+   * The SQL string to Execute
+   */
+  const std::string* sql;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_result__isset {
+  _Service_sql_select_result__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_result__isset;
+
+class Service_sql_select_result {
+ public:
+
+  Service_sql_select_result(const Service_sql_select_result&);
+  Service_sql_select_result(Service_sql_select_result&&) noexcept;
+  Service_sql_select_result& operator=(const Service_sql_select_result&);
+  Service_sql_select_result& operator=(Service_sql_select_result&&) noexcept;
+  Service_sql_select_result() noexcept {
+  }
+
+  virtual ~Service_sql_select_result() noexcept;
+  Cells success;
+  Exception e;
+
+  _Service_sql_select_result__isset __isset;
+
+  void __set_success(const Cells& val);
+
+  void __set_e(const Exception& val);
+
+  bool operator == (const Service_sql_select_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(e == rhs.e))
+      return false;
+    return true;
+  }
+  bool operator != (const Service_sql_select_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Service_sql_select_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Service_sql_select_presult__isset {
+  _Service_sql_select_presult__isset() : success(false), e(false) {}
+  bool success :1;
+  bool e :1;
+} _Service_sql_select_presult__isset;
+
+class Service_sql_select_presult {
+ public:
+
+
+  virtual ~Service_sql_select_presult() noexcept;
+  Cells* success;
+  Exception e;
+
+  _Service_sql_select_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -3803,14 +3803,6 @@ class ServiceClient : virtual public ServiceIf {
   void send_sql_compact_columns(const std::string& sql);
   void recv_sql_compact_columns(CompactResults& _return);
   /**
-   * The direct SQL method to select cells with result in Cells List.
-   * 
-   * @param sql The SQL string to Execute
-   */
-  void sql_select(Cells& _return, const std::string& sql) override;
-  void send_sql_select(const std::string& sql);
-  void recv_sql_select(Cells& _return);
-  /**
    * The direct SQL method to select cells with result in CellsPlain.
    * 
    * @param sql The SQL string to Execute
@@ -3834,6 +3826,14 @@ class ServiceClient : virtual public ServiceIf {
   void sql_select_serial(CellsSerial& _return, const std::string& sql) override;
   void send_sql_select_serial(const std::string& sql);
   void recv_sql_select_serial(CellsSerial& _return);
+  /**
+   * The direct SQL method to select cells with result in Cells List.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select(Cells& _return, const std::string& sql) override;
+  void send_sql_select(const std::string& sql);
+  void recv_sql_select(Cells& _return);
   /**
    * The direct SQL method to select cells with result in Columns Cells map.
    * 
@@ -4036,10 +4036,10 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_sql_mng_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_list_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_compact_columns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_sql_select(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_plain(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_counter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_serial(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_sql_select(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_column(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_sql_select_rslt_on_fraction(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -4066,10 +4066,10 @@ class ServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["sql_mng_column"] = &ServiceProcessor::process_sql_mng_column;
     processMap_["sql_list_columns"] = &ServiceProcessor::process_sql_list_columns;
     processMap_["sql_compact_columns"] = &ServiceProcessor::process_sql_compact_columns;
-    processMap_["sql_select"] = &ServiceProcessor::process_sql_select;
     processMap_["sql_select_plain"] = &ServiceProcessor::process_sql_select_plain;
     processMap_["sql_select_counter"] = &ServiceProcessor::process_sql_select_counter;
     processMap_["sql_select_serial"] = &ServiceProcessor::process_sql_select_serial;
+    processMap_["sql_select"] = &ServiceProcessor::process_sql_select;
     processMap_["sql_select_rslt_on_column"] = &ServiceProcessor::process_sql_select_rslt_on_column;
     processMap_["sql_select_rslt_on_key"] = &ServiceProcessor::process_sql_select_rslt_on_key;
     processMap_["sql_select_rslt_on_fraction"] = &ServiceProcessor::process_sql_select_rslt_on_fraction;
@@ -4163,21 +4163,6 @@ class ServiceMultiface : virtual public ServiceIf {
   }
 
   /**
-   * The direct SQL method to select cells with result in Cells List.
-   * 
-   * @param sql The SQL string to Execute
-   */
-  void sql_select(Cells& _return, const std::string& sql) override {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->sql_select(_return, sql);
-    }
-    ifaces_[i]->sql_select(_return, sql);
-    return;
-  }
-
-  /**
    * The direct SQL method to select cells with result in CellsPlain.
    * 
    * @param sql The SQL string to Execute
@@ -4219,6 +4204,21 @@ class ServiceMultiface : virtual public ServiceIf {
       ifaces_[i]->sql_select_serial(_return, sql);
     }
     ifaces_[i]->sql_select_serial(_return, sql);
+    return;
+  }
+
+  /**
+   * The direct SQL method to select cells with result in Cells List.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select(Cells& _return, const std::string& sql) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->sql_select(_return, sql);
+    }
+    ifaces_[i]->sql_select(_return, sql);
     return;
   }
 
@@ -4595,14 +4595,6 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   int32_t send_sql_compact_columns(const std::string& sql);
   void recv_sql_compact_columns(CompactResults& _return, const int32_t seqid);
   /**
-   * The direct SQL method to select cells with result in Cells List.
-   * 
-   * @param sql The SQL string to Execute
-   */
-  void sql_select(Cells& _return, const std::string& sql) override;
-  int32_t send_sql_select(const std::string& sql);
-  void recv_sql_select(Cells& _return, const int32_t seqid);
-  /**
    * The direct SQL method to select cells with result in CellsPlain.
    * 
    * @param sql The SQL string to Execute
@@ -4626,6 +4618,14 @@ class ServiceConcurrentClient : virtual public ServiceIf {
   void sql_select_serial(CellsSerial& _return, const std::string& sql) override;
   int32_t send_sql_select_serial(const std::string& sql);
   void recv_sql_select_serial(CellsSerial& _return, const int32_t seqid);
+  /**
+   * The direct SQL method to select cells with result in Cells List.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select(Cells& _return, const std::string& sql) override;
+  int32_t send_sql_select(const std::string& sql);
+  void recv_sql_select(Cells& _return, const int32_t seqid);
   /**
    * The direct SQL method to select cells with result in Columns Cells map.
    * 

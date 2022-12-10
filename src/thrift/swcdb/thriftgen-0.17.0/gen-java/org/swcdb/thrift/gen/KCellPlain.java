@@ -7,18 +7,18 @@
 package org.swcdb.thrift.gen;
 
 /**
- * The Key Cell for results on Key of scan
+ * The Plain column type Key Cell for results on Key of scan
  */
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, java.io.Serializable, Cloneable, Comparable<KCell> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("KCell");
+public class KCellPlain implements org.apache.thrift.TBase<KCellPlain, KCellPlain._Fields>, java.io.Serializable, Cloneable, Comparable<KCellPlain> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("KCellPlain");
 
   private static final org.apache.thrift.protocol.TField C_FIELD_DESC = new org.apache.thrift.protocol.TField("c", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TS_FIELD_DESC = new org.apache.thrift.protocol.TField("ts", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField V_FIELD_DESC = new org.apache.thrift.protocol.TField("v", org.apache.thrift.protocol.TType.STRING, (short)3);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new KCellStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new KCellTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new KCellPlainStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new KCellPlainTupleSchemeFactory();
 
   /**
    * The Column Name
@@ -123,13 +123,13 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
     tmpMap.put(_Fields.V, new org.apache.thrift.meta_data.FieldMetaData("v", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(KCell.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(KCellPlain.class, metaDataMap);
   }
 
-  public KCell() {
+  public KCellPlain() {
   }
 
-  public KCell(
+  public KCellPlain(
     java.lang.String c,
     long ts,
     java.nio.ByteBuffer v)
@@ -144,7 +144,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public KCell(KCell other) {
+  public KCellPlain(KCellPlain other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetC()) {
       this.c = other.c;
@@ -156,8 +156,8 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   }
 
   @Override
-  public KCell deepCopy() {
-    return new KCell(this);
+  public KCellPlain deepCopy() {
+    return new KCellPlain(this);
   }
 
   @Override
@@ -179,7 +179,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   /**
    * The Column Name
    */
-  public KCell setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
+  public KCellPlain setC(@org.apache.thrift.annotation.Nullable java.lang.String c) {
     this.c = c;
     return this;
   }
@@ -209,7 +209,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   /**
    * The Cell Timestamp
    */
-  public KCell setTs(long ts) {
+  public KCellPlain setTs(long ts) {
     this.ts = ts;
     setTsIsSet(true);
     return this;
@@ -243,12 +243,12 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   /**
    * The Cell Value
    */
-  public KCell setV(byte[] v) {
+  public KCellPlain setV(byte[] v) {
     this.v = v == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(v.clone());
     return this;
   }
 
-  public KCell setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
+  public KCellPlain setV(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer v) {
     this.v = org.apache.thrift.TBaseHelper.copyBinary(v);
     return this;
   }
@@ -339,12 +339,12 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof KCell)
-      return this.equals((KCell)that);
+    if (that instanceof KCellPlain)
+      return this.equals((KCellPlain)that);
     return false;
   }
 
-  public boolean equals(KCell that) {
+  public boolean equals(KCellPlain that) {
     if (that == null)
       return false;
     if (this == that)
@@ -398,7 +398,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
   }
 
   @Override
-  public int compareTo(KCell other) {
+  public int compareTo(KCellPlain other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -456,7 +456,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("KCell(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("KCellPlain(");
     boolean first = true;
 
     sb.append("c:");
@@ -505,17 +505,17 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
     }
   }
 
-  private static class KCellStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class KCellPlainStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public KCellStandardScheme getScheme() {
-      return new KCellStandardScheme();
+    public KCellPlainStandardScheme getScheme() {
+      return new KCellPlainStandardScheme();
     }
   }
 
-  private static class KCellStandardScheme extends org.apache.thrift.scheme.StandardScheme<KCell> {
+  private static class KCellPlainStandardScheme extends org.apache.thrift.scheme.StandardScheme<KCellPlain> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, KCell struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, KCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -561,7 +561,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, KCell struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, KCellPlain struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -584,17 +584,17 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
 
   }
 
-  private static class KCellTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class KCellPlainTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public KCellTupleScheme getScheme() {
-      return new KCellTupleScheme();
+    public KCellPlainTupleScheme getScheme() {
+      return new KCellPlainTupleScheme();
     }
   }
 
-  private static class KCellTupleScheme extends org.apache.thrift.scheme.TupleScheme<KCell> {
+  private static class KCellPlainTupleScheme extends org.apache.thrift.scheme.TupleScheme<KCellPlain> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, KCell struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, KCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetC()) {
@@ -619,7 +619,7 @@ public class KCell implements org.apache.thrift.TBase<KCell, KCell._Fields>, jav
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, KCell struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, KCellPlain struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {

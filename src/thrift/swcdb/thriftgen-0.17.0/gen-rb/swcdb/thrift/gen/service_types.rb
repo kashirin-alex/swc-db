@@ -321,7 +321,9 @@ module Swcdb
 
       class ColCells; end
 
-      class KCell; end
+      class KCellPlain; end
+
+      class KCellCounter; end
 
       class KCellSerial; end
 
@@ -1776,8 +1778,8 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Key Cell for results on Key of scan
-      class KCell
+      # The Plain column type Key Cell for results on Key of scan
+      class KCellPlain
         include ::Thrift::Struct, ::Thrift::Struct_Union
         C = 1
         TS = 2
@@ -1800,7 +1802,34 @@ module Swcdb
         ::Thrift::Struct.generate_accessors self
       end
 
-      # The Key Serial Cell for results on Key of scan
+      # The Counter column type Key Cell for results on Key of scan
+      class KCellCounter
+        include ::Thrift::Struct, ::Thrift::Struct_Union
+        C = 1
+        TS = 2
+        V = 3
+        EQ = 4
+
+        FIELDS = {
+          # The Column Name
+          C => {:type => ::Thrift::Types::STRING, :name => 'c'},
+          # The Cell Timestamp
+          TS => {:type => ::Thrift::Types::I64, :name => 'ts'},
+          # The Cell Counter Value
+          V => {:type => ::Thrift::Types::I64, :name => 'v'},
+          # The Counter EQ since ts
+          EQ => {:type => ::Thrift::Types::I64, :name => 'eq', :optional => true}
+        }
+
+        def struct_fields; FIELDS; end
+
+        def validate
+        end
+
+        ::Thrift::Struct.generate_accessors self
+      end
+
+      # The Serial column type Key Cell for results on Key of scan
       class KCellSerial
         include ::Thrift::Struct, ::Thrift::Struct_Union
         C = 1
@@ -1828,15 +1857,18 @@ module Swcdb
       class KCells
         include ::Thrift::Struct, ::Thrift::Struct_Union
         K = 1
-        CELLS = 2
-        SERIAL_CELLS = 3
+        PLAIN_CELLS = 2
+        COUNTER_CELLS = 3
+        SERIAL_CELLS = 4
 
         FIELDS = {
           # The Cell Key
           K => {:type => ::Thrift::Types::LIST, :name => 'k', :element => {:type => ::Thrift::Types::STRING, :binary => true}},
-          # The Key's Cells, defined as KCell items in a list-container
-          CELLS => {:type => ::Thrift::Types::LIST, :name => 'cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::KCell}},
-          # The Key's Serial Cells, defined as KCellSerial items in a list-container
+          # The Plain type Key Cells, defined as KCellPlain items in a list-container
+          PLAIN_CELLS => {:type => ::Thrift::Types::LIST, :name => 'plain_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::KCellPlain}},
+          # The Counter type Key Cells, defined as KCellCounter items in a list-container
+          COUNTER_CELLS => {:type => ::Thrift::Types::LIST, :name => 'counter_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::KCellCounter}},
+          # The Serial type Key Cells, defined as KCellSerial items in a list-container
           SERIAL_CELLS => {:type => ::Thrift::Types::LIST, :name => 'serial_cells', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Swcdb::Thrift::Gen::KCellSerial}}
         }
 

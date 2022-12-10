@@ -1095,7 +1095,6 @@ struct Cells {
 
 
 
-
 /** The Plain column type Cell for results on Columns of scan */
 struct CCellPlain {
   /** The Cell Key */
@@ -1152,9 +1151,8 @@ typedef map<string, ColCells> CCells
 
 
 
-
-/** The Key Cell for results on Key of scan */
-struct KCell {
+/** The Plain column type Key Cell for results on Key of scan */
+struct KCellPlain {
   /** The Column Name */
   1: string           c
 
@@ -1165,7 +1163,22 @@ struct KCell {
   3: binary           v
 }
 
-/** The Key Serial Cell for results on Key of scan */
+/** The Counter column type Key Cell for results on Key of scan */
+struct KCellCounter {
+  /** The Column Name */
+  1: string           c
+
+  /** The Cell Timestamp */
+  2: i64              ts
+
+  /** The Cell Counter Value */
+  3: i64              v
+
+  /** The Counter EQ since ts */
+  4: optional i64     eq
+}
+
+/** The Serial column type Key Cell for results on Key of scan */
 struct KCellSerial {
   /** The Column Name */
   1: string           c
@@ -1182,16 +1195,18 @@ struct kCells {
   /** The Cell Key */
   1: Key                k
 
-  /** The Key's Cells, defined as KCell items in a list-container */
-  2: list<KCell>        cells
+  /** The Plain type Key Cells, defined as KCellPlain items in a list-container */
+  2: list<KCellPlain>   plain_cells
 
-  /** The Key's Serial Cells, defined as KCellSerial items in a list-container */
-  3: list<KCellSerial>  serial_cells
+  /** The Counter type Key Cells, defined as KCellCounter items in a list-container */
+  3: list<KCellCounter> counter_cells
+
+  /** The Serial type Key Cells, defined as KCellSerial items in a list-container */
+  4: list<KCellSerial>  serial_cells
 }
 
 /** The Keys Cells for results on Key of scan, defined as kCells items in a list-container */
 typedef list<kCells> KCells
-
 
 
 
@@ -1232,7 +1247,6 @@ struct FCells {
   3: list<FCellSerial>    serial_cells
 
 }
-
 
 
 
@@ -1335,15 +1349,6 @@ service Service {
   )  throws (1:Exception e),
 
 
-  /** The direct SQL method to select cells with result in Cells List. */
-  Cells sql_select(
-
-    /** The SQL string to Execute */
-    1:string sql
-
-  ) throws (1:Exception e),
-
-
 
   /** The direct SQL method to select cells with result in CellsPlain. */
   CellsPlain sql_select_plain(
@@ -1371,6 +1376,15 @@ service Service {
 
   ) throws (1:Exception e),
 
+
+
+  /** The direct SQL method to select cells with result in Cells List. */
+  Cells sql_select(
+
+    /** The SQL string to Execute */
+    1:string sql
+
+  ) throws (1:Exception e),
 
 
   /** The direct SQL method to select cells with result in Columns Cells map. */

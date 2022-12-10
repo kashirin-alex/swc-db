@@ -51,16 +51,6 @@ class ServiceHandler : virtual public ServiceIf {
   }
 
   /**
-   * The direct SQL method to select cells with result in Cells List.
-   * 
-   * @param sql The SQL string to Execute
-   */
-  void sql_select(Cells& _return, const std::string& sql) {
-    // Your implementation goes here
-    printf("sql_select\n");
-  }
-
-  /**
    * The direct SQL method to select cells with result in CellsPlain.
    * 
    * @param sql The SQL string to Execute
@@ -88,6 +78,16 @@ class ServiceHandler : virtual public ServiceIf {
   void sql_select_serial(CellsSerial& _return, const std::string& sql) {
     // Your implementation goes here
     printf("sql_select_serial\n");
+  }
+
+  /**
+   * The direct SQL method to select cells with result in Cells List.
+   * 
+   * @param sql The SQL string to Execute
+   */
+  void sql_select(Cells& _return, const std::string& sql) {
+    // Your implementation goes here
+    printf("sql_select\n");
   }
 
   /**
