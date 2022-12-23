@@ -43,12 +43,13 @@ class RangeQuerySelectUpdating_Serial final
   virtual ~RangeQuerySelectUpdating_Serial() noexcept { }
 
   void update_cell_value(DB::Cells::Cell& cell) override {
-
-    const uint8_t* ptr = cell.value;
-    size_t remain = cell.vlen;
+    StaticBuffer v;
+    DB::Types::Encoder encoder = cell.get_value(v, false);
+    const uint8_t* ptr = v.base;
+    size_t remain = v.size;
 
     DB::Cell::Serial::Value::FieldsWriter wfields;
-    wfields.ensure(cell.vlen + spec.updating->vlen);
+    wfields.ensure(remain + spec.updating->vlen);
 
     while(remain) {
       switch(DB::Cell::Serial::Value::read_type(&ptr, &remain)) {
@@ -141,7 +142,9 @@ class RangeQuerySelectUpdating_Serial final
         wfields.add(opfield->field);
     }
 
-    cell.set_value(wfields.base, wfields.fill(), true);
+    encoder == DB::Types::Encoder::DEFAULT
+      ? cell.set_value(wfields.base, wfields.fill(), true)
+      : cell.set_value(encoder, wfields.base, wfields.fill());
 
     opfields_found.clear();
     opfields_missing.clear();

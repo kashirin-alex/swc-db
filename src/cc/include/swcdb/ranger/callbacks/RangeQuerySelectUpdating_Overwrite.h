@@ -36,38 +36,49 @@ class RangeQuerySelectUpdating_Overwrite final
   virtual ~RangeQuerySelectUpdating_Overwrite() noexcept { }
 
   void update_cell_value(DB::Cells::Cell& cell) override {
-    uint8_t* value_was = cell.value;
-    uint32_t vlen_was = cell.vlen;
+    StaticBuffer v;
+    DB::Types::Encoder encoder = cell.get_value(v, false);
+    uint32_t sz;
+
     uint32_t pos = spec.updating->operation.get_pos();
-    if(pos >= vlen_was) {
-      pos = vlen_was;
-      cell.vlen = vlen_was + spec.updating->vlen;
+    if(pos >= v.size) {
+      pos = v.size;
+      sz = v.size + spec.updating->vlen;
     } else {
-      cell.vlen = spec.updating->vlen < vlen_was - pos
-        ? vlen_was
+      sz = spec.updating->vlen < v.size - pos
+        ? v.size
         : spec.updating->vlen + pos;
     }
-    cell.own = true;
-    cell.value = static_cast<uint8_t*>(
+    uint8_t* ptr = static_cast<uint8_t*>(
       memcpy(
-        new uint8_t[cell.vlen],
-        value_was,
+        new uint8_t[sz],
+        v.base,
         pos
       )
     );
     memcpy(
-      cell.value + pos,
+      ptr + pos,
       spec.updating->value,
       spec.updating->vlen
     );
     uint32_t at = pos + spec.updating->vlen;
-    if(at < vlen_was) {
+    if(at < v.size) {
       memcpy(
-        cell.value + at,
-        value_was + at,
-        vlen_was - at
+        ptr + at,
+        v.base + at,
+        v.size - at
       );
     }
+
+    if(encoder == DB::Types::Encoder::DEFAULT) {
+      cell.own = true;
+      cell.value = ptr;
+      cell.vlen = sz;
+    } else {
+      cell.set_value(encoder, ptr, sz);
+      delete [] ptr;
+    }
+
   }
 
 };

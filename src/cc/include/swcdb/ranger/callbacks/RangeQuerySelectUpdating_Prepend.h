@@ -36,19 +36,30 @@ class RangeQuerySelectUpdating_Prepend final
   virtual ~RangeQuerySelectUpdating_Prepend() noexcept { }
 
   void update_cell_value(DB::Cells::Cell& cell) override {
-    uint8_t* value_was = cell.value;
-    cell.value = static_cast<uint8_t*>(memcpy(
-      new uint8_t[cell.vlen + spec.updating->vlen],
+    StaticBuffer v;
+    DB::Types::Encoder encoder = cell.get_value(v, false);
+    uint32_t sz = v.size + spec.updating->vlen;
+  
+    uint8_t* ptr = static_cast<uint8_t*>(memcpy(
+      new uint8_t[sz],
       spec.updating->value,
       spec.updating->vlen
     ));
     memcpy(
-      cell.value + spec.updating->vlen,
-      value_was,
-      cell.vlen
+      ptr + spec.updating->vlen,
+      v.base,
+      v.size
     );
-    cell.vlen += spec.updating->vlen;
-    cell.own = true;
+
+    if(encoder == DB::Types::Encoder::DEFAULT) {
+      cell.own = true;
+      cell.value = ptr;
+      cell.vlen = sz;
+    } else {
+      cell.set_value(encoder, ptr, sz);
+      delete [] ptr;
+    }
+
   }
 
 };

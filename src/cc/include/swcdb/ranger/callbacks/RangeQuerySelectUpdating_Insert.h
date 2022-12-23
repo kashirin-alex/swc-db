@@ -36,27 +36,38 @@ class RangeQuerySelectUpdating_Insert final
   virtual ~RangeQuerySelectUpdating_Insert() noexcept { }
 
   void update_cell_value(DB::Cells::Cell& cell) override {
+    StaticBuffer v;
+    DB::Types::Encoder encoder = cell.get_value(v, false);
+    uint32_t sz = v.size + spec.updating->vlen;
+  
     uint32_t pos = spec.updating->operation.get_pos();
-    if(pos > cell.vlen)
-      pos = cell.vlen;
-    uint8_t* value_was = cell.value;
-    cell.value = static_cast<uint8_t*>(memcpy(
-      new uint8_t[cell.vlen + spec.updating->vlen],
-      value_was,
+    if(pos > v.size)
+      pos = v.size;
+    uint8_t* ptr = static_cast<uint8_t*>(memcpy(
+      new uint8_t[sz],
+      v.base,
       pos
     ));
     memcpy(
-      cell.value + pos,
+      ptr + pos,
       spec.updating->value,
       spec.updating->vlen
     );
     memcpy(
-      cell.value + pos + spec.updating->vlen,
-      value_was + pos,
-      cell.vlen - pos
+      ptr + pos + spec.updating->vlen,
+      v.base + pos,
+      v.size - pos
     );
-    cell.vlen += spec.updating->vlen;
-    cell.own = true;
+
+    if(encoder == DB::Types::Encoder::DEFAULT) {
+      cell.own = true;
+      cell.value = ptr;
+      cell.vlen = sz;
+    } else {
+      cell.set_value(encoder, ptr, sz);
+      delete [] ptr;
+    }
+
   }
 
 };
