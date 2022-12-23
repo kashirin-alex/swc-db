@@ -74,12 +74,13 @@ void Cell::set_value(Types::Encoder encoder, const uint8_t* v, uint32_t len) {
   own = true;
 }
 
-void Cell::get_value(StaticBuffer& v, bool owner) const {
+Types::Encoder Cell::get_value(StaticBuffer& v, bool owner) const {
+  Types::Encoder encoder;
   if(have_encoder()) {
     const uint8_t* ptr = value;
     size_t remain = vlen;
     v.reallocate(Serialization::decode_vi32(&ptr, &remain));
-    auto encoder = Types::Encoder(Serialization::decode_i8(&ptr, &remain));
+    encoder = Types::Encoder(Serialization::decode_i8(&ptr, &remain));
     int err = Error::OK;
     Core::Encoder::decode(err, encoder, ptr, remain, v.base, v.size);
     if(err) {
@@ -87,9 +88,12 @@ void Cell::get_value(StaticBuffer& v, bool owner) const {
       SWC_THROWF(Error::ENCODER_DECODE, "Cell(key=%s) value-encoder(%s)",
         key.to_string().c_str(), Core::Encoder::to_string(encoder));
     }
-  } else if(vlen) {
-    v.set(value, vlen, owner);
+  } else {
+    encoder = Types::Encoder::DEFAULT;
+    if(vlen)
+      v.set(value, vlen, owner);
   }
+  return encoder;
 }
 
 

@@ -248,7 +248,7 @@ class Cell final {
     set_value(encoder, reinterpret_cast<const uint8_t*>(v.c_str()), v.size());
   }
 
-  void get_value(StaticBuffer& v, bool owner=false) const;
+  Types::Encoder get_value(StaticBuffer& v, bool owner=false) const;
 
   void get_value(std::string& v) const;
 
