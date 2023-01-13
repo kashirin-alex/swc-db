@@ -9,7 +9,40 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-    
+    added Encoder support for Plain Serial value in update Cells Interval
+    added Thrift Service specialized methods and dedicated Structs
+    added col-type Mismatch Exception at ThriftBroker::AppHandler::sync_select
+    changed Thrift::Converter::SpecInterval to SpecInterval{Plain,Counter}
+    Thrift Service related changes:
+        changed CellValueSerial/Op fields value to optional
+        changed 'columns' in SpecScan to columns_{plain,counter}
+        renamed struct ColCells to cCells
+        renamed struct Cell to CellPlain
+        renamed struct UCell to UCellPlain
+        added struct {FCell,KCell,CCell}{Plain,Counter} 
+        removed struct FCell, KCell, CCell
+        added struct SpecInterval{Plain,Counter}
+        added struct SpecIntervalUpdate{Plain,Counter}
+        added struct SpecValue{Plain,Counter}
+        added struct SpecColumn{Plain,Counter}
+        removed struct Spec{Column,Value,IntervalUpdate,Interval}
+        added typedef list<CellSerial>  CellsSerial
+        added typedef list<CellCounter> CellsCounter
+        added typedef list<CellPlain>   CellsPlain
+        added typedef list<UCellCounter> UCellsCounter
+        added typedef list<UCellPlain> UCellsPlain
+        added typedef map<i64, UCellsCounter> UCCellsCounter
+        added typedef map<i64, UCellsPlain> UCCellsPlain
+        added const i8 COUNTER_OP_EQUAL = 1
+        added 'counter_cells' to struct Cells
+        renamed 'cells' in struct Cells to plain_cells
+        added '{plain,counter}_cells' to struct {FCells,kCells,cCells}
+        added 'counter' type to method update_by_types
+        added method update_counter
+        changed method update to update_plain
+        added method CellsPlain sql_select_plain(..)
+        added method CellsCounter sql_select_counter(..)
+        added method CellsSerial sql_select_serial(..)
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.10...master)
 ******
