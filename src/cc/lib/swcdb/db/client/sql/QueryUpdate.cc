@@ -219,8 +219,7 @@ void QueryUpdate::read_cell(cid_t& cid, DB::Cells::Cell& cell) {
         return;
     }
   }
-
-  read_ts_and_value(schema->col_type, require_ts, cell);
+  read_ts_and_value(schema->col_type, require_ts, cell, nullptr);
 }
 
 void QueryUpdate::read_flag(uint8_t& flag) {

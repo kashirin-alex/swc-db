@@ -332,26 +332,21 @@ void set(const SpecIntervalPlain& intval, DB::Specs::Interval& dbintval) {
   if(intval.options & SpecIntervalOptions::type::UPDATING) {
     if(intval.__isset.updating) {
       dbintval.set_opt__updating();
-      DB::Cells::Cell dbcell;
-      intval.updating.__isset.encoder
-        ? dbcell.set_value(
-            DB::Types::Encoder(uint8_t(intval.updating.encoder)), intval.updating.v)
-        : dbcell.set_value(intval.updating.v);
 
       DB::Specs::UpdateOP update_op;
       if(intval.updating.__isset.update_op)
         set(intval.updating.update_op, update_op);
+
       dbintval.updating.reset(new DB::Specs::IntervalUpdate(
-        dbcell.value,
-        dbcell.vlen,
+        intval.updating.__isset.encoder
+          ? DB::Types::Encoder(uint8_t(intval.updating.encoder))
+          : DB::Types::Encoder::DEFAULT,
+        intval.updating.v,
         intval.updating.__isset.ts
           ? intval.updating.ts
           : DB::Cells::TIMESTAMP_AUTO,
-        update_op,
-        false
+        update_op
       ));
-      dbcell.value = nullptr;
-      dbcell.vlen = 0;
     }
   } else if(intval.options & SpecIntervalOptions::type::DELETING) {
     dbintval.set_opt__deleting();
@@ -419,6 +414,7 @@ void set(const SpecIntervalCounter& intval, DB::Specs::Interval& dbintval) {
       if(intval.updating.__isset.update_op)
         set(intval.updating.update_op, update_op);
       dbintval.updating.reset(new DB::Specs::IntervalUpdate(
+        DB::Types::Encoder::DEFAULT,
         dbcell.value,
         dbcell.vlen,
         intval.updating.__isset.ts
@@ -556,22 +552,18 @@ void set(const SpecIntervalSerial& intval, DB::Specs::Interval& dbintval) {
       } else {
         set(intval.updating.v, wfields);
       }
-      DB::Cells::Cell dbcell;
-      intval.updating.__isset.encoder
-        ? dbcell.set_value(DB::Types::Encoder(uint8_t(intval.updating.encoder)),
-                           wfields.base, wfields.fill())
-        : dbcell.set_value(wfields.base, wfields.fill(), true);
       dbintval.updating.reset(new DB::Specs::IntervalUpdate(
-        dbcell.value,
-        dbcell.vlen,
+        intval.updating.__isset.encoder
+          ? DB::Types::Encoder(uint8_t(intval.updating.encoder))
+          : DB::Types::Encoder::DEFAULT,
+        wfields.base,
+        wfields.fill(),
         intval.updating.__isset.ts
           ? intval.updating.ts
           : DB::Cells::TIMESTAMP_AUTO,
         update_op,
-        false
+        true
       ));
-      dbcell.value = nullptr;
-      dbcell.vlen = 0;
     }
   } else if(intval.options & SpecIntervalOptions::type::DELETING) {
     dbintval.set_opt__deleting();

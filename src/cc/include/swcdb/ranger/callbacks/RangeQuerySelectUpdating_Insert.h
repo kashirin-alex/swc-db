@@ -59,6 +59,8 @@ class RangeQuerySelectUpdating_Insert final
       v.size - pos
     );
 
+    if(spec.updating->encoder != DB::Types::Encoder::DEFAULT)
+      encoder = spec.updating->encoder;
     if(encoder == DB::Types::Encoder::DEFAULT) {
       cell.own = true;
       cell.value = ptr;

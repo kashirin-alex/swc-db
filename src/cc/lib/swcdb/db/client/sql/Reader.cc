@@ -515,7 +515,8 @@ void Reader::read_operation(const DB::Types::Column col_type,
 }
 
 void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
-                               DB::Cells::Cell& cell, bool w_serial) {
+                               DB::Cells::Cell& cell, DB::Types::Encoder* encoder,
+                               bool w_serial) {
   std::string buf;
   read(buf, ",)");
   if(err)
@@ -552,7 +553,12 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
         DB::Types::Encoder enc = read_encoder();
         if(err)
           return;
-        cell.set_value(enc, value);
+        if(encoder == nullptr) {
+          cell.set_value(enc, value);
+        } else {
+          cell.set_value(value, true);
+          *encoder = enc;
+        }
       } else {
         cell.set_value(value, true);
       }
@@ -788,7 +794,12 @@ void Reader::read_ts_and_value(DB::Types::Column col_type, bool require_ts,
         DB::Types::Encoder enc = read_encoder();
         if(err)
           return;
-        cell.set_value(enc, wfields.base, wfields.fill());
+        if(encoder == nullptr) {
+          cell.set_value(enc, wfields.base, wfields.fill());
+        } else {
+          cell.set_value(wfields.base, wfields.fill(), true);
+          *encoder = enc;
+        }
       } else {
         cell.set_value(wfields.base, wfields.fill(), true);
       }

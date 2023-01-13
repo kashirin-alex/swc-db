@@ -142,6 +142,8 @@ class RangeQuerySelectUpdating_Serial final
         wfields.add(opfield->field);
     }
 
+    if(spec.updating->encoder != DB::Types::Encoder::DEFAULT)
+      encoder = spec.updating->encoder;
     encoder == DB::Types::Encoder::DEFAULT
       ? cell.set_value(wfields.base, wfields.fill(), true)
       : cell.set_value(encoder, wfields.base, wfields.fill());

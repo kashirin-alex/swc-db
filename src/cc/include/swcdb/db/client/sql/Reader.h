@@ -109,7 +109,8 @@ class Reader {
                       DB::Specs::UpdateOP& operation);
 
   void read_ts_and_value(DB::Types::Column col_type, bool require_ts,
-                         DB::Cells::Cell& cell, bool w_serial=false);
+                         DB::Cells::Cell& cell, DB::Types::Encoder* encoder,
+                         bool w_serial=false);
 
   void error_msg(int error, const std::string& msg);
 

@@ -78,8 +78,18 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
   }
 
   virtual void update_cell_value(DB::Cells::Cell& cell) {
-    cell.value = spec.updating->value;
-    cell.vlen = spec.updating->vlen;
+    if(spec.updating->encoder == DB::Types::Encoder::DEFAULT ||
+       DB::Types::is_counter(range->cfg->col_type)) {
+      cell.value = spec.updating->value;
+      cell.vlen = spec.updating->vlen;
+      cell.control &= DB::Cells::MASK_HAVE_ENCODER;
+    } else {
+      cell.set_value(
+        spec.updating->encoder,
+        spec.updating->value,
+        spec.updating->vlen
+      );
+    }
   }
 
 };

@@ -39,27 +39,44 @@ class IntervalUpdate final {
     return Ptr(new IntervalUpdate(std::forward<ArgsT>(args)...));
   }
 
-  IntervalUpdate(int64_t a_timestamp=DB::Cells::TIMESTAMP_NULL) noexcept
-                : timestamp(a_timestamp),
+  IntervalUpdate(Types::Encoder a_encoder,
+                int64_t a_timestamp=DB::Cells::TIMESTAMP_NULL) noexcept
+                : encoder(a_encoder), timestamp(a_timestamp), 
                   value(nullptr), vlen(0) {
   }
 
-  IntervalUpdate(uint32_t a_vlen,
+  IntervalUpdate(Types::Encoder a_encoder, uint32_t a_vlen,
                  int64_t a_timestamp=DB::Cells::TIMESTAMP_NULL)
-                : timestamp(a_timestamp),
+                : encoder(a_encoder), timestamp(a_timestamp),
                   value(alloc_value(a_vlen)), vlen(a_vlen) {
   }
 
-  IntervalUpdate(uint8_t* a_value, uint32_t a_vlen,
-                 int64_t a_timestamp, const UpdateOP& op, bool cp)
-                : operation(op), timestamp(a_timestamp),
+  IntervalUpdate(Types::Encoder a_encoder,
+                 uint8_t* a_value, uint32_t a_vlen,
+                 int64_t a_timestamp, const UpdateOP& op,
+                 bool cp)
+                : operation(op),
+                  encoder(a_encoder), timestamp(a_timestamp),
                   value(cp ? copy_value(a_value, a_vlen) : a_value),
                   vlen(a_vlen) {
+  }
+
+  IntervalUpdate(Types::Encoder a_encoder,
+                 const std::string& v,
+                 int64_t a_timestamp, const UpdateOP& op)
+                : operation(op),
+                  encoder(a_encoder), timestamp(a_timestamp),
+                  value(copy_value(
+                    reinterpret_cast<uint8_t*>(const_cast<char*>(v.c_str())),
+                    v.size()
+                  )),
+                  vlen(v.size()) {
   }
 
   SWC_CAN_INLINE
   IntervalUpdate(const uint8_t** bufp, size_t* remainp)
                 : operation(bufp, remainp),
+                  encoder(Types::Encoder(Serialization::decode_i8(bufp, remainp))),
                   timestamp(Serialization::decode_vi64(bufp, remainp)) {
     size_t len;
     const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
@@ -69,6 +86,7 @@ class IntervalUpdate final {
 
   IntervalUpdate(const IntervalUpdate& other)
                 : operation(other.operation),
+                  encoder(other.encoder),
                   timestamp(other.timestamp),
                   value(copy_value(other.value, other.vlen)),
                   vlen(other.vlen) {
@@ -76,6 +94,7 @@ class IntervalUpdate final {
 
   IntervalUpdate(IntervalUpdate&& other) noexcept
                 : operation(other.operation),
+                  encoder(other.encoder),
                   timestamp(other.timestamp),
                   value(other.value), vlen(other.vlen) {
     other.value = nullptr;
@@ -85,7 +104,7 @@ class IntervalUpdate final {
   IntervalUpdate(const DB::Cells::Cell& cell)
                 : timestamp(cell.get_timestamp()) {
     StaticBuffer _v;
-    cell.get_value(_v);
+    encoder = cell.get_value(_v);
     value = copy_value(_v.base, _v.size);
     vlen = _v.size;
   }
@@ -94,11 +113,12 @@ class IntervalUpdate final {
                 : timestamp(cell.get_timestamp()) {
     if(cell.have_encoder()) {
       StaticBuffer _v;
-      cell.get_value(_v);
+      encoder = cell.get_value(_v);
       value = _v.base;
       vlen = _v.size;
       cell.free();
     } else {
+      encoder = Types::Encoder::DEFAULT;
       value = cell.value;
       vlen = cell.vlen;
       cell.value = nullptr;
@@ -127,6 +147,7 @@ class IntervalUpdate final {
   IntervalUpdate& operator=(const IntervalUpdate& other) {
     _free();
     operation = other.operation;
+    encoder = other.encoder;
     timestamp = other.timestamp;
     value = copy_value(other.value, other.vlen);
     vlen = other.vlen;
@@ -136,11 +157,13 @@ class IntervalUpdate final {
   IntervalUpdate& operator=(IntervalUpdate&& other) noexcept {
     _free();
     operation = other.operation;
+    encoder = other.encoder;
     timestamp = other.timestamp;
     value = other.value;
     vlen = other.vlen;
     other.value = nullptr;
     other.vlen = 0;
+    other.encoder = Types::Encoder::DEFAULT;
     return *this;
   }
 
@@ -149,7 +172,7 @@ class IntervalUpdate final {
     operation = UpdateOP();
     timestamp = cell.get_timestamp();
     StaticBuffer _v;
-    cell.get_value(_v);
+    encoder = cell.get_value(_v);
     value = copy_value(_v.base, _v.size);
     vlen = _v.size;
     return *this;
@@ -161,11 +184,12 @@ class IntervalUpdate final {
     timestamp = cell.get_timestamp();
     if(cell.have_encoder()) {
       StaticBuffer _v;
-      cell.get_value(_v);
+      encoder = cell.get_value(_v);
       value = _v.base;
       vlen = _v.size;
       cell.free();
     } else {
+      encoder = Types::Encoder::DEFAULT;
       value = cell.value;
       vlen = cell.vlen;
       cell.value = nullptr;
@@ -176,16 +200,18 @@ class IntervalUpdate final {
 
   SWC_CAN_INLINE
   bool equal(const IntervalUpdate& other) const noexcept {
-    return operation.equal(other.operation) &&
+    return encoder == other.encoder &&
            timestamp == other.timestamp &&
            vlen == other.vlen &&
+           operation.equal(other.operation) &&
            Condition::mem_eq(value, other.value, vlen);
   }
 
-  void set(uint8_t* a_value, uint32_t a_vlen,
+  void set(Types::Encoder a_encoder, uint8_t* a_value, uint32_t a_vlen,
            int64_t a_timestamp=DB::Cells::TIMESTAMP_NULL, bool cp=false) {
     _free();
     operation = UpdateOP();
+    encoder = a_encoder;
     timestamp = a_timestamp;
     value = cp ? copy_value(a_value, a_vlen) : a_value;
     vlen = a_vlen;
@@ -199,6 +225,7 @@ class IntervalUpdate final {
   SWC_CAN_INLINE
   size_t encoded_length() const noexcept {
     return operation.encoded_length() +
+           1 + 
            Serialization::encoded_length_vi64(timestamp) +
            Serialization::encoded_length_bytes(vlen);
   }
@@ -206,6 +233,7 @@ class IntervalUpdate final {
   SWC_CAN_INLINE
   void encode(uint8_t** bufp) const {
     operation.encode(bufp);
+    Serialization::encode_i8(bufp, uint8_t(encoder));
     Serialization::encode_vi64(bufp, timestamp);
     Serialization::encode_bytes(bufp, value, vlen);
   }
@@ -238,13 +266,14 @@ class IntervalUpdate final {
       }
       out << '"';
     }
+    out << " encoder=" << Core::Encoder::to_string(encoder);
   }
 
-  UpdateOP   operation;
-  int64_t    timestamp;
-  uint8_t*   value;
-  uint32_t   vlen;
-
+  UpdateOP        operation;
+  Types::Encoder  encoder;
+  int64_t         timestamp;
+  uint8_t*        value;
+  uint32_t        vlen;
 };
 
 
