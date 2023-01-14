@@ -29,7 +29,7 @@ cd /opt/swcdb/bin;          # if SWCDB_INSTALL_PATH not on PATH
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.
-# If not, see <https://github.com/kashirin-alex/swc-db/blob/v0.5.10/LICENSE>.
+# If not, see <https://github.com/kashirin-alex/swc-db/blob/v0.5.11/LICENSE>.
 
 SWC-DB(load_generator) Usage: swcdb_load_generator [options]
 
