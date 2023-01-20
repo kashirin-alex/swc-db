@@ -20,10 +20,8 @@
 
 ### [SWC-DB v0.5.11](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.11) (2023-01-14)
 
-    added Encoder support for Plain Serial value in update Cells Interval
+    added Encoder support for Plain and Serial value in update Cells Interval
     added Thrift Service specialized methods and dedicated Structs
-    added col-type Mismatch Exception at ThriftBroker::AppHandler::sync_select
-    changed Thrift::Converter::SpecInterval to SpecInterval{Plain,Counter}
     Thrift Service related changes:
         changed CellValueSerial/Op fields value to optional
         changed 'columns' in SpecScan to columns_{plain,counter}
@@ -54,8 +52,15 @@
         added method CellsPlain sql_select_plain(..)
         added method CellsCounter sql_select_counter(..)
         added method CellsSerial sql_select_serial(..)
+        added col-type Mismatch Exception at ThriftBroker::AppHandler::sync_select
+        changed Thrift::Converter::SpecInterval to SpecInterval{Plain,Counter}
+    added Encoder DB::Specs::IntervalUpdate::encoder
+    added client::SQL::Reader::Reader( .., DB::Types::Encoder*, ..)
+    changed DB::Cells::Cell::get_value(&, bool) return DB::Types::Encoder
+    added Ranger RangeQuerySelectUpdating*::update_cell_value by Encoder
+    resolved issue #12
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.11...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.10...v0.5.11)
 ******
 
 
