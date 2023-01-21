@@ -33,7 +33,7 @@ client = PoolService(1)
 
 while True:
     specs = service.SpecScan(
-        columns_plan=[
+        columns_plain=[
             service.SpecColumnPlain(
                 cid=column_cid,
                 intervals=[

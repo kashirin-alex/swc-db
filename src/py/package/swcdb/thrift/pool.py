@@ -130,7 +130,7 @@ class Pool(object):
 
                 if self.__size <= self.__open:
                     self.__await += 1
-                    self.logger.info('Wait Client release (open=%d await=%d)' % (self.open(), self.waiting()))
+                    self.logger.debug('Wait Client release (open=%d await=%d)' % (self.open(), self.waiting()))
                     try:
                         self.__sem.acquire()
                         self.sleep(0)
@@ -150,10 +150,10 @@ class Pool(object):
                 try:
                     return PoolClient(self, r)
                 except:
-                    self.logger.exception('Client connect problem %s' % self.__repr__())
+                    self.logger.debug('Client connect problem %s' % self.__repr__())
                 r.close()
             except:
-                self.logger.exception('Socket connect problem %s' % self.__repr__())
+                self.logger.debug('Socket connect problem %s' % self.__repr__())
             self.__open -= 1
             self.sleep(3)
         raise PoolStopping("get cancelled, swcdb.thrift.pool.Pool has stopped")
@@ -212,7 +212,7 @@ class InsistentClient(object):
                 return self.__method(client, *args, **kwargs)
             except service.Exception as e:
                 err = True
-                if 3061 <= e.code <= 3062 or 3041 <= e.code <= 3056:
+                if 3061 <= e.code <= 3062 or 3041 <= e.code <= 3056 or e.code == 3011:
                     raise e
                 self.__pool.logger.exception('call problem code=%d %s' % (e.code, self.__repr__()))
                 self.__pool.sleep(1)
@@ -221,7 +221,7 @@ class InsistentClient(object):
                 raise e
             except TTransportException:
                 err = True
-                self.__pool.logger.exception('call problem %s' % self.__repr__())
+                self.__pool.logger.debug('call problem %s' % self.__repr__())
             except:
                 err = True
                 self.__pool.logger.exception('call problem %s' % self.__repr__())
