@@ -137,12 +137,25 @@ void Rangers::rgr_report(
 
   m_rangers_resources.evaluate();
   RangerList changed;
+  bool sync_all = Env::Mngr::role()->is_active_role(DB::Types::MngrRole::COLUMNS);
   {
     Core::MutexSptd::scope lock(m_mutex);
-    m_rangers_resources.changes(m_rangers, changed);
+    for(auto& rgr : m_rangers) {
+      if(rgr->state == RangerState::ACK &&
+          rgr->failures >= cfg_rgr_failures->get()) {
+        if(sync_all)
+          Env::Mngr::columns()->set_rgr_unassigned(rgr->rgrid);
+        rgr->state.store(RangerState::MARKED_OFFLINE);
+        changed.push_back(rgr);
+      }
+    }
+  }
+  if(changed.empty()) {
+      Core::MutexSptd::scope lock(m_mutex);
+      m_rangers_resources.changes(m_rangers, changed);
   }
   if(!changed.empty())
-    changes(changed);
+    changes(changed, sync_all);
 }
 
 Ranger::Ptr Rangers::rgr_get(const rgrid_t rgrid) {
