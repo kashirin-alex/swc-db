@@ -21,33 +21,29 @@ namespace SWC { namespace Error {
 class Exception final : public std::exception {
   public:
 
-  static const Exception make(const std::exception_ptr& eptr,
-                              const std::string& msg,
-                              const Exception* prev = nullptr) noexcept;
+  static Exception make(std::exception_ptr&& eptr,
+                        std::string&& msg,
+                        Exception* prev = nullptr) noexcept;
 
-  Exception(int code, const std::string& msg,
-            int line = 0, const char* func = nullptr,
-            const char* file = nullptr,
-            const std::string& inner_msg = "") noexcept;
-
-  Exception(int code, const std::string& msg, const Exception* prev,
-            const std::string& inner_msg) noexcept;
-
-  Exception(int code, const std::string& msg, const Exception* prev,
-            int line = 0, const char* func = nullptr,
-            const char* file = nullptr,
-            const std::string& inner_msg = "") noexcept;
-
-  Exception(int code, const std::string& msg, const Exception& prev,
-            int line = 0, const char* func = nullptr,
-            const char* file = nullptr,
-            const std::string& inner_msg = "") noexcept;
-
-  Exception(const Exception& other) noexcept;
+  Exception(
+    int code,
+    std::string&& msg,
+    Exception* prev = nullptr,
+    int line = 0,
+    const char* func = nullptr,
+    const char* file = nullptr,
+    const char* inner_msg = nullptr
+  ) noexcept;
 
   Exception(Exception&& other) noexcept;
 
-  const Exception& operator=(const Exception& ) = delete;
+  Exception(Exception& other) noexcept;
+
+  Exception(const Exception& ) noexcept = delete;
+
+  Exception& operator=(const Exception& ) = delete;
+
+  Exception& operator=(Exception&& ) = delete;
 
   ~Exception() noexcept;
 
@@ -113,11 +109,11 @@ class Exception final : public std::exception {
 // EXCEPTION HELPERS
 #define SWC_EXCEPTION(_code_, _msg_) \
   ::SWC::Error::Exception(\
-    _code_, _msg_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
+    _code_, _msg_, nullptr, __LINE__, __PRETTY_FUNCTION__, __FILE__)
 
 #define SWC_EXCEPTION2(_code_, _ex_, _msg_) \
   ::SWC::Error::Exception(\
-    _code_, _msg_, _ex_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
+    _code_, _msg_, &_ex_, __LINE__, __PRETTY_FUNCTION__, __FILE__)
 
 
 #define SWC_CURRENT_EXCEPTION(_msg_) \

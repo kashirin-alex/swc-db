@@ -24,83 +24,83 @@ namespace SWC { namespace Error {
 
 
 SWC_SHOULD_NOT_INLINE
-const Exception Exception::make(const std::exception_ptr& eptr,
-                                const std::string& msg,
-                                const Exception* prev) noexcept {
+Exception Exception::make(std::exception_ptr&& eptr,
+                          std::string&& msg,
+                          Exception* prev) noexcept {
   try {
-    std::rethrow_exception(eptr);
+    std::rethrow_exception(std::move(eptr));
 
-  } catch (const Exception& e) {
-    return Exception(e);
+  } catch (Exception& e) {
+    return e;
 
 
   } catch (const std::ios_base::failure& e) {
-    return Exception(Error::IO_ERROR, msg, prev, e.what());
+    return Exception(Error::IO_ERROR, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   /* stdc++=20+
   } catch (const std::format_error& e) {
-    return Exception(Error::BAD_FORMAT, msg, prev, e.what());
+    return Exception(Error::BAD_FORMAT, std::move(msg), prev, 0, nullptr, nullptr, e.what());
   */
 
   } catch (const std::regex_error& e) {
-    return Exception(Error::BAD_REGEXP, msg, prev, e.what());
+    return Exception(Error::BAD_REGEXP, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::overflow_error& e) {
-    return Exception(EOVERFLOW, msg, prev, e.what());
+    return Exception(EOVERFLOW, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::range_error& e) {
-    return Exception(ERANGE, msg, prev, e.what());
+    return Exception(ERANGE, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::system_error& e) {
-    return Exception(e.code().value(), msg, prev, e.what());
+    return Exception(e.code().value(), std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
 
   } catch (const std::invalid_argument& e) {
-    return Exception(EINVAL, msg, prev, e.what());
+    return Exception(EINVAL, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::domain_error& e) {
-    return Exception(EDOM, msg, prev, e.what());
+    return Exception(EDOM, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::length_error& e) {
-    return Exception(EOVERFLOW, msg, prev, e.what());
+    return Exception(EOVERFLOW, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::out_of_range& e) {
-    return Exception(ERANGE, msg, prev, e.what());
+    return Exception(ERANGE, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::future_error& e) {
     return Exception(
-      SWC_ERRNO_FUTURE_BEGIN + e.code().value(), msg, prev, e.what());
+      SWC_ERRNO_FUTURE_BEGIN + e.code().value(), std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::logic_error& e) {
-    return Exception(Error::BAD_LOGIC, msg, prev, e.what());
+    return Exception(Error::BAD_LOGIC, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
 
   } catch (const std::bad_optional_access& e) {
-    return Exception(EINVAL, msg, prev, e.what());
+    return Exception(EINVAL, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::bad_variant_access& e) {
-    return Exception(ERANGE, msg, prev, e.what());
+    return Exception(ERANGE, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::bad_exception& e) {
-    return Exception(Error::EXCEPTION_BAD, msg, prev, e.what());
+    return Exception(Error::EXCEPTION_BAD, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::bad_alloc& e) {
-    return Exception(Error::BAD_MEMORY_ALLOCATION, msg, prev, e.what());
+    return Exception(Error::BAD_MEMORY_ALLOCATION, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::bad_function_call& e) {
-    return Exception(Error::BAD_FUNCTION, msg, prev, e.what());
+    return Exception(Error::BAD_FUNCTION, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::bad_weak_ptr& e) {
-    return Exception(Error::BAD_POINTER, msg, prev, e.what());
+    return Exception(Error::BAD_POINTER, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::bad_cast& e) {
-    return Exception(Error::BAD_CAST, msg, prev, e.what());
+    return Exception(Error::BAD_CAST, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::bad_typeid& e) {
-    return Exception(Error::BAD_POINTER, msg, prev, e.what());
+    return Exception(Error::BAD_POINTER, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch (const std::exception& e) {
-    return Exception(Error::EXCEPTION_UNKNOWN, msg, prev, e.what());
+    return Exception(Error::EXCEPTION_UNKNOWN, std::move(msg), prev, 0, nullptr, nullptr, e.what());
 
   } catch(...) { }
 
@@ -109,79 +109,43 @@ const Exception Exception::make(const std::exception_ptr& eptr,
     typeid(std::system_error) == *e.__cxa_exception_type()
     or if e=std::dynamic_pointer_cast<std::system_error>(eptr.get());
   */
-  return Exception(Error::EXCEPTION_UNKNOWN, msg, prev);
+  return Exception(Error::EXCEPTION_UNKNOWN, std::move(msg), prev);
 }
 
-Exception::Exception(int code, const std::string& msg,
-                     int line, const char* func, const char* file,
-                     const std::string& inner_msg) noexcept
-                    : _code(code),
-                      _line(line), _func(func), _file(file),
-                      _prev(nullptr) {
-  try {
-    _msg = msg;
-    _inner_msg = inner_msg;
-  } catch(...) {
-    _code = Error::BAD_MEMORY_ALLOCATION;
-  }
+Exception::Exception(
+  int code, 
+  std::string&& msg,
+  Exception* prev,
+  int line,
+  const char* func,
+  const char* file,
+  const char* inner_msg
+) noexcept
+  : _code(code),
+    _msg(std::move(msg)),
+    _line(line),
+    _func(func),
+    _file(file),
+    _inner_msg(),
+    _prev(nullptr) {
+
+    try {
+      if (inner_msg)
+        _inner_msg.assign(inner_msg);
+      if(prev)
+        _prev = new Exception(std::move(*prev));
+    } catch(...) {
+      _code = Error::BAD_MEMORY_ALLOCATION;
+    }
+
 }
 
-Exception::Exception(int code, const std::string& msg, const Exception* prev,
-                     const std::string& inner_msg) noexcept
-                    : _code(code),
-                      _line(0), _func(nullptr), _file(nullptr) {
-  try {
-    _msg = msg;
-    _inner_msg = inner_msg;
-    _prev = prev ? new Exception(*prev) : prev;
-  } catch(...) {
-    _code = Error::BAD_MEMORY_ALLOCATION;
-    _prev = nullptr;
-  }
-}
-
-Exception::Exception(int code, const std::string& msg, const Exception* prev,
-                     int line , const char* func, const char* file,
-                     const std::string& inner_msg) noexcept
-                    : _code(code),
-                      _line(line), _func(func), _file(file) {
-  try {
-    _msg = msg;
-    _inner_msg = inner_msg;
-    _prev = prev ? new Exception(*prev) : prev;
-  } catch(...) {
-    _code = Error::BAD_MEMORY_ALLOCATION;
-    _prev = nullptr;
-  }
-}
-
-Exception::Exception(int code, const std::string& msg, const Exception& prev,
-                     int line, const char* func, const char* file,
-                     const std::string& inner_msg) noexcept
-                    : _code(code),
-                      _line(line), _func(func), _file(file) {
-  try {
-    _msg = msg;
-    _inner_msg = inner_msg;
-    _prev = new Exception(prev);
-  } catch(...) {
-    _code = Error::BAD_MEMORY_ALLOCATION;
-    _prev = nullptr;
-  }
-}
-
-Exception::Exception(const Exception& other) noexcept
-                    : _code(other._code),
+Exception::Exception(Exception& other) noexcept
+                    : _code(other._code), _msg(std::move(other._msg)),
                       _line(other._line), _func(other._func), _file(other._file),
+                      _inner_msg(std::move(other._inner_msg)),
                       _prev(other._prev) {
-  try {
-    _msg = other._msg;
-    _inner_msg = other._inner_msg;
-    other._prev = nullptr;
-  } catch(...) {
-    _code = Error::BAD_MEMORY_ALLOCATION;
-    _prev = nullptr;
-  }
+  other._prev = nullptr;
 }
 
 Exception::Exception(Exception&& other) noexcept
@@ -197,13 +161,9 @@ Exception::~Exception() noexcept {
 }
 
 std::string Exception::message() const {
-  std::string s;
-  {
-    std::stringstream ss;
-    print(ss);
-    s = ss.str();
-  }
-  return s;
+  std::stringstream ss;
+  print(ss);
+  return ss.str();
 }
 
 SWC_SHOULD_NOT_INLINE
