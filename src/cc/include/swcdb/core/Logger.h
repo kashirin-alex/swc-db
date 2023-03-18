@@ -59,13 +59,27 @@ class LogWriter final {
   MutexSptd    mutex;
 
 
-  LogWriter(const std::string& name="", const std::string& logs_path="");
+  LogWriter() noexcept;
+
+  LogWriter(LogWriter&&) = delete;
+
+  LogWriter(const LogWriter&) = delete;
+
+  LogWriter& operator=(const LogWriter&) = delete;
+
+  LogWriter& operator=(LogWriter&&) = delete;
+
 
   ~LogWriter() noexcept;
 
   void initialize(const std::string& name);
 
   void daemon(const std::string& logs_path);
+
+  constexpr SWC_CAN_INLINE
+  const std::string& name() const noexcept {
+    return m_name;
+  }
 
   constexpr SWC_CAN_INLINE
   void set_level(uint8_t level) noexcept {

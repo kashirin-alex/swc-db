@@ -62,8 +62,8 @@ uint8_t LogWriter::from_string(const std::string& loglevel) noexcept {
 }
 
 SWC_SHOULD_NOT_INLINE
-LogWriter::LogWriter(const std::string& name, const std::string& logs_path)
-                    : m_name(name), m_logs_path(logs_path),
+LogWriter::LogWriter() noexcept
+                    : mutex(), m_name(), m_logs_path(),
                       m_file_out(stdout), //m_file_err(stderr),
                       m_priority(LOG_INFO), m_show_line_numbers(true),
                       m_daemon(false), m_next_time(0) {
@@ -73,8 +73,7 @@ LogWriter::~LogWriter() noexcept { }
 SWC_SHOULD_NOT_INLINE
 void LogWriter::initialize(const std::string& name) {
   Core::MutexSptd::scope lock(mutex);
-  m_name.clear();
-  m_name.append(name);
+  m_name = name;
 }
 
 SWC_SHOULD_NOT_INLINE
