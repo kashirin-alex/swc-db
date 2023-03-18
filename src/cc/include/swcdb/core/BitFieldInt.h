@@ -16,7 +16,7 @@ struct BitFieldInt final {
   T data : SZ;
 
   constexpr SWC_CAN_INLINE
-  BitFieldInt() noexcept { }
+  BitFieldInt() noexcept: data() { }
 
   template<typename FROM_T>
   constexpr SWC_CAN_INLINE

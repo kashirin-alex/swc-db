@@ -17,7 +17,7 @@ namespace SWC { namespace FS {
 struct Dirent final  {
 
   SWC_CAN_INLINE
-  Dirent() noexcept { }
+  Dirent() noexcept : name(), last_modification_time(), is_dir(), length() { }
 
   SWC_CAN_INLINE
   Dirent(const char* s, int64_t mod_time, bool a_is_dir, uint64_t a_length)
@@ -49,6 +49,8 @@ struct Dirent final  {
     length = other.length;
     return *this;
   }
+
+  Dirent& operator=(const Dirent& other) noexcept = delete;
 
   /// File or Directory name
   std::string   name;

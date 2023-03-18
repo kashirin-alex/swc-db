@@ -17,8 +17,9 @@ void hold_delay() {
 }
 
 Interface::Interface(const Config::Settings::Ptr& settings, Type typ)
-                    : m_type(typ), m_fs(use_filesystem(settings)) {
-
+                    : m_type(typ),
+                      m_fs(use_filesystem(settings)),
+                      loaded_dl() {
   SWC_LOGF(LOG_INFO, "INIT-%s", to_string().c_str());
 }
 

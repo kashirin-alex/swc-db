@@ -52,8 +52,14 @@ struct Configurables {
   bool                                  stats_enabled;
   Configurables(const Config::Settings::Ptr& a_settings) noexcept
                 : settings(a_settings),
-                  cfg_fds_max(nullptr), stats_enabled(false) {
+                  cfg_fds_max(nullptr),
+                  path_root(),
+                  stats_enabled(false) {
   }
+  Configurables(Configurables&&)                 = delete;
+  Configurables(const Configurables&)            = delete;
+  Configurables& operator=(Configurables&&)      = delete;
+  Configurables& operator=(const Configurables&) = delete;
   ~Configurables() noexcept { }
 };
 
@@ -108,6 +114,11 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   Statistics        statistics;
 
   FileSystem(const Configurables* config, ImplOptions impl_opts);
+
+  FileSystem(FileSystem&&)                 = delete;
+  FileSystem(const FileSystem&)            = delete;
+  FileSystem& operator=(FileSystem&&)      = delete;
+  FileSystem& operator=(const FileSystem&) = delete;
 
   virtual ~FileSystem() noexcept;
 

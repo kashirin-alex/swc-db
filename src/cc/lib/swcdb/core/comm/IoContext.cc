@@ -11,7 +11,8 @@ namespace SWC { namespace Comm {
 
 IoContext::IoContext(std::string&& _name, int32_t size)
                     : running(true), name(std::move(_name)),
-                      pool(size), m_size(size) {
+                      pool(size), signals(nullptr),
+                      m_size(size), m_periodic_timers() {
   SWC_LOGF(LOG_DEBUG, "Starting IO-ctx(%s) size=%d", name.c_str(), m_size);
   SWC_ASSERT(m_size > 0);
 }

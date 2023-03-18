@@ -1002,12 +1002,12 @@ void Value_enum_g::set_cb_on_chg(Value_enum_g::OnChg_t&& cb) {
 Value_strings_g::Value_strings_g(Strings&& v, Value_strings_g::OnChg_t&& cb,
                        uint8_t a_flags) noexcept
                       : Value(a_flags | Value::GUARDED),
-                        value(std::move(v)), on_chg_cb(std::move(cb)) {
+                        mutex(), value(std::move(v)), on_chg_cb(std::move(cb)) {
 }
 
 Value_strings_g::Value_strings_g(Value_strings_g* ptr)
                       : Value(ptr),
-                        value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
+                        mutex(), value(ptr->get()), on_chg_cb(ptr->on_chg_cb) {
 }
 
 Value_strings_g::~Value_strings_g() noexcept { }

@@ -33,6 +33,11 @@ class ReadAllSync final : public BaseSync, public Base {
                 buffer(dst), name(a_name) {
   }
 
+  ReadAllSync(ReadAllSync&&)                 = delete;
+  ReadAllSync(const ReadAllSync&)            = delete;
+  ReadAllSync& operator=(ReadAllSync&&)      = delete;
+  ReadAllSync& operator=(const ReadAllSync&) = delete;
+
   ~ReadAllSync() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

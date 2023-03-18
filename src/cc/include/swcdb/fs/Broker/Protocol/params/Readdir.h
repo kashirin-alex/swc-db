@@ -19,7 +19,7 @@ class ReaddirReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ReaddirReq() noexcept { }
+  ReaddirReq() noexcept : dirname() { }
 
   SWC_CAN_INLINE
   ReaddirReq(const std::string& a_dirname) : dirname(a_dirname) { }
@@ -45,7 +45,7 @@ class ReaddirRsp final : public Serializable {
   FS::DirentList listing;
 
   SWC_CAN_INLINE
-  ReaddirRsp() noexcept { }
+  ReaddirRsp() noexcept: listing() { }
 
   ~ReaddirRsp() noexcept { }
 

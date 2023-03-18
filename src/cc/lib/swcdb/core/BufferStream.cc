@@ -40,7 +40,8 @@ BufferStreamOut_ZSTD_OnAdd::BufferStreamOut_ZSTD_OnAdd(
                       int level, size_t a_pre_alloc, size_t a_commit_size)
                       : BufferStreamOut(a_pre_alloc, a_commit_size),
                         cstream(ZSTD_createCStream()),
-                        has_data(false), plain_size(0) {
+                        has_data(false), plain_size(0),
+                        tmp_buff(), out_buff() {
   if(ZSTD_isError(
       ZSTD_initCStream(cstream, level ? level : ZSTD_CLEVEL_DEFAULT)))
     error = Error::ENCODER_ENCODE;
@@ -214,7 +215,9 @@ bool BufferStreamIn::get(StaticBuffer& output) {
 
 BufferStreamIn_ZSTD::BufferStreamIn_ZSTD()
               : dstream(ZSTD_createDStream()),
-                offset(0), frame_complete(true) {
+                buffer_enc(),
+                offset(0), frame_complete(true),
+                tmp_buff() {
   if(ZSTD_isError(ZSTD_initDStream(dstream)))
     error = Error::ENCODER_ENCODE;
 }

@@ -11,7 +11,7 @@ namespace SWC { namespace Core {
 
 
 Semaphore::Semaphore(size_t sz, size_t pre_acquire) noexcept
-                    : m_sz(sz), m_count(pre_acquire) {
+                    : m_mutex(), m_cv(), m_sz(sz), m_count(pre_acquire) {
 }
 
 Semaphore::~Semaphore() noexcept { }

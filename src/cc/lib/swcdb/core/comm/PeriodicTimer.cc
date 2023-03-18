@@ -11,7 +11,8 @@ PeriodicTimer::PeriodicTimer(
       const Config::Property::Value_int32_g::Ptr cfg_ms,
       PeriodicTimer::Call_t&& call,
       const IoContextPtr& ioctx)
-      : m_ms(cfg_ms), m_call(std::move(call)), m_timer(ioctx->executor()) {
+      : m_ms(cfg_ms), m_call(std::move(call)),
+        m_mutex(), m_timer(ioctx->executor()) {
   schedule();
 }
 

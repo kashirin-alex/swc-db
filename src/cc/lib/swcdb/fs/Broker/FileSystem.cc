@@ -144,6 +144,7 @@ FileSystemBroker::FileSystemBroker(Configurables* config)
       m_type_underlying(fs_type(
         settings->get_str("swc.fs.broker.underlying"))),
       m_endpoints(get_endpoints(settings)),
+      m_connections(),
       cfg_timeout(
         settings->get<Config::Property::Value_int32_g>(
           "swc.fs.broker.timeout")),

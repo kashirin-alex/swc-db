@@ -32,7 +32,8 @@ struct Header final {
 
   Header(uint64_t cmd=0, uint32_t timeout=0) noexcept
         : version(1), header_len(0), flags(0), buffers(0),
-          id(0), timeout_ms(timeout), checksum(0), command(cmd) {
+          id(0), timeout_ms(timeout), checksum(0), command(cmd),
+          data(), data_ext() {
   }
 
   explicit Header(const Header& init_from_req_header) noexcept
@@ -40,7 +41,8 @@ struct Header final {
                     flags(init_from_req_header.flags), buffers(0),
                     id(init_from_req_header.id),
                     timeout_ms(0), checksum(0),
-                    command(init_from_req_header.command) {
+                    command(init_from_req_header.command),
+                    data(), data_ext() {
   }
 
   ~Header() noexcept { }

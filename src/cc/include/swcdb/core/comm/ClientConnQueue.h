@@ -67,12 +67,19 @@ class ConnQueue :
             const Config::Property::Value_int32_g::Ptr again_delay_ms=nullptr)
             : cfg_keepalive_ms(keepalive_ms),
               cfg_again_delay_ms(again_delay_ms),
-              m_ioctx(ioctx), m_conn(nullptr),
+              m_mutex(), m_ioctx(ioctx), m_conn(nullptr),
               m_connecting(false),
+              m_q_state(),
               m_timer(cfg_keepalive_ms
                         ? new asio::high_resolution_timer(m_ioctx->executor())
-                        : nullptr) {
+                        : nullptr),
+              m_delayed() {
   }
+
+  ConnQueue(ConnQueue&&)                 = delete;
+  ConnQueue(const ConnQueue&)            = delete;
+  ConnQueue& operator=(ConnQueue&&)      = delete;
+  ConnQueue& operator=(const ConnQueue&) = delete;
 
   virtual ~ConnQueue() noexcept {
     delete m_timer;

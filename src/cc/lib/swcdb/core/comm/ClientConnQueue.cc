@@ -116,6 +116,10 @@ void ConnQueue::delay(ConnQueue::ReqBase::Ptr&& req) {
               asio::high_resolution_timer* a_tm) noexcept
               : queue(a_queue), req(std::move(a_req)), tm(a_tm) {
     }
+    TimerTask(TimerTask&&)                 = default;
+    TimerTask& operator=(TimerTask&&)      = default;
+    TimerTask(const TimerTask&)            = delete;
+    TimerTask& operator=(const TimerTask&) = delete;
     ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(ec == asio::error::operation_aborted) {

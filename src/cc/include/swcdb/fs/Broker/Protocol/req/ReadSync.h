@@ -38,6 +38,11 @@ class ReadSync final : public BaseSync, public Base {
             smartfd(a_smartfd) {
   }
 
+  ReadSync(ReadSync&&)                 = delete;
+  ReadSync(const ReadSync&)            = delete;
+  ReadSync& operator=(ReadSync&&)      = delete;
+  ReadSync& operator=(const ReadSync&) = delete;
+
   ~ReadSync() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

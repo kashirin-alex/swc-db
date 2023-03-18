@@ -17,7 +17,7 @@ class StateSynchronization {
   public:
 
   SWC_CAN_INLINE
-  StateSynchronization() noexcept : m_ack(false) { }
+  StateSynchronization() noexcept : m_mutex(), m_cv(), m_ack(false) { }
 
   ~StateSynchronization() noexcept { }
 

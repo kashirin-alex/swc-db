@@ -160,8 +160,10 @@ class ConnHandler : public std::enable_shared_from_this<ConnHandler> {
 
   SWC_CAN_INLINE
   ConnHandler(AppContext::Ptr& a_app_ctx) noexcept
-              : connected(true), app_ctx(a_app_ctx), m_next_req_id(0),
-                m_recv_bytes(0) {
+              : connected(true), app_ctx(a_app_ctx),
+                endpoint_remote(), endpoint_local(),
+                m_mutex(), m_next_req_id(0),
+                m_outgoing(), m_pending(), m_recv_bytes(0) {
   }
 
   SWC_CAN_INLINE

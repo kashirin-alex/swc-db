@@ -13,7 +13,8 @@ namespace SWC { namespace Comm {
 
 SWC_SHOULD_NOT_INLINE
 ConfigSSL::ConfigSSL(const Config::Settings& settings, bool is_client)
-                    : ctx(is_client
+                    : nets_v4(), nets_v6(), subject_name(),
+                      ctx(is_client
                             ? asio::ssl::context::tlsv13_client
                             : asio::ssl::context::tlsv13_server) {
   set_networks(settings.get_strs("swc.comm.ssl.secure.network"), is_client);

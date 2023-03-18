@@ -24,6 +24,11 @@ class FileSystemLocal final : public FileSystem {
 
   FileSystemLocal(Configurables* config);
 
+  FileSystemLocal(FileSystemLocal&&)                 = delete;
+  FileSystemLocal(const FileSystemLocal&)            = delete;
+  FileSystemLocal& operator=(FileSystemLocal&&)      = delete;
+  FileSystemLocal& operator=(const FileSystemLocal&) = delete;
+
   virtual ~FileSystemLocal() noexcept;
 
   #if defined(SWC_FS_LOCAL_USE_IO_URING)

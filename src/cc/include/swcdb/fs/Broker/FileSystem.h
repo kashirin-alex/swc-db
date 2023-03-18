@@ -34,6 +34,11 @@ class FileSystemBroker final : public FileSystem {
 
   FileSystemBroker(Configurables* config);
 
+  FileSystemBroker(FileSystemBroker&&)                 = delete;
+  FileSystemBroker(const FileSystemBroker&)            = delete;
+  FileSystemBroker& operator=(FileSystemBroker&&)      = delete;
+  FileSystemBroker& operator=(const FileSystemBroker&) = delete;
+
   virtual ~FileSystemBroker() noexcept;
 
   void stop() override;

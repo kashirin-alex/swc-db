@@ -144,15 +144,18 @@ namespace Config {
 
 
 ParserConfig::ParserConfig(int line_len, bool a_own) noexcept
-                          : line_length(line_len), own(a_own) {
+                          : usage(), positions(), options(),
+                            line_length(line_len), own(a_own) {
 }
 
 ParserConfig::ParserConfig(const char* a_usage, int line_len, bool a_own)
-                          : usage(a_usage), line_length(line_len),
-                            own(a_own) {
+                          : usage(a_usage), positions(), options(),
+                            line_length(line_len), own(a_own) {
 }
 
-ParserConfig::ParserConfig(const ParserConfig& other) {
+ParserConfig::ParserConfig(const ParserConfig& other)
+                          : usage(), positions(), options(),
+                            line_length(0), own(true) {
   add(other);
 }
 
@@ -362,7 +365,7 @@ Strings Parser::args_to_strings(int argc, char *argv[]) {
   return raw_strings;
 }
 
-Parser::Options::Options(bool a_own) noexcept : own(a_own) { }
+Parser::Options::Options(bool a_own) noexcept : own(a_own), map() { }
 
 Parser::Options::~Options() noexcept {
   free();
@@ -378,7 +381,8 @@ void Parser::Options::free() noexcept {
 
 
 Parser::Parser(bool unregistered) noexcept
-              : config(0, false), m_unregistered(unregistered) {
+              : config(0, false),
+                raw_opts(), m_unregistered(unregistered), m_opts() {
 }
 
 Parser::~Parser() noexcept { }

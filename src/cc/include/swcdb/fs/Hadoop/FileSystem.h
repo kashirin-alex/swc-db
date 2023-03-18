@@ -26,6 +26,11 @@ class FileSystemHadoop final : public FileSystem {
 
     Service(hdfs::FileSystem* a_srv) noexcept : srv(a_srv) { }
 
+    Service(Service&&)                 = delete;
+    Service(const Service&)            = delete;
+    Service& operator=(Service&&)      = delete;
+    Service& operator=(const Service&) = delete;
+
     ~Service() noexcept {
       //if(srv) hdfsDisconnect(srv);
     }
@@ -34,6 +39,11 @@ class FileSystemHadoop final : public FileSystem {
   };
 
   FileSystemHadoop(Configurables* config);
+
+  FileSystemHadoop(FileSystemHadoop&&)                 = delete;
+  FileSystemHadoop(const FileSystemHadoop&)            = delete;
+  FileSystemHadoop& operator=(FileSystemHadoop&&)      = delete;
+  FileSystemHadoop& operator=(const FileSystemHadoop&) = delete;
 
   virtual ~FileSystemHadoop() noexcept;
 

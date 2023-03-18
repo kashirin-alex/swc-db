@@ -22,6 +22,11 @@ class FileSystemCeph final : public FileSystem {
 
   FileSystemCeph(Configurables* config);
 
+  FileSystemCeph(FileSystemCeph&&)                 = delete;
+  FileSystemCeph(const FileSystemCeph&)            = delete;
+  FileSystemCeph& operator=(FileSystemCeph&&)      = delete;
+  FileSystemCeph& operator=(const FileSystemCeph&) = delete;
+
   void setup_connection();
 
   bool initialize();

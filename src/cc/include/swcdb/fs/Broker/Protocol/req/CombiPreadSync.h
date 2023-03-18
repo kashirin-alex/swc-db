@@ -34,6 +34,11 @@ class CombiPreadSync final : public BaseSync, public Base {
                   buffer(dst), smartfd(a_smartfd) {
   }
 
+  CombiPreadSync(CombiPreadSync&&)                 = delete;
+  CombiPreadSync(const CombiPreadSync&)            = delete;
+  CombiPreadSync& operator=(CombiPreadSync&&)      = delete;
+  CombiPreadSync& operator=(const CombiPreadSync&) = delete;
+
   ~CombiPreadSync() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

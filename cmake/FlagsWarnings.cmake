@@ -11,7 +11,7 @@ SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat-security")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic") # -Weffc++
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-security -Wformat-nonliteral")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wnon-virtual-dtor")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wcast-qual -Wnon-virtual-dtor")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wzero-as-null-pointer-constant -Wno-error=zero-as-null-pointer-constant")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-cast")
@@ -19,6 +19,7 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dere
 
 
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat-signedness")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnoexcept -Wno-error=noexcept")
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override -Wno-error=suggest-override")
@@ -43,6 +44,10 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
   # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Walloc-zero -Wno-error=alloc-zero")
   # SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-final-types -Wno-error=suggest-final-types")
+
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0.0)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Warith-conversion")
+  endif()
 
   if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0.0)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wtsan")

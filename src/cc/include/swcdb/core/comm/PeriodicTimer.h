@@ -20,6 +20,11 @@ class PeriodicTimer final {
   PeriodicTimer(const Config::Property::Value_int32_g::Ptr cfg_ms,
                 Call_t&& call, const IoContextPtr& ioctx);
 
+  PeriodicTimer(PeriodicTimer&&)                 = delete;
+  PeriodicTimer(const PeriodicTimer&)            = delete;
+  PeriodicTimer& operator=(PeriodicTimer&&)      = delete;
+  PeriodicTimer& operator=(const PeriodicTimer&) = delete;
+
   ~PeriodicTimer() noexcept;
 
   void cancel();
@@ -39,6 +44,8 @@ class PeriodicTimer final {
 class PeriodicTimers final
     : private Core::Vector<std::unique_ptr<PeriodicTimer>> {
   public:
+
+  PeriodicTimers() noexcept: m_mutex() { }
 
   ~PeriodicTimers() noexcept;
 

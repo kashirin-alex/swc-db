@@ -57,8 +57,14 @@ class ConnQueues final :
               cfg_conn_timeout(timeout),
               cfg_conn_probes(probes),
               cfg_keepalive_ms(keepalive_ms),
-              cfg_again_delay_ms(again_delay_ms) {
+              cfg_again_delay_ms(again_delay_ms),
+              m_mutex() {
   }
+
+  ConnQueues(ConnQueues&&)                 = delete;
+  ConnQueues(const ConnQueues&)            = delete;
+  ConnQueues& operator=(ConnQueues&&)      = delete;
+  ConnQueues& operator=(const ConnQueues&) = delete;
 
   ~ConnQueues() noexcept;
 

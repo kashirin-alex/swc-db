@@ -18,7 +18,7 @@ class OpenReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  OpenReq() noexcept { }
+  OpenReq() noexcept : fname(), flags() { }
 
   SWC_CAN_INLINE
   OpenReq(const std::string& a_fname, uint32_t a_flags)

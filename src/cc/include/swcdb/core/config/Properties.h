@@ -26,7 +26,7 @@ class Properties {
   Core::MutexSptd    mutex;
 
   SWC_CAN_INLINE
-  Properties() noexcept { }
+  Properties() noexcept : mutex(), m_map(), m_alias_map()  { }
 
   SWC_CAN_INLINE
   ~Properties() noexcept {

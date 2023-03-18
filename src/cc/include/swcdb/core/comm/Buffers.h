@@ -119,6 +119,11 @@ class Buffers final {
           const Serializable& params, StaticBuffer& buffer,
           uint32_t reserve=0);
 
+  Buffers(Buffers&&)                 = delete;
+  Buffers(const Buffers&)            = delete;
+  Buffers& operator=(Buffers&&)      = delete;
+  Buffers& operator=(const Buffers&) = delete;
+
   ~Buffers() noexcept;
 
   void set_data(uint32_t sz);
@@ -179,27 +184,31 @@ Buffers::create_error_message(const Event::Ptr& ev,
 /* Init Common */
 SWC_CAN_INLINE
 Buffers::Buffers(uint32_t reserve)
-                : expiry_ms(0) {
+                : header(), expiry_ms(0),
+                  data_ptr(), buf_data(), buf_ext() {
   if(reserve)
     set_data(reserve);
 }
 
 SWC_CAN_INLINE
 Buffers::Buffers(const Serializable& params, uint32_t reserve)
-                : expiry_ms(0) {
+                : header(), expiry_ms(0),
+                  data_ptr(), buf_data(), buf_ext() {
   set_data(params, reserve);
 }
 
 SWC_CAN_INLINE
 Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
                  uint32_t reserve)
-                : expiry_ms(0), buf_ext(buffer) {
+                : header(), expiry_ms(0),
+                  data_ptr(), buf_data(), buf_ext(buffer) {
   set_data(params, reserve);
 }
 
 SWC_CAN_INLINE
 Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve)
-                : expiry_ms(0), buf_ext(buffer) {
+                : header(), expiry_ms(0),
+                  data_ptr(), buf_data(), buf_ext(buffer) {
   if(reserve)
     set_data(reserve);
 }
@@ -209,7 +218,8 @@ Buffers::Buffers(StaticBuffer& buffer, uint32_t reserve)
 SWC_CAN_INLINE
 Buffers::Buffers(const Serializable& params, uint32_t reserve,
                  uint64_t cmd, uint32_t timeout)
-                : header(cmd, timeout), expiry_ms(0) {
+                : header(cmd, timeout), expiry_ms(0),
+                  data_ptr(), buf_data(), buf_ext() {
   set_data(params, reserve);
 }
 
@@ -218,7 +228,7 @@ Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
                  uint32_t reserve,
                  uint64_t cmd, uint32_t timeout)
                 : header(cmd, timeout), expiry_ms(0),
-                  buf_ext(buffer) {
+                  data_ptr(), buf_data(), buf_ext(buffer) {
   set_data(params, reserve);
 }
 
@@ -226,7 +236,8 @@ Buffers::Buffers(const Serializable& params, StaticBuffer& buffer,
 /* Init Response */
 SWC_CAN_INLINE
 Buffers::Buffers(const Event::Ptr& ev, uint32_t reserve)
-                : header(ev->header), expiry_ms(ev->expiry_ms) {
+                : header(ev->header), expiry_ms(ev->expiry_ms),
+                  data_ptr(), buf_data(), buf_ext() {
   if(reserve)
     set_data(reserve);
 }
@@ -234,7 +245,8 @@ Buffers::Buffers(const Event::Ptr& ev, uint32_t reserve)
 SWC_CAN_INLINE
 Buffers::Buffers(const Event::Ptr& ev,
                  const Serializable& params, uint32_t reserve)
-                : header(ev->header), expiry_ms(ev->expiry_ms) {
+                : header(ev->header), expiry_ms(ev->expiry_ms),
+                  data_ptr(), buf_data(), buf_ext() {
   set_data(params, reserve);
 }
 
@@ -243,7 +255,7 @@ Buffers::Buffers(const Event::Ptr& ev,
                  const Serializable& params, StaticBuffer& buffer,
                  uint32_t reserve)
                 : header(ev->header), expiry_ms(ev->expiry_ms),
-                  buf_ext(buffer) {
+                  data_ptr(), buf_data(), buf_ext(buffer) {
   set_data(params, reserve);
 }
 
@@ -251,7 +263,7 @@ SWC_CAN_INLINE
 Buffers::Buffers(const Event::Ptr& ev,
                  StaticBuffer& buffer, uint32_t reserve)
                 : header(ev->header), expiry_ms(ev->expiry_ms),
-                  buf_ext(buffer) {
+                  data_ptr(), buf_data(), buf_ext(buffer) {
   if(reserve)
     set_data(reserve);
 }

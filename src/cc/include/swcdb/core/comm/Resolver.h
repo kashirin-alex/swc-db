@@ -37,11 +37,11 @@ struct Network {
 
   SWC_CAN_INLINE
   Network(const asio::ip::network_v4& a_v4) noexcept
-          : is_v4(true), v4(a_v4) { }
+          : is_v4(true), v4(a_v4), v6() { }
 
   SWC_CAN_INLINE
   Network(const asio::ip::network_v6& a_v6) noexcept
-          : is_v4(false), v6(a_v6) { }
+          : is_v4(false), v4(), v6(a_v6) { }
 
   SWC_CAN_INLINE
   Network(const Network& net) noexcept

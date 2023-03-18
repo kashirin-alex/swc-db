@@ -17,7 +17,7 @@ class MutexSptd final : private MutexAtomic {
   public:
 
   SWC_CAN_INLINE
-  explicit MutexSptd() noexcept { }
+  explicit MutexSptd() noexcept : m_mutex() { }
 
   MutexSptd(const MutexSptd&)             = delete;
   MutexSptd(MutexSptd&&)                  = delete;

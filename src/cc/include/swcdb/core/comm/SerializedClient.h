@@ -32,6 +32,11 @@ class Serialized final : public std::enable_shared_from_this<Serialized> {
              const IoContextPtr& ioctx,
              const AppContext::Ptr& ctx);
 
+  Serialized(Serialized&&)                 = delete;
+  Serialized(const Serialized&)            = delete;
+  Serialized& operator=(Serialized&&)      = delete;
+  Serialized& operator=(const Serialized&) = delete;
+
   virtual ~Serialized() noexcept;
 
   SWC_CAN_INLINE
@@ -110,7 +115,7 @@ class Serialized final : public std::enable_shared_from_this<Serialized> {
               DataArgsT&&... args)
         : ptr(std::move(a_ptr)),
           endpoints(a_endpoints), probes(a_probes), tries(a_probes), next(0),
-          callback(std::forward<DataArgsT>(args)...) {
+          socket(nullptr), callback(std::forward<DataArgsT>(args)...) {
     }
 
     void connect() {

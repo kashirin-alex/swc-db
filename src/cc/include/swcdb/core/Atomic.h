@@ -136,7 +136,8 @@ struct Atomic : public AtomicBase<T> {
     return fetch_or(v) | v;
   }
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 
   constexpr SWC_CAN_INLINE
   T operator++(int) noexcept {
@@ -147,6 +148,8 @@ struct Atomic : public AtomicBase<T> {
   T operator--(int) noexcept {
     return fetch_sub(1);
   }
+
+#pragma GCC diagnostic pop
 
 
   /* Is/Should post OP value ever used ?

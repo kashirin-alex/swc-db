@@ -67,6 +67,11 @@ struct Buffer {
   Buffer(OtherT& other) noexcept;
 
 
+  Buffer& operator=(const Buffer&) = delete;
+  
+  Buffer& operator=(Buffer&&) = delete;
+
+
   SWC_CAN_INLINE
   ~Buffer() noexcept {
     _free();
@@ -153,6 +158,14 @@ struct BufferDyn : BufferT {
             : BufferT(std::move(other)), ptr(other.ptr), mark(other.mark) {
     other.ptr = other.mark = nullptr;
   }
+
+
+  BufferDyn(const BufferDyn&) = delete;
+
+  BufferDyn& operator=(const BufferDyn&) = delete;
+  
+  BufferDyn& operator=(BufferDyn&&) = delete;
+
 
   ~BufferDyn() noexcept { }
 

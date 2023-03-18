@@ -19,7 +19,7 @@ class QueueSafeStated final : private std::queue<ItemT> {
   public:
 
   SWC_CAN_INLINE
-  explicit QueueSafeStated() noexcept { }
+  explicit QueueSafeStated() noexcept: m_mutex() { }
 
   ~QueueSafeStated() noexcept { }
 

@@ -29,6 +29,11 @@ class Acceptor final : protected asio::ip::tcp::acceptor {
            AppContext::Ptr& app_ctx,
            ConfigSSL* ssl_cfg);
 
+  Acceptor(Acceptor&&)                 = delete;
+  Acceptor(const Acceptor&)            = delete;
+  Acceptor& operator=(Acceptor&&)      = delete;
+  Acceptor& operator=(const Acceptor&) = delete;
+
   void stop();
 
   ~Acceptor() noexcept { }
@@ -60,6 +65,11 @@ class SerializedServer final {
     uint32_t reactors, uint32_t workers, uint16_t port,
     AppContext::Ptr app_ctx
   );
+
+  SerializedServer(SerializedServer&&)                 = delete;
+  SerializedServer(const SerializedServer&)            = delete;
+  SerializedServer& operator=(SerializedServer&&)      = delete;
+  SerializedServer& operator=(const SerializedServer&) = delete;
 
   void run();
 

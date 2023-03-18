@@ -34,7 +34,13 @@
 namespace SWC { namespace Config {
 
 SWC_SHOULD_NOT_INLINE
-Settings::Settings() {
+Settings::Settings()
+    : cmdline_desc(),
+      file_desc(), 
+      install_path(), 
+      executable(), 
+      m_cmd_args(),
+      m_dyn_files()  {
   cmdline_desc.definition(usage_str());
 }
 

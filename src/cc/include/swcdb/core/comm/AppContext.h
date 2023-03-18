@@ -29,6 +29,11 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
             : cfg_encoder(a_cfg_encoder) {
   }
 
+  AppContext(AppContext&&)                 = delete;
+  AppContext(const AppContext&)            = delete;
+  AppContext& operator=(AppContext&&)      = delete;
+  AppContext& operator=(const AppContext&) = delete;
+
   virtual void init(const std::string&, const EndPoints&) { }
 
   virtual void stop();

@@ -141,7 +141,7 @@ FileSystemHadoopJVM::FileSystemHadoopJVM(Configurables* config)
       cfg_block_size(
         settings->get<Config::Property::Value_int32_g>(
           "swc.fs.hadoop_jvm.block.size")),
-      m_nxt_fd(0), m_connecting(false),
+      m_nxt_fd(0), m_mutex(), m_cv(), m_connecting(false),
       m_fs(setup_connection()) {
 }
 

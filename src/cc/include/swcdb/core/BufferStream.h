@@ -27,8 +27,18 @@ class BufferStreamOut {
   BufferStreamOut(size_t a_pre_alloc = 12582912,
                   size_t a_commit_size = 8388608) noexcept
                   : error(Error::OK),
-                    pre_alloc(a_pre_alloc), commit_size(a_commit_size) {
+                    pre_alloc(a_pre_alloc),
+                    commit_size(a_commit_size),
+                    buffer() {
   }
+
+  BufferStreamOut(BufferStreamOut&&) = delete;
+
+  BufferStreamOut(const BufferStreamOut&) = delete;
+
+  BufferStreamOut& operator=(const BufferStreamOut&) = delete;
+
+  BufferStreamOut& operator=(BufferStreamOut&&) = delete;
 
   virtual ~BufferStreamOut() noexcept { }
 
@@ -55,6 +65,14 @@ class BufferStreamOut_ZSTD_OnAdd : public BufferStreamOut {
   BufferStreamOut_ZSTD_OnAdd(int level=0,
                              size_t pre_alloc = 12582912,
                              size_t commit_size = 8388608);
+
+  BufferStreamOut_ZSTD_OnAdd(BufferStreamOut_ZSTD_OnAdd&&) = delete;
+
+  BufferStreamOut_ZSTD_OnAdd(const BufferStreamOut_ZSTD_OnAdd&) = delete;
+
+  BufferStreamOut_ZSTD_OnAdd& operator=(const BufferStreamOut_ZSTD_OnAdd&) = delete;
+
+  BufferStreamOut_ZSTD_OnAdd& operator=(BufferStreamOut_ZSTD_OnAdd&&) = delete;
 
   virtual ~BufferStreamOut_ZSTD_OnAdd() noexcept;
 
@@ -85,6 +103,14 @@ class BufferStreamOut_ZSTD : public BufferStreamOut {
                        size_t pre_alloc = 12582912,
                        size_t commit_size = 8388608);
 
+  BufferStreamOut_ZSTD(BufferStreamOut_ZSTD&&) = delete;
+
+  BufferStreamOut_ZSTD(const BufferStreamOut_ZSTD&) = delete;
+
+  BufferStreamOut_ZSTD& operator=(const BufferStreamOut_ZSTD&) = delete;
+
+  BufferStreamOut_ZSTD& operator=(BufferStreamOut_ZSTD&&) = delete;
+
   virtual ~BufferStreamOut_ZSTD() noexcept;
 
   virtual void get(StaticBuffer& output) override;
@@ -103,6 +129,14 @@ class BufferStreamOut_ENCODER : public BufferStreamOut {
                           size_t pre_alloc = 12582912,
                           size_t commit_size = 8388608);
 
+  BufferStreamOut_ENCODER(BufferStreamOut_ENCODER&&) = delete;
+
+  BufferStreamOut_ENCODER(const BufferStreamOut_ENCODER&) = delete;
+
+  BufferStreamOut_ENCODER& operator=(const BufferStreamOut_ENCODER&) = delete;
+
+  BufferStreamOut_ENCODER& operator=(BufferStreamOut_ENCODER&&) = delete;
+
   virtual ~BufferStreamOut_ENCODER() noexcept { }
 
   virtual void get(StaticBuffer& output) override;
@@ -119,7 +153,15 @@ class BufferStreamIn {
   int  error;
 
   SWC_CAN_INLINE
-  BufferStreamIn() noexcept : error(Error::OK) { }
+  BufferStreamIn() noexcept : error(Error::OK), buffer() { }
+
+  BufferStreamIn(BufferStreamIn&&) = delete;
+
+  BufferStreamIn(const BufferStreamIn&) = delete;
+
+  BufferStreamIn& operator=(const BufferStreamIn&) = delete;
+
+  BufferStreamIn& operator=(BufferStreamIn&&) = delete;
 
   virtual ~BufferStreamIn() noexcept { }
 
@@ -141,6 +183,14 @@ class BufferStreamIn {
 class BufferStreamIn_ZSTD : public BufferStreamIn {
   public:
   BufferStreamIn_ZSTD();
+
+  BufferStreamIn_ZSTD(BufferStreamIn_ZSTD&&) = delete;
+
+  BufferStreamIn_ZSTD(const BufferStreamIn_ZSTD&) = delete;
+
+  BufferStreamIn_ZSTD& operator=(const BufferStreamIn_ZSTD&) = delete;
+
+  BufferStreamIn_ZSTD& operator=(BufferStreamIn_ZSTD&&) = delete;
 
   virtual ~BufferStreamIn_ZSTD() noexcept;
 

@@ -67,6 +67,32 @@ class ParserConfig final {
     Property::Value::Ptr  value;
     Strings               aliases;
     std::string           desc;
+
+    ParserOpt() noexcept : value(nullptr), aliases(), desc() { }
+
+    ParserOpt(ParserOpt&& other) noexcept
+            : value(other.value),
+              aliases(std::move(other.aliases)),
+              desc(std::move(other.desc)) {
+      other.value = nullptr;
+    }
+  
+    ParserOpt(const ParserOpt& other)
+            : value(other.value),
+              aliases(other.aliases),
+              desc(other.desc) {
+    }
+  
+    ParserOpt& operator=(const ParserOpt&) = delete;
+
+    ParserOpt& operator=(ParserOpt&& other) {
+      value = other.value;
+      other.value = nullptr;
+      aliases = std::move(other.aliases);
+      desc = std::move(other.desc);
+      return *this;
+    }
+  
     ~ParserOpt() noexcept { }
   };
 

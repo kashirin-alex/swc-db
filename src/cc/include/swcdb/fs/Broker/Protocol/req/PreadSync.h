@@ -38,6 +38,11 @@ class PreadSync final : public BaseSync, public Base {
               smartfd(a_smartfd) {
   }
 
+  PreadSync(PreadSync&&)                 = delete;
+  PreadSync(const PreadSync&)            = delete;
+  PreadSync& operator=(PreadSync&&)      = delete;
+  PreadSync& operator=(const PreadSync&) = delete;
+
   ~PreadSync() noexcept { }
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {

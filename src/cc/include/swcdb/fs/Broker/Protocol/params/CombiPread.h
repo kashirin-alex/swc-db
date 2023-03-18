@@ -18,7 +18,7 @@ class CombiPreadReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  CombiPreadReq() noexcept { }
+  CombiPreadReq() noexcept : smartfd(nullptr), offset(), amount() { }
 
   SWC_CAN_INLINE
   CombiPreadReq(const FS::SmartFd::Ptr& a_smartfd,

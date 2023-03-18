@@ -23,7 +23,7 @@ class QueueSafe : private std::queue<ItemT> {
   typedef ItemT  value_type;
 
   SWC_CAN_INLINE
-  explicit QueueSafe() noexcept { }
+  explicit QueueSafe() noexcept: m_mutex() { }
 
   ~QueueSafe() noexcept { }
 

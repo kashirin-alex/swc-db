@@ -25,6 +25,11 @@ class FileSystemHadoopJVM final : public FileSystem {
     typedef std::shared_ptr<Service> Ptr;
 
     Service(hdfsFS a_srv) noexcept : srv(a_srv) { }
+  
+    Service(Service&&)                 = delete;
+    Service(const Service&)            = delete;
+    Service& operator=(Service&&)      = delete;
+    Service& operator=(const Service&) = delete;
 
     ~Service() noexcept { if(srv) hdfsDisconnect(srv); }
 
@@ -32,6 +37,11 @@ class FileSystemHadoopJVM final : public FileSystem {
   };
 
   FileSystemHadoopJVM(Configurables* config);
+
+  FileSystemHadoopJVM(FileSystemHadoopJVM&&)                 = delete;
+  FileSystemHadoopJVM(const FileSystemHadoopJVM&)            = delete;
+  FileSystemHadoopJVM& operator=(FileSystemHadoopJVM&&)      = delete;
+  FileSystemHadoopJVM& operator=(const FileSystemHadoopJVM&) = delete;
 
   virtual ~FileSystemHadoopJVM() noexcept;
 

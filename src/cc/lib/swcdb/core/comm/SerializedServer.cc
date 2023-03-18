@@ -138,6 +138,7 @@ SerializedServer::SerializedServer(
     uint16_t port,
     AppContext::Ptr app_ctx
   ) : m_appname(std::move(name)), m_run(true),
+      m_io_contexts(), m_acceptors(), m_mutex(), m_conns(),
       m_ssl_cfg(
         settings.get_bool("swc.comm.ssl")
           ? new ConfigSSL(settings, false)
