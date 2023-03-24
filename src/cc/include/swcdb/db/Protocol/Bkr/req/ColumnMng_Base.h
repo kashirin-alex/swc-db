@@ -23,7 +23,8 @@ class ColumnMng_Base: public client::ConnQueue::ReqBase {
   ColumnMng_Base(const Mngr::Params::ColumnMng& params,
                  const uint32_t timeout)
                 : client::ConnQueue::ReqBase(
-                    Buffers::make(params, 0, COLUMN_MNG, timeout)) {
+                    Buffers::make(params, 0, COLUMN_MNG, timeout)),
+                  _bkr_idx() {
   }
 
   virtual ~ColumnMng_Base() noexcept { }

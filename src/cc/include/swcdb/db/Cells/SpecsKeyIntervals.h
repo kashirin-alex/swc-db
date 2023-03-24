@@ -19,7 +19,10 @@ struct KeyInterval {
   Key  start, finish;
 
   SWC_CAN_INLINE
-  KeyInterval() noexcept { }
+  KeyInterval() noexcept
+              : start(),
+                finish() {
+  }
 
   SWC_CAN_INLINE
   KeyInterval(const KeyInterval& other)
@@ -35,7 +38,8 @@ struct KeyInterval {
 
   SWC_CAN_INLINE
   KeyInterval(const Key& a_start, const Key& a_finish)
-              : start(a_start), finish(a_finish) {
+              : start(a_start),
+                finish(a_finish) {
   }
 
   SWC_CAN_INLINE
@@ -45,8 +49,9 @@ struct KeyInterval {
   }
 
   SWC_CAN_INLINE
-  KeyInterval(const uint8_t** bufp, size_t* remainp) {
-    decode(bufp, remainp);
+  KeyInterval(const uint8_t** bufp, size_t* remainp)
+              : start(bufp, remainp),
+                finish(bufp, remainp) {
   }
 
   ~KeyInterval() noexcept;
@@ -95,6 +100,11 @@ class KeyIntervals : public Core::Vector<KeyInterval> {
 
   SWC_CAN_INLINE
   KeyIntervals() noexcept { }
+
+  SWC_CAN_INLINE
+  KeyIntervals(const uint8_t** bufp, size_t* remainp) {
+    decode(bufp, remainp);
+  }
 
   SWC_CAN_INLINE
   KeyIntervals(KeyIntervals&& other) noexcept

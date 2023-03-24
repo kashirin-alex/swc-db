@@ -34,6 +34,16 @@ class Flags {
                   options(0), was_set(false) {
   }
 
+  SWC_CAN_INLINE
+  explicit Flags(const uint8_t** bufp, size_t* remainp)
+              : limit(Serialization::decode_vi64(bufp, remainp)),
+                offset(Serialization::decode_vi64(bufp, remainp)),
+                max_versions(Serialization::decode_vi32(bufp, remainp)),
+                max_buffer(Serialization::decode_vi32(bufp, remainp)),
+                options(Serialization::decode_i8(bufp, remainp)),
+                was_set(true) {
+  }
+
   constexpr SWC_CAN_INLINE
   void copy(const Flags &other) noexcept {
     limit           = other.limit;

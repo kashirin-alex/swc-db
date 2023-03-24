@@ -55,13 +55,14 @@ class Managers  {
       SWC_CAN_INLINE
       ~Range() noexcept { }
       SWC_CAN_INLINE
-      void operator=(Range&& other) noexcept {
+      Range& operator=(Range&& other) noexcept {
         ts = other.ts;
         rid = other.rid;
         key_begin = std::move(other.key_begin);
         key_end = std::move(other.key_end);
         endpoints = std::move(other.endpoints);
         revision = other.revision;
+        return *this;
       }
       SWC_CAN_INLINE
       void change(const int64_t _ts,
@@ -88,6 +89,13 @@ class Managers  {
 
       public:
 
+      SWC_CAN_INLINE
+      Column() noexcept: expiry_ms(nullptr), key_seq(), m_mutex() { }
+
+      Column(const Column&) = delete;
+
+      Column& operator=(const Column&) = delete;
+    
       SWC_CAN_INLINE
       ~Column() noexcept { }
 
@@ -197,7 +205,9 @@ class Managers  {
   public:
 
   SWC_CAN_INLINE
-  Managers() noexcept : queues(nullptr), groups(nullptr) { }
+  Managers() noexcept
+    : queues(nullptr), groups(nullptr), master_ranges_cache() {
+  }
 
   Managers(const Config::Settings& settings,
            Comm::IoContextPtr ioctx,

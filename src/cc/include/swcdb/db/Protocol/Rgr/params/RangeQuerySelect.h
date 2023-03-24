@@ -19,7 +19,7 @@ class RangeQuerySelectReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeQuerySelectReq() noexcept { }
+  RangeQuerySelectReq() noexcept : cid(), rid(), interval() { }
 
   SWC_CAN_INLINE
   RangeQuerySelectReq(cid_t a_cid, rid_t a_rid,
@@ -85,7 +85,7 @@ class RangeQuerySelectRsp final : public Serializable {
   RangeQuerySelectRsp(int a_err = Error::OK, bool a_reached_limit=false,
                       uint64_t a_offset=0) noexcept
                       : err(a_err), reached_limit(a_reached_limit),
-                        offset(a_offset) {
+                        offset(a_offset), data() {
   }
 
   SWC_CAN_INLINE

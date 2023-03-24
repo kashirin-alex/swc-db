@@ -36,8 +36,12 @@ class BrokerCommitter final
   SWC_CAN_INLINE
   BrokerCommitter(const Query::Update::Handlers::Base::Ptr& a_hdlr,
                   Query::Update::Handlers::Base::Column* a_colp) noexcept
-                  : hdlr(a_hdlr), colp(a_colp) {
+                  : hdlr(a_hdlr), colp(a_colp), workload() {
   }
+
+  BrokerCommitter(const BrokerCommitter&) = delete;
+
+  BrokerCommitter& operator=(const BrokerCommitter&) = delete;
 
   ~BrokerCommitter() noexcept;
 

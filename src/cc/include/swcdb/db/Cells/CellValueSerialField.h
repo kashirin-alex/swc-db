@@ -72,7 +72,7 @@ struct Field {
   uint24_t fid;
 
   SWC_CAN_INLINE
-  Field() noexcept { }
+  Field() noexcept: fid() { }
 
   constexpr SWC_CAN_INLINE
   Field(uint24_t a_fid) noexcept : fid(a_fid) { }
@@ -116,7 +116,7 @@ struct Field_INT64 : Field {
   int64_t value;
 
   SWC_CAN_INLINE
-  Field_INT64() noexcept { }
+  Field_INT64() noexcept: value() { }
 
   constexpr SWC_CAN_INLINE
   Field_INT64(uint24_t a_fid, int64_t a_value) noexcept
@@ -145,7 +145,7 @@ struct Field_DOUBLE : Field {
   long double value;
 
   SWC_CAN_INLINE
-  Field_DOUBLE() noexcept { }
+  Field_DOUBLE() noexcept: value() { }
 
   constexpr SWC_CAN_INLINE
   Field_DOUBLE(uint24_t a_fid, const long double& a_value) noexcept
@@ -209,7 +209,7 @@ struct Field_BYTES : Field, StaticBuffer {
 struct Field_KEY : Field {
 
   SWC_CAN_INLINE
-  Field_KEY() noexcept { }
+  Field_KEY() noexcept: key() { }
 
   Field_KEY(uint24_t fid, const Key& key, bool take_ownership=false);
 

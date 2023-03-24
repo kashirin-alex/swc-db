@@ -13,13 +13,15 @@ namespace SWC { namespace client { namespace Mngr {
 Group::Group(uint8_t a_role, cid_t a_cid_begin, cid_t a_cid_end,
              const Comm::EndPoints& endpoints)
             : Hosts(1, endpoints),
-              role(a_role), cid_begin(a_cid_begin), cid_end(a_cid_end) {
+              role(a_role), cid_begin(a_cid_begin), cid_end(a_cid_end),
+              m_mutex() {
 }
 
 Group::Group(uint8_t a_role, cid_t a_cid_begin, cid_t a_cid_end,
              const Hosts& hosts)
             : Hosts(hosts),
-              role(a_role), cid_begin(a_cid_begin), cid_end(a_cid_end) {
+              role(a_role), cid_begin(a_cid_begin), cid_end(a_cid_end),
+              m_mutex() {
 }
 
 Group::Ptr Group::copy() {
@@ -90,7 +92,8 @@ void Group::_get_host(const Comm::EndPoint& point,
 Groups::Groups(const Config::Settings& settings)
         : cfg_hosts(
             settings.get<Config::Property::Value_strings_g>("swc.mngr.host")),
-          cfg_port(settings.get_i16("swc.mngr.port")) {
+          cfg_port(settings.get_i16("swc.mngr.port")),
+          m_mutex(), m_active_g_host(), m_nets() {
   asio::error_code ec;
   Comm::Resolver::get_networks(
     settings.get_strs("swc.comm.network.priority"),
@@ -106,7 +109,7 @@ Groups::Groups(const Config::Settings& settings)
 Groups::Groups(const Groups& other, Groups::Vec&& groups)
                : Vec(std::move(groups)),
                  cfg_hosts(other.cfg_hosts), cfg_port(other.cfg_port),
-                 m_nets(other.m_nets) {
+                 m_mutex(), m_active_g_host(), m_nets(other.m_nets) {
 }
 
 Groups::Ptr Groups::init() {

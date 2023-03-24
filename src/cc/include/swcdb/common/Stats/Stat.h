@@ -63,6 +63,9 @@ class MinMaxAvgCount_Safe {
   public:
 
   SWC_CAN_INLINE
+  MinMaxAvgCount_Safe() noexcept : m_mutex(), m_value() { }
+
+  SWC_CAN_INLINE
   void add(ValueT v) noexcept {
     Core::MutexAtomic::scope lock(m_mutex);
     m_value.add(v);

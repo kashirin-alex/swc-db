@@ -32,7 +32,8 @@ Brokers::Brokers(const Config::Settings& settings,
       )),
       cfg_hosts(
         settings.get<Config::Property::Value_strings_g>("swc.bkr.host")),
-      cfg_port(settings.get_i16("swc.bkr.port")) {
+      cfg_port(settings.get_i16("swc.bkr.port")),
+      m_mutex(), m_brokers() {
   on_cfg_update();
 }
 

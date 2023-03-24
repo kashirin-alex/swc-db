@@ -21,7 +21,7 @@ struct RangeEndPoints final {
   int64_t          ts;
   Comm::EndPoints  endpoints;
   SWC_CAN_INLINE
-  RangeEndPoints() noexcept { }
+  RangeEndPoints() noexcept: ts(), endpoints() { }
   SWC_CAN_INLINE
   RangeEndPoints(RangeEndPoints&& other) noexcept
                 : ts(other.ts), endpoints(std::move(other.endpoints)) {
@@ -48,8 +48,12 @@ class CachedRangers final
 
   SWC_CAN_INLINE
   CachedRangers(const Config::Property::Value_int32_g::Ptr expiry_ms) noexcept
-                : m_expiry_ms(expiry_ms) {
+                : m_mutex(), m_expiry_ms(expiry_ms) {
   }
+
+  CachedRangers(const CachedRangers&) = delete;
+  
+  CachedRangers& operator=(const CachedRangers&) = delete;
 
   SWC_CAN_INLINE
   ~CachedRangers() noexcept { }

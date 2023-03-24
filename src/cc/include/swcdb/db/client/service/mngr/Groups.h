@@ -67,6 +67,8 @@ class Groups final : private Core::Vector<Group::Ptr>,
     cid_t           cid_begin;
     cid_t           cid_end;
     Comm::EndPoints endpoints;
+    SWC_CAN_INLINE
+    GroupHost() noexcept : role(), cid_begin(), cid_end(), endpoints() { }
     ~GroupHost() noexcept { }
   };
   typedef std::shared_ptr<Groups> Ptr;
@@ -75,6 +77,10 @@ class Groups final : private Core::Vector<Group::Ptr>,
   Groups(const Config::Settings& settings);
 
   Groups(const Groups& other, Groups::Vec&&);
+
+  Groups(const Groups&) = delete;
+
+  Groups& operator=(const Groups&) = delete;
 
   ~Groups() noexcept { }
 

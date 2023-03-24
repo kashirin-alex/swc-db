@@ -227,7 +227,7 @@ struct Field_LIST_INT64 : Field {
     Condition::Comp comp;
     int64_t         value;
     SWC_CAN_INLINE
-    Item() noexcept { }
+    Item() noexcept : comp(Condition::NONE), value() { }
     constexpr SWC_CAN_INLINE
     Item(Condition::Comp a_comp, int64_t a_value) noexcept
           : comp(a_comp), value(a_value) { }
@@ -280,7 +280,7 @@ struct Field_LIST_BYTES : Field {
     Condition::Comp comp;
     std::string     value;
     SWC_CAN_INLINE
-    Item() noexcept { }
+    Item() noexcept : comp(Condition::NONE), value() { }
     SWC_CAN_INLINE
     ~Item() noexcept { }
     SWC_CAN_INLINE
@@ -332,7 +332,7 @@ struct Field_LIST_BYTES : Field {
 struct Fields {
 
   SWC_CAN_INLINE
-  Fields() noexcept { }
+  Fields() noexcept : fields(), _fields_ptr() { }
 
   Fields(const uint8_t* ptr, size_t len);
 

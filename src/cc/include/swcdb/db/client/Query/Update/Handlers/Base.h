@@ -117,12 +117,14 @@ class Base : public std::enable_shared_from_this<Base> {
   Base(const Clients::Ptr& a_clients,
        Clients::Flag a_executor=Clients::Flag::DEFAULT) noexcept
       : clients(a_clients),
+        profile(),
         state_error(Error::OK), completion(0),
         timeout(clients->cfg_send_timeout->get()),
         timeout_ratio(clients->cfg_send_timeout_ratio->get()),
         buff_sz(clients->cfg_send_buff_sz->get()),
         buff_ahead(clients->cfg_send_ahead->get()),
-        executor(a_executor) {
+        executor(a_executor),
+        m_resend_cells(0) {
     if(!timeout_ratio)
       timeout_ratio.store(1000);
   }

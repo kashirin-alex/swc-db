@@ -77,7 +77,8 @@ class CellsSelect final : public client::ConnQueue::ReqBase {
               : client::ConnQueue::ReqBase(
                   Buffers::make(params, 0, CELLS_SELECT, timeout)
                 ),
-                data(args...) {
+                data(args...),
+                _bkr_idx() {
   }
 
   private:

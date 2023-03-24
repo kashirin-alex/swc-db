@@ -19,7 +19,7 @@ class ColumnListReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnListReq() noexcept { }
+  ColumnListReq() noexcept : patterns() { }
 
   SWC_CAN_INLINE
   ColumnListReq(const DB::Schemas::SelectorPatterns& a_patterns)
@@ -47,7 +47,7 @@ class ColumnListRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnListRsp() noexcept : expected(0) { }
+  ColumnListRsp() noexcept : expected(0), schemas() { }
 
   SWC_CAN_INLINE
   ~ColumnListRsp() noexcept { }

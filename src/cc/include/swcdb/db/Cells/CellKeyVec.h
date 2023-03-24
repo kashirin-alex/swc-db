@@ -35,6 +35,11 @@ class KeyVec final : public VecFraction {
 
   explicit KeyVec(const KeyVec& other);
 
+  SWC_CAN_INLINE
+  explicit KeyVec(const uint8_t** bufp, size_t* remainp) {
+    decode(bufp, remainp);
+  }
+
   ~KeyVec() noexcept { }
 
   SWC_CAN_INLINE

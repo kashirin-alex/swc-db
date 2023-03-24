@@ -206,7 +206,9 @@ Reporting::Reporting(const Clients::Ptr& a_clients,
               ),
               io(a_io),
               cfg_intval(a_cfg_intval),
+              metrics(),
               running(false),
+              m_mutex(),
               m_timer(io->executor()) {
 }
 

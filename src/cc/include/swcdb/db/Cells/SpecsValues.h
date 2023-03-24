@@ -31,6 +31,12 @@ class Values : public Core::Vector<Value> {
   }
 
   SWC_CAN_INLINE
+  Values(const uint8_t** bufp, size_t* remainp, bool owner=false)
+        : col_type() {
+    decode(bufp, remainp, owner);
+  }
+
+  SWC_CAN_INLINE
   Values(Values&& other) noexcept
         : Vec(std::move(other)), col_type(other.col_type) {
   }

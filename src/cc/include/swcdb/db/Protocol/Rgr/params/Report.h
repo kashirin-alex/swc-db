@@ -82,7 +82,7 @@ class RspCids final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RspCids() noexcept { }
+  RspCids() noexcept: cids() { }
 
   SWC_CAN_INLINE
   ~RspCids() noexcept { }
@@ -107,7 +107,7 @@ class RspColumnRids final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RspColumnRids() noexcept { }
+  RspColumnRids() noexcept: rids() { }
 
   SWC_CAN_INLINE
   ~RspColumnRids() noexcept { }
@@ -134,7 +134,7 @@ class RspColumnsRanges final : public Serializable {
   struct Range {
 
     SWC_CAN_INLINE
-    Range(DB::Types::KeySeq seq) noexcept : interval(seq) { }
+    Range(DB::Types::KeySeq seq) noexcept : rid(), interval(seq) { }
 
     static bool before(Range* r1, Range* r2);
 
@@ -162,6 +162,9 @@ class RspColumnsRanges final : public Serializable {
     uint64_t             mem_bytes;
     Core::Vector<Range*> ranges;
 
+    SWC_CAN_INLINE
+    Column() noexcept: cid(), col_seq(), mem_bytes(), ranges() { }
+
     ~Column() noexcept;
 
     size_t SWC_PURE_FUNC encoded_length() const;
@@ -176,7 +179,7 @@ class RspColumnsRanges final : public Serializable {
 
 
   SWC_CAN_INLINE
-  explicit RspColumnsRanges() noexcept : rgrid(0) { }
+  explicit RspColumnsRanges() noexcept : rgrid(0), endpoints(), columns() { }
 
   RspColumnsRanges(rgrid_t rgrid, const EndPoints& endpoints);
 

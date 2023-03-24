@@ -23,7 +23,8 @@ class ColumnList_Base: public client::ConnQueue::ReqBase {
   ColumnList_Base(const Params::ColumnListReq& params,
                   const uint32_t timeout)
         : client::ConnQueue::ReqBase(
-            Buffers::make(params, 0, COLUMN_LIST, timeout)) {
+            Buffers::make(params, 0, COLUMN_LIST, timeout)),
+          endpoints() {
   }
 
   virtual ~ColumnList_Base() noexcept { }

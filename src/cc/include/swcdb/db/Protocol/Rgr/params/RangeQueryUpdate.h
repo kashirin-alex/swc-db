@@ -19,7 +19,7 @@ class RangeQueryUpdateReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeQueryUpdateReq() noexcept { }
+  RangeQueryUpdateReq() noexcept: cid(), rid() { }
 
   SWC_CAN_INLINE
   RangeQueryUpdateReq(cid_t a_cid, rid_t a_rid) noexcept
@@ -50,7 +50,8 @@ class RangeQueryUpdateRsp final : public Serializable {
 
   SWC_CAN_INLINE
   RangeQueryUpdateRsp(int a_err = Error::OK) noexcept
-                      : err(a_err), cells_added(0) {
+                      : err(a_err), cells_added(0),
+                        range_prev_end(), range_end() {
   }
 
   RangeQueryUpdateRsp(int err, const uint8_t* ptr, size_t remain) noexcept;

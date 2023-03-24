@@ -78,6 +78,10 @@ class Clients : public std::enable_shared_from_this<Clients> {
                   const Comm::IoContextPtr& io_ctx,
                   const ContextBroker::Ptr& bkr_ctx);
 
+  Clients(const Clients&) = delete;
+
+  Clients& operator=(const Clients&) = delete;
+  
   ~Clients() noexcept;
 
   Ptr shared() {

@@ -48,7 +48,8 @@ class Schemas::ColumnGetData final {
 
   SWC_CAN_INLINE
   ColumnGetData(const SWC::client::Clients::Ptr& a_clients) noexcept
-                :  clients(a_clients), err(Error::OK), once(false) {
+                :  clients(a_clients), await(), schema(),
+                    err(Error::OK), once(false) {
   }
 
   SWC_CAN_INLINE

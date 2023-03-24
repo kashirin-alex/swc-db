@@ -91,7 +91,7 @@ void Field_DOUBLE::print(std::ostream& out) const {
 Field_BYTES::Field_BYTES(uint24_t a_fid, Condition::Comp a_comp,
                          const uint8_t* ptr, size_t len,
                          bool take_ownership)
-                        : Field(a_fid), comp(a_comp) {
+                        : Field(a_fid), comp(a_comp), value() {
   take_ownership
     ? value.assign(ptr, len)
     : value.set(const_cast<uint8_t*>(ptr), len, false);
@@ -100,7 +100,8 @@ Field_BYTES::Field_BYTES(uint24_t a_fid, Condition::Comp a_comp,
 Field_BYTES::Field_BYTES(const uint8_t** bufp, size_t* remainp,
                          bool take_ownership)
         : Field(bufp, remainp),
-          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))) {
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
+          value() {
   size_t len;
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   take_ownership
@@ -151,7 +152,7 @@ void Field_BYTES::print(std::ostream& out) const {
 // Field KEY
 
 Field_KEY::Field_KEY(uint24_t a_fid, Types::KeySeq a_seq)
-                    : Field(a_fid), seq(a_seq) {
+                    : Field(a_fid), seq(a_seq), key() {
 }
 
 Field_KEY::Field_KEY(uint24_t a_fid, Types::KeySeq a_seq, const Key& a_key)
@@ -160,8 +161,8 @@ Field_KEY::Field_KEY(uint24_t a_fid, Types::KeySeq a_seq, const Key& a_key)
 
 Field_KEY::Field_KEY(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          seq(Types::KeySeq(Serialization::decode_i8(bufp, remainp))) {
-  key.decode(bufp, remainp);
+          seq(Types::KeySeq(Serialization::decode_i8(bufp, remainp))),
+          key(bufp, remainp) {
 }
 
 size_t Field_KEY::encoded_length() const noexcept {
@@ -189,18 +190,20 @@ void Field_KEY::print(std::ostream& out) const {
 
 // Field LIST_INT64
 Field_LIST_INT64::Field_LIST_INT64(uint24_t a_fid, Condition::Comp a_comp)
-                                  : Field(a_fid), comp(a_comp) {
+                                  : Field(a_fid), comp(a_comp),
+                                    items(), _found() {
 }
 
 Field_LIST_INT64::Field_LIST_INT64(uint24_t a_fid, Condition::Comp a_comp,
                                    const Field_LIST_INT64::Vec& a_items)
                                   : Field(a_fid),
-                                    comp(a_comp), items(a_items) {
+                                    comp(a_comp), items(a_items), _found() {
 }
 
 Field_LIST_INT64::Field_LIST_INT64(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))) {
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
+          items(), _found() {
   size_t len;
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   while(len) {
@@ -404,18 +407,20 @@ void Field_LIST_INT64::print(std::ostream& out) const {
 
 // Field LIST_BYTES
 Field_LIST_BYTES::Field_LIST_BYTES(uint24_t a_fid, Condition::Comp a_comp)
-                                  : Field(a_fid), comp(a_comp) {
+                                  : Field(a_fid), comp(a_comp),
+                                    items(), _found() {
 }
 
 Field_LIST_BYTES::Field_LIST_BYTES(uint24_t a_fid, Condition::Comp a_comp,
                                    const Field_LIST_BYTES::Vec& a_items)
                                   : Field(a_fid),
-                                    comp(a_comp), items(a_items) {
+                                    comp(a_comp), items(a_items), _found() {
 }
 
 Field_LIST_BYTES::Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp)
         : Field(bufp, remainp),
-          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))) {
+          comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
+          items(), _found() {
   size_t len;
   const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
   while(len) {
@@ -673,7 +678,7 @@ void Field_LIST_BYTES::print(std::ostream& out) const {
 
 
 //
-Fields::Fields(const uint8_t* ptr, size_t len) {
+Fields::Fields(const uint8_t* ptr, size_t len): fields(), _fields_ptr() {
   while(len) {
     switch(Cell::Serial::Value::read_type(&ptr, &len)) {
       case Type::INT64: {

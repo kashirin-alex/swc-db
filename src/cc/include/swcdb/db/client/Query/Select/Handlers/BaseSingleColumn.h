@@ -29,7 +29,8 @@ class BaseSingleColumn : public Base {
   SWC_CAN_INLINE
   BaseSingleColumn(const Clients::Ptr& a_clients, const cid_t a_cid,
                    Clients::Flag a_executor=Clients::DEFAULT) noexcept
-                  : Base(a_clients, a_executor), cid(a_cid) {
+                  : Base(a_clients, a_executor),
+                    cid(a_cid), m_mutex(), m_cells() {
   }
 
   virtual ~BaseSingleColumn() noexcept { }

@@ -28,11 +28,18 @@ class Brokers {
   };
 
   SWC_CAN_INLINE
-  Brokers() noexcept : queues(nullptr), cfg_hosts(nullptr), cfg_port(0) { }
+  Brokers() noexcept
+    : queues(nullptr), cfg_hosts(nullptr), cfg_port(0),
+      m_mutex(), m_brokers() {
+  }
 
   Brokers(const Config::Settings& settings,
           Comm::IoContextPtr ioctx,
           const ContextBroker::Ptr& bkr_ctx);
+
+  Brokers(const Brokers&) = delete;
+  
+  Brokers& operator=(const Brokers&) = delete;
 
   ~Brokers() noexcept { }
 

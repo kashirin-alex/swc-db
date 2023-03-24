@@ -23,7 +23,8 @@ class ColumnGet_Base: public client::ConnQueue::ReqBase {
   ColumnGet_Base(const Params::ColumnGetReq& params,
                  const uint32_t timeout)
         : client::ConnQueue::ReqBase(
-            Buffers::make(params, 0, COLUMN_GET, timeout)) {
+            Buffers::make(params, 0, COLUMN_GET, timeout)),
+          endpoints() {
   }
 
   virtual ~ColumnGet_Base() noexcept { }

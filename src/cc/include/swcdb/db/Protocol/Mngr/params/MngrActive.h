@@ -46,7 +46,7 @@ class MngrActiveRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  MngrActiveRsp() noexcept { }
+  MngrActiveRsp() noexcept : endpoints() { }
 
   SWC_CAN_INLINE
   MngrActiveRsp(const EndPoints& a_endpoints)

@@ -23,7 +23,8 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
   ColumnCompact_Base(const Mngr::Params::ColumnCompactReq& params,
                      const uint32_t timeout)
         : client::ConnQueue::ReqBase(
-            Buffers::make(params, 0, COLUMN_COMPACT, timeout)) {
+            Buffers::make(params, 0, COLUMN_COMPACT, timeout)),
+          _bkr_idx() {
   }
 
   virtual ~ColumnCompact_Base() noexcept { }

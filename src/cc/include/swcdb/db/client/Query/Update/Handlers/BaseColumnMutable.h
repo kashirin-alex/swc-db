@@ -30,6 +30,7 @@ class ColumnMutable : public Base::Column {
                 DB::Types::Column type)
     : state_error(Error::OK),
       cid(a_cid),
+      m_mutex(),
       m_cells(seq, versions, uint64_t(ttl_secs) * 1000000000, type) {
   }
 
@@ -40,6 +41,7 @@ class ColumnMutable : public Base::Column {
                 const StaticBuffer& buffer)
     : state_error(Error::OK),
       cid(a_cid),
+      m_mutex(),
       m_cells(seq, versions, uint64_t(ttl_secs) * 1000000000, type, buffer) {
   }
 

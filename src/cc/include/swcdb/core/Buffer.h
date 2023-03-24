@@ -66,14 +66,12 @@ struct Buffer {
   constexpr
   Buffer(OtherT& other) noexcept;
 
-
   Buffer& operator=(const Buffer&) = delete;
   
   Buffer& operator=(Buffer&&) = delete;
 
-
   SWC_CAN_INLINE
-  ~Buffer() noexcept {
+  virtual ~Buffer() noexcept {
     _free();
   }
 

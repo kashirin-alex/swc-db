@@ -27,7 +27,13 @@ struct Profiling {
 
   Profiling() noexcept
             : ts_start(Time::now_ns()),
-              ts_finish(ts_start.load()) {
+              ts_finish(ts_start.load()),
+              _mngr_locate(),
+              _mngr_res(),
+              _rgr_locate_master(),
+              _rgr_locate_meta(),
+              _rgr_data(),
+              _bkr() {
   }
 
   struct Component {

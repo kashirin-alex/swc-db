@@ -20,8 +20,10 @@ Common::Common(const Clients::Ptr& a_clients,
                Clients::Flag a_executor) noexcept
               : BaseUnorderedMap(a_clients, a_executor),
                 valid_state(true),
+                m_mutex(),
                 m_cb(std::move(cb)), m_dispatcher_io(io),
                 m_notify(m_cb && rsp_partials),
+                m_cv(),
                 m_sending_result(false) {
 }
 

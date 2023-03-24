@@ -27,33 +27,43 @@ class Value {
   SWC_CAN_INLINE
   explicit Value(const char* data_n, Condition::Comp comp_n,
                  bool owner=false)
-                : own(false), matcher(nullptr) {
+                : own(false),
+                  comp(), size(), data(),
+                  matcher(nullptr) {
     set(data_n, strlen(data_n), comp_n, owner);
   }
 
   SWC_CAN_INLINE
   explicit Value(const char* data_n, const uint32_t size_n,
                  Condition::Comp comp_n, bool owner=false)
-                : own(false), matcher(nullptr) {
+                : own(false),
+                  comp(), size(), data(),
+                  matcher(nullptr) {
     set(data_n, size_n, comp_n, owner);
   }
 
   SWC_CAN_INLINE
   explicit Value(const uint8_t* data_n, const uint32_t size_n,
                  Condition::Comp comp_n, bool owner=false)
-                : own(false), matcher(nullptr) {
+                : own(false),
+                  comp(), size(), data(),
+                  matcher(nullptr) {
     set(data_n, size_n, comp_n, owner);
   }
 
   SWC_CAN_INLINE
   explicit Value(int64_t count, Condition::Comp comp_n)
-                : own(false), matcher(nullptr) {
+                : own(false),
+                  comp(), size(), data(),
+                  matcher(nullptr) {
     set_counter(count, comp_n);
   }
 
   SWC_CAN_INLINE
   explicit Value(const Value &other)
-                : own(false), matcher(nullptr) {
+                : own(false),
+                  comp(), size(), data(),
+                  matcher(nullptr) {
     copy(other);
   }
 

@@ -52,7 +52,17 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_rgr_next(false),
               meta_next(false),
               retry_point(RETRY_POINT_NONE),
-              need_data_cid_check(false) {
+              need_data_cid_check(false),
+              master_rgr_req_base(nullptr),
+              meta_req_base(nullptr),
+              data_req_base(nullptr),
+              master_mngr_offset(),
+              master_rgr_offset(),
+              meta_offset(),
+              meta_end(),
+              master_rgr_endpoints(),
+              meta_endpoints(),
+              data_endpoints() {
 }
 
 Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
@@ -75,7 +85,17 @@ Scanner::Scanner(const Handlers::Base::Ptr& hdlr,
               master_rgr_next(false),
               meta_next(false),
               retry_point(RETRY_POINT_NONE),
-              need_data_cid_check(false) {
+              need_data_cid_check(false),
+              master_rgr_req_base(nullptr),
+              meta_req_base(nullptr),
+              data_req_base(nullptr),
+              master_mngr_offset(),
+              master_rgr_offset(),
+              meta_offset(),
+              meta_end(),
+              master_rgr_endpoints(),
+              meta_endpoints(),
+              data_endpoints()  {
 }
 
 Scanner::~Scanner() noexcept { }

@@ -18,7 +18,7 @@ class CellsUpdateReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  CellsUpdateReq() noexcept { }
+  CellsUpdateReq() noexcept: cid() { }
 
   SWC_CAN_INLINE
   CellsUpdateReq(cid_t a_cid) noexcept : cid(a_cid) { }

@@ -24,7 +24,7 @@ class ColumnCompact_Base: public client::ConnQueue::ReqBase {
                      const uint32_t timeout)
         : client::ConnQueue::ReqBase(
             Buffers::make(params, 0, COLUMN_COMPACT, timeout)),
-          cid(params.cid) {
+          cid(params.cid), endpoints() {
   }
 
   virtual ~ColumnCompact_Base() noexcept { }

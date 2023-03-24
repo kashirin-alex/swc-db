@@ -31,6 +31,8 @@ class Key final {
               : own(a_own), count(0), size(0), data(nullptr) {
   }
 
+  explicit Key(const uint8_t** bufp, size_t* remainp, bool owner);
+  
   explicit Key(const Key& other);
 
   explicit Key(const Key& other, bool own);
@@ -268,6 +270,23 @@ class Key final {
 };
 
 
+SWC_CAN_INLINE
+Key::Key(const uint8_t** bufp, size_t* remainp, bool owner)
+        : own(owner),
+          count(Serialization::decode_vi24(bufp, remainp)),
+          size(), data() {
+  if(count) {
+    uint24_t n=count;
+    const uint8_t* ptr_start = *bufp;
+    do *bufp += Serialization::decode_vi24(bufp);
+    while(--n);
+    *remainp -= (size = *bufp - ptr_start);
+    data = own ? _data(ptr_start) : const_cast<uint8_t*>(ptr_start);
+  } else {
+    size = 0;
+    data = nullptr;
+  }
+}
 
 SWC_CAN_INLINE
 Key::Key(const Key& other)

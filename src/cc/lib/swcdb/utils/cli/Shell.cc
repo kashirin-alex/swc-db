@@ -98,7 +98,8 @@ struct Interface::Option final {
 Interface::Interface(std::string&& a_prompt, std::string&& a_history, CLI state)
                     : err(Error::OK), _state(state),
                       prompt(std::move(a_prompt)),
-                      history(std::move(a_history)) {
+                      history(std::move(a_history)),
+                      options() {
   init();
 }
 

@@ -98,7 +98,7 @@ class CellsUpdate final : public client::ConnQueue::ReqBase {
   SWC_CAN_INLINE
   CellsUpdate(Buffers::Ptr&& a_cbp, DataArgsT&&... args)
               : client::ConnQueue::ReqBase(std::move(a_cbp)),
-                data(args...) {
+                data(args...), _bkr_idx() {
   }
 
   private:

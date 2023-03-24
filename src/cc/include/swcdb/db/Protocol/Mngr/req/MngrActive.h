@@ -49,6 +49,7 @@ class MngrActive : public client::ConnQueue::ReqBase {
               ),
               clients(a_clients),
               role(a_role), cid(a_cid), hdlr(a_hdlr), nxt(0),
+              hosts(), group_host(),
               timer(asio::high_resolution_timer(
                       clients->get_mngr_io()->executor())),
               timeout_ms(a_timeout_ms) {

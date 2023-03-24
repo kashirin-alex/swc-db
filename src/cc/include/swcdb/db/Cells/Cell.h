@@ -95,7 +95,7 @@ class Cell final {
 
   constexpr SWC_CAN_INLINE explicit
   Cell() noexcept
-      : own(false), flag(Flag::NONE), control(0),
+      : key(), own(false), flag(Flag::NONE), control(0),
         vlen(0), value(nullptr),
         timestamp(TIMESTAMP_AUTO), revision(TIMESTAMP_AUTO) {
   }
@@ -379,8 +379,9 @@ class Cell final {
 
 SWC_CAN_INLINE
 Cell::Cell(const uint8_t** bufp, size_t* remainp, bool a_own)
-          : own(a_own),
-            flag(Serialization::decode_i8(bufp, remainp)) {
+          : key(), own(a_own),
+            flag(Serialization::decode_i8(bufp, remainp)),
+            control(), vlen(), value(), timestamp(), revision() {
   key.decode(bufp, remainp, own);
   control = Serialization::decode_i8(bufp, remainp);
 

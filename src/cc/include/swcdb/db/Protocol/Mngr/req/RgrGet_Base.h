@@ -23,7 +23,7 @@ class RgrGet_Base : public client::ConnQueue::ReqBase {
   RgrGet_Base(const Params::RgrGetReq& params, const uint32_t timeout)
               : client::ConnQueue::ReqBase(
                   Buffers::make(params, 0 ,RGR_GET, timeout)),
-                cid(params.cid) {
+                endpoints(), cid(params.cid) {
   }
 
   virtual ~RgrGet_Base() noexcept { }

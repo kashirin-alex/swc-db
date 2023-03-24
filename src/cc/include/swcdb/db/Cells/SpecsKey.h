@@ -21,7 +21,7 @@ struct Fraction final : public std::string {
   mutable void*   compiled;
 
   SWC_CAN_INLINE
-  Fraction() noexcept : compiled(nullptr) { }
+  Fraction() noexcept : comp(Condition::NONE), compiled(nullptr) { }
 
   SWC_CAN_INLINE
   Fraction(std::string&& fraction, Condition::Comp a_comp) noexcept
@@ -141,6 +141,11 @@ class Key final : public Core::Vector<Fraction> {
 
   SWC_CAN_INLINE
   explicit Key() noexcept { }
+
+  SWC_CAN_INLINE
+  explicit Key(const uint8_t** bufp, size_t* remainp) {
+    decode(bufp, remainp);
+  }
 
   SWC_CAN_INLINE
   explicit Key(Key&& other) noexcept

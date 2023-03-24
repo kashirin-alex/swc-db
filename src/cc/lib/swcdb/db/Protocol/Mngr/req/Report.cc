@@ -17,7 +17,7 @@ namespace Mngr { namespace Req {
 Report::Report(const SWC::client::Clients::Ptr& a_clients,
                Params::Report::Function func, const uint32_t timeout)
               : client::ConnQueue::ReqBase(Buffers::make(1)),
-                clients(a_clients) {
+                clients(a_clients), endpoints() {
   cbp->append_i8(func);
   cbp->header.set(REPORT, timeout);
 }
@@ -39,7 +39,7 @@ Report::Report(const SWC::client::Clients::Ptr& a_clients,
               : client::ConnQueue::ReqBase(
                   Buffers::make(params, 1, REPORT, timeout)
                 ),
-                clients(a_clients) {
+                clients(a_clients), endpoints() {
   cbp->append_i8(func);
 }
 

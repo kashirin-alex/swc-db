@@ -15,6 +15,7 @@ ColumnList::ColumnList(const Clients::Ptr& a_clients,
                        DB::SchemasVec& a_schemas,
                        std::string& a_message)
                       : Reader(a_sql, a_message),
+                        patterns(),
                         clients(a_clients), schemas(a_schemas) {
 }
 

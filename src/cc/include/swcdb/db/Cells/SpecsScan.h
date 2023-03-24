@@ -24,10 +24,10 @@ class Scan final {
   typedef Core::Vector<Column> Columns;
 
   SWC_CAN_INLINE
-  explicit Scan() noexcept { }
+  explicit Scan() noexcept : columns(), flags() { }
 
   SWC_CAN_INLINE
-  explicit Scan(uint32_t reserve) {
+  explicit Scan(uint32_t reserve) : columns(), flags() {
     columns.reserve(reserve);
   }
 
@@ -42,14 +42,14 @@ class Scan final {
   }
 
   SWC_CAN_INLINE
-  explicit Scan(const Columns& a_columns) : columns(a_columns) { }
+  explicit Scan(const Columns& a_columns) : columns(a_columns), flags() { }
 
   SWC_CAN_INLINE
   explicit Scan(Columns&& a_columns) noexcept
-                : columns(std::move(a_columns)) { }
+                : columns(std::move(a_columns)), flags() { }
 
   SWC_CAN_INLINE
-  explicit Scan(const uint8_t** bufp, size_t* remainp) {
+  explicit Scan(const uint8_t** bufp, size_t* remainp) : columns(), flags() {
     decode(bufp, remainp);
   }
 

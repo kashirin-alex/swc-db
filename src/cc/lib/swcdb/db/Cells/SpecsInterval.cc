@@ -12,18 +12,40 @@ namespace SWC { namespace DB { namespace Specs {
 
 
 Interval::Interval(Types::Column col_type) noexcept
-                  : values(col_type), offset_rev(0), options(0) {
+                  : range_begin(), range_end(), key_intervals(),
+                    values(col_type), ts_start(), ts_finish(),
+                    flags(), offset_key(), offset_rev(0), options(0),
+                    updating(nullptr) {
 }
 
 Interval::Interval(const Cell::Key& a_range_begin,
                    const Cell::Key& a_range_end)
                   : range_begin(a_range_begin),
                     range_end(a_range_end),
-                    offset_rev(0), options(0) {
+                    key_intervals(),
+                    values(),
+                    ts_start(), ts_finish(),
+                    flags(), offset_key(),
+                    offset_rev(0), options(0),
+                    updating(nullptr) {
 }
 
-Interval::Interval(const uint8_t** bufp, size_t* remainp) {
-  decode(bufp, remainp);
+Interval::Interval(const uint8_t** bufp, size_t* remainp)
+    : range_begin(bufp, remainp, true),
+      range_end(bufp, remainp, true),
+      key_intervals(bufp, remainp),
+      values(bufp, remainp, true),
+      ts_start(bufp, remainp),
+      ts_finish(bufp, remainp),
+      flags(bufp, remainp),
+      offset_key(bufp, remainp, true),
+      offset_rev(Serialization::decode_vi64(bufp, remainp)),
+      options(Serialization::decode_i8(bufp, remainp)),
+      updating(nullptr) {
+  if(has_opt__updating()) {
+    updating.reset(new IntervalUpdate(bufp, remainp));
+    flags.clear_only_deletes();
+  }
 }
 
 Interval::Interval(const Interval& other)

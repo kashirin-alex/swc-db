@@ -39,7 +39,7 @@ Committer::Committer(const DB::Types::Range a_type,
     workload(0),
     cid(a_cid), colp(a_colp),
     key_start(a_key_start),
-    hdlr(a_hdlr), parent(a_parent), rid(a_rid) {
+    hdlr(a_hdlr), parent(a_parent), rid(a_rid), key_finish() {
 }
 
 Committer::Committer(const DB::Types::Range a_type,

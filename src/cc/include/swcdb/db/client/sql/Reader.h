@@ -30,6 +30,10 @@ class Reader {
 
   Reader(const std::string& sql, std::string& message);
 
+  Reader(const Reader&) = delete;
+
+  Reader& operator=(const Reader&) = delete;
+
   ~Reader() noexcept { }
 
   bool SWC_PURE_FUNC is_char(const char* stop) const;

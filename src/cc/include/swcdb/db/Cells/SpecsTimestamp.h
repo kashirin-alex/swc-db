@@ -28,6 +28,16 @@ class Timestamp {
                     : value(timestamp), comp(a_comp), was_set(true) {
   }
 
+  SWC_CAN_INLINE
+  explicit Timestamp(const uint8_t** bufp, size_t* remainp)
+    : value(),
+      comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
+      was_set(true) {
+    value = comp == Condition::NONE
+      ? 0
+      : Serialization::decode_i64(bufp, remainp);
+  }
+
   ~Timestamp() noexcept { }
 
   constexpr SWC_CAN_INLINE

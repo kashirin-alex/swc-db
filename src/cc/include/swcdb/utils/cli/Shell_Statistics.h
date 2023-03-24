@@ -44,7 +44,7 @@ class Statistics final : public Interface {
     uint32_t        agg;
     DB::Specs::Key  key;
     std::string     metric;
-    ReadGroup() noexcept : last(0), since(0), agg(0) { }
+    ReadGroup() noexcept : last(0), since(0), agg(0), key(), metric() { }
     void print(std::ostream& out, const Statistics* ptr) const;
     ~ReadGroup() noexcept { }
   };
@@ -71,7 +71,14 @@ class Statistics final : public Interface {
 
   struct Stats {
     Stats(const StatsDefinition* a_defined, time_t a_ts) noexcept
-          : defined(a_defined), ts(a_ts) { }
+          : defined(a_defined), ts(a_ts), values() { }
+    Stats(Stats&& other) noexcept
+          : defined(other.defined),
+            ts(other.ts),
+            values(std::move(other.values)) {
+    }
+    Stats(const Stats&) = delete;
+    Stats& operator=(const Stats&) = delete;
     ~Stats() noexcept { }
     void print(std::ostream& out, const ReadGroup& group,
                Statistics* ptr) const;

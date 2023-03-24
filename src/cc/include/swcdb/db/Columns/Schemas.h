@@ -26,7 +26,7 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     Condition::Comp comp;
 
     SWC_CAN_INLINE
-    Pattern() noexcept { }
+    Pattern() noexcept : comp(Condition::NONE) { }
 
     SWC_CAN_INLINE
     Pattern(Condition::Comp a_comp, std::string&& value) noexcept
@@ -95,14 +95,15 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
   struct SelectorPatterns {
     NamePatterns  names;
     TagsPattern   tags;
-
+    SWC_CAN_INLINE
+    SelectorPatterns() noexcept : names(), tags() {}
     ~SelectorPatterns() noexcept { }
   };
 
 
 
   SWC_CAN_INLINE
-  Schemas() noexcept { }
+  Schemas() noexcept: m_mutex() { }
 
   SWC_CAN_INLINE
   ~Schemas() noexcept { }

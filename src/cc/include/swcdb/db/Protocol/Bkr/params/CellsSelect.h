@@ -19,7 +19,7 @@ class CellsSelectReq final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  CellsSelectReq() noexcept { }
+  CellsSelectReq() noexcept: cid(), interval() { }
 
   SWC_CAN_INLINE
   CellsSelectReq(cid_t a_cid, const DB::Specs::Interval& a_interval)
@@ -80,7 +80,7 @@ class CellsSelectRsp final : public Serializable {
   SWC_CAN_INLINE
   CellsSelectRsp(int a_err = Error::OK, bool a_more=false,
                  uint64_t a_offset=0) noexcept
-                : err(a_err), more(a_more), offset(a_offset) {
+                : err(a_err), more(a_more), offset(a_offset), data() {
   }
 
   CellsSelectRsp(int err, const uint8_t* ptr, size_t remain,

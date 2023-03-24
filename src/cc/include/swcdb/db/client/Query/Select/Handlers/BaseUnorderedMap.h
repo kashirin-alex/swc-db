@@ -26,7 +26,8 @@ class BaseUnorderedMap : public Base {
   SWC_CAN_INLINE
   BaseUnorderedMap(const Clients::Ptr& a_clients,
                    Clients::Flag a_executor=Clients::DEFAULT) noexcept
-                  : Base(a_clients, a_executor) {
+                  : Base(a_clients, a_executor),
+                    m_mutex(), m_columns() {
   }
 
   virtual ~BaseUnorderedMap() noexcept { }
@@ -59,7 +60,7 @@ class BaseUnorderedMap : public Base {
     typedef std::shared_ptr<Rsp> Ptr;
 
     SWC_CAN_INLINE
-    Rsp() noexcept : m_err(Error::OK) { }
+    Rsp() noexcept : m_mutex(), m_cells(), m_err(Error::OK) { }
 
     ~Rsp() noexcept { }
 

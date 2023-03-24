@@ -26,20 +26,36 @@ class Interval final {
 
   SWC_CAN_INLINE
   explicit Interval(const Types::KeySeq a_key_seq) noexcept
-                    : key_seq(a_key_seq) {
+                    : key_seq(a_key_seq),
+                      key_begin(), key_end(),
+                      ts_earliest(), ts_latest(),
+                      aligned_min(), aligned_max(),
+                      was_set(false) {
   }
 
   SWC_CAN_INLINE
   explicit Interval(const Types::KeySeq a_key_seq,
                     const uint8_t **ptr, size_t *remain)
-                  : key_seq(a_key_seq) {
-    decode(ptr, remain, true);
+                  : key_seq(a_key_seq),
+                    key_begin(ptr, remain, true),
+                    key_end(ptr, remain, true),
+                    ts_earliest(ptr, remain),
+                    ts_latest(ptr, remain),
+                    aligned_min(ptr, remain),
+                    aligned_max(ptr, remain),
+                    was_set(true) {
   }
 
   SWC_CAN_INLINE
   explicit Interval(const Interval& other)
-                  : key_seq(other.key_seq) {
-    copy(other);
+                  : key_seq(other.key_seq),
+                    key_begin(other.key_begin),
+                    key_end(other.key_end),
+                    ts_earliest(other.ts_earliest),
+                    ts_latest(other.ts_latest),
+                    aligned_min(other.aligned_min),
+                    aligned_max(other.aligned_max),
+                    was_set(true) {
   }
 
   SWC_CAN_INLINE
@@ -203,7 +219,7 @@ class Interval final {
   Specs::Timestamp  ts_latest;
   DB::Cell::KeyVec  aligned_min;
   DB::Cell::KeyVec  aligned_max;
-  bool              was_set = false;
+  bool              was_set;
 
 };
 

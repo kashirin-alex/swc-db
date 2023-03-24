@@ -39,12 +39,12 @@ class Column final : public Core::Vector<Interval::Ptr> {
   }
 
   SWC_CAN_INLINE
-  explicit Column(const uint8_t** bufp, size_t* remainp) {
+  explicit Column(const uint8_t** bufp, size_t* remainp): cid() {
     decode(bufp, remainp);
   }
 
   SWC_CAN_INLINE
-  explicit Column(const Column& other) : Intervals() {
+  explicit Column(const Column& other) : Intervals(), cid() {
     copy(other);
   }
 

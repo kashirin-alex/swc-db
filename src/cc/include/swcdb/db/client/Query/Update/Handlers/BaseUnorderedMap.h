@@ -25,7 +25,8 @@ class BaseUnorderedMap
   SWC_CAN_INLINE
   BaseUnorderedMap(const Clients::Ptr& a_clients,
                    Clients::Flag a_executor=Clients::DEFAULT) noexcept
-                  : Base(a_clients, a_executor) {
+                  : Base(a_clients, a_executor),
+                    m_mutex() {
   }
 
   BaseUnorderedMap(const BaseUnorderedMap&) = delete;

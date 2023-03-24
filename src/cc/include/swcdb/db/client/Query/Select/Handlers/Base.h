@@ -40,7 +40,7 @@ class Base : public std::enable_shared_from_this<Base>{
   SWC_CAN_INLINE
   Base(const Clients::Ptr& a_clients,
        Clients::Flag a_executor=Clients::DEFAULT) noexcept
-      : clients(a_clients),
+      : clients(a_clients), profile(),
         state_error(Error::OK), completion(0),
         timeout(clients->cfg_recv_timeout->get()),
         buff_sz(clients->cfg_recv_buff_sz->get()),

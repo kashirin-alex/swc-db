@@ -144,8 +144,8 @@ Field_KEY::Field_KEY(uint24_t a_fid, const Key& a_key, bool take_ownership)
 
 Field_KEY::Field_KEY(const uint8_t** bufp, size_t* remainp,
                      bool take_ownership)
-                    : Field(bufp, remainp) {
-  key.decode(bufp, remainp, take_ownership);
+                    : Field(bufp, remainp),
+                      key(bufp, remainp, take_ownership) {
 }
 
 void Field_KEY::decode(const uint8_t** bufp, size_t* remainp,

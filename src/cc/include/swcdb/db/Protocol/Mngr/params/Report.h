@@ -61,7 +61,8 @@ class RspColumnStatus final : public Serializable {
 
   SWC_CAN_INLINE
   RspColumnStatus() noexcept
-                  : state(DB::Types::MngrColumn::State::NOTSET) {
+                  : state(DB::Types::MngrColumn::State::NOTSET),
+                    ranges() {
   }
 
   SWC_CAN_INLINE
@@ -74,10 +75,11 @@ class RspColumnStatus final : public Serializable {
     rgrid_t                     rgr_id;
 
     SWC_CAN_INLINE
-    RangeStatus() noexcept { }
+    RangeStatus() noexcept : state(), rid(), rgr_id() { }
 
     SWC_CAN_INLINE
-    RangeStatus(const uint8_t** bufp, size_t* remainp) {
+    RangeStatus(const uint8_t** bufp, size_t* remainp)
+                : state(), rid(), rgr_id() {
       decode(bufp, remainp);
     }
 
@@ -112,7 +114,7 @@ class RspRangersStatus final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RspRangersStatus() noexcept { }
+  RspRangersStatus() noexcept : rangers() { }
 
   SWC_CAN_INLINE
   ~RspRangersStatus() noexcept { }
@@ -128,10 +130,15 @@ class RspRangersStatus final : public Serializable {
     uint8_t     rebalance;
 
     SWC_CAN_INLINE
-    Ranger() noexcept { }
+    Ranger() noexcept
+          : endpoints(), state(), rgr_id(),
+            failures(), interm_ranges(), load_scale(), rebalance() {
+    }
 
     SWC_CAN_INLINE
-    Ranger(const uint8_t** bufp, size_t* remainp) {
+    Ranger(const uint8_t** bufp, size_t* remainp)
+          : endpoints(), state(), rgr_id(),
+            failures(), interm_ranges(), load_scale(), rebalance() {
       decode(bufp, remainp);
     }
 
@@ -168,7 +175,7 @@ class RspManagersStatus final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RspManagersStatus() noexcept { }
+  RspManagersStatus() noexcept: managers(), inchain() { }
 
   SWC_CAN_INLINE
   ~RspManagersStatus() noexcept { }
@@ -184,10 +191,17 @@ class RspManagersStatus final : public Serializable {
     int                   failures;
 
     SWC_CAN_INLINE
-    Manager() noexcept { }
+    Manager() noexcept
+            : endpoints(),
+              priority(), state(), role(),
+              cid_begin(), cid_end(), failures() {
+    }
 
     SWC_CAN_INLINE
-    Manager(const uint8_t** bufp, size_t* remainp) {
+    Manager(const uint8_t** bufp, size_t* remainp)
+            : endpoints(),
+              priority(), state(), role(),
+              cid_begin(), cid_end(), failures() {
       decode(bufp, remainp);
     }
 

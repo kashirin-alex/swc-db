@@ -84,7 +84,7 @@ class Level : public Base {
   const std::string       name;
   Core::Vector<Base::Ptr> metrics;
 
-  Level(const char* a_name) : name(a_name) { }
+  Level(const char* a_name) : name(a_name), metrics() { }
 
   virtual ~Level() noexcept { }
 
@@ -244,6 +244,10 @@ class Reporting : public BaseSingleColumn {
             const Comm::IoContextPtr& a_io,
             Config::Property::Value_int32_g::Ptr a_cfg_intval,
             Clients::Flag a_executor=client::Clients::DEFAULT);
+
+  Reporting(const Reporting&) = delete;
+
+  Reporting& operator=(const Reporting&) = delete;
 
   virtual ~Reporting() noexcept { }
 

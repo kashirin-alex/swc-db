@@ -112,7 +112,8 @@ Clients::Clients(const Config::Settings& settings,
         settings.get<Config::Property::Value_int32_g>(
           "swc.client.schema.expiry")),
       managers(settings, io_ctx, mngr_ctx),
-      rangers(settings, io_ctx, rgr_ctx) {
+      rangers(settings, io_ctx, rgr_ctx),
+      brokers() {
 }
 
 Clients::Clients(const Config::Settings& settings,
@@ -147,6 +148,8 @@ Clients::Clients(const Config::Settings& settings,
         this,
         settings.get<Config::Property::Value_int32_g>(
           "swc.client.schema.expiry")),
+      managers(),
+      rangers(),
       brokers(settings, io_ctx, bkr_ctx) {
 }
 

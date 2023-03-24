@@ -41,13 +41,15 @@ class IntervalUpdate final {
 
   IntervalUpdate(Types::Encoder a_encoder,
                 int64_t a_timestamp=DB::Cells::TIMESTAMP_NULL) noexcept
-                : encoder(a_encoder), timestamp(a_timestamp), 
+                : operation(),
+                  encoder(a_encoder), timestamp(a_timestamp), 
                   value(nullptr), vlen(0) {
   }
 
   IntervalUpdate(Types::Encoder a_encoder, uint32_t a_vlen,
                  int64_t a_timestamp=DB::Cells::TIMESTAMP_NULL)
-                : encoder(a_encoder), timestamp(a_timestamp),
+                : operation(),
+                  encoder(a_encoder), timestamp(a_timestamp),
                   value(alloc_value(a_vlen)), vlen(a_vlen) {
   }
 
@@ -77,7 +79,8 @@ class IntervalUpdate final {
   IntervalUpdate(const uint8_t** bufp, size_t* remainp)
                 : operation(bufp, remainp),
                   encoder(Types::Encoder(Serialization::decode_i8(bufp, remainp))),
-                  timestamp(Serialization::decode_vi64(bufp, remainp)) {
+                  timestamp(Serialization::decode_vi64(bufp, remainp)),
+                  value(), vlen() {
     size_t len;
     const uint8_t* ptr = Serialization::decode_bytes(bufp, remainp, &len);
     vlen = len;
@@ -102,7 +105,9 @@ class IntervalUpdate final {
   }
 
   IntervalUpdate(const DB::Cells::Cell& cell)
-                : timestamp(cell.get_timestamp()) {
+                : operation(), encoder(),
+                  timestamp(cell.get_timestamp()),
+                  value(), vlen() {
     StaticBuffer _v;
     encoder = cell.get_value(_v);
     value = copy_value(_v.base, _v.size);
@@ -110,7 +115,9 @@ class IntervalUpdate final {
   }
 
   IntervalUpdate(DB::Cells::Cell&& cell)
-                : timestamp(cell.get_timestamp()) {
+                : operation(), encoder(),
+                  timestamp(cell.get_timestamp()),
+                  value(), vlen() {
     if(cell.have_encoder()) {
       StaticBuffer _v;
       encoder = cell.get_value(_v);

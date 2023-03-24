@@ -24,7 +24,9 @@ class ReqScan : public Comm::ResponseCallback {
   SWC_CAN_INLINE
   ReqScan() noexcept
           : Comm::ResponseCallback(nullptr, nullptr),
-            only_keys(false), offset(0) {
+            spec(),
+            only_keys(false), offset(0),
+            profile() {
   }
 
   SWC_CAN_INLINE
@@ -32,7 +34,8 @@ class ReqScan : public Comm::ResponseCallback {
           : Comm::ResponseCallback(nullptr, nullptr),
             spec(a_spec),
             only_keys(spec.flags.is_only_keys()),
-            offset(spec.flags.offset) {
+            offset(spec.flags.offset),
+            profile() {
   }
 
   SWC_CAN_INLINE
@@ -41,7 +44,8 @@ class ReqScan : public Comm::ResponseCallback {
           : Comm::ResponseCallback(conn, ev),
             spec(std::move(a_spec)),
             only_keys(spec.flags.is_only_keys()),
-            offset(spec.flags.offset) {
+            offset(spec.flags.offset),
+            profile() {
   }
 
   SWC_CAN_INLINE
@@ -50,7 +54,8 @@ class ReqScan : public Comm::ResponseCallback {
           : Comm::ResponseCallback(conn, ev),
             spec(a_spec),
             only_keys(spec.flags.is_only_keys()),
-            offset(spec.flags.offset) {
+            offset(spec.flags.offset),
+            profile() {
   }
 
   SWC_CAN_INLINE
@@ -59,7 +64,8 @@ class ReqScan : public Comm::ResponseCallback {
           : Comm::ResponseCallback(conn, ev),
             spec(range_begin, range_end),
             only_keys(false),
-            offset(0) {
+            offset(0),
+            profile() {
   }
 
   ReqScan(const ReqScan&) = delete;
@@ -104,7 +110,7 @@ class ReqScan : public Comm::ResponseCallback {
 
   struct Profile {
     const int64_t ts_start    = Time::now_ns();
-    int64_t ts_finish;
+    int64_t ts_finish         = 0;
     uint64_t cells_count      = 0;
     uint64_t cells_bytes      = 0;
     uint64_t cells_skipped    = 0;
@@ -204,7 +210,7 @@ class ReqScanTest : public ReqScan {
   static Ptr make() { return Ptr(new ReqScanTest()); }
 
   SWC_CAN_INLINE
-  ReqScanTest() noexcept { }
+  ReqScanTest() noexcept: cells(), cb() { }
 
   bool reached_limits() override {
     return (spec.flags.limit && spec.flags.limit <= cells.size()) ||

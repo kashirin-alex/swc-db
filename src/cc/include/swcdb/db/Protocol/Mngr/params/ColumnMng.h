@@ -37,7 +37,7 @@ class ColumnMng : public Serializable {
   };
 
   SWC_CAN_INLINE
-  ColumnMng() noexcept { }
+  ColumnMng() noexcept : function(), schema() { }
 
   SWC_CAN_INLINE
   ColumnMng(Function a_function, const DB::Schema::Ptr& a_schema) noexcept
