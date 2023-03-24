@@ -68,7 +68,7 @@ bool Value::is_matching_serial(const Cells::Cell& cell) const {
 
 struct MatcherCounter : Value::TypeMatcher {
   SWC_CAN_INLINE
-  MatcherCounter(const uint8_t* data, uint32_t size) {
+  MatcherCounter(const uint8_t* data, uint32_t size) noexcept : value() {
     errno = 0;
     char *last = reinterpret_cast<char*>(const_cast<uint8_t*>(data)) + size;
     value = strtoll(reinterpret_cast<const char*>(data), &last, 0);

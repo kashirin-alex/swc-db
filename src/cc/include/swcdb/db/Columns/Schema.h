@@ -201,7 +201,7 @@ class Schema final : public SchemaPrimitives {
   }
 
   SWC_CAN_INLINE
-  Schema() noexcept { }
+  Schema() noexcept : col_name(), tags() { }
 
   Schema(const Schema& other);
 

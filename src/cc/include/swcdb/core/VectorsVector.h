@@ -129,10 +129,11 @@ class VectorsVector : public VectorsT {
     }
 
     constexpr SWC_CAN_INLINE
-    void operator++() noexcept {
+    ConstIterator& operator++() noexcept {
       if(++_pos_item == _vectors[_pos_vec].size() &&
          ++_pos_vec != _vectors.size())
         _pos_item = 0;
+      return *this;
     }
 
     constexpr SWC_CAN_INLINE
@@ -198,10 +199,11 @@ class VectorsVector : public VectorsT {
     }
 
     constexpr SWC_CAN_INLINE
-    void operator++() noexcept {
+    Iterator& operator++() noexcept {
       if(++_pos_item == _vectors[_pos_vec].size() &&
          ++_pos_vec != _vectors.size())
         _pos_item = 0;
+      return *this;
     }
 
     constexpr SWC_CAN_INLINE
@@ -315,7 +317,7 @@ class VectorsVector : public VectorsT {
 
     constexpr SWC_CAN_INLINE
     explicit ConstIterator(const VectorsT& a_vectors, size_t offset) noexcept
-        : _vectors(a_vectors), _vector(_vectors.cbegin()) {
+        : _vectors(a_vectors), _vector(_vectors.cbegin()), _item() {
       for(auto vec_end = _vectors.cend(); _vector != vec_end; ++_vector) {
         if(!offset || offset < _vector->size()) {
           _item = _vector->cbegin() + offset;
@@ -357,9 +359,10 @@ class VectorsVector : public VectorsT {
     }
 
     constexpr SWC_CAN_INLINE
-    void operator++() noexcept {
+    ConstIterator& operator++() noexcept {
       if(++_item == _vector->cend() && ++_vector != _vectors.cend())
         _item = _vector->cbegin();
+      return *this;
     }
 
     constexpr SWC_CAN_INLINE
@@ -397,7 +400,7 @@ class VectorsVector : public VectorsT {
 
     constexpr SWC_CAN_INLINE
     explicit Iterator(VectorsT& a_vectors, size_t offset) noexcept
-        : _vectors(a_vectors), _vector(_vectors.begin()) {
+        : _vectors(a_vectors), _vector(_vectors.begin()), _item() {
       for(auto vec_end = _vectors.cend(); _vector != vec_end; ++_vector) {
         if(!offset || offset < _vector->size()) {
           _item = _vector->begin() + offset;
@@ -439,9 +442,10 @@ class VectorsVector : public VectorsT {
     }
 
     constexpr SWC_CAN_INLINE
-    void operator++() noexcept {
+    Iterator& operator++() noexcept {
       if(++_item == _vector->cend() && ++_vector != _vectors.cend())
         _item = _vector->begin();
+      return *this;
     }
 
     constexpr SWC_CAN_INLINE

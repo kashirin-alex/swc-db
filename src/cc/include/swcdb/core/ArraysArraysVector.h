@@ -81,9 +81,10 @@ class ArraysArraysVector {
     }
 
     SWC_CAN_INLINE
-    void operator++() noexcept {
+    ConstIterator& operator++() noexcept {
       if(!++_item && ++_array != _vector.cend())
         _item = (*_array)->GetConstIterator();
+      return *this;
     }
 
     SWC_CAN_INLINE
@@ -148,9 +149,10 @@ class ArraysArraysVector {
     }
 
     SWC_CAN_INLINE
-    void operator++() noexcept {
+    Iterator& operator++() noexcept {
       if(!++_item && ++_array != _vector.cend())
         _item = (*_array)->GetIterator();
+      return *this;
     }
 
     SWC_CAN_INLINE
