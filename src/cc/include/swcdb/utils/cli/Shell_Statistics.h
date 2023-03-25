@@ -55,6 +55,11 @@ class Statistics final : public Interface {
     uint8_t     agg;
     std::string name;
     std::string label;
+    MetricDefinition() noexcept : relation(), id(), agg(), name(), label() { }
+    MetricDefinition(MetricDefinition&&) = default;
+    MetricDefinition(const MetricDefinition&) = delete;
+    MetricDefinition& operator=(const MetricDefinition&) = delete;
+    MetricDefinition& operator=(MetricDefinition&&) = default;
     ~MetricDefinition() noexcept { }
   };
 
@@ -62,6 +67,10 @@ class Statistics final : public Interface {
     DB::Specs::Key                 property;
     Core::Vector<MetricDefinition> metrics;
     StatsDefinition(const DB::Cells::Cell& cell);
+    StatsDefinition(StatsDefinition&&) = default;
+    StatsDefinition(const StatsDefinition&) = delete;
+    StatsDefinition& operator=(const StatsDefinition&) = delete;
+    StatsDefinition& operator=(StatsDefinition&&) = default;
     ~StatsDefinition() noexcept { }
     bool has_metric(const std::string& name, uint24_t fid,
                     size_t& metric_idx) const noexcept;

@@ -50,7 +50,8 @@ class ColumnCompact_Sync {
   SWC_CAN_INLINE
   ColumnCompact_Sync(const SWC::client::Clients::Ptr& a_clients,
                      int& a_err) noexcept
-                    : clients(a_clients), err(a_err) {
+                    : await(),
+                      clients(a_clients), err(a_err) {
   }
 
   ~ColumnCompact_Sync() noexcept { }

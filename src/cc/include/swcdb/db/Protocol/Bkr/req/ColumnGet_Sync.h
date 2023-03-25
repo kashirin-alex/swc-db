@@ -68,7 +68,8 @@ class ColumnGet_Sync {
   SWC_CAN_INLINE
   ColumnGet_Sync(const SWC::client::Clients::Ptr& a_clients,
                  int& a_err, DB::Schema::Ptr& a_schema) noexcept
-                 : clients(a_clients), err(a_err), _schema(a_schema) {
+                : await(),
+                  clients(a_clients), err(a_err), _schema(a_schema) {
   }
 
   ~ColumnGet_Sync() noexcept { }

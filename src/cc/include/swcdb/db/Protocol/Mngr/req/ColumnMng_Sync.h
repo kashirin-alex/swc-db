@@ -74,7 +74,8 @@ class ColumnMng_Sync {
 
   SWC_CAN_INLINE
   ColumnMng_Sync(const SWC::client::Clients::Ptr& a_clients, int& a_err)
-                 noexcept : clients(a_clients), err(a_err) {
+                 noexcept : await(),
+                            clients(a_clients), err(a_err) {
   }
 
   ~ColumnMng_Sync() noexcept { }

@@ -43,7 +43,9 @@ Statistics::Statistics()
           )
       )->init()
     ),
-    m_stat_names(default_stat_names) {
+    m_message(),
+    m_stat_names(default_stat_names),
+    m_read_groups(), m_definitions() {
 
   add_option(
     "show",
@@ -307,7 +309,8 @@ bool Statistics::read(std::string& cmd, bool extended) {
 
 
 
-Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell) {
+Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell)
+                                            : property(), metrics() {
   property.set(cell.key, Condition::Comp::EQ);
   property[0].clear();
   property[0].comp = Condition::Comp::GE;

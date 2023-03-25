@@ -23,17 +23,24 @@ class FileWriter {
   public:
   client::Clients::Ptr clients;
   FS::Interface::Ptr   interface;
-  int         err = Error::OK;
+  int         err;
   std::string base_path;
-  std::string file_ext = ".tsv";
+  std::string file_ext;
 
-  uint64_t    split_size = 1073741824;
-  uint8_t     output_flags = 0;
-  size_t      cells_count = 0;
-  size_t      cells_bytes = 0;
-  size_t      file_num = 0;
+  uint64_t    split_size;
+  uint8_t     output_flags;
+  size_t      cells_count;
+  size_t      cells_bytes;
+  size_t      file_num;
+
   FileWriter(const client::Clients::Ptr& a_clients)
-            : clients(a_clients) {
+            : clients(a_clients), interface(nullptr),
+              err(Error::OK), base_path(), file_ext(".tsv"),
+              split_size(1073741824),
+              output_flags(0), cells_count(0), cells_bytes(0),
+              file_num(0), smartfd(nullptr), fds(),
+              cells(), has_encoder(false), flush_vol(0),
+              schemas(), _stream(nullptr) {
   }
 
   virtual ~FileWriter() noexcept { }
@@ -274,11 +281,11 @@ class FileWriter {
     }
   }
 
-  FS::SmartFd::Ptr               smartfd = nullptr;
+  FS::SmartFd::Ptr               smartfd;
   Core::Vector<FS::SmartFd::Ptr> fds;
   DB::Cells::Result              cells;
-  bool                           has_encoder = false;
-  size_t                         flush_vol = 0;
+  bool                           has_encoder;
+  size_t                         flush_vol;
   std::unordered_map<cid_t, DB::Schema::Ptr>  schemas;
   std::unique_ptr<Core::BufferStreamOut>      _stream;
 
@@ -290,21 +297,25 @@ class FileReader {
   public:
   client::Query::Update::Handlers::Common::Ptr hdlr;
   FS::Interface::Ptr   interface;
-  int             err = Error::CANCELLED;
-  cid_t           cid = DB::Schema::NO_CID;
+  int             err;
+  cid_t           cid;
   std::string     base_path;
   std::string     message;
   DB::Schema::Ptr schema;
-  size_t          cells_count = 0;
-  size_t          resend_cells = 0;
-  size_t          cells_bytes = 0;
+  size_t          cells_count;
+  size_t          resend_cells;
+  size_t          cells_bytes;
 
   FileReader(const client::Clients::Ptr& clients,
              const client::Clients::Flag flag)
             : hdlr(
                 client::Query::Update::Handlers::Common::make(
-                  clients, nullptr, nullptr, flag
-                )) {
+                  clients, nullptr, nullptr, flag)),
+              interface(nullptr),
+              err(Error::CANCELLED), cid(DB::Schema::NO_CID),
+              base_path(), message(), schema(nullptr),
+              cells_count(0), resend_cells(0), cells_bytes(0),
+              fds() {
   }
 
   ~FileReader() noexcept {
