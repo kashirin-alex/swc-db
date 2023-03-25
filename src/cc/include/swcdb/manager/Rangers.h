@@ -29,6 +29,11 @@ class Rangers final {
 
   Rangers(const Comm::IoContextPtr& app_io);
 
+  Rangers(const Rangers&) = delete;
+  Rangers(Rangers&&) = delete;
+  Rangers& operator=(const Rangers&) = delete;
+  Rangers& operator=(Rangers&&) = delete;
+
   ~Rangers() noexcept { }
 
   SWC_CAN_INLINE

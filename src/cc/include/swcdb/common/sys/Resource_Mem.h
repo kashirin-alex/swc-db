@@ -87,6 +87,11 @@ class Mem {
     #endif
   }
 
+  Mem(const Mem&) = delete;
+  Mem(Mem&&) = delete;
+  Mem& operator=(const Mem&) = delete;
+  Mem& operator=(Mem&&) = delete;
+
   ~Mem() noexcept { }
 
   uint64_t check(uint64_t ts) noexcept {
@@ -435,7 +440,7 @@ class Mem {
   const ReleaseCall_t release_call;
 
   #if !defined(__MINGW64__) && !defined(_WIN32)
-  uint32_t            page_size;
+  uint32_t            page_size = {};
   #endif
 
   uint64_t            chk_stat_ts;
@@ -444,7 +449,7 @@ class Mem {
   uint64_t            chk_release_ts;
 
   #if defined TCMALLOC_MINIMAL || defined TCMALLOC
-  double release_rate_default;
+  double release_rate_default = {};
   #endif
 
 };

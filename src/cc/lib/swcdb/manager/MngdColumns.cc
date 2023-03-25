@@ -35,11 +35,14 @@ MngdColumns::MngdColumns()
       cfg_delay_cols_init(
         Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.ranges.assign.delay.afterColumnsInit")),
-      m_run(true), m_schemas_set(false),
-      m_cid_active(false),
+      m_run(true), m_columns_load(),
+      m_mutex_schemas(), m_schemas_set(false),
+      m_mutex_active(), m_cid_active(false),
       m_cid_begin(DB::Schema::NO_CID), m_cid_end(DB::Schema::NO_CID),
       m_expected_remain(STATE_COLUMNS_NOT_INITIALIZED),
-      m_last_used_cid(DB::Types::SystemColumn::SYS_CID_END) {
+      m_last_used_cid(DB::Types::SystemColumn::SYS_CID_END),
+      m_expected_load(),
+      m_mutex_actions(), m_actions(), m_actions_pending() {
 }
 
 void MngdColumns::stop() {

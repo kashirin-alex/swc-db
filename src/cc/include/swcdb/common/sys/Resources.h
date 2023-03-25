@@ -67,6 +67,7 @@ class Resources final {
                 std::move(release_call)
               ),
               running(0),
+              m_mutex_timer(),
               m_timer(ioctx->executor()) {
     checker();
   }

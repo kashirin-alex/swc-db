@@ -32,8 +32,9 @@ class Range final : public std::enable_shared_from_this<Range> {
   Range(const ColumnCfg::Ptr& a_cfg, const rid_t a_rid)
         : cfg(a_cfg), rid(a_rid),
           m_path(DB::RangeBase::get_path(cfg->cid, rid)),
-          m_state(State::NOTSET), m_check_ts(0),
-          m_rgrid(0), m_last_rgr(nullptr), m_load_revision(0) {
+          m_mutex(), m_state(State::NOTSET), m_check_ts(0),
+          m_rgrid(0), m_last_rgr(nullptr),
+          m_key_begin(), m_key_end(), m_load_revision(0) {
   }
 
   void init(int&) { }

@@ -45,8 +45,11 @@ Rangers::Rangers(const Comm::IoContextPtr& app_io)
         Env::Config::settings()->get<Config::Property::Value_int32_g>(
           "swc.mngr.column.health.checks.delay")),
       m_run(true),
+      m_mutex(),
       m_timer(asio::high_resolution_timer(app_io->executor())),
-      m_assignments(0), m_columns_check_ts(0) {
+      m_rangers(), m_rangers_resources(), m_assign(), m_assignments(0),
+      m_mutex_columns_check(), 
+      m_columns_check(), m_columns_check_ts(0) {
 }
 
 void Rangers::stop(bool shuttingdown) {

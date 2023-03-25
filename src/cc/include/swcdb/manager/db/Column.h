@@ -42,7 +42,8 @@ class Column final : private Core::Vector<Range::Ptr> {
   SWC_CAN_INLINE
   Column(const DB::Schema::Ptr& schema)
         : cfg(new ColumnCfg(schema)),
-          m_state(State::LOADING), m_check_ts(0) {
+          m_mutex(),
+          m_state(State::LOADING), m_check_ts(0), m_schemas_rev() {
   }
 
   ~Column() noexcept { }

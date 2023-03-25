@@ -20,6 +20,11 @@ class MngrRole final {
   MngrRole(const Comm::IoContextPtr& app_io,
            const Comm::EndPoints& endpoints);
 
+  MngrRole(const MngrRole&) = delete;
+  MngrRole(MngrRole&&) = delete;
+  MngrRole& operator=(const MngrRole&) = delete;
+  MngrRole& operator=(MngrRole&&) = delete;
+
   ~MngrRole() noexcept { }
 
   SWC_CAN_INLINE
@@ -98,7 +103,7 @@ class MngrRole final {
   Core::StateRunning              m_checkin;
   client::Mngr::Groups::Vec       m_local_groups;
   Core::Atomic<uint8_t>           m_local_active_role;
-  bool                            m_major_updates = false;
+  bool                            m_major_updates;
   std::unordered_map<uint64_t,  Comm::EndPoint> m_mngrs_client_srv;
 
   Core::MutexAtomic               m_mutex_timer;

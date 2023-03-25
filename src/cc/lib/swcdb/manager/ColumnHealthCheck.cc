@@ -19,7 +19,9 @@ SWC_CAN_INLINE
 ColumnHealthCheck::RangerCheck::RangerCheck(
                 const ColumnHealthCheck::Ptr& a_col_checker,
                 const Ranger::Ptr& a_rgr)
-                : col_checker(a_col_checker), rgr(a_rgr), m_checkings(0),
+                : col_checker(a_col_checker), rgr(a_rgr),
+                  m_mutex(),
+                  m_ranges(), m_checkings(0),
                   m_success(0), m_failures(0) {
 }
 
@@ -117,7 +119,9 @@ ColumnHealthCheck::ColumnHealthCheck(const Column::Ptr& a_col,
                                     : col(a_col),
                                       check_ts(a_check_ts),
                                       check_intval(a_check_intval),
-                                      completion(1) {
+                                      completion(1),
+                                      m_check(), m_mutex(),
+                                      m_checkers(), m_mergeable_ranges() {
   SWC_LOGF(LOG_DEBUG, "Column-Health START cid(" SWC_FMT_LU ")",
                       col->cfg->cid);
 }
@@ -241,7 +245,8 @@ ColumnHealthCheck::ColumnMerger::ColumnMerger(
             const ColumnHealthCheck::Ptr& a_col_checker,
             Core::Vector<Range::Ptr>&& ranges) noexcept
             : col_checker(a_col_checker),
-              m_ranges(std::move(ranges)) {
+              m_ranges(std::move(ranges)), cells(),
+              m_mutex(), m_mergers() {
 }
 
 void ColumnHealthCheck::ColumnMerger::run_master() {
@@ -368,8 +373,10 @@ SWC_CAN_INLINE
 ColumnHealthCheck::ColumnMerger::RangesMerger::RangesMerger(
                 const ColumnMerger::Ptr& a_col_merger,
                 Core::Vector<Range::Ptr>&& ranges) noexcept
-      : col_merger(a_col_merger), m_err(Error::OK),
-        m_ranges(std::move(ranges)) {
+      : col_merger(a_col_merger),
+        m_mutex(), m_err(Error::OK),
+        m_ranges(std::move(ranges)),
+        m_ready() {
 }
 
 void ColumnHealthCheck::ColumnMerger::RangesMerger::run() {

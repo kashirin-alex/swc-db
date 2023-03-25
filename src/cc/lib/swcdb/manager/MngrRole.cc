@@ -13,7 +13,10 @@ MngrRole::MngrRole(const Comm::IoContextPtr& app_io,
                    const Comm::EndPoints& endpoints)
     : m_local_endpoints(endpoints),
       m_local_token(Comm::endpoints_hash(m_local_endpoints)),
+      m_mutex(), m_states(), m_checkin(), m_local_groups(),
       m_local_active_role(DB::Types::MngrRole::NONE),
+      m_major_updates(false), m_mngrs_client_srv(),
+      m_mutex_timer(),
       m_check_timer(asio::high_resolution_timer(app_io->executor())),
       m_run(true),
       m_mngr_inchain(new Comm::client::ConnQueue(app_io)),
@@ -489,6 +492,10 @@ void MngrRole::managers_checker(uint32_t next, uint32_t total, bool flw) {
              uint32_t a_next, uint32_t a_total, bool a_flw) noexcept
             : ptr(a_ptr), host_chk(a_host_chk),
               next(a_next), total(a_total), flw(a_flw) { }
+    Callback(Callback&&) = default;
+    Callback(const Callback&) = default;
+    Callback& operator=(Callback&&) = default;
+    Callback& operator=(const Callback&) = delete;
     ~Callback() noexcept { }
     void operator()(const Comm::ConnHandlerPtr& conn) noexcept {
       ptr->manager_checker(host_chk, next, total, flw, conn);

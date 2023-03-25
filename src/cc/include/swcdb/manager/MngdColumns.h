@@ -36,6 +36,11 @@ class MngdColumns final {
 
   MngdColumns();
 
+  MngdColumns(const MngdColumns&) = delete;
+  MngdColumns(MngdColumns&&) = delete;
+  MngdColumns& operator=(const MngdColumns&) = delete;
+  MngdColumns& operator=(MngdColumns&&) = delete;
+
   ~MngdColumns() noexcept { }
 
   SWC_CAN_INLINE

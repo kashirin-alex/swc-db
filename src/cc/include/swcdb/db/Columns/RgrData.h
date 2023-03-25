@@ -29,7 +29,7 @@ class RgrData final {
   Comm::EndPoints                   endpoints;
 
   SWC_CAN_INLINE
-  RgrData() noexcept : rgrid(0) { }
+  RgrData() noexcept : rgrid(0), endpoints() { }
 
   ~RgrData() noexcept { }
 
@@ -218,7 +218,12 @@ class RgrData final {
     public:
     typedef std::shared_ptr<SyncUpdater> Ptr;
     Core::StateSynchronization           await;
-
+    SWC_CAN_INLINE
+    SyncUpdater() noexcept : await() { }
+    SyncUpdater(const SyncUpdater&) = delete;
+    SyncUpdater(SyncUpdater&&) = delete;
+    SyncUpdater& operator=(const SyncUpdater&) = delete;
+    SyncUpdater& operator=(SyncUpdater&&) = delete;
     void callback() override {
       await.acknowledge();
     };
@@ -296,7 +301,12 @@ class RgrData final {
     public:
     typedef std::shared_ptr<SyncSelector> Ptr;
     Core::StateSynchronization            await;
-
+    SWC_CAN_INLINE
+    SyncSelector() noexcept : await() { }
+    SyncSelector(const SyncSelector&) = delete;
+    SyncSelector(SyncSelector&&) = delete;
+    SyncSelector& operator=(const SyncSelector&) = delete;
+    SyncSelector& operator=(SyncSelector&&) = delete;
     void callback() override {
       await.acknowledge();
     };

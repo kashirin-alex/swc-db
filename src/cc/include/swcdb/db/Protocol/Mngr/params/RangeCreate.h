@@ -63,7 +63,7 @@ class RangeCreateRsp final : public Serializable {
   RangeCreateRsp(int a_err = Error::OK) noexcept : err(a_err), rid(0) { }
 
   RangeCreateRsp(int a_err, const uint8_t* ptr, size_t remain) noexcept
-                 : err(a_err) {
+                 : err(a_err), rid() {
     if(!err) try {
       decode(&ptr, &remain);
     } catch(...) {

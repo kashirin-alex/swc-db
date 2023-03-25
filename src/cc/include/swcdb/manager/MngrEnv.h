@@ -110,8 +110,10 @@ class Mngr final {
           _reporting ? &_reporting->system : nullptr,
           nullptr
         ),
+        m_schemas(), m_columns(),
         m_role(app_io, endpoints),
         m_rangers(app_io),
+        m_mngd_columns(),
         m_shutting_down(false) {
   }
 

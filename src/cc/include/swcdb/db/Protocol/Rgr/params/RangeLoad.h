@@ -18,7 +18,7 @@ class RangeLoad final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RangeLoad() noexcept : rid(0) { }
+  RangeLoad() noexcept : schema_primitives(), rid(0) { }
 
   SWC_CAN_INLINE
   RangeLoad(const DB::Schema::Ptr& schema, rid_t a_rid) noexcept

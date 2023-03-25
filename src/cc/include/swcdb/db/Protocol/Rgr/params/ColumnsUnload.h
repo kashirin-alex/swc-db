@@ -54,7 +54,7 @@ class ColumnsUnloadRsp final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnsUnloadRsp(int a_err = Error::OK) noexcept : err(a_err) { }
+  ColumnsUnloadRsp(int a_err = Error::OK) noexcept : err(a_err), columns() { }
 
   SWC_CAN_INLINE
   ~ColumnsUnloadRsp() noexcept { }

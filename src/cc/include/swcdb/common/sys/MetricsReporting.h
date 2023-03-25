@@ -105,7 +105,8 @@ class Item_Net : public Base {
     SWC_CAN_INLINE
     Addr(const Comm::EndPoint& endpoint) noexcept
         : addr(endpoint.address()),
-          conn_open(0), conn_accept(0), conn_est(0) {
+          conn_open(0), conn_accept(0), conn_est(0),
+          bytes_sent(), bytes_recv() {
     }
   };
 
@@ -423,7 +424,7 @@ class Item_Mem : public Base {
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  rss_used;
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  rss_used_reg;
 
-  Item_Mem() noexcept { }
+  Item_Mem() noexcept: rss_free(), rss_used(), rss_used_reg() { }
 
   virtual ~Item_Mem() noexcept { }
 
@@ -561,7 +562,7 @@ class Item_CPU : public Base {
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  percent_sys;
   Common::Stats::MinMaxAvgCount_Safe<uint64_t>  nthreads;
 
-  Item_CPU() noexcept { }
+  Item_CPU() noexcept : percent_user(), percent_sys(), nthreads() { }
 
   virtual ~Item_CPU() noexcept { }
 
@@ -879,6 +880,11 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
     return level;
   }
 
+  Reporting(const Reporting&) = delete;
+  Reporting(Reporting&&) = delete;
+  Reporting& operator=(const Reporting&) = delete;
+  Reporting& operator=(Reporting&&) = delete;
+
   virtual ~Reporting() noexcept { }
 
 
@@ -892,6 +898,11 @@ class Reporting : public client::Query::Update::Handlers::Metric::Reporting {
             cpu(new Item_CPU()),
             mem(new Item_Mem()) {
     }
+
+    System(const System&) = delete;
+    System(System&&) = delete;
+    System& operator=(const System&) = delete;
+    System& operator=(System&&) = delete;
 
     void rss_used_reg(size_t bytes) noexcept override {
       mem->rss_used_reg.add(bytes / 1048576);

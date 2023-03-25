@@ -30,12 +30,16 @@ class RgrMngId final : public Serializable {
     };
 
   SWC_CAN_INLINE
-  RgrMngId() noexcept {}
+  RgrMngId() noexcept 
+          : endpoints(), rgrid(), flag(),
+            fs(FS::Type::UNKNOWN) {
+  }
 
   SWC_CAN_INLINE
   RgrMngId(rgrid_t a_rgrid, Flag a_flag, const EndPoints& a_endpoints)
           : endpoints(a_endpoints),
-            rgrid(a_rgrid), flag(a_flag) {
+            rgrid(a_rgrid), flag(a_flag),
+            fs(FS::Type::UNKNOWN) {
   }
 
   SWC_CAN_INLINE

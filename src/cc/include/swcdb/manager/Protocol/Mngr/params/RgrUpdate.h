@@ -16,7 +16,7 @@ class RgrUpdate final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  RgrUpdate() noexcept { }
+  RgrUpdate() noexcept : hosts(), sync_all() { }
 
   SWC_CAN_INLINE
   RgrUpdate(const Manager::RangerList& a_hosts, bool a_sync_all)

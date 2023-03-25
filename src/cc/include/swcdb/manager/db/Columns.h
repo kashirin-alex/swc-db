@@ -32,7 +32,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
 
   typedef Columns* Ptr;
 
-  Columns() noexcept : m_health_last_cid(DB::Schema::NO_CID) { }
+  Columns() noexcept : m_mutex(), m_health_last_cid(DB::Schema::NO_CID) { }
 
   ~Columns() noexcept { }
 
@@ -188,7 +188,7 @@ class Columns final : private std::unordered_map<cid_t, Column::Ptr> {
   class AssignGroup final : private std::unordered_set<Range::Ptr> {
     public:
 
-    AssignGroup() noexcept { }
+    AssignGroup() noexcept : m_mutex() { }
 
     AssignGroup(AssignGroup&&)                 = delete;
     AssignGroup(const AssignGroup&)            = delete;

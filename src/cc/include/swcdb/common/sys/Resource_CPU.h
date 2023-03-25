@@ -29,10 +29,16 @@ class CPU {
   Core::Atomic<uint32_t>                        threads;
 
   CPU(Notifier* a_notifier) noexcept
-      : concurrency(std::thread::hardware_concurrency()), mhz(0), usage(0),
+      : concurrency(std::thread::hardware_concurrency()),
+        mhz(0), usage(0), threads(0),
         notifier(a_notifier), ms_intval(10000),
         stat_chk(0), stat_utime(0), stat_stime(0) {
   }
+
+  CPU(const CPU&) = delete;
+  CPU(CPU&&) = delete;
+  CPU& operator=(const CPU&) = delete;
+  CPU& operator=(CPU&&) = delete;
 
   uint64_t check(uint64_t ts) noexcept {
     try {

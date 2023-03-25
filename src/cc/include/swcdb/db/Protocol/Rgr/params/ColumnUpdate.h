@@ -15,7 +15,7 @@ class ColumnUpdate final : public Serializable {
   public:
 
   SWC_CAN_INLINE
-  ColumnUpdate() noexcept { }
+  ColumnUpdate() noexcept : schema_primitives() { }
 
   SWC_CAN_INLINE
   ColumnUpdate(const DB::Schema::Ptr& schema) noexcept

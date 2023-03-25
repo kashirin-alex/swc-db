@@ -33,7 +33,7 @@ class Ranger final {
   Ranger(rgrid_t a_rgrid, const Comm::EndPoints& a_endpoints)
         : rgrid(a_rgrid), endpoints(a_endpoints),
           interm_ranges(0), failures(0), load_scale(0),
-          state(RangerState::NONE), m_rebalance(0),
+          state(RangerState::NONE), m_mutex(), m_rebalance(0),
           m_queue(nullptr) {
   }
 
@@ -44,7 +44,7 @@ class Ranger final {
           interm_ranges(0), failures(0),
           load_scale(Serialization::decode_i16(bufp, remainp)),
           state(Serialization::decode_i8(bufp, remainp)),
-          m_rebalance(Serialization::decode_i8(bufp, remainp)),
+          m_mutex(), m_rebalance(Serialization::decode_i8(bufp, remainp)),
           m_queue(nullptr) {
   }
 
@@ -56,7 +56,7 @@ class Ranger final {
           failures(other.failures.load()),
           load_scale(other.load_scale.load()),
           state(other.state.load()),
-          m_rebalance(other.rebalance()),
+          m_mutex(), m_rebalance(other.rebalance()),
           m_queue(nullptr) {
   }
 
