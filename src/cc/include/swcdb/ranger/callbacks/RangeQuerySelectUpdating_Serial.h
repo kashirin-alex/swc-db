@@ -34,7 +34,8 @@ class RangeQuerySelectUpdating_Serial final
                                       spec.updating->value,
                                       spec.updating->vlen,
                                       false
-                                    ) {
+                                    ),
+                                    opfields_found(), opfields_missing() {
     only_keys = false;
     opfields_found.reserve(u_fields.count);
     opfields_missing.reserve(u_fields.count);

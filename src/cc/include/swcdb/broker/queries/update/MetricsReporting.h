@@ -28,6 +28,11 @@ class Reporting final : public Common::Query::Update::Metric::Reporting {
   Reporting(const Comm::IoContextPtr& a_io,
             Config::Property::Value_int32_g::Ptr a_cfg_intval);
 
+  Reporting(const Reporting&) = delete;
+  Reporting(Reporting&&) = delete;
+  Reporting& operator=(const Reporting&) = delete;
+  Reporting& operator=(Reporting&&) = delete;
+
   void configure_bkr(const char*, const Comm::EndPoints& endpoints);
 
   virtual ~Reporting() noexcept { }

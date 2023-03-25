@@ -66,6 +66,12 @@ class ReqScan  : public DB::Cells::ReqScan {
     Env::Rgr::scan_reserved_bytes_add(blk_size * SWC_SCAN_RSVD_BUFFS);
   }
 
+  SWC_CAN_INLINE
+  ReqScan(ReqScan&&) = delete;
+  ReqScan(const ReqScan&) = delete;
+  ReqScan& operator=(const ReqScan&) = delete;
+  ReqScan& operator=(ReqScan&&) = delete;
+
   virtual ~ReqScan() noexcept {
     Env::Rgr::scan_reserved_bytes_sub(blk_size * SWC_SCAN_RSVD_BUFFS);
   }
@@ -117,7 +123,7 @@ class ReqScanTest : public ReqScan {
 
   static Ptr make() { return Ptr(new ReqScanTest()); }
 
-  ReqScanTest() noexcept { }
+  ReqScanTest() noexcept : cells(), cb() { }
 
   bool reached_limits() override {
     return (spec.flags.limit && spec.flags.limit <= cells.size())   ||

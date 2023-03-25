@@ -21,7 +21,8 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
   SWC_CAN_INLINE
   InBlock(const DB::Types::KeySeq key_seq) noexcept
           : is_last(true),
-            header(key_seq), err(Error::OK), last_cell(nullptr) {
+            cells(), header(key_seq), err(Error::OK),
+            last_cell(nullptr) {
   }
 
   SWC_CAN_INLINE
@@ -130,17 +131,24 @@ CompactRange::CompactRange(Compaction* a_compactor,
                 ReqScan::Type::COMPACTION, true,
                 a_compactor->cfg_read_ahead->get()/2, a_blk_size
               ),
+              fragments_old(),
               compactor(a_compactor), range(a_range),
               cs_size(a_cs_size),
               blk_cells(range->cfg->block_cells()),
               blk_encoding(range->cfg->block_enc()),
+              m_required_key_last(),
+              tmp_dir(false), cs_writer(nullptr),
+              cellstores(),
               m_inblock(new InBlock(range->cfg->key_seq, a_blk_size)),
               m_processing(0),
+              m_q_intval(), m_q_encode(), m_q_write(), 
               total_cells(0), total_blocks(0),
               time_intval(0), time_encode(0), time_write(0),
               state_default(Range::COMPACT_COMPACTING),
-              req_last_time(0), m_stopped(false), m_chk_final(false),
-              m_get(true), m_log_sz(0),
+              req_last_time(0), req_ts(Time::now_ns()),
+              m_stopped(false), m_chk_final(false),
+              m_get(true),
+              m_mutex(), m_log_sz(0),
               m_chk_timer(
                 asio::high_resolution_timer(Env::Rgr::io()->executor())) {
   spec.flags.max_versions = range->cfg->cell_versions();

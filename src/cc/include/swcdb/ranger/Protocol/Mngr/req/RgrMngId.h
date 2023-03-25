@@ -25,9 +25,16 @@ class RgrMngId: public client::ConnQueue::ReqBase {
               Env::Config::settings()->get<Config::Property::Value_int32_g>(
                 "swc.rgr.id.validation.interval")),
             cb_shutdown(std::move(cb)),
+            endpoints(),
+            m_mutex(),
             m_timer(asio::high_resolution_timer(ioctx->executor())),
             m_run(true), m_failures(0) {
   }
+
+  RgrMngId(const RgrMngId&) = delete;
+  RgrMngId(RgrMngId&&) = delete;
+  RgrMngId& operator=(const RgrMngId&) = delete;
+  RgrMngId& operator=(RgrMngId&&) = delete;
 
   virtual ~RgrMngId() noexcept { }
 

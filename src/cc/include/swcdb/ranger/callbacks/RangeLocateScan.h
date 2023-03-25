@@ -31,7 +31,8 @@ class RangeLocateScan : public ReqScan {
                     ),
                     range(a_range), flags(a_flags),
                     any_is(range->cfg->range_type != DB::Types::Range::DATA),
-                    range_begin(a_range_begin, false) {
+                    range_begin(a_range_begin, false),
+                    params() {
     auto c = range->known_interval_count();
     spec.range_begin.remove(c ? c : uint24_t(1), true);
     if(flags & Comm::Protocol::Rgr::Params::RangeLocateReq::KEY_EQUAL)

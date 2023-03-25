@@ -22,6 +22,7 @@ SWC_CAN_INLINE
 Block::Block(const DB::Cells::Interval& interval,
              Blocks* a_blocks, State state)
             : blocks(a_blocks), next(nullptr), prev(nullptr),
+              m_mutex(),
               m_cells(
                 DB::Cells::Mutable(
                   blocks->range->cfg->key_seq,
@@ -29,7 +30,10 @@ Block::Block(const DB::Cells::Interval& interval,
                   blocks->range->cfg->cell_ttl(),
                   blocks->range->cfg->column_type())),
               m_releasable_bytes(0),
-              m_split_rev(0), m_key_end(interval.key_end),
+              m_mutex_intval(),
+              m_split_rev(0),
+              m_prev_key_end(), m_key_end(interval.key_end),
+              m_mutex_state(),
               m_processing(0), m_state(state), m_loader(nullptr) {
   if(DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
     Env::Rgr::res().more_mem_releasable(
@@ -312,6 +316,11 @@ void Block::loader_loaded() {
           SWC_CAN_INLINE
           Task(Block* a_blk, ReqScan::Ptr&& a_req) noexcept
               : blk(a_blk), req(std::move(a_req)) { }
+          SWC_CAN_INLINE
+          Task(Task&&) = default;
+          Task(const Task&) = delete;
+          Task& operator=(const Task&) = delete;
+          Task& operator=(Task&&) = delete;
           ~Task() noexcept { }
           void operator()() { blk->_scan(req); }
         };

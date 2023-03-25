@@ -21,7 +21,7 @@ class Fds final : private std::unordered_map<int32_t, FS::SmartFd::Ptr> {
 
   typedef Fds* Ptr;
 
-  Fds() : m_next_fd(0) {}
+  Fds() noexcept : m_mutex(), m_next_fd(0) {}
 
   ~Fds() noexcept { }
 
@@ -121,7 +121,7 @@ class FsBroker final {
         _reporting ? &_reporting->system : nullptr,
         nullptr
       ),
-      m_shuttingdown(false), m_in_process(0) {
+      m_shuttingdown(false), m_in_process(0), m_fds() {
   }
 
   ~FsBroker() noexcept { }

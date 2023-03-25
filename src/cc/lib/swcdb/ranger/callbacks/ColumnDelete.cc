@@ -12,7 +12,7 @@ ColumnDelete::ColumnDelete(const Comm::ConnHandlerPtr& conn,
                            const Comm::Event::Ptr& ev,
                            const cid_t a_cid) noexcept
                           : ManageBase(conn, ev, ManageBase::COLUMN_DELETE),
-                            cid(a_cid) {
+                            cid(a_cid), col(nullptr), m_mutex(), m_ranges() {
 }
 
 void ColumnDelete::add(const RangePtr& range) {

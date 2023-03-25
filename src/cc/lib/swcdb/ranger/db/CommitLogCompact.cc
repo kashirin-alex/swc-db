@@ -9,16 +9,19 @@ namespace SWC { namespace Ranger { namespace CommitLog {
 
 SWC_CAN_INLINE
 Compact::Group::Group(Compact* a_compact, uint8_t a_worker)
-                      : worker(a_worker), error(Error::OK),
+                      : ts(), read_frags(),
+                        worker(a_worker), error(Error::OK),
                         compact(a_compact),
                         m_idx(0), m_running(0), m_finishing(0),
+                        m_mutex(),
                         m_cells(
                           compact->log->range->cfg->key_seq,
                           compact->log->range->cfg->block_cells() * 2,
                           compact->log->range->cfg->cell_versions(),
                           compact->log->range->cfg->cell_ttl(),
                           compact->log->range->cfg->column_type()
-                        ) {
+                        ),
+                        m_remove(), m_fragments() {
 }
 
 void Compact::Group::run(bool initial) {
@@ -54,6 +57,11 @@ void Compact::Group::loaded(Fragment::Ptr&& frag) {
     SWC_CAN_INLINE
     Task(Group* a_g, Fragment::Ptr&& a_frag) noexcept
         : g(a_g), frag(std::move(a_frag)) { }
+    SWC_CAN_INLINE
+    Task(Task&&) = default;
+    Task(const Task&) = delete;
+    Task& operator=(const Task&) = delete;
+    Task& operator=(Task&&) = delete;
     ~Task() noexcept { }
     void operator()() { g->_loaded(frag); }
   };
@@ -169,10 +177,11 @@ Compact::Compact(Fragments* a_log, uint32_t a_repetition,
                  const Fragments::CompactGroups& groups,
                  uint8_t cointervaling,
                  Compact::Cb_t&& cb)
-                : log(a_log),
+                : log(a_log), ts(),
                   preload(log->range->cfg->log_fragment_preload()),
                   repetition(a_repetition),
                   ngroups(groups.size()), nfrags(0),
+                  m_workers(), m_groups(),
                   m_cb(std::move(cb)) {
   for(auto frags : groups)
     nfrags += frags.size();

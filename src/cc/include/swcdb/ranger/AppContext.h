@@ -97,7 +97,10 @@ class AppContext final : public Comm::AppContext {
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::Value_enum_g>(
             "swc.rgr.comm.encoder")),
-        m_metrics(Env::Rgr::metrics_track()) {
+        id_mngr(nullptr),
+        m_srv(nullptr),
+        m_metrics(Env::Rgr::metrics_track()),
+        m_guard(nullptr) {
   }
 
   void init(const std::string& host,
@@ -322,9 +325,9 @@ class AppContext final : public Comm::AppContext {
 
   private:
 
-  Comm::Protocol::Mngr::Req::RgrMngId::Ptr  id_mngr = nullptr;
-  Comm::server::SerializedServer::Ptr       m_srv = nullptr;
-  Metric::Reporting::Ptr                    m_metrics = nullptr;
+  Comm::Protocol::Mngr::Req::RgrMngId::Ptr  id_mngr;
+  Comm::server::SerializedServer::Ptr       m_srv;
+  Metric::Reporting::Ptr                    m_metrics;
   std::shared_ptr<Comm::IoContext::ExecutorWorkGuard> m_guard;
 
 };

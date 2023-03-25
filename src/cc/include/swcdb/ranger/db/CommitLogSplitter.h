@@ -17,7 +17,7 @@ class Splitter final : private Fragment::LoadCallback {
 
   Splitter(const DB::Cell::Key& a_key, Fragments::Vec& fragments,
            Fragments::Ptr a_log_left, Fragments::Ptr a_log_right)
-          : m_sem(4), m_fragments(fragments),
+          : m_sem(4), m_fragments(fragments), m_splitting(),
             key(a_key), log_left(a_log_left), log_right(a_log_right) {
   }
 

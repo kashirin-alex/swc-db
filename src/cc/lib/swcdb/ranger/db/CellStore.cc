@@ -265,7 +265,8 @@ Read::Read(const csid_t a_csid,
             interval(std::move(a_interval)),
             blocks(std::move(blks)),
             cell_revs(a_cell_revs),
-            smartfd(a_smartfd) {
+            smartfd(a_smartfd),
+            m_queue() {
   for(auto blk : blocks)
     blk->init(this);
 }
@@ -426,7 +427,7 @@ Write::Write(const csid_t a_csid, std::string&& filepath,
               block_size(range->cfg->block_size()),
               cell_revs(a_cell_revs),
               prev_key_end(a_prev_key_end),
-              size(0) {
+              size(0), blocks() {
 }
 
 void Write::create(int& err, uint8_t blk_replicas) {

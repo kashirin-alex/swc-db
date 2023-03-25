@@ -21,6 +21,11 @@ class CompactRange final : public ReqScan {
   CompactRange(Compaction* compactor, const RangePtr& range,
                const uint32_t cs_size, const uint32_t blk_size);
 
+  CompactRange(const CompactRange&) = delete;
+  CompactRange(CompactRange&&) = delete;
+  CompactRange& operator=(const CompactRange&) = delete;
+  CompactRange& operator=(CompactRange&&) = delete;
+
   virtual ~CompactRange() noexcept;
 
   Ptr shared();
@@ -95,10 +100,10 @@ class CompactRange final : public ReqScan {
   const DB::Types::Encoder        blk_encoding;
   DB::Cell::Key                   m_required_key_last;
 
-  bool                            tmp_dir = false;
-  CellStore::Write::Ptr           cs_writer = nullptr;
+  bool                            tmp_dir;
+  CellStore::Write::Ptr           cs_writer;
   CellStore::Writers              cellstores;
-  InBlock*                        m_inblock = nullptr;
+  InBlock*                        m_inblock;
 
   Core::Atomic<size_t>            m_processing;
   Core::QueuePointer<InBlock*>    m_q_intval;

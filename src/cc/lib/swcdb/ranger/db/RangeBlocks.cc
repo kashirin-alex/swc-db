@@ -11,8 +11,9 @@ namespace SWC { namespace Ranger {
 
 SWC_CAN_INLINE
 Blocks::Blocks(const DB::Types::KeySeq key_seq)
-              : commitlog(key_seq),
-                m_block(nullptr), m_processing(0) {
+              : range(nullptr), commitlog(key_seq), cellstores(),
+                m_mutex(),
+                m_block(nullptr), m_blocks_idx(), m_processing(0) {
 }
 
 SWC_CAN_INLINE

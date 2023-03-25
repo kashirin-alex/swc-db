@@ -14,7 +14,7 @@ RangeLoad::RangeLoad(const Comm::ConnHandlerPtr& conn,
                      const Comm::Event::Ptr& ev,
                      const cid_t a_cid, const rid_t a_rid) noexcept
                     : ManageBase(conn, ev, ManageBase::RANGE_LOAD),
-                      cid(a_cid), rid(a_rid) {
+                      cid(a_cid), rid(a_rid), col(nullptr) {
 }
 
 void RangeLoad::loaded(int& err) {

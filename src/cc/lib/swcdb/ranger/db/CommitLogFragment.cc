@@ -233,10 +233,11 @@ Fragment::Fragment(const FS::SmartFd::Ptr& smartfd,
                     cell_revs(a_cell_revs), cells_count(a_cells_count),
                     data_checksum(a_data_checksum),
                     offset_data(a_offset_data),
+                    m_mutex(),
                     m_state(state), m_marked_removed(false), m_err(Error::OK),
                     m_processing(m_state == State::WRITING),
                     m_cells_remain(cells_count),
-                    m_smartfd(smartfd) {
+                    m_smartfd(smartfd), m_buffer(), m_queue() {
   if(m_state != State::NONE)
     Env::Rgr::res().more_mem_releasable(size_plain);
 }
@@ -284,6 +285,11 @@ void Fragment::write(int err, uint8_t blk_replicas,
                  error(a_error),
                  blk_replicas(a_blk_replicas) {
           }
+          SWC_CAN_INLINE
+          Task(Task&&) = default;
+          Task(const Task&) = delete;
+          Task& operator=(const Task&) = delete;
+          Task& operator=(Task&&) = delete;
           ~Task() noexcept { }
           void operator()() {
             frag->write(error, blk_replicas, buff_write, sem);

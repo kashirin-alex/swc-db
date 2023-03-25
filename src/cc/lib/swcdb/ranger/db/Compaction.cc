@@ -27,13 +27,18 @@ Compaction::Compaction()
             cfg_uncompacted_max(
               Env::Config::settings()->get<Config::Property::Value_int32_g>(
                 "swc.rgr.compaction.range.uncompacted.max")),
-            m_run(true), m_running(0), m_log_compactions(0),
+            m_run(true),
+            m_schedule(), m_running(0),
+            m_log_chk(), m_log_compactions(0),
+            m_mutex(),
             m_check_timer(
               asio::high_resolution_timer(
                 Env::Rgr::maintenance_io()->executor())),
+            m_cv(),
             m_last_cid(0), m_idx_cid(0),
             m_last_rid(0), m_idx_rid(0),
-            m_next(false), m_uncompacted(0) {
+            m_next(false), m_uncompacted(0),
+            m_compacting() {
 }
 
 SWC_CAN_INLINE

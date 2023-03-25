@@ -100,12 +100,16 @@ SWC_CAN_INLINE
 Range::Range(const ColumnCfg::Ptr& a_cfg, const rid_t a_rid)
             : cfg(a_cfg), rid(a_rid),
               blocks(cfg->key_seq),
+              prev_range_end(),
               m_path(DB::RangeBase::get_path(cfg->cid, rid)),
+              m_mutex_intval(), m_mutex_intval_alignment(),
               m_interval(cfg->key_seq), m_load_revision(0),
+              m_mutex(),
               m_state(State::NOTLOADED),
               m_compacting(COMPACT_NONE), m_require_compact(false),
               m_q_run_add(false), m_q_run_scan(false),
-              m_adding(0) { //, m_inbytes(0)
+              m_adding(0),
+              m_q_add(), m_q_scan(), m_cv() { //, m_inbytes(0)
   Env::Rgr::in_process_ranges(1);
 }
 
@@ -1081,6 +1085,12 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
   MetaRegOnAddReq(const RangePtr& a_range, Callback::RangeQueryUpdate* a_req)
                 : Query::Update::BaseMeta(a_range), req(a_req) {
   }
+
+  SWC_CAN_INLINE
+  MetaRegOnAddReq(MetaRegOnAddReq&&) = default;
+  MetaRegOnAddReq(const MetaRegOnAddReq&) = delete;
+  MetaRegOnAddReq& operator=(const MetaRegOnAddReq&) = delete;
+  MetaRegOnAddReq& operator=(MetaRegOnAddReq&&) = delete;
 
   virtual ~MetaRegOnAddReq() noexcept { }
 

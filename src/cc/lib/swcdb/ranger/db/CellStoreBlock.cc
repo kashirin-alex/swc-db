@@ -78,9 +78,10 @@ void Read::load_header(int& err, FS::SmartFd::Ptr& smartfd,
 SWC_CAN_INLINE
 Read::Read(Header&& a_header) noexcept
           : header(std::move(a_header)), cellstore(nullptr),
+            m_mutex(),
             m_state(header.size_plain ? State::NONE : State::LOADED),
             m_err(Error::OK), m_cells_remain(header.cells_count),
-            m_processing(0) {
+            m_processing(0), m_buffer(), m_queue() {
 }
 
 SWC_CAN_INLINE
@@ -265,6 +266,11 @@ void Read::load_open(int err) {
             SWC_CAN_INLINE
             Task(Read* a_ptr, int a_error, const StaticBuffer::Ptr& a_buffer)
                 noexcept : ptr(a_ptr), error(a_error), buffer(a_buffer) { }
+            SWC_CAN_INLINE
+            Task(Task&&) = default;
+            Task(const Task&) = delete;
+            Task& operator=(const Task&) = delete;
+            Task& operator=(Task&&) = delete;
             ~Task() noexcept { }
             void operator()() { ptr->load_read(error, buffer); }
           };

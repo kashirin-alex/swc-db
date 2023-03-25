@@ -16,8 +16,13 @@ static const uint8_t MAX_FRAGMENTS_NARROW = 20;
 
 SWC_CAN_INLINE
 Fragments::Fragments(const DB::Types::KeySeq key_seq)
-                    : stopping(false), m_cells(key_seq),
-                      m_compacting(false), m_deleting(false),
+                    : range(nullptr), stopping(false),
+                      m_mutex_cells(), m_cells(key_seq),
+                      m_commit(),
+                      m_compacting(false),
+                      m_mutex(),
+                      m_deleting(false),
+                      m_cv(),
                       m_sem(5), m_last_id(0),
                       m_releasable_bytes(0), m_modification_ts(0) {
 }

@@ -12,7 +12,8 @@ namespace SWC { namespace Ranger {
 
 SWC_CAN_INLINE
 Column::Column(const cid_t cid, const DB::SchemaPrimitives& schema)
-              : cfg(new ColumnCfg(cid, schema)) {
+              : cfg(new ColumnCfg(cid, schema)),
+                m_mutex(), m_q_mng(), m_release() {
   Env::Rgr::in_process(1);
 }
 

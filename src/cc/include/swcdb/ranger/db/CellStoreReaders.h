@@ -31,7 +31,7 @@ class Readers final : private Core::Vector<Read::Ptr> {
 
   RangePtr range;
 
-  explicit Readers() noexcept { }
+  explicit Readers() noexcept: range(nullptr) { }
 
   Readers(const Readers&) = delete;
 

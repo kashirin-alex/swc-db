@@ -179,6 +179,11 @@ class Rgr final {
 
   explicit Rgr();
 
+  Rgr(const Rgr&) = delete;
+  Rgr(Rgr&&) = delete;
+  Rgr& operator=(const Rgr&) = delete;
+  Rgr& operator=(Rgr&&) = delete;
+
   ~Rgr() noexcept;
 
   private:
@@ -289,6 +294,7 @@ Rgr::Rgr()
         _reporting ? &_reporting->system : nullptr,
         [this](size_t bytes) { return _columns->release(bytes); }
       ),
+      m_rgr_data(),
       m_shuttingdown(false), m_not_accepting(false),
       m_in_process(0), m_in_process_ranges(0),
       m_scan_reserved_bytes(0) {

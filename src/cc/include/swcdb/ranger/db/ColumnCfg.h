@@ -52,8 +52,20 @@ class ColumnCfg final : public Core::NotMovableSharedPtr<ColumnCfg> {
         meta_cid(
           DB::Types::SystemColumn::get_sys_cid(schema.col_seq, range_type)),
         key_seq(schema.col_seq),
+        col_type(schema.col_type),
+        c_versions(schema.cell_versions),
+        c_ttl(uint64_t(schema.cell_ttl) * 1000000000),
+        blk_enc(schema.blk_encoding),
+        blk_size(schema.blk_size),
+        blk_cells(schema.blk_cells),
+        cs_replication(schema.cs_replication),
+        cs_size(schema.cs_size),
+        cs_max(schema.cs_max),
+        log_rout_ratio(schema.log_rollout_ratio),
+        log_compact(schema.log_compact_cointervaling),
+        log_preload(schema.log_fragment_preload),
+        compact_perc(schema.compact_percent),
         deleting(false) {
-    update(schema);
   }
 
   ColumnCfg(const ColumnCfg&) = delete;

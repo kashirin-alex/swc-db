@@ -14,7 +14,8 @@ ColumnsUnload::ColumnsUnload(const Comm::ConnHandlerPtr& conn,
                              cid_t a_cid_begin, cid_t a_cid_end) noexcept
                         : ManageBase(conn, ev, ManageBase::COLUMNS_UNLOAD),
                           completely(a_completely),
-                          cid_begin(a_cid_begin), cid_end(a_cid_end) {
+                          cid_begin(a_cid_begin), cid_end(a_cid_end),
+                          m_mutex(), m_cols(), m_rsp_params() {
 }
 
 void ColumnsUnload::add(const ColumnPtr& col) {

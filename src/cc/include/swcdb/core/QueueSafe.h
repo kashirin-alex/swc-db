@@ -29,7 +29,7 @@ class QueueSafe : private std::queue<ItemT> {
 
   QueueSafe(const QueueSafe&) = delete;
 
-  QueueSafe(QueueSafe&& other) {
+  QueueSafe(QueueSafe&& other) : m_mutex() {
     MutexSptd::scope lock(other.m_mutex);
     QBase::operator=(std::move(other));
   }

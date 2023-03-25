@@ -83,7 +83,8 @@ class RangeUnloaded final : public client::ConnQueue::ReqBase {
       : client::ConnQueue::ReqBase(
           Buffers::make(params, 0, RANGE_UNLOADED, timeout)
         ),
-        data(args...) {
+        data(args...),
+        endpoints() {
   }
 
   private:

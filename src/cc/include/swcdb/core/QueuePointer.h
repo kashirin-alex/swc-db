@@ -28,7 +28,7 @@ class QueuePointer : private MutexAtomic {
 
   QueuePointer(const QueuePointer&) = delete;
 
-  QueuePointer(QueuePointer&& other) {
+  QueuePointer(QueuePointer&& other) : _back(nullptr), _front(nullptr) {
     other.lock();
     _front = other._front;
     _back = other._back;

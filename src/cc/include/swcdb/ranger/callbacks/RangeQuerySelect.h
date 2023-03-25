@@ -25,7 +25,8 @@ class RangeQuerySelect : public ReqScan {
                       conn, ev,
                       std::move(req_spec), a_range->cfg->block_size()
                     ),
-                    range(a_range) {
+                    range(a_range),
+                    cells() {
     if(!spec.values.empty())
       spec.values.col_type = range->cfg->column_type();
     if(!spec.flags.max_versions)

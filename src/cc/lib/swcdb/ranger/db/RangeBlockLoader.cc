@@ -14,11 +14,14 @@ SWC_CAN_INLINE
 BlockLoader::BlockLoader(Block::Ptr a_block)
                         : block(a_block),
                           count_cs_blocks(0), count_fragments(0),
+                          q_req(),
                           error(Error::OK),
                           preload(
                             block->blocks->range->cfg->log_fragment_preload()),
                           m_check_log(true), m_processing(false),
-                          m_logs(0) {
+                          m_logs(0),
+                          m_mutex(),
+                          m_cs_blocks(), m_f_selected(), m_fragments() {
 }
 
 SWC_CAN_INLINE

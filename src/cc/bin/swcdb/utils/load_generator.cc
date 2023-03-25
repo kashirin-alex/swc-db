@@ -406,7 +406,8 @@ class KeyGenerator {
               : ncells(a_ncells), ncells_onlevel(a_ncells_onlevel),
                 nfractions(a_nfractions), fraction_size(a_fraction_size),
                 distribution(a_distribution), course(a_course),
-                _ncells(0), _ncells_onlevel(0), _nfractions(0) {
+                _ncells(0), _ncells_onlevel(0), _nfractions(0),
+                _fractions_state() {
     if(ncells_onlevel > 1 && (
         course == DistribCourse::SINGLE ||
         course == DistribCourse::R_SINGLE ||
@@ -544,7 +545,9 @@ class KeyGeneratorUpdate : public KeyGenerator {
           : KeyGenerator(
               a_ncells, a_ncells_onlevel,
               a_fraction_size, a_nfractions,
-              a_distribution, a_course, seed) {
+              a_distribution, a_course, seed
+            ),
+            _fractions() {
     _fractions.reserve(nfractions);
   }
 
