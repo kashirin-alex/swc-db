@@ -439,7 +439,7 @@ void test_big_vector(size_t sz, uint8_t probes) {
 }
 
 struct Type1 {
-  Type1() noexcept { }
+  Type1() noexcept: sz(), n() { }
   Type1(size_t a_sz) : sz(a_sz), n(std::to_string(sz)) {
     n.reserve(32);
   }
@@ -526,7 +526,7 @@ std::ostream& operator<<(std::ostream& out, const Type1& v) {
 
 struct Type2 {
 
-  Type2() noexcept { }
+  Type2() noexcept: ptr(nullptr) { }
   Type2(size_t sz) : ptr(new Type1(sz)) { }
   Type2(const Type2& other) : ptr(new Type1(*other.ptr.get())) { }
   Type2(Type2&& other) noexcept : ptr(std::move(other.ptr)) { }

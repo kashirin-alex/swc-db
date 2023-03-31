@@ -43,7 +43,8 @@ class Checker {
             expected(a_num_req * a_batch_sz * a_threads_conn),
             num_req(a_num_req),
             batch_sz(a_batch_sz),
-            threads_conn(a_threads_conn) {
+            threads_conn(a_threads_conn),
+            lock(), cv(), latency() {
   }
 
   void run(Comm::ConnHandlerPtr conn, int req_n = 0){

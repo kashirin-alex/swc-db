@@ -121,7 +121,7 @@ typedef std::unordered_set<Item::Ptr, Item::Hash, Item::Equal> PageBase;
 class Page final : public PageBase {
   //public std::set<Item::Ptr, Item::Less> {
   public:
-  Page() : PageBase(8) { }
+  Page() : PageBase(8), m_mutex() { }
 
   ~Page() noexcept { }
 
@@ -327,12 +327,12 @@ struct ItemPtr final { // Item as SmartPtr
           : ptr(Item::make(buf, size)) {
   }
 
-  ItemPtr operator=(const ItemPtr& other) {
+  ItemPtr& operator=(const ItemPtr& other) {
     ptr = other.ptr->use();
     return *this;
   }
 
-  ItemPtr operator=(ItemPtr&& other) {
+  ItemPtr& operator=(ItemPtr&& other) {
     ptr = other.ptr;
     other.ptr = nullptr;
     return *this;

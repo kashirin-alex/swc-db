@@ -17,7 +17,7 @@ class Echo : public DispatchHandler {
   typedef std::function<void(bool)> EchoCb_t;
 
   Echo(const ConnHandlerPtr& a_conn, EchoCb_t&& a_cb, size_t buf_sz=0)
-       : conn(a_conn), cb(std::move(a_cb)) {
+       : conn(a_conn), cb(std::move(a_cb)), cbp(nullptr) {
 
     if(!buf_sz) {
       cbp = Buffers::make();

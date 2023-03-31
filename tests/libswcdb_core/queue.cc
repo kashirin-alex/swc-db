@@ -74,7 +74,8 @@ struct Test {
   Core::Atomic<size_t> time_producer;
   Core::Atomic<size_t> time_consumer;
 
-  Test() : sem_producer(num_threads, num_threads),
+  Test() : queue(),
+           sem_producer(num_threads, num_threads),
            sem_consumer(num_threads, num_threads),
            counted(0), time_producer(0), time_consumer(0) {
   }

@@ -80,23 +80,51 @@ class Test {
 
   DB::Types::Column         col_type;
   DB::Types::KeySeq         col_seq;
-  std::string               col_name;
   uint32_t                  cell_versions;
 
   size_t                    ncells;
   uint32_t                  nfractions;
-  DB::Types::Encoder        cell_enc = DB::Types::Encoder::PLAIN;
+  DB::Types::Encoder        cell_enc;
 
   bool                      runs;
   DB::Schema::Ptr           schema;
   bool                      counter;
 
   size_t                    time_select;
+  std::string               col_name;
+
+  Test(const SWC::Config::Settings::Ptr& settings)
+    : mutex(), cv(),
+      with_broker(settings->get_bool("with-broker")),
+      col_type(SWC::DB::Types::Column(settings->get_genum("col-type"))),
+      col_seq(SWC::DB::Types::KeySeq(settings->get_genum("col-seq"))),
+      cell_versions(settings->get_i32("cell-versions")), 
+      ncells(settings->get_i64("ncells")),
+      nfractions(settings->get_i32("nfractions")),
+      cell_enc(DB::Types::Encoder::PLAIN),
+      runs(true),
+      schema(nullptr),
+      counter(DB::Types::is_counter(col_type)),
+      time_select(0),
+      col_name(
+        "test-"
+        + std::string(SWC::DB::Types::to_string(col_type))
+        + "-"
+        + std::string(SWC::DB::Types::to_string(col_seq))
+        + "-"
+        + std::string(SWC::Core::Encoder::to_string(cell_enc))
+        + "-v"
+        + std::to_string(cell_versions)
+        + "-c"
+        + std::to_string(ncells)
+        + "-f"
+        + std::to_string(nfractions)
+        + "-bkr"
+        + std::to_string(with_broker)
+      )  {
+  } 
 
   void run() {
-    counter = DB::Types::is_counter(col_type);
-    time_select = 0;
-
     SWC_PRINT << "Test::run "
               << " col_type=" << DB::Types::to_string(col_type)
               << " col_seq=" << DB::Types::to_string(col_seq)
@@ -106,7 +134,6 @@ class Test {
               << " nfractions=" << nfractions
               << SWC_PRINT_CLOSE;
 
-    runs = true;
     create_column();
 
     Core::UniqueLock lock_wait(mutex);
@@ -499,34 +526,8 @@ int main(int argc, char** argv) {
     SWC::Env::Clients::get()->brokers.has_endpoints()
   );
 
-  auto settings = SWC::Env::Config::settings();
 
-  SWC::Test test;
-  test.with_broker = settings->get_bool("with-broker");
-
-  test.col_type = SWC::DB::Types::Column(settings->get_genum("col-type"));
-  test.col_seq = SWC::DB::Types::KeySeq(settings->get_genum("col-seq"));
-
-  test.ncells = settings->get_i64("ncells");
-  test.nfractions = settings->get_i32("nfractions");
-  test.cell_versions = settings->get_i32("cell-versions");
-  //uint32_t value = settings->get_i32("value-size");
-
-  //test.cell_enc = SWC::DB::Types::Encoder(settings->get_genum("cell-enc"));
-  test.col_name = "test-"
-                + std::string(SWC::DB::Types::to_string(test.col_type))
-                + "-"
-                + std::string(SWC::DB::Types::to_string(test.col_seq))
-                + "-"
-                + std::string(SWC::Core::Encoder::to_string(test.cell_enc))
-                + "-v"
-                + std::to_string(test.cell_versions)
-                + "-c"
-                + std::to_string(test.ncells)
-                + "-f"
-                + std::to_string(test.nfractions)
-                + "-bkr"
-                + std::to_string(test.with_broker);
+  SWC::Test test(SWC::Env::Config::settings());
   test.run();
 
   SWC::Env::Clients::get()->stop();
