@@ -1086,8 +1086,7 @@ class Range::MetaRegOnAddReq : public Query::Update::BaseMeta {
                 : Query::Update::BaseMeta(a_range), req(a_req) {
   }
 
-  SWC_CAN_INLINE
-  MetaRegOnAddReq(MetaRegOnAddReq&&) = default;
+  MetaRegOnAddReq(MetaRegOnAddReq&&) = delete;
   MetaRegOnAddReq(const MetaRegOnAddReq&) = delete;
   MetaRegOnAddReq& operator=(const MetaRegOnAddReq&) = delete;
   MetaRegOnAddReq& operator=(MetaRegOnAddReq&&) = delete;

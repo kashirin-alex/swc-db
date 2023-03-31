@@ -45,12 +45,6 @@ class ColumnMutable : public Base::Column {
       m_cells(seq, versions, uint64_t(ttl_secs) * 1000000000, type, buffer) {
   }
 
-  ColumnMutable(const Column&) = delete;
-
-  ColumnMutable(const Column&&) = delete;
-
-  ColumnMutable& operator=(const Column&) = delete;
-
   virtual ~ColumnMutable() noexcept { }
 
   virtual void print(std::ostream& out) override;

@@ -48,6 +48,11 @@ class Base : public std::enable_shared_from_this<Base>{
         executor(a_executor) {
   }
 
+  Base(Base&&) = delete;
+  Base(const Base&) = delete;
+  Base& operator=(const Base&) = delete;
+  Base& operator=(Base&&) = delete;
+
   virtual bool valid() noexcept = 0;
 
   virtual void error(const cid_t cid, int err) = 0;

@@ -34,6 +34,11 @@ class Base : public std::enable_shared_from_this<Base> {
     SWC_CAN_INLINE
     Column() noexcept { }
 
+    Column(Column&&) = delete;
+    Column(const Column&) = delete;
+    Column& operator=(const Column&) = delete;
+    Column& operator=(Column&&) = delete;
+
     virtual void print(std::ostream& out) = 0;
 
     virtual cid_t get_cid() const noexcept = 0;
@@ -128,6 +133,11 @@ class Base : public std::enable_shared_from_this<Base> {
     if(!timeout_ratio)
       timeout_ratio.store(1000);
   }
+
+  Base(Base&&) = delete;
+  Base(const Base&) = delete;
+  Base& operator=(const Base&) = delete;
+  Base& operator=(Base&&) = delete;
 
   virtual bool valid() noexcept = 0;
 

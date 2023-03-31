@@ -29,12 +29,6 @@ class BaseUnorderedMap
                     m_mutex() {
   }
 
-  BaseUnorderedMap(const BaseUnorderedMap&) = delete;
-
-  BaseUnorderedMap(const BaseUnorderedMap&&) = delete;
-
-  BaseUnorderedMap& operator=(const BaseUnorderedMap&) = delete;
-
   virtual ~BaseUnorderedMap() noexcept { }
 
 

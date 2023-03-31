@@ -43,12 +43,6 @@ class BaseSingleColumn : public Base {
                     column(cid, seq, versions, ttl_secs, type, buffer) {
   }
 
-  BaseSingleColumn(const BaseSingleColumn&) = delete;
-
-  BaseSingleColumn(const BaseSingleColumn&&) = delete;
-
-  BaseSingleColumn& operator=(const BaseSingleColumn&) = delete;
-
   virtual ~BaseSingleColumn() noexcept { }
 
 
