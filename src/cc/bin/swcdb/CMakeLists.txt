@@ -164,7 +164,7 @@ ADD_EXEC_TARGET(
           ${SWC_LIB_FS_LIBRARIES_STATIC}
           ${SWC_LIB_THRIFT_LIBRARIES_STATIC}
           ${THRIFT_CPP_LIBRARIES_STATIC}
-  FLAGS   ${FLAGS}
+  FLAGS   ${FLAGS} "-Wno-error=effc++"
 )
 endif()
 
