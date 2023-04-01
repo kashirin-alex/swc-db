@@ -171,9 +171,6 @@ void init_app_options(Settings* settings) {
     settings->cmdline_desc.get_default("swc.logging.level")
   )->set(LOG_ERROR); // default level
 
-  init_comm_options(settings);
-  init_client_options(settings);
-
   settings->cmdline_desc.definition(settings->usage_str(
     "SWC-DB(load_generator) Usage: swcdb_load_generator [options]\n\nOptions:")
   );
@@ -987,7 +984,7 @@ void generate() {
 
 
 
-int main(int argc, char** argv) {
+int run(int argc, char** argv) {
   SWC::Env::Config::init(argc, argv, &SWC::Config::init_app_options, nullptr);
 
   auto settings = SWC::Env::Config::settings();
@@ -1025,12 +1022,17 @@ int main(int argc, char** argv) {
   SWC::Utils::LoadGenerator::generate();
 
   SWC_CAN_QUICK_EXIT(EXIT_SUCCESS);
-  SWC::Env::Clients::get()->stop();
 
+
+  SWC::Env::Clients::get()->stop();
   std::this_thread::sleep_for(std::chrono::seconds(2));
   SWC::Env::Clients::reset();
   SWC::Env::Config::reset();
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   return 0;
+}
+
+int main(int argc, char** argv) {
+  return run(argc, argv);
 }
