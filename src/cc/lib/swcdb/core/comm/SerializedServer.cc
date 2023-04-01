@@ -18,6 +18,11 @@ struct Acceptor::Mixed {
     ConnHandlerSSL::Ptr conn;
     SWC_CAN_INLINE
     Handshaker(const ConnHandlerSSL::Ptr& a_conn) : conn(a_conn) { }
+    SWC_CAN_INLINE
+    Handshaker(Handshaker&& other) noexcept : conn(std::move(other.conn)) { }
+    Handshaker(const Handshaker&) = delete;
+    Handshaker& operator=(Handshaker&&) = delete;
+    Handshaker& operator=(const Handshaker&) = delete;
     ~Handshaker() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(!ec) {

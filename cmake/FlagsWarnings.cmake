@@ -16,7 +16,7 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align -Wcast-qual -Wnon-virtual-
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wzero-as-null-pointer-constant -Wno-error=zero-as-null-pointer-constant")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wno-error=old-style-cast")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wno-error=null-dereference")
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdeprecated-copy-dtor")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdeprecated-copy-dtor -Wno-error=deprecated-copy-dtor")
 
 
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
