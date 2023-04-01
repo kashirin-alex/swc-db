@@ -28,6 +28,7 @@ class CPU {
   Core::Atomic<uint32_t>                        usage;
   Core::Atomic<uint32_t>                        threads;
 
+  SWC_SHOULD_NOT_INLINE
   CPU(Notifier* a_notifier) noexcept
       : concurrency(std::thread::hardware_concurrency()),
         mhz(0), usage(0), threads(0),
@@ -40,6 +41,7 @@ class CPU {
   CPU& operator=(const CPU&) = delete;
   CPU& operator=(CPU&&) = delete;
 
+  SWC_SHOULD_NOT_INLINE
   uint64_t check(uint64_t ts) noexcept {
     try {
       if(notifier && ms_intval > notifier->get_cpu_ms_interval())

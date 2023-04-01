@@ -24,12 +24,16 @@ class NotMovableSharedPtr : public std::shared_ptr<T> {
                     : std::shared_ptr<T>(other) {
   }
 
-  NotMovableSharedPtr(const std::shared_ptr<T>&&) = delete;
+  NotMovableSharedPtr(const NotMovableSharedPtr&) noexcept = default;
+
+  NotMovableSharedPtr(NotMovableSharedPtr&&) noexcept = delete;
+  NotMovableSharedPtr<T>& operator=(NotMovableSharedPtr&&) noexcept = delete;
+  NotMovableSharedPtr<T>& operator=(const NotMovableSharedPtr&) = delete;
+
+  NotMovableSharedPtr(std::shared_ptr<T>&&) noexcept = delete;
+  NotMovableSharedPtr<T>& operator=(std::shared_ptr<T>&&) noexcept = delete;
 
   ~NotMovableSharedPtr() noexcept { }
-
-  NotMovableSharedPtr<T>& operator=(const std::shared_ptr<T>&) = delete;
-
 };
 
 

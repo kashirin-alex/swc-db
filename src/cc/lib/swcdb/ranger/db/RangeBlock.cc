@@ -317,7 +317,7 @@ void Block::loader_loaded() {
           Task(Block* a_blk, ReqScan::Ptr&& a_req) noexcept
               : blk(a_blk), req(std::move(a_req)) { }
           SWC_CAN_INLINE
-          Task(Task&&) = default;
+          Task(Task&&) noexcept = default;
           Task(const Task&) = delete;
           Task& operator=(const Task&) = delete;
           Task& operator=(Task&&) = delete;

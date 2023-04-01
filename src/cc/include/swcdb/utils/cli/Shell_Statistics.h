@@ -45,6 +45,10 @@ class Statistics final : public Interface {
     DB::Specs::Key  key;
     std::string     metric;
     ReadGroup() noexcept : last(0), since(0), agg(0), key(), metric() { }
+    ReadGroup(ReadGroup&&) noexcept = default;
+    ReadGroup(const ReadGroup&) = delete;
+    ReadGroup& operator=(ReadGroup&&) noexcept = delete;
+    ReadGroup& operator=(const ReadGroup&) = delete;
     void print(std::ostream& out, const Statistics* ptr) const;
     ~ReadGroup() noexcept { }
   };
@@ -56,10 +60,10 @@ class Statistics final : public Interface {
     std::string name;
     std::string label;
     MetricDefinition() noexcept : relation(), id(), agg(), name(), label() { }
-    MetricDefinition(MetricDefinition&&) = default;
+    MetricDefinition(MetricDefinition&&) noexcept = default;
+    MetricDefinition& operator=(MetricDefinition&&) noexcept = default;
     MetricDefinition(const MetricDefinition&) = delete;
     MetricDefinition& operator=(const MetricDefinition&) = delete;
-    MetricDefinition& operator=(MetricDefinition&&) = default;
     ~MetricDefinition() noexcept { }
   };
 
@@ -67,10 +71,10 @@ class Statistics final : public Interface {
     DB::Specs::Key                 property;
     Core::Vector<MetricDefinition> metrics;
     StatsDefinition(const DB::Cells::Cell& cell);
-    StatsDefinition(StatsDefinition&&) = default;
+    StatsDefinition(StatsDefinition&&) noexcept = default;
+    StatsDefinition& operator=(StatsDefinition&&) noexcept = default;
     StatsDefinition(const StatsDefinition&) = delete;
     StatsDefinition& operator=(const StatsDefinition&) = delete;
-    StatsDefinition& operator=(StatsDefinition&&) = default;
     ~StatsDefinition() noexcept { }
     bool has_metric(const std::string& name, uint24_t fid,
                     size_t& metric_idx) const noexcept;

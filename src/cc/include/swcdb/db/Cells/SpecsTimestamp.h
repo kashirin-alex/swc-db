@@ -38,6 +38,11 @@ class Timestamp {
       : Serialization::decode_i64(bufp, remainp);
   }
 
+  Timestamp(Timestamp&&) noexcept = default;
+  Timestamp(const Timestamp&) noexcept = default;
+  Timestamp& operator=(Timestamp&&) noexcept = default;
+  Timestamp& operator=(const Timestamp&) noexcept = default;
+
   ~Timestamp() noexcept { }
 
   constexpr SWC_CAN_INLINE

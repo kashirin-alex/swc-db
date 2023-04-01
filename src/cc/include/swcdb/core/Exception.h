@@ -39,11 +39,11 @@ class Exception final : public std::exception {
 
   Exception(Exception& other) noexcept;
 
-  Exception(const Exception& ) noexcept = delete;
+  Exception(const Exception& ) = delete;
 
   Exception& operator=(const Exception& ) = delete;
 
-  Exception& operator=(Exception&& ) = delete;
+  Exception& operator=(Exception&& ) noexcept = delete;
 
   ~Exception() noexcept;
 

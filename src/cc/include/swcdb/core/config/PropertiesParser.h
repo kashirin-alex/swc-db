@@ -176,15 +176,18 @@ class Parser final {
 
   class Options final {
     public:
-    bool  own;
     std::map<std::string, Property::Value::Ptr> map;
 
-    SWC_SHOULD_NOT_INLINE
-    Options(bool own=true) noexcept;
+    Options() noexcept;
+
+    Options& operator=(Options&&) noexcept;
+
+    Options(Options&&) noexcept = delete;
+    Options(const Options&) = delete;
+    Options& operator=(const Options&) = delete;
 
     ~Options() noexcept;
 
-    void free() noexcept;
   };
 
   SWC_SHOULD_NOT_INLINE

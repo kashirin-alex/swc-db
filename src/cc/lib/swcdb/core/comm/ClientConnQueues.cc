@@ -18,9 +18,13 @@ void Host::close_issued() {
 
 bool Host::connect() {
   struct Callback {
-   ConnQueuePtr ptr;
+    ConnQueuePtr ptr;
     SWC_CAN_INLINE
-    Callback(ConnQueuePtr&& a_ptr) noexcept : ptr(a_ptr) { }
+    Callback(ConnQueuePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    Callback(Callback&&) noexcept = default;
+    Callback(const Callback&) = delete;
+    Callback& operator=(Callback&&) = delete;
+    Callback& operator=(const Callback&) = delete;
     ~Callback() noexcept { }
     void operator()(const ConnHandlerPtr& conn) noexcept {
       ptr->set(conn);

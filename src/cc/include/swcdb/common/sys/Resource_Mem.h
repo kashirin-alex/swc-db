@@ -60,6 +60,7 @@ class Mem {
   Core::Atomic<size_t>   reserved;
   Core::Atomic<size_t>   mem_buff_ms;
 
+  SWC_SHOULD_NOT_INLINE
   Mem(Config::Property::Value_int32_g::Ptr ram_percent_allowed,
       Config::Property::Value_int32_g::Ptr ram_percent_reserved,
       Config::Property::Value_int32_g::Ptr ram_release_rate,
@@ -94,6 +95,7 @@ class Mem {
 
   ~Mem() noexcept { }
 
+  SWC_SHOULD_NOT_INLINE
   uint64_t check(uint64_t ts) noexcept {
     try {
       if(ts >= (chk_stat_ts + (is_low_mem_state() ? URGENT_MS
@@ -239,6 +241,7 @@ class Mem {
 
   private:
 
+  SWC_SHOULD_NOT_INLINE
   bool _check_stat() {
     if(notifier)
       notifier->rss_used_reg(used_reg);
@@ -296,6 +299,7 @@ class Mem {
     return true;
   }
 
+  SWC_SHOULD_NOT_INLINE
   bool _check_statm() {
     size_t rss = 0;
     #if defined(__MINGW64__) || defined(_WIN32)
@@ -321,6 +325,7 @@ class Mem {
     return true;
   }
 
+  SWC_SHOULD_NOT_INLINE
   bool _check_malloc(uint64_t ts) {
     size_t bytes;
     #if defined TCMALLOC_MINIMAL || defined TCMALLOC
@@ -389,6 +394,7 @@ class Mem {
     return true;
   }
 
+  SWC_SHOULD_NOT_INLINE
   void _release() {
     size_t bytes = release_call ? need_ram() : 0;
     if(!bytes && !is_low_mem_state())

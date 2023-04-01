@@ -52,6 +52,7 @@ class Resources final {
   CPU cpu;
   Mem mem;
 
+  SWC_SHOULD_NOT_INLINE
   Resources(const Comm::IoContextPtr& ioctx,
             Config::Property::Value_int32_g::Ptr ram_percent_allowed,
             Config::Property::Value_int32_g::Ptr ram_percent_reserved,
@@ -156,6 +157,7 @@ class Resources final {
     }
   }
 
+  SWC_SHOULD_NOT_INLINE
   void print(std::ostream& out) const {
     out << "Resources(";
     cpu.print(out << "CPU-");
@@ -165,6 +167,7 @@ class Resources final {
 
   private:
 
+  SWC_SHOULD_NOT_INLINE
   void checker() noexcept {
     running.increment();
     uint64_t ts = Time::now_ms();

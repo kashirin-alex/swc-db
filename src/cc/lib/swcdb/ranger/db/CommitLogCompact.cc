@@ -58,7 +58,7 @@ void Compact::Group::loaded(Fragment::Ptr&& frag) {
     Task(Group* a_g, Fragment::Ptr&& a_frag) noexcept
         : g(a_g), frag(std::move(a_frag)) { }
     SWC_CAN_INLINE
-    Task(Task&&) = default;
+    Task(Task&&) noexcept = default;
     Task(const Task&) = delete;
     Task& operator=(const Task&) = delete;
     Task& operator=(Task&&) = delete;

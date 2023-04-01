@@ -69,6 +69,10 @@ class Groups final : private Core::Vector<Group::Ptr>,
     Comm::EndPoints endpoints;
     SWC_CAN_INLINE
     GroupHost() noexcept : role(), cid_begin(), cid_end(), endpoints() { }
+    GroupHost(GroupHost&&) noexcept = default;
+    GroupHost& operator=(GroupHost&&) noexcept = default;
+    GroupHost(const GroupHost&) = delete;
+    GroupHost& operator=(const GroupHost&) = delete;
     ~GroupHost() noexcept { }
   };
   typedef std::shared_ptr<Groups> Ptr;

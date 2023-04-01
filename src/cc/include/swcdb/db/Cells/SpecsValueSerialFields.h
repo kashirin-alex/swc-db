@@ -281,6 +281,10 @@ struct Field_LIST_BYTES : Field {
     std::string     value;
     SWC_CAN_INLINE
     Item() noexcept : comp(Condition::NONE), value() { }
+    Item(Item&&) noexcept = default;
+    Item(const Item&) = default;
+    Item& operator=(Item&&) noexcept = delete;
+    Item& operator=(const Item&) = delete;
     SWC_CAN_INLINE
     ~Item() noexcept { }
     SWC_CAN_INLINE

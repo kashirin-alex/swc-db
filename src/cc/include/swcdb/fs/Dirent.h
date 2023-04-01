@@ -50,7 +50,7 @@ struct Dirent final  {
     return *this;
   }
 
-  Dirent& operator=(const Dirent& other) noexcept = delete;
+  Dirent& operator=(const Dirent&) = delete;
 
   /// File or Directory name
   std::string   name;

@@ -142,6 +142,12 @@ class RspRangersStatus final : public Serializable {
       decode(bufp, remainp);
     }
 
+    Ranger(Ranger&&) noexcept = default;
+    Ranger& operator=(Ranger&&) noexcept = default;
+
+    Ranger(const Ranger&) = delete;
+    Ranger& operator=(const Ranger&) = delete;
+
     SWC_CAN_INLINE
     ~Ranger() noexcept { }
 
@@ -204,6 +210,12 @@ class RspManagersStatus final : public Serializable {
               cid_begin(), cid_end(), failures() {
       decode(bufp, remainp);
     }
+
+    Manager(Manager&&) noexcept = default;
+    Manager& operator=(Manager&&) noexcept = default;
+
+    Manager(const Manager&) = delete;
+    Manager& operator=(const Manager&) = delete;
 
     SWC_CAN_INLINE
     ~Manager() noexcept { }

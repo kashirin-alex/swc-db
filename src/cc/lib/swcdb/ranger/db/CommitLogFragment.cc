@@ -286,7 +286,7 @@ void Fragment::write(int err, uint8_t blk_replicas,
                  blk_replicas(a_blk_replicas) {
           }
           SWC_CAN_INLINE
-          Task(Task&&) = default;
+          Task(Task&&) noexcept = default;
           Task(const Task&) = delete;
           Task& operator=(const Task&) = delete;
           Task& operator=(Task&&) = delete;

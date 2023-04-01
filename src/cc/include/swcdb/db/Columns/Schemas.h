@@ -89,6 +89,11 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     SWC_CAN_INLINE
     TagsPattern() noexcept : comp(Condition::NONE) { }
 
+    TagsPattern(TagsPattern&&) noexcept = default;
+    TagsPattern(const TagsPattern&) = default;
+    TagsPattern& operator=(TagsPattern&&) noexcept = default;
+    TagsPattern& operator=(const TagsPattern&) = delete;
+
     ~TagsPattern() noexcept { }
   };
 
@@ -97,6 +102,10 @@ class Schemas : private std::unordered_map<cid_t, Schema::Ptr> {
     TagsPattern   tags;
     SWC_CAN_INLINE
     SelectorPatterns() noexcept : names(), tags() {}
+    SelectorPatterns(SelectorPatterns&&) noexcept = default;
+    SelectorPatterns(const SelectorPatterns&) = default;
+    SelectorPatterns& operator=(SelectorPatterns&&) noexcept = default;
+    SelectorPatterns& operator=(const SelectorPatterns&) = delete;
     ~SelectorPatterns() noexcept { }
   };
 

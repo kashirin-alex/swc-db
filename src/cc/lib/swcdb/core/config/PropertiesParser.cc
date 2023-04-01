@@ -365,20 +365,19 @@ Strings Parser::args_to_strings(int argc, char *argv[]) {
   return raw_strings;
 }
 
-Parser::Options::Options(bool a_own) noexcept : own(a_own), map() { }
+Parser::Options::Options() noexcept : map() { }
 
-Parser::Options::~Options() noexcept {
-  free();
+Parser::Options&
+Parser::Options::operator=(Parser::Options&& other) noexcept {
+  map = std::move(other.map);
+  return *this;
 }
 
-void Parser::Options::free() noexcept {
-    if(own) {
-      for(const auto& kv : map)
-        delete kv.second;
-      map.clear();
-    }
-  }
-
+Parser::Options::~Options() noexcept {
+  for(const auto& kv : map)
+    delete kv.second;
+  map.clear();
+}
 
 Parser::Parser(bool unregistered) noexcept
               : config(0, false),
@@ -388,7 +387,6 @@ Parser::Parser(bool unregistered) noexcept
 Parser::~Parser() noexcept { }
 
 void Parser::free() noexcept {
-  m_opts.free();
   config.free();
 }
 
@@ -586,8 +584,7 @@ void Parser::add_opt(const std::string& name, Property::Value::Ptr p,
 }
 
 void Parser::own_options(Parser::Options& opts) {
-  opts = m_opts;
-  m_opts.own = false;
+  opts = std::move(m_opts);
 }
 
 const Parser::Options& Parser::get_options() const noexcept {

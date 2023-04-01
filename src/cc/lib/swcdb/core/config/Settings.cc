@@ -149,7 +149,7 @@ void Settings::parse_args(int argc, char *argv[]) {
 
     prs.own_options(m_cmd_args);
 
-    load_from(prs.get_options());
+    load_from(m_cmd_args);
   }
 
   // some built-in behavior

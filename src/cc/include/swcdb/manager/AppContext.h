@@ -47,7 +47,9 @@ class AppContext final : public Comm::AppContext {
   AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::Value_enum_g>(
-            "swc.mngr.comm.encoder")) {
+            "swc.mngr.comm.encoder")
+        ),
+        m_srv(nullptr), m_metrics(nullptr) {
     auto settings = Env::Config::settings();
 
     settings->parse_file(
@@ -302,8 +304,8 @@ class AppContext final : public Comm::AppContext {
   }
 
   private:
-  Comm::server::SerializedServer::Ptr m_srv = nullptr;
-  Metric::Reporting::Ptr              m_metrics = nullptr;
+  Comm::server::SerializedServer::Ptr m_srv;
+  Metric::Reporting::Ptr              m_metrics;
 
 };
 

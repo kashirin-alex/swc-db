@@ -39,6 +39,10 @@ class FieldUpdate {
   FieldUpdate(const uint8_t** ptrp, size_t* remainp)
               : ctrl(Serialization::decode_i8(ptrp, remainp)) {
   }
+  FieldUpdate(FieldUpdate&&) noexcept = default;
+  FieldUpdate& operator=(FieldUpdate&&) noexcept = default;
+  FieldUpdate(const FieldUpdate&) = delete;
+  FieldUpdate& operator=(const FieldUpdate&) = delete;
   virtual ~FieldUpdate() noexcept { }
   SWC_CAN_INLINE
   bool set_ctrl(const char** ptr, uint32_t* remainp,
@@ -144,6 +148,10 @@ class FieldUpdate_MATH : public FieldUpdate {
                         : OP::EQUAL
                       ) {
   }
+  FieldUpdate_MATH(FieldUpdate_MATH&&) noexcept = default;
+  FieldUpdate_MATH& operator=(FieldUpdate_MATH&&) noexcept = default;
+  FieldUpdate_MATH(const FieldUpdate_MATH&) = delete;
+  FieldUpdate_MATH& operator=(const FieldUpdate_MATH&) = delete;
   SWC_CAN_INLINE
   void set_op(const char** ptr, uint32_t* remainp,
               bool w_value_ctrl=false) noexcept {
@@ -499,6 +507,10 @@ class FieldUpdate_Ext final : public UpdateField_T {
                           : uint32_t(0)
                         ) {
   }
+  FieldUpdate_Ext(FieldUpdate_Ext&&) noexcept = default;
+  FieldUpdate_Ext& operator=(FieldUpdate_Ext&&) noexcept = default;
+  FieldUpdate_Ext(const FieldUpdate_Ext&) = delete;
+  FieldUpdate_Ext& operator=(const FieldUpdate_Ext&) = delete;
   virtual ~FieldUpdate_Ext() noexcept { }
   SWC_CAN_INLINE
   void set_data(uint32_t i) noexcept {

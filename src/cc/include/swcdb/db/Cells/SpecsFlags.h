@@ -44,6 +44,11 @@ class Flags {
                 was_set(true) {
   }
 
+  Flags(Flags&&) noexcept = default;
+  Flags(const Flags&) noexcept = default;
+  Flags& operator=(Flags&&) noexcept = default;
+  Flags& operator=(const Flags&) noexcept = default;
+
   constexpr SWC_CAN_INLINE
   void copy(const Flags &other) noexcept {
     limit           = other.limit;

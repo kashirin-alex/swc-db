@@ -21,6 +21,12 @@ struct RangerResources {
                     load_scale(0), rebalance(0) {
   }
 
+  RangerResources(RangerResources&&) noexcept = default;
+  RangerResources& operator=(RangerResources&&) noexcept = default;
+
+  RangerResources(const RangerResources&) = delete;
+  RangerResources& operator=(const RangerResources&) = delete;
+
   ~RangerResources() noexcept { }
 
   rgrid_t     rgrid;

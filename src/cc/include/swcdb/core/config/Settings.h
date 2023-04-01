@@ -67,6 +67,13 @@ class Settings final : public Properties {
     DynFile(std::string&& a_filename) noexcept
             : filename(std::move(a_filename)), modified(0) {
     }
+    DynFile(DynFile&& other) noexcept
+            : filename(std::move(other.filename)),
+              modified(other.modified) {
+    }
+    DynFile(const DynFile&) = delete;
+    DynFile& operator=(DynFile&&) noexcept = delete;
+    DynFile& operator=(const DynFile&) = delete;
     SWC_CAN_INLINE
     ~DynFile() noexcept { }
     SWC_CAN_INLINE

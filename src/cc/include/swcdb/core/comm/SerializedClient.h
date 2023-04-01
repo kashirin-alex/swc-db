@@ -118,6 +118,18 @@ class Serialized final : public std::enable_shared_from_this<Serialized> {
           socket(nullptr), callback(std::forward<DataArgsT>(args)...) {
     }
 
+    Connector(Connector&& other) noexcept
+              : ptr(std::move(other.ptr)),
+                endpoints(std::move(other.endpoints)),
+                probes(other.probes), tries(other.tries), next(other.next),
+                socket(std::move(other.socket)),
+                callback(std::move(other.callback)) {
+    }
+
+    Connector(const Connector&) = delete;
+    Connector& operator=(Connector&&) = delete;
+    Connector& operator=(const Connector&&) = delete;
+
     void connect() {
       if(next >= endpoints.size())
         next = 0;
@@ -152,6 +164,13 @@ class Serialized final : public std::enable_shared_from_this<Serialized> {
                        Connector<HdlrT>&& hdlr)
               : conn(a_conn), connector(std::move(hdlr)) {
             }
+            Handshaker(Handshaker&& other) noexcept
+                        : conn(std::move(other.conn)),
+                          connector(std::move(other.connector)) {
+            }
+            Handshaker(const Handshaker&) = delete;
+            Handshaker& operator=(Handshaker&&) = delete;
+            Handshaker& operator=(const Handshaker&) = delete;
             ~Handshaker() noexcept { }
             void operator()(const asio::error_code& ec) {
               if(conn->is_open()) {
