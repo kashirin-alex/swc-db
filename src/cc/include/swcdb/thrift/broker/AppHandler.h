@@ -739,8 +739,8 @@ class AppHandler final : virtual public BrokerIf {
         auto it = m_updaters.cbegin();
         if(it == m_updaters.cend())
           break;
-        m_updaters.erase(it);
         hdlr = it->second;
+        m_updaters.erase(it);
       }
       try { updater_close(hdlr); } catch(...) {}
       Env::ThriftBroker::res().less_mem_releasable(
