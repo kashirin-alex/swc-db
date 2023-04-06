@@ -95,7 +95,7 @@ jobs:
           #
         fi
 
-        git clone --branch asio-1-22-1 https://github.com/chriskohlhoff/asio.git
+        git clone --branch asio-1-26-0 https://github.com/chriskohlhoff/asio.git
 
         # SWCDB_CLUSTER-PREREQUISITES
         sudo apt-get install -y \
