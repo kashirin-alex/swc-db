@@ -37,6 +37,11 @@ class Settings final : public Properties {
 
   Settings();
 
+  Settings(Settings&&) = delete;
+  Settings(const Settings&) = delete;
+  Settings& operator=(Settings&&) = delete;
+  Settings& operator=(const Settings&) = delete;
+
   ~Settings() noexcept;
 
   void init(int argc, char *argv[],
@@ -72,7 +77,7 @@ class Settings final : public Properties {
               modified(other.modified) {
     }
     DynFile(const DynFile&) = delete;
-    DynFile& operator=(DynFile&&) noexcept = delete;
+    DynFile& operator=(DynFile&&) = delete;
     DynFile& operator=(const DynFile&) = delete;
     SWC_CAN_INLINE
     ~DynFile() noexcept { }

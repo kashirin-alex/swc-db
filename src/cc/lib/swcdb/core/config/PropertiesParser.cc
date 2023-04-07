@@ -143,20 +143,9 @@ Config::Property::Value_doubles::Ptr Config::f64s() {
 namespace Config {
 
 
-ParserConfig::ParserConfig(int line_len, bool a_own) noexcept
-                          : usage(), positions(), options(),
-                            line_length(line_len), own(a_own) {
-}
-
-ParserConfig::ParserConfig(const char* a_usage, int line_len, bool a_own)
-                          : usage(a_usage), positions(), options(),
-                            line_length(line_len), own(a_own) {
-}
-
-ParserConfig::ParserConfig(const ParserConfig& other)
-                          : usage(), positions(), options(),
-                            line_length(0), own(true) {
-  add(other);
+ParserConfig::ParserConfig(bool a_own) noexcept
+                          : usage(), positions(),
+                            options(), own(a_own) {
 }
 
 ParserConfig::~ParserConfig() noexcept {
@@ -380,8 +369,10 @@ Parser::Options::~Options() noexcept {
 }
 
 Parser::Parser(bool unregistered) noexcept
-              : config(0, false),
-                raw_opts(), m_unregistered(unregistered), m_opts() {
+              : config(false),
+                raw_opts(),
+                m_unregistered(unregistered),
+                m_opts() {
 }
 
 Parser::~Parser() noexcept { }

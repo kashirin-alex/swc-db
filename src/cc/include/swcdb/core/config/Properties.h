@@ -28,6 +28,11 @@ class Properties {
   SWC_CAN_INLINE
   Properties() noexcept : mutex(), m_map(), m_alias_map()  { }
 
+  Properties(Properties&&) = delete;
+  Properties(const Properties&) = delete;
+  Properties& operator=(Properties&&) = delete;
+  Properties& operator=(const Properties&) = delete;
+
   SWC_CAN_INLINE
   ~Properties() noexcept {
     reset();

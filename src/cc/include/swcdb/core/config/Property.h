@@ -80,6 +80,11 @@ class Value {
 
   Value(Ptr ptr) noexcept;
 
+  Value(Value&&) = delete;
+  Value(const Value&) = delete;
+  Value& operator=(Value&&) = delete;
+  Value& operator=(const Value&) = delete;
+
   virtual ~Value() noexcept;
 
   virtual Ptr make_new(const Strings& values = Strings()) = 0;

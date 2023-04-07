@@ -104,17 +104,15 @@ class ParserConfig final {
   std::string   usage;
   Positions     positions;
   Map           options;
-  int           line_length;
   bool          own;
 
   SWC_SHOULD_NOT_INLINE
-  explicit ParserConfig(int line_len=0, bool own=true) noexcept;
+  explicit ParserConfig(bool own) noexcept;
 
-  SWC_SHOULD_NOT_INLINE
-  explicit ParserConfig(const char* usage, int line_len=0, bool own=true);
-
-  SWC_SHOULD_NOT_INLINE
-  explicit ParserConfig(const ParserConfig& other);
+  ParserConfig(ParserConfig&&) = delete;
+  ParserConfig(const ParserConfig&) = delete;
+  ParserConfig& operator=(ParserConfig&&) = delete;
+  ParserConfig& operator=(const ParserConfig&) = delete;
 
   ~ParserConfig() noexcept;
 
@@ -182,7 +180,7 @@ class Parser final {
 
     Options& operator=(Options&&) noexcept;
 
-    Options(Options&&) noexcept = delete;
+    Options(Options&&) = delete;
     Options(const Options&) = delete;
     Options& operator=(const Options&) = delete;
 
@@ -192,6 +190,11 @@ class Parser final {
 
   SWC_SHOULD_NOT_INLINE
   explicit Parser(bool unregistered=false) noexcept;
+
+  Parser(Parser&&) = delete;
+  Parser(const Parser&) = delete;
+  Parser& operator=(Parser&&) = delete;
+  Parser& operator=(const Parser&) = delete;
 
   ~Parser() noexcept;
 
