@@ -175,10 +175,10 @@ struct Field_BYTES : Field, StaticBuffer {
   Field_BYTES() noexcept { }
 
   Field_BYTES(uint24_t fid, const uint8_t* data, uint32_t len,
-              bool take_ownership=false);
+              bool take_ownership);
 
   Field_BYTES(const uint8_t** bufp, size_t* remainp,
-              bool take_ownership=false);
+              bool take_ownership);
 
   virtual ~Field_BYTES() noexcept { }
 
@@ -211,9 +211,11 @@ struct Field_KEY : Field {
   SWC_CAN_INLINE
   Field_KEY() noexcept: key() { }
 
-  Field_KEY(uint24_t fid, const Key& key, bool take_ownership=false);
+  Field_KEY(uint24_t fid, const Key& key,
+            bool take_ownership);
 
-  Field_KEY(const uint8_t** bufp, size_t* remainp, bool take_ownership=false);
+  Field_KEY(const uint8_t** bufp, size_t* remainp,
+            bool take_ownership);
 
   virtual ~Field_KEY() noexcept { }
 
@@ -224,7 +226,7 @@ struct Field_KEY : Field {
   void encode(uint8_t** bufp) const override;
 
   void decode(const uint8_t** bufp, size_t* remainp,
-              bool take_ownership=false);
+              bool take_ownership);
 
   void print(std::ostream& out) const override;
 
@@ -247,7 +249,7 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
   }
 
   Field_LIST_INT64(const uint8_t** bufp, size_t* remainp,
-                   bool take_ownership=false);
+                   bool take_ownership);
 
   virtual ~Field_LIST_INT64() noexcept { }
 
@@ -311,7 +313,7 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
   }
 
   Field_LIST_BYTES(const uint8_t** bufp, size_t* remainp,
-                   bool take_ownership=false);
+                   bool take_ownership);
 
   virtual ~Field_LIST_BYTES() noexcept { }
 

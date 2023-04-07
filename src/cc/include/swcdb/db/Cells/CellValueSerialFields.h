@@ -232,7 +232,7 @@ struct FieldsUpdaterMap final
           break;
         }
         case Type::BYTES: {
-          opfield.field = new Field_BYTES(&ptr, &remain);
+          opfield.field = new Field_BYTES(&ptr, &remain, take_ownership);
           opfield.ufield = new FieldUpdate_LIST(&ptr, &remain);
           break;
         }

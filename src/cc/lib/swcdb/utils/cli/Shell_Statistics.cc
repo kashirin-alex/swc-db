@@ -329,7 +329,7 @@ Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell)
   while(remain) {
     switch(DB::Cell::Serial::Value::read_type(&ptr, &remain)) {
       case DB::Cell::Serial::Value::Type::LIST_INT64: {
-        DB::Cell::Serial::Value::Field_LIST_INT64 value(&ptr, &remain);
+        DB::Cell::Serial::Value::Field_LIST_INT64 value(&ptr, &remain, false);
         if(value.fid == 0)
           value.convert_to(ids);
         else if(value.fid == 3)
@@ -339,7 +339,7 @@ Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell)
         break;
       }
       case DB::Cell::Serial::Value::Type::LIST_BYTES: {
-        DB::Cell::Serial::Value::Field_LIST_BYTES value(&ptr, &remain);
+        DB::Cell::Serial::Value::Field_LIST_BYTES value(&ptr, &remain, false);
         if(value.fid == 1)
           value.convert_to(names);
         else if(value.fid == 2)

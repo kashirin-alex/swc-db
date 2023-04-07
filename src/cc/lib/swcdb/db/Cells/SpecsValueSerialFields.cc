@@ -803,28 +803,28 @@ bool Fields::is_matching(const Cells::Cell& cell) {
       }
 
       case Type::BYTES: {
-        Cell::Serial::Value::Field_BYTES vfield(&ptr, &remain);
+        Cell::Serial::Value::Field_BYTES vfield(&ptr, &remain, false);
         if(!Value::is_matching<Type::BYTES>(_fields_ptr, &vfield, &more))
           return false;
         break;
       }
 
       case Type::KEY: {
-        Cell::Serial::Value::Field_KEY vfield(&ptr, &remain);
+        Cell::Serial::Value::Field_KEY vfield(&ptr, &remain, false);
         if(!Value::is_matching<Type::KEY>(_fields_ptr, &vfield, &more))
           return false;
         break;
       }
 
       case Type::LIST_INT64: {
-        Cell::Serial::Value::Field_LIST_INT64 vfield(&ptr, &remain);
+        Cell::Serial::Value::Field_LIST_INT64 vfield(&ptr, &remain, false);
         if(!Value::is_matching<Type::LIST_INT64>(_fields_ptr, &vfield, &more))
           return false;
         break;
       }
 
       case Type::LIST_BYTES: {
-        Cell::Serial::Value::Field_LIST_BYTES vfield(&ptr, &remain);
+        Cell::Serial::Value::Field_LIST_BYTES vfield(&ptr, &remain, false);
         if(!Value::is_matching<Type::LIST_BYTES>(_fields_ptr, &vfield, &more))
           return false;
         break;

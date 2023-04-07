@@ -142,7 +142,7 @@ class Interval {
 
   void encode(uint8_t** bufp) const;
 
-  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false);
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner);
 
   constexpr SWC_CAN_INLINE
   void set_opt__key_equal() noexcept {

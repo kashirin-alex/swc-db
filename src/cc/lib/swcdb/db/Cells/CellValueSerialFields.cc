@@ -25,12 +25,12 @@ void FieldsWriter::add(uint24_t fid, const long double& value) {
 }
 
 void FieldsWriter::add(uint24_t fid, const uint8_t* data, uint32_t len) {
-  Field_BYTES field(fid, data, len);
+  Field_BYTES field(fid, data, len, false);
   add(&field);
 }
 
 void FieldsWriter::add(uint24_t fid, const Key& key) {
-  Field_KEY field(fid, key);
+  Field_KEY field(fid, key, false);
   add(&field);
 }
 
@@ -83,16 +83,16 @@ void Fields::display(const uint8_t* ptr, size_t remain, std::ostream& out) {
         Field_DOUBLE(&ptr, &remain).print(out);
         break;
       case Type::BYTES:
-        Field_BYTES(&ptr, &remain).print(out);
+        Field_BYTES(&ptr, &remain, false).print(out);
         break;
       case Type::KEY:
-        Field_KEY(&ptr, &remain).print(out);
+        Field_KEY(&ptr, &remain, false).print(out);
         break;
       case Type::LIST_INT64:
-        Field_LIST_INT64(&ptr, &remain).print(out);
+        Field_LIST_INT64(&ptr, &remain, false).print(out);
         break;
       case Type::LIST_BYTES:
-        Field_LIST_BYTES(&ptr, &remain).print(out);
+        Field_LIST_BYTES(&ptr, &remain, false).print(out);
         break;
       default:
         out << "Type Unknown - corrupted remain=" << remain;

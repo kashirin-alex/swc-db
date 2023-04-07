@@ -81,7 +81,7 @@ class RangeQuerySelectUpdating_Serial final
           break;
         }
         case DB::Cell::Serial::Value::Type::BYTES: {
-          DB::Cell::Serial::Value::Field_BYTES field(&ptr, &remain);
+          DB::Cell::Serial::Value::Field_BYTES field(&ptr, &remain, false);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
@@ -94,7 +94,7 @@ class RangeQuerySelectUpdating_Serial final
           break;
         }
         case DB::Cell::Serial::Value::Type::KEY: {
-          DB::Cell::Serial::Value::Field_KEY field(&ptr, &remain);
+          DB::Cell::Serial::Value::Field_KEY field(&ptr, &remain, false);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
@@ -106,7 +106,7 @@ class RangeQuerySelectUpdating_Serial final
           break;
         }
         case DB::Cell::Serial::Value::Type::LIST_INT64: {
-          DB::Cell::Serial::Value::Field_LIST_INT64 field(&ptr, &remain);
+          DB::Cell::Serial::Value::Field_LIST_INT64 field(&ptr, &remain, false);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
@@ -119,7 +119,7 @@ class RangeQuerySelectUpdating_Serial final
           break;
         }
         case DB::Cell::Serial::Value::Type::LIST_BYTES: {
-          DB::Cell::Serial::Value::Field_LIST_BYTES field(&ptr, &remain);
+          DB::Cell::Serial::Value::Field_LIST_BYTES field(&ptr, &remain, false);
           auto opfield = u_fields.find_matching_type_and_id(&field);
           if(opfield) {
             opfields_found.push_back(opfield);
