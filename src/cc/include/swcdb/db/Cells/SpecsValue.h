@@ -18,15 +18,14 @@ class Value {
   public:
 
   constexpr SWC_CAN_INLINE
-  explicit Value(bool a_own=true,
-                 Condition::Comp a_comp=Condition::NONE) noexcept
-                : own(a_own), comp(a_comp),
+  explicit Value(Condition::Comp a_comp=Condition::NONE) noexcept
+                : own(false), comp(a_comp),
                   size(0), data(nullptr), matcher(nullptr) {
   }
 
   SWC_CAN_INLINE
   explicit Value(const char* data_n, Condition::Comp comp_n,
-                 bool owner=false)
+                 bool owner)
                 : own(false),
                   comp(), size(), data(),
                   matcher(nullptr) {
@@ -35,7 +34,7 @@ class Value {
 
   SWC_CAN_INLINE
   explicit Value(const char* data_n, const uint32_t size_n,
-                 Condition::Comp comp_n, bool owner=false)
+                 Condition::Comp comp_n, bool owner)
                 : own(false),
                   comp(), size(), data(),
                   matcher(nullptr) {
@@ -44,7 +43,7 @@ class Value {
 
   SWC_CAN_INLINE
   explicit Value(const uint8_t* data_n, const uint32_t size_n,
-                 Condition::Comp comp_n, bool owner=false)
+                 Condition::Comp comp_n, bool owner)
                 : own(false),
                   comp(), size(), data(),
                   matcher(nullptr) {
@@ -60,11 +59,48 @@ class Value {
   }
 
   SWC_CAN_INLINE
-  explicit Value(const Value &other)
-                : own(false),
-                  comp(), size(), data(),
+  explicit Value(const uint8_t** bufp, size_t* remainp, bool owner)
+                : own(owner),
+                  comp(Condition::Comp(Serialization::decode_i8(bufp, remainp))),
+                  size(
+                    comp == Condition::NONE
+                     ? 0
+                     : Serialization::decode_vi32(bufp, remainp)
+                  ),
+                  data(
+                    size
+                      ? own
+                        ? static_cast<uint8_t*>(memcpy(new uint8_t[size], *bufp, size))
+                        : const_cast<uint8_t*>(*bufp)
+                      : nullptr
+                  ),
                   matcher(nullptr) {
-    copy(other);
+    *remainp -= size;
+    *bufp += size;
+  }
+
+  SWC_CAN_INLINE
+  explicit Value(const Value &other)
+                : own(true),
+                  comp(other.comp),
+                  size(other.size),
+                  data(
+                    size
+                      ? static_cast<uint8_t*>(memcpy(new uint8_t[size], other.data, size))
+                      : nullptr
+                  ),
+                  matcher(nullptr) {
+  }
+
+  constexpr SWC_CAN_INLINE
+  explicit Value(Value&& other) noexcept
+                : own(other.own), comp(other.comp),
+                  size(other.size), data(other.data),
+                  matcher(other.matcher) {
+    other.comp = Condition::NONE;
+    other.size = 0;
+    other.data = nullptr;
+    other.matcher = nullptr;
   }
 
   SWC_CAN_INLINE
@@ -84,19 +120,8 @@ class Value {
     set(other.data, other.size, other.comp, true);
   }
 
-  constexpr SWC_CAN_INLINE
-  explicit Value(Value&& other) noexcept
-                : own(other.own), comp(other.comp),
-                  size(other.size), data(other.data),
-                  matcher(other.matcher) {
-    other.comp = Condition::NONE;
-    other.data = nullptr;
-    other.matcher = nullptr;
-    other.size = 0;
-  }
-
   SWC_CAN_INLINE
-  void set(const char* data_n, Condition::Comp comp_n, bool owner=true) {
+  void set(const char* data_n, Condition::Comp comp_n, bool owner) {
     set(data_n, strlen(data_n), comp_n, owner);
   }
 
@@ -107,7 +132,7 @@ class Value {
 
   SWC_CAN_INLINE
   void set(const char* data_n, uint32_t size_n,
-           Condition::Comp comp_n, bool owner=true) {
+           Condition::Comp comp_n, bool owner) {
     set(reinterpret_cast<const uint8_t*>(data_n), size_n, comp_n, owner);
   }
 
@@ -116,7 +141,7 @@ class Value {
   void set_counter(int64_t count, Condition::Comp comp_n);
 
   void set(const uint8_t* data_n, const uint32_t size_n,
-           Condition::Comp comp_n, bool owner=false);
+           Condition::Comp comp_n, bool owner);
 
   ~Value() noexcept {
     _free();
@@ -166,7 +191,7 @@ class Value {
   }
 
   SWC_CAN_INLINE
-  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false) {
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner) {
     free();
     own = owner;
     comp = Condition::Comp(Serialization::decode_i8(bufp, remainp));
@@ -237,7 +262,7 @@ class Value {
 
 SWC_CAN_INLINE
 void Value::move(Value &other) noexcept {
-  free();
+  _free();
   own = other.own;
   comp = other.comp;
   data = other.data;

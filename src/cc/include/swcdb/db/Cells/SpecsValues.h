@@ -31,7 +31,7 @@ class Values : public Core::Vector<Value> {
   }
 
   SWC_CAN_INLINE
-  Values(const uint8_t** bufp, size_t* remainp, bool owner=false)
+  Values(const uint8_t** bufp, size_t* remainp, bool owner)
         : col_type() {
     decode(bufp, remainp, owner);
   }
@@ -103,11 +103,13 @@ class Values : public Core::Vector<Value> {
   }
 
   SWC_CAN_INLINE
-  void decode(const uint8_t** bufp, size_t* remainp, bool owner=false) {
+  void decode(const uint8_t** bufp, size_t* remainp, bool owner) {
     clear();
-    resize(Serialization::decode_vi64(bufp, remainp));
-    for(auto& value : *this)
-      value.decode(bufp, remainp, owner);
+    size_t sz = Serialization::decode_vi64(bufp, remainp);
+    if(sz) {
+      reserve(sz);
+      for(; sz; --sz) emplace_back(bufp, remainp, owner);
+    }
   }
 
   void print(std::ostream& out) const;
