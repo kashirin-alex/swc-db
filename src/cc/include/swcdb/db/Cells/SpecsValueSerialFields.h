@@ -155,10 +155,9 @@ struct Field_BYTES : Field {
   }
 
   Field_BYTES(uint24_t fid, Condition::Comp comp,
-              const uint8_t* ptr, size_t len, bool take_ownership=false);
+              const uint8_t* ptr, size_t len, bool take_ownership);
 
-  Field_BYTES(const uint8_t** bufp, size_t* remainp,
-              bool take_ownership=false);
+  Field_BYTES(const uint8_t** bufp, size_t* remainp, bool take_ownership);
 
   virtual ~Field_BYTES() noexcept { }
 
@@ -338,7 +337,7 @@ struct Fields {
   SWC_CAN_INLINE
   Fields() noexcept : fields(), _fields_ptr() { }
 
-  Fields(const uint8_t* ptr, size_t len);
+  Fields(const uint8_t* ptr, size_t len, bool own);
 
   ~Fields() noexcept { }
 

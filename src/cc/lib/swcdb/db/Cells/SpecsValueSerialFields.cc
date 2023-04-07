@@ -678,7 +678,8 @@ void Field_LIST_BYTES::print(std::ostream& out) const {
 
 
 //
-Fields::Fields(const uint8_t* ptr, size_t len): fields(), _fields_ptr() {
+Fields::Fields(const uint8_t* ptr, size_t len, bool own)
+              : fields(), _fields_ptr() {
   while(len) {
     switch(Cell::Serial::Value::read_type(&ptr, &len)) {
       case Type::INT64: {
@@ -690,7 +691,7 @@ Fields::Fields(const uint8_t* ptr, size_t len): fields(), _fields_ptr() {
         break;
       }
       case Type::BYTES: {
-        fields.emplace_back(new Field_BYTES(&ptr, &len));
+        fields.emplace_back(new Field_BYTES(&ptr, &len, own));
         break;
       }
       case Type::KEY: {

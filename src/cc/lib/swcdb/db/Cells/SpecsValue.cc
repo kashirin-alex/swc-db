@@ -48,7 +48,7 @@ bool Value::is_matching_plain(const Cells::Cell& cell) const {
 struct MatcherSerial : Value::TypeMatcher {
   SWC_CAN_INLINE
   MatcherSerial(const uint8_t* data, uint32_t size)
-                : fields(data, size) {
+                : fields(data, size, false) {
   }
   SWC_CAN_INLINE
   ~MatcherSerial() noexcept { }
@@ -98,7 +98,7 @@ void Value::display(Types::Column col_type, std::ostream& out,
   out << "size=" << size << ' ' << Condition::to_string(comp);
   if(size) {
     if(col_type == Types::Column::SERIAL) {
-      Serial::Value::Fields(data, size).print(out);
+      Serial::Value::Fields(data, size, false).print(out);
     } else {
       out << '"';
       char hex[5];
