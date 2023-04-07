@@ -243,6 +243,9 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
   SWC_CAN_INLINE
   Field_LIST_INT64() noexcept { }
 
+  SWC_CAN_INLINE
+  Field_LIST_INT64(uint24_t a_fid) noexcept : Field(a_fid) { }
+
   template<typename T>
   Field_LIST_INT64(uint24_t a_fid, const T& items) : Field(a_fid) {
     set_from(items);
@@ -268,6 +271,21 @@ struct Field_LIST_INT64 : Field, StaticBuffer {
     uint8_t* ptr = base;
     for(const auto& v : items)
       Serialization::encode_vi64(&ptr, v);
+  }
+
+  template<typename T>
+  void write(DynamicBuffer* buff, const T& items) {
+    uint32_t _size = 0;
+    for(auto& v : items)
+      _size += Serialization::encoded_length_vi64(v);
+    buff->ensure(
+      Field::encoded_length() +
+      Serialization::encoded_length_bytes(_size)
+    );
+    Field::encode(&buff->ptr, type());
+    Serialization::encode_vi64(&buff->ptr, _size);
+    for(auto& v : items)
+      Serialization::encode_vi64(&buff->ptr, v);
   }
 
   template<typename T>
@@ -307,6 +325,9 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
   SWC_CAN_INLINE
   Field_LIST_BYTES() noexcept { }
 
+  SWC_CAN_INLINE
+  Field_LIST_BYTES(uint24_t a_fid) noexcept : Field(a_fid) { }
+
   template<typename T>
   Field_LIST_BYTES(uint24_t a_fid, const T& items) : Field(a_fid) {
     set_from(items);
@@ -332,6 +353,21 @@ struct Field_LIST_BYTES : Field, StaticBuffer {
     uint8_t* ptr = base;
     for(auto& v : items)
       Serialization::encode_bytes(&ptr, v.data(), v.size());
+  }
+
+  template<typename T>
+  void write(DynamicBuffer* buff, const T& items) {
+    uint32_t _size = 0;
+    for(auto& v : items)
+      _size += Serialization::encoded_length_bytes(v.size());
+    buff->ensure(
+      Field::encoded_length() +
+      Serialization::encoded_length_bytes(_size)
+    );
+    Field::encode(&buff->ptr, type());
+    Serialization::encode_vi64(&buff->ptr, _size);
+    for(auto& v : items)
+      Serialization::encode_bytes(&buff->ptr, v.data(), v.size());
   }
 
   template<typename T>

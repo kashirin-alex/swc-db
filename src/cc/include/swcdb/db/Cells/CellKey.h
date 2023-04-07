@@ -27,9 +27,7 @@ class Key final {
   typedef std::shared_ptr<Key> Ptr;
 
   constexpr SWC_CAN_INLINE
-  explicit Key(bool a_own = true) noexcept
-              : own(a_own), count(0), size(0), data(nullptr) {
-  }
+  explicit Key() noexcept : own(), count(0), size(0), data(nullptr) { }
 
   explicit Key(const uint8_t** bufp, size_t* remainp, bool owner);
   

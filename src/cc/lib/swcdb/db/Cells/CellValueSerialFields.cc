@@ -35,23 +35,23 @@ void FieldsWriter::add(uint24_t fid, const Key& key) {
 }
 
 void FieldsWriter::add(uint24_t fid, const Core::Vector<int64_t>& items) {
-  Field_LIST_INT64 field(fid, items);
-  add(&field);
+  Field_LIST_INT64 field(fid);
+  field.write(this, items);
 }
 
 void FieldsWriter::add(uint24_t fid, const std::vector<int64_t>& items) {
-  Field_LIST_INT64 field(fid, items);
-  add(&field);
+  Field_LIST_INT64 field(fid);
+  field.write(this, items);
 }
 
 void FieldsWriter::add(uint24_t fid, const Core::Vector<std::string>& items) {
-  Field_LIST_BYTES field(fid, items);
-  add(&field);
+  Field_LIST_BYTES field(fid);
+  field.write(this, items);
 }
 
 void FieldsWriter::add(uint24_t fid, const std::vector<std::string>& items) {
-  Field_LIST_BYTES field(fid, items);
-  add(&field);
+  Field_LIST_BYTES field(fid);
+  field.write(this, items);
 }
 
 void FieldsWriter::print(std::ostream& out) const {
