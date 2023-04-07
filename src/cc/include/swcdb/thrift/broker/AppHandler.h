@@ -673,7 +673,7 @@ class AppHandler final : virtual public BrokerIf {
         cell.__isset.encoder
           ? dbcell.set_value(
               DB::Types::Encoder(uint8_t(cell.encoder)), cell.v)
-          : dbcell.set_value(cell.v);
+          : dbcell.set_value(cell.v, false);
 
         col->add(dbcell);
         hdlr->commit_or_wait(col.get());

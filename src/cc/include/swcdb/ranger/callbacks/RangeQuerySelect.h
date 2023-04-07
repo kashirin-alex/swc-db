@@ -100,7 +100,7 @@ class RangeQuerySelect : public ReqScan {
         size_t remain = cells.fill();
         no_value_cells.ensure(remain);
         while(remain) {
-          DB::Cells::Cell(&ptr, &remain).write(no_value_cells, true);
+          DB::Cells::Cell(&ptr, &remain, false).write(no_value_cells, true);
         }
         cells.take_ownership(no_value_cells);
       }

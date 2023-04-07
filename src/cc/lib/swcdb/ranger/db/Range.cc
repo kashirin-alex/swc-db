@@ -969,7 +969,7 @@ void Range::check_meta(const Query::Select::CheckMeta::Ptr& hdlr) {
     interval.key_begin.remove(0);
 
     StaticBuffer v;
-    cell.get_value(v);
+    cell.get_value(v, false);
     const uint8_t* ptr = v.base;
     size_t remain = v.size;
 
@@ -1166,7 +1166,7 @@ void Range::_run_add_queue() {
 
     try { for(DB::Cells::Cell cell; remain; ) {
 
-      cell.read(&buf, &remain);
+      cell.read(&buf, &remain, false);
 
       if(!m_interval.key_end.empty() &&
           DB::KeySeq::compare(cfg->key_seq, m_interval.key_end, cell.key)

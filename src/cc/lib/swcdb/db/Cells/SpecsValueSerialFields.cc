@@ -774,7 +774,7 @@ is_matching(Core::Vector<Field*>& fields_ptr,
 bool Fields::is_matching(const Cells::Cell& cell) {
 
   StaticBuffer v;
-  cell.get_value(v);
+  cell.get_value(v, false);
   if(!v.size)
     return false;
 

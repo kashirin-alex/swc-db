@@ -49,7 +49,7 @@ void op(Cells::Mutable::Ptr cells_mutable,
             cell.set_counter(0, 1);
 
         } else {
-          cell.set_value("V_OF: "+cell_number);
+          cell.set_value("V_OF: "+cell_number, true);
         }
       }
 
@@ -174,7 +174,7 @@ void check(SWC::DB::Types::KeySeq key_seq, SWC::DB::Types::Column typ,
   const uint8_t* bptr = result.base;
   int counted = 0;
   while(remain) {
-    cell.read(&bptr, &remain);
+    cell.read(&bptr, &remain, false);
     //std::cout << cell.to_string(typ) <<"\n";
     //std::cout << "v='" << std::string((const char*)cell.value, cell.vlen) <<"'\n";
     ++counted;

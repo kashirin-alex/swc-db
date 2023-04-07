@@ -105,7 +105,8 @@ void run_queue_producer() {
         cell.key.add(fractions);
 
         // value => pid-count
-        cell.set_value(pid + "-" + std::to_string(total_count));
+        std::string v(pid + "-" + std::to_string(total_count));
+        cell.set_value(v, false);
         col->add(cell);
         hdlr->commit_or_wait(col.get());
       }

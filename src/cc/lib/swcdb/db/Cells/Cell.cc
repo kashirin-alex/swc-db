@@ -144,7 +144,7 @@ void Cell::display(std::ostream& out,
 
   } else if(meta && !bin) {
     StaticBuffer v;
-    get_value(v);
+    get_value(v, false);
     const uint8_t* ptr = v.base;
     size_t remain = v.size;
     DB::Cell::Key de_key;
@@ -162,7 +162,7 @@ void Cell::display(std::ostream& out,
 
   } else {
     StaticBuffer v;
-    get_value(v);
+    get_value(v, false);
 
     if(typ == Types::Column::SERIAL) {
       DB::Cell::Serial::Value::Fields::display(v.base, v.size, out);
@@ -211,7 +211,7 @@ void Cell::print(std::ostream& out, Types::Column typ) const {
   } else {
     out << " data=\"";
     StaticBuffer v;
-    get_value(v);
+    get_value(v, false);
 
     if(typ == Types::Column::SERIAL) {
       DB::Cell::Serial::Value::Fields::display(v.base, v.size, out);

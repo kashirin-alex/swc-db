@@ -38,7 +38,7 @@ class RangeLocateScanCommit : public RangeLocateScan {
       return false;
 
     StaticBuffer v;
-    cell.get_value(v);
+    cell.get_value(v, false);
     const uint8_t* ptr = v.base;
     size_t remain = v.size;
 

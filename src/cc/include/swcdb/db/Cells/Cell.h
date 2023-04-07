@@ -133,7 +133,7 @@ class Cell final {
   }
 
   explicit
-  Cell(const uint8_t** bufp, size_t* remainp, bool own=false);
+  Cell(const uint8_t** bufp, size_t* remainp, bool own);
 
   Cell& operator=(const Cell&) = delete;
 
@@ -232,12 +232,12 @@ class Cell final {
   }
 
   SWC_CAN_INLINE
-  void set_value(const char* v, bool owner=true) {
+  void set_value(const char* v, bool owner) {
     set_value(v, strlen(v), owner);
   }
 
   SWC_CAN_INLINE
-  void set_value(const std::string& v, bool owner=true) {
+  void set_value(const std::string& v, bool owner) {
     set_value(v.c_str(), v.length(), owner);
   }
 
@@ -248,7 +248,7 @@ class Cell final {
     set_value(encoder, reinterpret_cast<const uint8_t*>(v.c_str()), v.size());
   }
 
-  Types::Encoder get_value(StaticBuffer& v, bool owner=false) const;
+  Types::Encoder get_value(StaticBuffer& v, bool owner) const;
 
   void get_value(std::string& v) const;
 
@@ -279,7 +279,7 @@ class Cell final {
     return v;
   }
 
-  void read(const uint8_t** bufp, size_t* remainp, bool owner=false);
+  void read(const uint8_t** bufp, size_t* remainp, bool owner);
 
   constexpr SWC_CAN_INLINE
   size_t encoded_length(bool no_value=false) const noexcept {
@@ -441,7 +441,7 @@ void Cell::get_value(std::string& v) const {
   v.clear();
   if(vlen) {
     StaticBuffer _v;
-    get_value(_v);
+    get_value(_v, false);
     v.append(reinterpret_cast<const char*>(_v.base), _v.size);
   }
 }

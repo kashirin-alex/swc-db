@@ -55,7 +55,7 @@ class RangeQuerySelectUpdating : public RangeQuerySelect {
         throw Error::Exception(Error::REQUEST_TIMEOUT, "");
 
       for(DB::Cells::Cell updated_cell; remain; ) {
-        updated_cell.read(&ptr, &remain);
+        updated_cell.read(&ptr, &remain, false);
 
         update_cell_value(updated_cell);
 

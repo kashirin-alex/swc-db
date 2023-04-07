@@ -109,25 +109,24 @@ class IntervalUpdate final {
                   timestamp(cell.get_timestamp()),
                   value(), vlen() {
     StaticBuffer _v;
-    encoder = cell.get_value(_v);
-    value = copy_value(_v.base, _v.size);
+    encoder = cell.get_value(_v, true);
+    value = _v.base;
     vlen = _v.size;
+    _v.own = false;
   }
 
   IntervalUpdate(DB::Cells::Cell&& cell)
                 : operation(), encoder(),
                   timestamp(cell.get_timestamp()),
                   value(), vlen() {
-    if(cell.have_encoder()) {
-      StaticBuffer _v;
-      encoder = cell.get_value(_v);
-      value = _v.base;
-      vlen = _v.size;
+    StaticBuffer _v;
+    encoder = cell.get_value(_v, false);
+    value = _v.base;
+    vlen = _v.size;
+    if(_v.own) {
       cell.free();
+      _v.own = false;
     } else {
-      encoder = Types::Encoder::DEFAULT;
-      value = cell.value;
-      vlen = cell.vlen;
       cell.value = nullptr;
       cell.vlen = 0;
     }
@@ -179,9 +178,10 @@ class IntervalUpdate final {
     operation = UpdateOP();
     timestamp = cell.get_timestamp();
     StaticBuffer _v;
-    encoder = cell.get_value(_v);
-    value = copy_value(_v.base, _v.size);
+    encoder = cell.get_value(_v, true);
+    value = _v.base;
     vlen = _v.size;
+    _v.own = false;
     return *this;
   }
 
@@ -189,16 +189,14 @@ class IntervalUpdate final {
     _free();
     operation = UpdateOP();
     timestamp = cell.get_timestamp();
-    if(cell.have_encoder()) {
-      StaticBuffer _v;
-      encoder = cell.get_value(_v);
-      value = _v.base;
-      vlen = _v.size;
+    StaticBuffer _v;
+    encoder = cell.get_value(_v, false);
+    value = _v.base;
+    vlen = _v.size;
+    if(_v.own) {
       cell.free();
+      _v.own = false;
     } else {
-      encoder = Types::Encoder::DEFAULT;
-      value = cell.value;
-      vlen = cell.vlen;
       cell.value = nullptr;
       cell.vlen = 0;
     }

@@ -60,7 +60,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
   void set_offset(DB::Specs::Interval& spec) const {
     const uint8_t* ptr = last_cell;
     size_t remain = cells.ptr - ptr;
-    DB::Cells::Cell cell(&ptr, &remain);
+    DB::Cells::Cell cell(&ptr, &remain, false);
     spec.offset_key.copy(cell.key);
     spec.offset_rev = cell.get_timestamp();
   }
@@ -70,7 +70,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
     const uint8_t* ptr = last_cell;
     size_t remain = cells.ptr - ptr;
 
-    to->add(DB::Cells::Cell(&ptr, &remain));
+    to->add(DB::Cells::Cell(&ptr, &remain, false));
 
     --header.cells_count;
     cells.ptr = const_cast<uint8_t*>(last_cell);
@@ -84,7 +84,7 @@ struct CompactRange::InBlock final : Core::QueuePointer<InBlock*>::Pointer {
 
     DB::Cells::Cell cell;
     while(remain) {
-      cell.read(&ptr, &remain);
+      cell.read(&ptr, &remain, false);
       header.interval.align(cell.key);
       header.interval.expand(cell.get_timestamp());
 

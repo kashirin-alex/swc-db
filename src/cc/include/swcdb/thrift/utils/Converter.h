@@ -662,7 +662,7 @@ void set(const DB::Cells::Cell& dbcell, CellValuesSerial& values) {
     return;
 
   StaticBuffer v;
-  dbcell.get_value(v);
+  dbcell.get_value(v, false);
   const uint8_t* ptr = v.base;
   size_t remain = v.size;
 

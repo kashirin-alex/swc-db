@@ -86,7 +86,7 @@ size_t write_cs(SWC::csid_t csid, SWC::Ranger::RangePtr range, int any) {
       apply_key(idn, n, gn, cell.key);
 
       std::string v("A-Data-Value-1234567890-"+idn+":"+n+":"+gn);
-      cell.set_value(v);
+      cell.set_value(v, false);
 
       cell.write(buff);
       ++header.cells_count;

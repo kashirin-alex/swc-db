@@ -222,7 +222,7 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
 
   try { for(DB::Cells::Cell cell; remain; ++count) {
 
-    cell.read(&buf, &remain);
+    cell.read(&buf, &remain, false);
 
     if(!m_prev_key_end.empty() &&
         DB::KeySeq::compare(m_cells.key_seq, m_prev_key_end, cell.key)

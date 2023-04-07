@@ -308,7 +308,7 @@ void ColumnHealthCheck::ColumnMerger::run() {
     //    cell->print(SWC_LOG_OSTREAM, DB::Types::Column::SERIAL); );
 
     StaticBuffer v;
-    cell->get_value(v);
+    cell->get_value(v, false);
     const uint8_t* ptr = v.base;
     size_t remain = v.size;
     DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);
@@ -528,7 +528,7 @@ void ColumnHealthCheck::ColumnMerger::RangesMerger::handle(
       meta_cid, main_range->cfg->key_seq, 1, 0, DB::Types::Column::SERIAL);
     for(auto& cell : col_merger->cells) {
       StaticBuffer v;
-      cell->get_value(v);
+      cell->get_value(v, false);
       const uint8_t* ptr = v.base;
       size_t remain = v.size;
       DB::Cell::Serial::Value::skip_type_and_id(&ptr, &remain);

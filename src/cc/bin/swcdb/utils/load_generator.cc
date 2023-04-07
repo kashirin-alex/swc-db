@@ -701,16 +701,16 @@ void update_data(const DB::SchemasVec& schemas, uint8_t flag, size_t seed) {
               }
             }
 
-            if(cell_encoder != DB::Types::Encoder::PLAIN) {
-              cell.set_value(cell_encoder, wfields.base, wfields.fill());
-            } else {
+            if(cell_encoder == DB::Types::Encoder::PLAIN) {
               cell.set_value(wfields.base, wfields.fill(), true);
+            } else {
+              cell.set_value(cell_encoder, wfields.base, wfields.fill());
             }
 
-          } else if(cell_encoder != DB::Types::Encoder::PLAIN) {
-            cell.set_value(cell_encoder, value_data);
+          } else if(cell_encoder == DB::Types::Encoder::PLAIN) {
+            cell.set_value(value_data, false);
           } else {
-            cell.set_value(value_data);
+            cell.set_value(cell_encoder, value_data);
           }
         }
 

@@ -421,7 +421,7 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
       const uint8_t* buf = m_buffer.base;
       size_t remain = m_buffer.size;
       try { for(DB::Cells::Cell cell; remain; ++count) {
-        cell.read(&buf, &remain);
+        cell.read(&buf, &remain, false);
         synced
           ? cells.add_sorted(cell)
           : cells.add_raw(cell, &offset_it, &offset_hint, false);
@@ -454,7 +454,7 @@ void Fragment::split(int&, const DB::Cell::Key& key,
       size_t remain = m_buffer.size;
 
       try { for(DB::Cells::Cell cell; remain; ++count) {
-        cell.read(&buf, &remain);
+        cell.read(&buf, &remain, false);
         DB::KeySeq::compare(interval.key_seq, key, cell.key) == Condition::GT
           ? log_right->add(cell)
           : log_left->add(cell);

@@ -174,7 +174,8 @@ void generate_sample_data() {
         cell.key.add(fractions);
 
         // value => image-id
-        cell.set_value(std::to_string(++img_id));
+        auto v = std::to_string(++img_id);
+        cell.set_value(v, false);
         col->add(cell);
 
         hdlr->commit_or_wait(col.get());

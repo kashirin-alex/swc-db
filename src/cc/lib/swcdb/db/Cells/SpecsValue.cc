@@ -28,7 +28,7 @@ bool Value::is_matching_plain(const Cells::Cell& cell) const {
     return true;
 
   StaticBuffer v;
-  cell.get_value(v);
+  cell.get_value(v, false);
   switch(comp) {
     case Condition::RE: {
       if(!data || !size)

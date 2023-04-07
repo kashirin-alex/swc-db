@@ -438,7 +438,7 @@ class Mutable final {
     const uint8_t* ptr = cells.base;
     size_t remain = cells.fill();
     for(Cell cell; remain; ) {
-      cell.read(&ptr, &remain);
+      cell.read(&ptr, &remain, false);
       add_raw(cell, &offset_hint, finalized);
     }
   }
@@ -452,7 +452,7 @@ class Mutable final {
     const uint8_t* ptr = cells.base;
     size_t remain = cells.fill();
     for(Cell cell; remain; ) {
-      cell.read(&ptr, &remain);
+      cell.read(&ptr, &remain, false);
       if((malformed && !skip) || (
          (!upto_key.empty() &&
           DB::KeySeq::compare(key_seq, upto_key, cell.key)!=Condition::GT) ||

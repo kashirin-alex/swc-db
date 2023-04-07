@@ -212,7 +212,7 @@ class FileWriter {
 
       if(cell.have_encoder() && output_flags & OutputFlag::NO_ENCODE) {
         StaticBuffer v;
-        cell.get_value(v);
+        cell.get_value(v, false);
         cell_buff.add(std::to_string(v.size));
         cell_buff.add('\t');
         cell_buff.add(v.base, v.size);

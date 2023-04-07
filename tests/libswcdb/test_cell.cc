@@ -33,7 +33,7 @@ void check_load(bool encode) {
   if(encode)
     cell.set_value(SWC::DB::Types::Encoder::ZSTD, value);
   else
-    cell.set_value(value);
+    cell.set_value(value, false);
 
   auto ts = SWC::Time::now_ns();
   auto chks = 10000;
@@ -94,12 +94,12 @@ void check_load(bool encode) {
   size_t remain = buff.fill();
   ts = SWC::Time::now_ns();
   while(remain)
-    cell.read(&bptr, &remain);
+    cell.read(&bptr, &remain, false);
   ts = SWC::Time::now_ns() - ts;
   std::cout << "Cell::read took=" << ts << " avg=" << ts/chks << "\n";
 
   SWC::Core::StaticBuffer v;
-  cell.get_value(v);
+  cell.get_value(v, false);
   std::cout << "value.size()=" << value.size()  << "\n";
   std::cout << "      v.size=" << v.size        << "\n";
   std::cout << "   cell.vlen=" << cell.vlen     << "\n";
@@ -134,7 +134,7 @@ int run() {
       cell->key.add("aKey5");
 
       std::string v1 = "A-Data-Value-1234567890-" + std::to_string(i);
-      cell->set_value(v1);
+      cell->set_value(v1, true);
 
       cells.push_back(cell);
 
@@ -210,7 +210,7 @@ int run() {
    auto it2=cells_copied.begin();
 
    while(mark > bptr) {
-    cell.read(&bptr, &remain);
+    cell.read(&bptr, &remain, false);
 
     std::cout << "Loaded Cell-"<< i << ":\n";
     std::cout << cell.to_string() << "\n\n";

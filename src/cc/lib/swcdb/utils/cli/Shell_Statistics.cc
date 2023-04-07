@@ -316,7 +316,7 @@ Statistics::StatsDefinition::StatsDefinition(const DB::Cells::Cell& cell)
   property[0].comp = Condition::Comp::GE;
 
   StaticBuffer v;
-  cell.get_value(v);
+  cell.get_value(v, false);
   const uint8_t* ptr = v.base;
   size_t remain = v.size;
 
@@ -713,7 +713,7 @@ bool Statistics::show() {
                 ts *= g.agg;
               }
               StaticBuffer v;
-              cell->get_value(v);
+              cell->get_value(v, false);
               const uint8_t* ptr = v.base;
               size_t remain = v.size;
 

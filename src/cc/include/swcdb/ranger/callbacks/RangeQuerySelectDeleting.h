@@ -61,7 +61,7 @@ class RangeQuerySelectDeleting : public RangeQuerySelect {
         throw Error::Exception(Error::REQUEST_TIMEOUT, "");
 
       for(DB::Cells::Cell updated_cell; remain; ) {
-        updated_cell.read(&ptr, &remain);
+        updated_cell.read(&ptr, &remain, false);
 
         updated_cell.flag = del_flag;
         updated_cell.set_revision(Time::now_ns());
