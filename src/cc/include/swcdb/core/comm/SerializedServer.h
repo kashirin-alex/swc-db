@@ -34,6 +34,8 @@ class Acceptor final : protected asio::ip::tcp::acceptor {
   Acceptor& operator=(Acceptor&&)      = delete;
   Acceptor& operator=(const Acceptor&) = delete;
 
+  void accept();
+
   void stop();
 
   ~Acceptor() noexcept { }

@@ -109,7 +109,9 @@ Acceptor::Acceptor(asio::ip::tcp::acceptor& acceptor,
                     m_ssl_cfg(ssl_cfg) {
   set_option(asio::ip::tcp::acceptor::reuse_address(true));
   set_option(asio::ip::tcp::no_delay(true));
+}
 
+void Acceptor::accept() {
   if(m_ssl_cfg)
     async_accept(Mixed(this));
   else
@@ -233,6 +235,9 @@ SerializedServer::SerializedServer(
 
 SWC_SHOULD_NOT_INLINE
 void SerializedServer::run() {
+  for(auto& acceptor : m_acceptors)
+    acceptor->accept();
+
   for(auto& io : m_io_contexts)
     io->pool.join();
 
