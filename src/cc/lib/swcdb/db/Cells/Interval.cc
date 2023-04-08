@@ -64,18 +64,11 @@ void Interval::expand(const Cell& cell) {
   was_set = true;
 }
 
-bool Interval::equal(const Interval& other) const noexcept {
-  return
-    was_set == other.was_set &&
-
-    key_begin.equal(other.key_begin) &&
-    key_end.equal(other.key_end) &&
-
-    ts_earliest.equal(other.ts_earliest) &&
-    ts_latest.equal(other.ts_latest) &&
-
-    aligned_min.equal(other.aligned_min) &&
-    aligned_max.equal(other.aligned_max);
+bool Interval::align(const DB::Cell::KeyVec& _min,
+                     const DB::Cell::KeyVec& _max) {
+  bool start = DB::KeySeq::align(key_seq, aligned_min, _min, Condition::LT);
+  bool finish = DB::KeySeq::align(key_seq, aligned_max, _max, Condition::GT);
+  return start || finish;
 }
 
 /*
