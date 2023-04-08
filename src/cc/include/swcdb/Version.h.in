@@ -6,8 +6,6 @@
 #ifndef swcdb_Version_h
 #define swcdb_Version_h
 
-#include "swcdb/core/Compat.h"
-
 
 #define SWCDB_SET_VERSION   "SWC-DB v@SWCDB_VERSION@"
 
@@ -15,9 +13,9 @@
 
 
 
-const char* SWC_CONST_FUNC swcdb_version() noexcept;
+const char* __attribute__((const)) swcdb_version() noexcept;
 
-const char* SWC_CONST_FUNC swcdb_copyrights() noexcept;
+const char* __attribute__((const)) swcdb_copyrights() noexcept;
 
 
 
