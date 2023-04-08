@@ -10,7 +10,7 @@
 namespace SWC {
 
 
-SWC_SHOULD_INLINE SWC_MALLOC_FUNC
+SWC_CAN_INLINE SWC_MALLOC_FUNC
 void* Memory::allocate(const size_t sz) noexcept {
   for(;;) {
     void* ptr = malloc(sz);
@@ -29,7 +29,7 @@ void* Memory::allocate(const size_t sz) noexcept {
   }
 }
 
-SWC_SHOULD_INLINE SWC_MALLOC_FUNC
+SWC_CAN_INLINE SWC_MALLOC_FUNC
 void* Memory::allocate(const size_t sz, std::align_val_t al) noexcept {
   for(;;) {
     void* ptr = aligned_alloc(size_t(al), sz);
@@ -49,7 +49,7 @@ void* Memory::allocate(const size_t sz, std::align_val_t al) noexcept {
 }
 
 
-SWC_SHOULD_INLINE
+SWC_CAN_INLINE
 void Memory::free(void* ptr) noexcept {
   //printf(
   //  "free p=" SWC_FMT_LU "\n",
