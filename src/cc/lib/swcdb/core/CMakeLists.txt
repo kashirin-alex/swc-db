@@ -3,6 +3,11 @@
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
 
+#if(SWC_MALLOC_NOT_INSISTENT) 
+#  set(swcdb_core_sources )
+#else()
+#  set(swcdb_core_sources Malloc.cc)
+#endif()
 
 set(swcdb_core_sources
   ${SWC_VERSION_SRC}
