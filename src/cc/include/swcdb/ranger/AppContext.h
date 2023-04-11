@@ -54,7 +54,8 @@ class AppContext final : public Comm::AppContext {
         *settings,
         Comm::IoContext::make(
           "Clients",
-           settings->get_i32("swc.rgr.clients.handlers")
+          settings->get_bool("swc.rgr.concurrency.relative"),
+          settings->get_i32("swc.rgr.clients.handlers")
         ),
         client::ContextManager::Ptr(
           new client::ContextManager(*settings)),

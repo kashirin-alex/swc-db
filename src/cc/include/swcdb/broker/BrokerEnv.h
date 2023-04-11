@@ -119,8 +119,9 @@ Bkr::Bkr()
     : app_io(
         Comm::IoContext::make(
           "Broker",
-          SWC::Env::Config::settings()->get_i32(
-            "swc.bkr.handlers")
+          SWC::Env::Config::settings()->get_bool(
+            "swc.bkr.concurrency.relative"),
+          SWC::Env::Config::settings()->get_i32("swc.bkr.handlers")
         )
       ),
       _reporting(

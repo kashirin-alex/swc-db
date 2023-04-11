@@ -34,9 +34,14 @@ void init_app_options(Settings* settings) {
     ("swc.cfg.dyn.period", g_i32(60000),
      "Dynamic cfg-file check interval in ms, zero without")
 
-    ("swc.FsBroker.reactors", i32(8), "Number of Communication Reactors")
-    ("swc.FsBroker.workers", i32(32), "Number of Workers a Reactor")
-    ("swc.FsBroker.handlers", i32(8), "Number of App Handlers")
+    ("swc.FsBroker.concurrency.relative", boo(true),
+     "Determined ratio by HW-Concurrency")
+    ("swc.FsBroker.reactors", i32(4),
+     "Number of Communication Reactors or HW-Concurrency a Reactor")
+    ("swc.FsBroker.workers", i32(16),
+     "Number of Workers a Reactor")
+    ("swc.FsBroker.handlers", i32(64),
+     "Number or HW-Concurrency base of App Handlers")
 
     ("swc.FsBroker.metrics.enabled", boo(true),
      "Enable or Disable Metrics Monitoring")

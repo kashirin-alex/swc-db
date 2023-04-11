@@ -64,6 +64,7 @@ class SerializedServer final {
   SerializedServer(
     const Config::Settings& settings,
     std::string&& name,
+    bool concurrency_relative,
     uint32_t reactors, uint32_t workers, uint16_t port,
     AppContext::Ptr app_ctx
   );

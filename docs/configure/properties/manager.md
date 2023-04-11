@@ -13,25 +13,31 @@ title: Manager Configuration
 The Dynamic cfg-file to use. Managers will check & reload this cfg-file by swc.cfg.dyn.period \
 _default_ **```swc.mngr.cfg.dyn=```**
 
+* ### swc.mngr.concurrency.relative
+```TYPE_BOOL```
+Whether HW-Concurrency base is used with the Applicable cfg properties. \
+_default_ **```swc.mngr.concurrency.relative=true```**
+
 * ### swc.mngr.reactors
 ```TYPE_INT32```
-The number of communication reactor to initialize an io-context for a given acceptor-fd. \
-_default_ **```swc.mngr.reactors=8```**
+The number of communication reactor to initialize an io-context for a given acceptor-fd.
+The total or the base of HW-concurrency for one reactor. \
+_default_ **```swc.mngr.reactors=4```**
 
 * ### swc.mngr.workers
 ```TYPE_INT32```
-The number of workers a comm-reactor initalizes. \
-_default_ **```swc.mngr.workers=32```**
+The number or HW-Concurrency base of workers a comm-reactor initalizes. \
+_default_ **```swc.mngr.workers=16```**
 
 * ### swc.mngr.handlers
 ```TYPE_INT32```
-The number of Application handlers. \
-_default_ **```swc.mngr.handlers=256```**
+The number or HW-Concurrency of Application handlers. \
+_default_ **```swc.mngr.handlers=4```**
 
 * ### swc.mngr.clients.handlers
 ```TYPE_INT32```
-The number of DB-Clients handlers. \
-_default_ **```swc.mngr.clients.handlers=8```**
+The number or HW-Concurrency base of DB-Clients handlers. \
+_default_ **```swc.mngr.clients.handlers=2```**
 
 * ### swc.mngr.metrics.enabled
 ```TYPE_BOOL```

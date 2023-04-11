@@ -28,6 +28,7 @@ Comm::server::SerializedServer::Ptr make_service() {
     new Comm::server::SerializedServer(
       *Env::Config::settings(),
       "MANAGER",
+      Env::Config::settings()->get_bool("swc.mngr.concurrency.relative"),
       Env::Config::settings()->get_i32("swc.mngr.reactors"),
       Env::Config::settings()->get_i32("swc.mngr.workers"),
       Env::Config::settings()->get_i16("swc.mngr.port"),

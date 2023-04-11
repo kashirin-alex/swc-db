@@ -91,6 +91,8 @@ class Mngr final {
       : app_io(
           Comm::IoContext::make(
             "Manager",
+            SWC::Env::Config::settings()->get_bool(
+              "swc.mngr.concurrency.relative"),
             SWC::Env::Config::settings()->get_i32("swc.mngr.handlers")
           )
         ),

@@ -28,6 +28,7 @@ Comm::server::SerializedServer::Ptr make_service() {
     new Comm::server::SerializedServer(
       *Env::Config::settings(),
       "RANGER",
+      Env::Config::settings()->get_bool("swc.rgr.concurrency.relative"),
       Env::Config::settings()->get_i32("swc.rgr.reactors"),
       Env::Config::settings()->get_i32("swc.rgr.workers"),
       Env::Config::settings()->get_i16("swc.rgr.port"),

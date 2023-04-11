@@ -141,6 +141,7 @@ SWC_SHOULD_NOT_INLINE
 SerializedServer::SerializedServer(
     const Config::Settings& settings,
     std::string&& name,
+    bool concurrency_relative,
     uint32_t reactors, uint32_t workers,
     uint16_t port,
     AppContext::Ptr app_ctx
@@ -151,6 +152,13 @@ SerializedServer::SerializedServer(
           ? new ConfigSSL(settings, false)
           : nullptr
       ) {
+
+  SWC_EXPECT(reactors >= 1, Error::CONFIG_BAD_VALUE);
+  if(concurrency_relative) {
+    uint32_t num_cores = std::thread::hardware_concurrency();
+    reactors = num_cores / reactors;
+    if(reactors < 1) reactors = 1;
+  }
 
   SWC_LOGF(LOG_INFO, "STARTING SERVER: %s, reactors=%u, workers=%u",
            m_appname.c_str(), reactors, workers);

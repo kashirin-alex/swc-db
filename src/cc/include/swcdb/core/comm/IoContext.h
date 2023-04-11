@@ -42,6 +42,25 @@ class IoContext final : public std::enable_shared_from_this<IoContext> {
     return IoContextPtr(new IoContext(std::move(_name), size));
   }
 
+  SWC_CAN_INLINE
+  static uint32_t
+  get_number_of_threads(bool relative, int32_t size) noexcept {
+    if(relative) {
+      uint32_t sz = size * std::thread::hardware_concurrency();
+      if(sz > 0) return sz;
+    }
+    return size;
+  }
+
+  static IoContextPtr make(std::string&& _name, bool relative, int32_t size) {
+    return IoContextPtr(
+      new IoContext(
+        std::move(_name),
+        get_number_of_threads(relative, size)
+      )
+    );
+  }
+
   Core::AtomicBool                     running;
   const std::string                    name;
   asio::thread_pool                    pool;
@@ -101,6 +120,11 @@ class IoCtx final {
   }
 
   SWC_CAN_INLINE
+  static void init(bool relative, int32_t size) {
+    m_env.reset(new IoCtx(relative, size));
+  }
+
+  SWC_CAN_INLINE
   static bool ok() noexcept {
     return bool(m_env);
   }
@@ -126,7 +150,14 @@ class IoCtx final {
   }
 
   SWC_CAN_INLINE
-  IoCtx(int32_t size) : m_io(new Comm::IoContext("Env", size)) { }
+  IoCtx(int32_t size)
+      : m_io(Comm::IoContext::make("Env", size)) {
+  }
+
+  SWC_CAN_INLINE
+  IoCtx(bool relative, int32_t size)
+        : m_io(Comm::IoContext::make("Env", relative, size)) {
+  }
 
   ~IoCtx() noexcept { }
 

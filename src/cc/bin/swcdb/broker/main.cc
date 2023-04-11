@@ -28,6 +28,7 @@ Comm::server::SerializedServer::Ptr make_service() {
     new Comm::server::SerializedServer(
       *Env::Config::settings(),
       "BROKER",
+      Env::Config::settings()->get_bool("swc.bkr.concurrency.relative"),
       Env::Config::settings()->get_i32("swc.bkr.reactors"),
       Env::Config::settings()->get_i32("swc.bkr.workers"),
       Env::Config::settings()->get_i16("swc.bkr.port"),

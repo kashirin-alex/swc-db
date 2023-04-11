@@ -13,20 +13,26 @@ title: FsBroker Configuration
 The Dynamic cfg-file to use. FsBrokers will check & reload this cfg-file by swc.cfg.dyn.period \
 _default_ **```swc.FsBroker.cfg.dyn=```**
 
+* ### swc.FsBroker.concurrency.relative
+```TYPE_BOOL```
+Whether HW-Concurrency base is used with the Applicable cfg properties. \
+_default_ **```swc.FsBroker.concurrency.relative=true```**
+
 * ### swc.FsBroker.reactors
 ```TYPE_INT32```
-The number of communication reactor to initialize an io-context for a given acceptor-fd. \
-_default_ **```swc.FsBroker.reactors=8```**
+The number of communication reactor to initialize an io-context for a given acceptor-fd.
+The total or the base of HW-concurrency for one reactor. \
+_default_ **```swc.FsBroker.reactors=4```**
 
 * ### swc.FsBroker.workers
 ```TYPE_INT32```
 The number of workers a comm-reactor initalizes. \
-_default_ **```swc.FsBroker.workers=32```**
+_default_ **```swc.FsBroker.workers=16```**
 
 * ### swc.FsBroker.handlers
 ```TYPE_INT32```
-The number of Application handlers. \
-_default_ **```swc.FsBroker.handlers=8```**
+The number or HW-Concurrency base of Application handlers. \
+_default_ **```swc.FsBroker.handlers=32```**
 
 * ### swc.FsBroker.metrics.enabled
 ```TYPE_BOOL```

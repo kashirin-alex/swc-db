@@ -24,12 +24,18 @@ void init_app_options(Settings* settings) {
     ("swc.mngr.cfg", str(), "Specific cfg-file for Manager")
     ("swc.mngr.cfg.dyn", strs(), "Specific dyn. cfg-file for Manager")
 
-    ("swc.mngr.reactors", i32(8), "Number of Communication Reactors")
-    ("swc.mngr.workers", i32(32), "Number of Workers a Reactor")
+    ("swc.mngr.concurrency.relative", boo(true),
+     "Determined ratio by HW-Concurrency")
+    ("swc.mngr.reactors", i32(4),
+     "Number of Communication Reactors or HW-Concurrency a Reactor")
+    ("swc.mngr.workers", i32(16),
+     "Number of Workers a Reactor")
     ("swc.mngr.port", i16(15000), "Manager port")
-    ("swc.mngr.handlers", i32(8), "Number of App Handlers")
+    ("swc.mngr.handlers", i32(4),
+     "Number or HW-Concurrency base of App Handlers")
 
-    ("swc.mngr.clients.handlers", i32(8), "Number of DB-Client Handlers")
+    ("swc.mngr.clients.handlers", i32(2),
+     "Number or HW-Concurrency base of DB-Client Handlers")
 
     ("swc.mngr.comm.encoder",
       g_enum(

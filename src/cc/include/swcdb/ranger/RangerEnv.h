@@ -259,13 +259,16 @@ Rgr::Rgr()
       app_io(
         Comm::IoContext::make(
           "Ranger",
-          SWC::Env::Config::settings()->get_i32(
-            "swc.rgr.handlers")
+          SWC::Env::Config::settings()->get_bool(
+            "swc.rgr.concurrency.relative"),
+          SWC::Env::Config::settings()->get_i32("swc.rgr.handlers")
         )
       ),
       mnt_io(
         Comm::IoContext::make(
           "Maintenance",
+          SWC::Env::Config::settings()->get_bool(
+            "swc.rgr.concurrency.relative"),
           SWC::Env::Config::settings()->get_i32(
             "swc.rgr.maintenance.handlers")
         )

@@ -66,8 +66,10 @@ Configurables* apply_broker(Configurables* config) {
     ("swc.fs.broker.metrics.enabled", Config::boo(true),
      "Enable or Disable Metrics Tracking")
 
-    ("swc.fs.broker.handlers", Config::i32(48),
-     "Handlers for broker tasks")
+    ("swc.fs.broker.concurrency.relative", Config::boo(true),
+     "Determined ratio by HW-Concurrency")
+    ("swc.fs.broker.handlers", Config::i32(6),
+     "Number or HW-Concurrency base of Handlers for broker tasks")
 
     ("swc.fs.broker.timeout", Config::g_i32(120000),
      "Default request timeout in ms")
@@ -130,8 +132,13 @@ FileSystemBroker::get_endpoints(const Config::Settings::Ptr& settings) {
 
 FileSystemBroker::FileSystemBroker(Configurables* config)
     : FileSystem(apply_broker(config), ImplOptions(true)),
-      m_io(new Comm::IoContext("FsBroker",
-        settings->get_i32("swc.fs.broker.handlers"))),
+      m_io(
+        Comm::IoContext::make(
+          "FsBroker",
+          settings->get_bool("swc.fs.broker.concurrency.relative"),
+          settings->get_i32("swc.fs.broker.handlers")
+        )
+      ),
       m_service(
         new Comm::client::Serialized(
           *settings,

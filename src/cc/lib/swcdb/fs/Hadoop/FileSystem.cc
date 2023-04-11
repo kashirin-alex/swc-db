@@ -29,8 +29,11 @@ Configurables* apply_hadoop(Configurables* config) {
       "Namenode Port")
     ("swc.fs.hadoop.user", Config::str(),
       "Hadoop user")
-    ("swc.fs.hadoop.handlers", Config::i32(48),
-      "Handlers for hadoop tasks")
+
+    ("swc.fs.hadoop.concurrency.relative", Config::boo(true),
+     "Determined ratio by HW-Concurrency")
+    ("swc.fs.hadoop.handlers", Config::i32(6),
+     "Number or HW-Concurrency base of Handlers for hadoop tasks")
 
     ("swc.fs.hadoop.metrics.enabled", Config::boo(true),
      "Enable or Disable Metrics Tracking")
@@ -179,7 +182,12 @@ bool FileSystemHadoop::initialize(FileSystemHadoop::Service::Ptr& fs) {
     SWC_LOG_FATAL("hdfs::ConfigParser could not load Options object.");
 
   hdfs::IoService* io_service = hdfs::IoService::New();
-  io_service->InitWorkers(settings->get_i32("swc.fs.hadoop.handlers"));
+  io_service->InitWorkers(
+    Comm::IoContext::get_number_of_threads(
+      settings->get_bool("swc.fs.hadoop.concurrency.relative"),
+      settings->get_i32("swc.fs.hadoop.handlers")
+    )
+  );
 
   hdfs::FileSystem* connection = hdfs::FileSystem::New(
     io_service,

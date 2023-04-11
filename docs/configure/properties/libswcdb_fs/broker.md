@@ -22,10 +22,15 @@ _default_ **```swc.fs.broker.host=```**
 The FsBroker port. \
 _default_ **```swc.fs.broker.port=14000```**
 
+* ### swc.fs.broker.concurrency.relative
+```TYPE_BOOL```
+Whether HW-Concurrency base is used with the Applicable cfg properties. \
+_default_ **```swc.fs.broker.concurrency.relative=true```**
+
 * ### swc.fs.broker.handlers
 ```TYPE_INT32```
-The Handlers for broker tasks. \
-_default_ **```swc.fs.broker.handlers=48```**
+Number or HW-Concurrency base of Handlers for broker tasks. \
+_default_ **```swc.fs.broker.handlers=6```**
 
 * ### swc.fs.broker.metrics.enabled
 ```TYPE_BOOL```

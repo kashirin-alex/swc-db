@@ -28,6 +28,7 @@ Comm::server::SerializedServer::Ptr make_service() {
     new Comm::server::SerializedServer(
       *Env::Config::settings(),
       "FS-BROKER",
+      Env::Config::settings()->get_bool("swc.FsBroker.concurrency.relative"),
       Env::Config::settings()->get_i32("swc.FsBroker.reactors"),
       Env::Config::settings()->get_i32("swc.FsBroker.workers"),
       Env::Config::settings()->get_i16("swc.fs.broker.port"),

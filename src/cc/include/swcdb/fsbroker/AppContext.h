@@ -98,7 +98,10 @@ class AppContext final : public Comm::AppContext {
 
     auto settings = Env::Config::settings();
 
-    Env::IoCtx::init(settings->get_i32("swc.FsBroker.handlers"));
+    Env::IoCtx::init(
+      settings->get_bool("swc.FsBroker.concurrency.relative"),
+      settings->get_i32("swc.FsBroker.handlers")
+    );
 
     auto fs_type = FS::fs_type(settings->get_str("swc.fs.broker.underlying"));
     SWC_ASSERT(fs_type != FS::Type::BROKER);

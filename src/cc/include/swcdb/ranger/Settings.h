@@ -26,10 +26,16 @@ void init_app_options(Settings* settings) {
     ("swc.rgr.cfg", str(), "Specific cfg-file for Ranger")
     ("swc.rgr.cfg.dyn", strs(), "Specific dyn. cfg-file for Ranger")
 
-    ("swc.rgr.reactors", i32(8), "Number of Communication Reactors")
-    ("swc.rgr.workers", i32(32), "Number of Workers a Reactor")
-    ("swc.rgr.handlers", i32(8), "Number of App Handlers")
-    ("swc.rgr.clients.handlers", i32(8), "Number of DB-Client Handlers")
+    ("swc.rgr.concurrency.relative", boo(true),
+     "Determined ratio by HW-Concurrency")
+    ("swc.rgr.reactors", i32(4),
+     "Number of Communication Reactors or HW-Concurrency a Reactor")
+    ("swc.rgr.workers", i32(16),
+     "Number of Workers a Reactor")
+    ("swc.rgr.handlers", i32(2),
+     "Number or HW-Concurrency base of App Handlers")
+    ("swc.rgr.clients.handlers", i32(2),
+     "Number or HW-Concurrency base of DB-Client Handlers")
 
     ("swc.rgr.comm.encoder",
       g_enum(
@@ -39,7 +45,8 @@ void init_app_options(Settings* settings) {
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
-    ("swc.rgr.maintenance.handlers", i32(2), "Number of Maintenance Handlers")
+    ("swc.rgr.maintenance.handlers", i32(2),
+     "Number or HW-Concurrency base of Maintenance Handlers")
 
     ("swc.rgr.ram.allowed.percent", g_i32(33),
      "Memory RSS % allowed without freeing/releasing")

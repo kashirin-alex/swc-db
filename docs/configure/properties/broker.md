@@ -13,25 +13,31 @@ title: Broker Configuration
 The Dynamic cfg-file to use. Brokers will check & reload this cfg-file by swc.cfg.dyn.period \
 _default_ **```swc.bkr.cfg.dyn=```**
 
+* ### swc.bkr.concurrency.relative
+```TYPE_BOOL```
+Whether HW-Concurrency base is used with the Applicable cfg properties. \
+_default_ **```swc.bkr.concurrency.relative=true```**
+
 * ### swc.bkr.reactors
 ```TYPE_INT32```
-The number of communication reactor to initialize an io-context for a given acceptor-fd. \
-_default_ **```swc.bkr.reactors=1```**
+The number of communication reactor to initialize an io-context for a given acceptor-fd.
+The total or the base of HW-concurrency for one reactor. \
+_default_ **```swc.bkr.reactors=4```**
 
 * ### swc.bkr.workers
 ```TYPE_INT32```
 The number of workers a comm-reactor initalizes. \
-_default_ **```swc.bkr.workers=32```**
+_default_ **```swc.bkr.workers=16```**
 
 * ### swc.bkr.handlers
 ```TYPE_INT32```
-The number of Application handlers. \
-_default_ **```swc.bkr.handlers=32```**
+The number or HW-Concurrency base of Application handlers. \
+_default_ **```swc.bkr.handlers=2```**
 
 * ### swc.bkr.clients.handlers
 ```TYPE_INT32```
-The number of DB-Clients handlers. \
-_default_ **```swc.bkr.clients.handlers=32```**
+The number or HW-Concurrency base of DB-Clients handlers. \
+_default_ **```swc.bkr.clients.handlers=2```**
 
 * ### swc.bkr.metrics.enabled
 ```TYPE_BOOL```

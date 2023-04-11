@@ -44,10 +44,15 @@ _default_ **```swc.fs.hadoop.namenode.port=```**
 Use Hadoop under this username. \
 _default_ **```swc.fs.hadoop.user=```**
 
+* ### swc.fs.hadoop.concurrency.relative
+```TYPE_BOOL```
+Whether HW-Concurrency base is used with the Applicable cfg properties. \
+_default_ **```swc.fs.hadoop.concurrency.relative=true```**
+
 * ### swc.fs.hadoop.handlers
 ```TYPE_INT32```
-The number of handlers for hadoop tasks. \
-_default_ **```swc.fs.hadoop.handlers=48```**
+The Number or HW-Concurrency base of Handlers for hadoop tasks. \
+_default_ **```swc.fs.hadoop.handlers=6```**
 
 
  > ***

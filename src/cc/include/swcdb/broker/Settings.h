@@ -25,10 +25,16 @@ void init_app_options(Settings* settings) {
     ("swc.bkr.cfg", str(), "Specific cfg-file for Broker")
     ("swc.bkr.cfg.dyn", strs(), "Specific dyn. cfg-file for Broker")
 
-    ("swc.bkr.reactors", i32(8), "Number of Communication Reactors")
-    ("swc.bkr.workers", i32(32), "Number of Workers a Reactor")
-    ("swc.bkr.handlers", i32(32), "Number of App Handlers")
-    ("swc.bkr.clients.handlers", i32(32), "Number of DB-Client Handlers")
+    ("swc.bkr.concurrency.relative", boo(true),
+     "Determined ratio by HW-Concurrency")
+    ("swc.bkr.reactors", i32(4),
+     "Number of Communication Reactors or HW-Concurrency a Reactor")
+    ("swc.bkr.workers", i32(16),
+     "Number of Workers a Reactor")
+    ("swc.bkr.handlers", i32(2),
+     "Number or HW-Concurrency base of App Handlers")
+    ("swc.bkr.clients.handlers", i32(2),
+     "Number or HW-Concurrency base of DB-Client Handlers")
 
     ("swc.bkr.comm.encoder",
       g_enum(
