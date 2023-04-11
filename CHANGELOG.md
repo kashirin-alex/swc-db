@@ -10,7 +10,24 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    fixed early Core::Comm::server::Acceptor Accept before Init completion
+    moved DB::Cells::Interval::align(KeyVec&,KeyVec&) to source file
+    removed include swcdb/core/Compat.h from Version.h
+    added class SWC::Memory with static functions 'allocate' and 'free'
+    added swcdb/core/Malloc.cc by default impl. by Malloc.h
+    removed from functions a default bool value cases for 'own' arg
+    added Value::Field_LIST_{INT64,BYTES}::write<T>(DynamicBuffer*, const T&)
+    added '-ffunction-sections -fdata-sections' compiler flags for Releases
+    added '-Wl,--gc-sections' linker flags for Releases
+    fixed invalid use of update handler iterator in ThriftBroker updater_close
+    added warning flag '-Wdeprecated-copy-dtor'
+    changed compatibility for '-Weffc++'
+    added noexcept Core::LogWriter ctor and marked copy/move 'delete'
+    changed Core::Exception to single ctor and Args to only moveable
+    fixed Manager state change of Rangers at rgr_report
+    fixed Manager Rangers state sync at a run of RANGERS and COLUMNS roles
+    changed Python logging in swcdb.thrift.pool to quieter mood
+    Resolves Issue: #13
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.11...master)
 ******
