@@ -40,6 +40,11 @@ class RangeCreate final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
+  RangeCreate(RangeCreate&&) = delete;
+  RangeCreate(const RangeCreate&) = delete;
+  RangeCreate& operator=(RangeCreate&&) = delete;
+  RangeCreate& operator=(const RangeCreate&) = delete;
+
   virtual ~RangeCreate() noexcept { }
 
   bool valid() override {

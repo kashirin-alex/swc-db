@@ -20,6 +20,11 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                const DB::Schema::Ptr& schema,
                uint64_t req_id);
 
+  ColumnUpdate(ColumnUpdate&&) = delete;
+  ColumnUpdate(const ColumnUpdate&) = delete;
+  ColumnUpdate& operator=(ColumnUpdate&&) = delete;
+  ColumnUpdate& operator=(const ColumnUpdate&) = delete;
+
   virtual ~ColumnUpdate() noexcept { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;

@@ -286,10 +286,15 @@ void Fragment::write(int err, uint8_t blk_replicas,
                  blk_replicas(a_blk_replicas) {
           }
           SWC_CAN_INLINE
-          Task(Task&&) noexcept = default;
+          Task(Task&& other) noexcept
+              : frag(std::move(other.frag)),
+                buff_write(std::move(other.buff_write)),
+                sem(other.sem), error(other.error),
+                blk_replicas(other.blk_replicas) {
+          }
           Task(const Task&) = delete;
-          Task& operator=(const Task&) = delete;
           Task& operator=(Task&&) = delete;
+          Task& operator=(const Task&) = delete;
           ~Task() noexcept { }
           void operator()() {
             frag->write(error, blk_replicas, buff_write, sem);
@@ -327,6 +332,11 @@ void Fragment::write(int err, uint8_t blk_replicas,
       Ptr frag;
       SWC_CAN_INLINE
       Task(Ptr&& a_frag) noexcept : frag(std::move(a_frag)) { }
+      SWC_CAN_INLINE
+      Task(Task&& other) noexcept : frag(std::move(other.frag)) { }
+      Task(const Task&) = delete;
+      Task& operator=(Task&&) = delete;
+      Task& operator=(const Task&) = delete;
       ~Task() noexcept { }
       void operator()() { frag->run_queued(); }
     };
@@ -344,6 +354,14 @@ struct Fragment::TaskLoadRead {
   TaskLoadRead(Ptr&& a_frag, int a_err,
                const StaticBuffer::Ptr& a_buffer) noexcept
               : frag(std::move(a_frag)), err(a_err), buffer(a_buffer) { }
+  SWC_CAN_INLINE
+  TaskLoadRead(TaskLoadRead&& other) noexcept
+              : frag(std::move(other.frag)), err(other.err),
+                buffer(std::move(other.buffer)) {
+  }
+  TaskLoadRead(const TaskLoadRead&) = delete;
+  TaskLoadRead& operator=(TaskLoadRead&&) = delete;
+  TaskLoadRead& operator=(const TaskLoadRead&) = delete;
   ~TaskLoadRead() noexcept { }
   void operator()() { frag->load_read(err, buffer); }
 };
@@ -364,6 +382,11 @@ void Fragment::load(Fragment::LoadCallback* cb) {
         Ptr frag;
         SWC_CAN_INLINE
         Task(Ptr&& a_frag) noexcept : frag(std::move(a_frag)) { }
+        SWC_CAN_INLINE
+        Task(Task&& other) noexcept : frag(std::move(other.frag)) { }
+        Task(const Task&) = delete;
+        Task& operator=(Task&&) = delete;
+        Task& operator=(const Task&) = delete;
         ~Task() noexcept { }
         void operator()() {
           Env::FsInterface::fs()->combi_pread(

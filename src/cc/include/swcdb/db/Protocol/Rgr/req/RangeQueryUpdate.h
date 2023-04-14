@@ -75,6 +75,11 @@ class RangeQueryUpdate final : public client::ConnQueue::ReqBase {
     request(make(params, buffer, timeout, args...), endpoints);
   }
 
+  RangeQueryUpdate(RangeQueryUpdate&&) = delete;
+  RangeQueryUpdate(const RangeQueryUpdate&) = delete;
+  RangeQueryUpdate& operator=(RangeQueryUpdate&&) = delete;
+  RangeQueryUpdate& operator=(const RangeQueryUpdate&) = delete;
+
   virtual ~RangeQueryUpdate() noexcept { }
 
   bool valid() override {

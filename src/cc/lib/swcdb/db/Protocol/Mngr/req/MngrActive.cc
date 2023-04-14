@@ -26,6 +26,11 @@ void MngrActive::run_within(uint32_t t_ms) {
     SWC_CAN_INLINE
     TimerTask(DispatchHandler::Ptr&& a_ptr) noexcept
               : ptr(std::move(a_ptr)) { }
+    SWC_CAN_INLINE
+    TimerTask(TimerTask&& other) noexcept : ptr(std::move(other.ptr)) { }
+    TimerTask(const TimerTask&) = delete;
+    TimerTask& operator=(TimerTask&&) = delete;
+    TimerTask& operator=(const TimerTask&) = delete;
     ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)

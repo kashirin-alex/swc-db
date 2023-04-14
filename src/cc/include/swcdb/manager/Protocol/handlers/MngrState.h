@@ -22,6 +22,15 @@ struct MngrState {
             : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  MngrState(MngrState&& other) noexcept
+            : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+  }
+
+  MngrState(const MngrState&) = delete;
+  MngrState& operator=(MngrState&&) = delete;
+  MngrState& operator=(const MngrState&) = delete;
+
   ~MngrState() noexcept { }
 
   void operator()() {

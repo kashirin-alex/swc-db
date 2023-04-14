@@ -42,6 +42,11 @@ class RangeQuerySelect : public ReqScan {
     */
   }
 
+  RangeQuerySelect(RangeQuerySelect&&) = delete;
+  RangeQuerySelect(const RangeQuerySelect&) = delete;
+  RangeQuerySelect& operator=(RangeQuerySelect&&) = delete;
+  RangeQuerySelect& operator=(const RangeQuerySelect&) = delete;
+
   virtual ~RangeQuerySelect() noexcept { }
 
   SWC_CAN_INLINE

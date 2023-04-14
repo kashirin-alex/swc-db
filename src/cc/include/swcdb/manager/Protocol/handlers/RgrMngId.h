@@ -23,6 +23,15 @@ struct RgrMngId {
           : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  RgrMngId(RgrMngId&& other) noexcept
+          : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+  }
+
+  RgrMngId(const RgrMngId&) = delete;
+  RgrMngId& operator=(RgrMngId&&) = delete;
+  RgrMngId& operator=(const RgrMngId&) = delete;
+
   ~RgrMngId() noexcept { }
 
   void operator()() {

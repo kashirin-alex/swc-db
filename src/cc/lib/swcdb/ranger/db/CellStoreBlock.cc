@@ -265,12 +265,16 @@ void Read::load_open(int err) {
             StaticBuffer::Ptr buffer;
             SWC_CAN_INLINE
             Task(Read* a_ptr, int a_error, const StaticBuffer::Ptr& a_buffer)
-                noexcept : ptr(a_ptr), error(a_error), buffer(a_buffer) { }
+                noexcept : ptr(a_ptr), error(a_error), buffer(a_buffer) {
+            }
             SWC_CAN_INLINE
-            Task(Task&&) noexcept = default;
+            Task(Task&& other) noexcept
+                : ptr(other.ptr), error(other.error),
+                  buffer(std::move(other.buffer)) {
+            }
             Task(const Task&) = delete;
-            Task& operator=(const Task&) = delete;
             Task& operator=(Task&&) = delete;
+            Task& operator=(const Task&) = delete;
             ~Task() noexcept { }
             void operator()() { ptr->load_read(error, buffer); }
           };

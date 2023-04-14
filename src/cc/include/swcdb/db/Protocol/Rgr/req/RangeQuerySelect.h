@@ -48,6 +48,11 @@ class RangeQuerySelect final : public client::ConnQueue::ReqBase {
     request(make(params, timeout, args...), endpoints);
   }
 
+  RangeQuerySelect(RangeQuerySelect&&) = delete;
+  RangeQuerySelect(const RangeQuerySelect&) = delete;
+  RangeQuerySelect& operator=(RangeQuerySelect&&) = delete;
+  RangeQuerySelect& operator=(const RangeQuerySelect&) = delete;
+
   virtual ~RangeQuerySelect() noexcept { }
 
   bool valid() override {

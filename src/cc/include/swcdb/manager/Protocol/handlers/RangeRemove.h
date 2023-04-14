@@ -24,6 +24,15 @@ struct RangeRemove {
               : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  RangeRemove(RangeRemove&& other) noexcept
+              : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+  }
+
+  RangeRemove(const RangeRemove&) = delete;
+  RangeRemove& operator=(RangeRemove&&) = delete;
+  RangeRemove& operator=(const RangeRemove&) = delete;
+
   ~RangeRemove() noexcept { }
 
   void operator()() {

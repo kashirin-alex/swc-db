@@ -492,9 +492,11 @@ void MngrRole::managers_checker(uint32_t next, uint32_t total, bool flw) {
              uint32_t a_next, uint32_t a_total, bool a_flw) noexcept
             : ptr(a_ptr), host_chk(a_host_chk),
               next(a_next), total(a_total), flw(a_flw) { }
-    Callback(Callback&&) noexcept = default;
-    Callback(const Callback&) = default;
-    Callback& operator=(Callback&&) noexcept = default;
+    Callback(Callback&& other)  noexcept
+            : ptr(other.ptr), host_chk(std::move(other.host_chk)),
+              next(other.next), total(other.total), flw(other.flw) { }
+    Callback(const Callback&) = delete;
+    Callback& operator=(Callback&&) = delete;
     Callback& operator=(const Callback&) = delete;
     ~Callback() noexcept { }
     void operator()(const Comm::ConnHandlerPtr& conn) noexcept {

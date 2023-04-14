@@ -19,6 +19,11 @@ class RangeLoad : public client::ConnQueue::ReqBase {
             const Manager::Range::Ptr& range,
             const DB::Schema::Ptr& schema);
 
+  RangeLoad(RangeLoad&&) = delete;
+  RangeLoad(const RangeLoad&) = delete;
+  RangeLoad& operator=(RangeLoad&&) = delete;
+  RangeLoad& operator=(const RangeLoad&) = delete;
+
   virtual ~RangeLoad() noexcept { }
 
   void handle(ConnHandlerPtr conn, const Event::Ptr& ev) override;

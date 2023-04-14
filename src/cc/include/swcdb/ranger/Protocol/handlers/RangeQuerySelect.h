@@ -32,6 +32,16 @@ struct RangeQuerySelect {
                   : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  RangeQuerySelect(RangeQuerySelect&& other) noexcept
+                  : conn(std::move(other.conn)),
+                    ev(std::move(other.ev)) {
+  }
+
+  RangeQuerySelect(const RangeQuerySelect&) = delete;
+  RangeQuerySelect& operator=(RangeQuerySelect&&) = delete;
+  RangeQuerySelect& operator=(const RangeQuerySelect&) = delete;
+
   ~RangeQuerySelect() noexcept { }
 
   void operator()() {

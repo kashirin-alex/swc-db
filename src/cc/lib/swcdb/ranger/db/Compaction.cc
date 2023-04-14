@@ -214,6 +214,11 @@ void Compaction::compact(const RangePtr& range) {
     CompactRange::Ptr req;
     SWC_CAN_INLINE
     Task(CompactRange* a_req) noexcept : req(a_req) { }
+    SWC_CAN_INLINE
+    Task(Task&& other) noexcept : req(std::move(other.req)) { }
+    Task(const Task&) = delete;
+    Task& operator=(Task&&) = delete;
+    Task& operator=(const Task&) = delete;
     ~Task() noexcept { }
     void operator()() { req->initialize(); }
   };

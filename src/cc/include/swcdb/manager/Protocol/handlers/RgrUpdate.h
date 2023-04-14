@@ -24,6 +24,15 @@ struct RgrUpdate {
             : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  RgrUpdate(RgrUpdate&& other) noexcept
+            : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+  }
+
+  RgrUpdate(const RgrUpdate&) = delete;
+  RgrUpdate& operator=(RgrUpdate&&) = delete;
+  RgrUpdate& operator=(const RgrUpdate&) = delete;
+
   ~RgrUpdate() noexcept { }
 
   void operator()() {

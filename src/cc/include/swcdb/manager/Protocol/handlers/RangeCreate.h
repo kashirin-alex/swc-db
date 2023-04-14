@@ -24,6 +24,15 @@ struct RangeCreate {
               : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  RangeCreate(RangeCreate&& other) noexcept
+              : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+  }
+
+  RangeCreate(const RangeCreate&) = delete;
+  RangeCreate& operator=(RangeCreate&&) = delete;
+  RangeCreate& operator=(const RangeCreate&) = delete;
+
   ~RangeCreate() noexcept { }
 
   void operator()() {

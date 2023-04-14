@@ -24,6 +24,15 @@ struct ColumnUpdate {
               : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  ColumnUpdate(ColumnUpdate&& other) noexcept
+              : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+  }
+
+  ColumnUpdate(const ColumnUpdate&) = delete;
+  ColumnUpdate& operator=(ColumnUpdate&&) = delete;
+  ColumnUpdate& operator=(const ColumnUpdate&) = delete;
+
   ~ColumnUpdate() noexcept { }
 
   void operator()() {

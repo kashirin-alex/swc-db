@@ -25,6 +25,16 @@ struct RangeLocate {
               : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  RangeLocate(RangeLocate&& other) noexcept
+              : conn(std::move(other.conn)),
+                ev(std::move(other.ev)) {
+  }
+
+  RangeLocate(const RangeLocate&) = delete;
+  RangeLocate& operator=(RangeLocate&&) = delete;
+  RangeLocate& operator=(const RangeLocate&) = delete;
+
   ~RangeLocate() noexcept { }
 
   void operator()() {

@@ -40,6 +40,11 @@ class RangeUnloaded final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
+  RangeUnloaded(RangeUnloaded&&) = delete;
+  RangeUnloaded(const RangeUnloaded&) = delete;
+  RangeUnloaded& operator=(RangeUnloaded&&) = delete;
+  RangeUnloaded& operator=(const RangeUnloaded&) = delete;
+
   virtual ~RangeUnloaded() noexcept { }
 
   bool valid() override {

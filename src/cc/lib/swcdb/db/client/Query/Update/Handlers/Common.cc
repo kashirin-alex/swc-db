@@ -55,6 +55,11 @@ void Common::response(int err) {
       Ptr hdlr;
       SWC_CAN_INLINE
       Task(Ptr&& a_hdlr) noexcept : hdlr(std::move(a_hdlr)) { }
+      SWC_CAN_INLINE
+      Task(Task&& other) noexcept : hdlr(std::move(other.hdlr)) { }
+      Task(const Task&) = delete;
+      Task& operator=(Task&&) = delete;
+      Task& operator=(const Task&) = delete;
       ~Task() noexcept { }
       void operator()() {
         hdlr->m_cb(hdlr);

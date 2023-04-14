@@ -24,6 +24,15 @@ struct Report {
         : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  Report(Report&& other) noexcept
+        : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+  }
+
+  Report(const Report&) = delete;
+  Report& operator=(Report&&) = delete;
+  Report& operator=(const Report&) = delete;
+
   ~Report() noexcept { }
 
   void operator()() {

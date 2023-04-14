@@ -21,7 +21,8 @@ bool Host::connect() {
     ConnQueuePtr ptr;
     SWC_CAN_INLINE
     Callback(ConnQueuePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
-    Callback(Callback&&) noexcept = default;
+    SWC_CAN_INLINE
+    Callback(Callback&& other) noexcept : ptr(std::move(other.ptr)) { }
     Callback(const Callback&) = delete;
     Callback& operator=(Callback&&) = delete;
     Callback& operator=(const Callback&) = delete;

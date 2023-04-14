@@ -41,6 +41,11 @@ class CellsSelect final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
+  CellsSelect(CellsSelect&&) = delete;
+  CellsSelect(const CellsSelect&) = delete;
+  CellsSelect& operator=(CellsSelect&&) = delete;
+  CellsSelect& operator=(const CellsSelect&) = delete;
+
   virtual ~CellsSelect() noexcept { }
 
   bool run() override {

@@ -116,9 +116,12 @@ void ConnQueue::delay(ConnQueue::ReqBase::Ptr&& req) {
               asio::high_resolution_timer* a_tm) noexcept
               : queue(a_queue), req(std::move(a_req)), tm(a_tm) {
     }
-    TimerTask(TimerTask&&)                 = default;
-    TimerTask& operator=(TimerTask&&)      = default;
-    TimerTask(const TimerTask&)            = delete;
+    SWC_CAN_INLINE
+    TimerTask(TimerTask&& other) noexcept
+              : queue(other.queue), req(std::move(other.req)), tm(other.tm) {
+    }
+    TimerTask(const TimerTask&) = delete;
+    TimerTask& operator=(TimerTask&&) = delete;
     TimerTask& operator=(const TimerTask&) = delete;
     ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
@@ -162,6 +165,11 @@ void ConnQueue::exec_queue() {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
     Task(ConnQueuePtr&& a_queue) noexcept : queue(std::move(a_queue)) { }
+    SWC_CAN_INLINE
+    Task(Task&& other) noexcept : queue(std::move(other.queue)) { }
+    Task(const Task&) = delete;
+    Task& operator=(Task&&) = delete;
+    Task& operator=(const Task&) = delete;
     ~Task() noexcept { }
     void operator()() { queue->run_queue(); }
   };
@@ -231,6 +239,11 @@ void ConnQueue::schedule_close(bool closing) {
     ConnQueuePtr queue;
     SWC_CAN_INLINE
     TimerTask(ConnQueuePtr&& a_queue) noexcept : queue(std::move(a_queue)) { }
+    SWC_CAN_INLINE
+    TimerTask(TimerTask&& other) noexcept : queue(std::move(other.queue)) { }
+    TimerTask(const TimerTask&) = delete;
+    TimerTask& operator=(TimerTask&&) = delete;
+    TimerTask& operator=(const TimerTask&) = delete;
     ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted) {

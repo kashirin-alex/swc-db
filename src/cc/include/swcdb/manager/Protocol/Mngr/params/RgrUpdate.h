@@ -23,6 +23,15 @@ class RgrUpdate final : public Serializable {
             : hosts(a_hosts), sync_all(a_sync_all) {
   }
 
+  SWC_CAN_INLINE
+  RgrUpdate(RgrUpdate&& other) noexcept
+            : hosts(std::move(other.hosts)), sync_all(other.sync_all) {
+  }
+
+  RgrUpdate(const RgrUpdate&) = delete;
+  RgrUpdate& operator=(RgrUpdate&&) = delete;
+  RgrUpdate& operator=(const RgrUpdate&) = delete;
+
   ~RgrUpdate() noexcept { }
 
   void print(std::ostream& out) const {

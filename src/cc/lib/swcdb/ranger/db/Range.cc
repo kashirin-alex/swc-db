@@ -43,6 +43,11 @@ class Range::MetaRegOnLoadReq : public Query::Update::BaseMeta {
       Ptr ptr;
       SWC_CAN_INLINE
       Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+      SWC_CAN_INLINE
+      Task(Task&& other) noexcept : ptr(std::move(other.ptr)) { }
+      Task(const Task&) = delete;
+      Task& operator=(Task&&) = delete;
+      Task& operator=(const Task&) = delete;
       ~Task() noexcept { }
       void operator()() { ptr->callback(); }
     };
@@ -82,6 +87,13 @@ struct Range::TaskRunQueueScan {
   RangePtr ptr;
   SWC_CAN_INLINE
   TaskRunQueueScan(RangePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+  SWC_CAN_INLINE
+  TaskRunQueueScan(TaskRunQueueScan&& other) noexcept
+                  : ptr(std::move(other.ptr)) {
+  }
+  TaskRunQueueScan(const TaskRunQueueScan&) = delete;
+  TaskRunQueueScan& operator=(TaskRunQueueScan&&) = delete;
+  TaskRunQueueScan& operator=(const TaskRunQueueScan&) = delete;
   ~TaskRunQueueScan() noexcept { }
   void operator()() { ptr->_run_scan_queue(); }
 };
@@ -91,6 +103,13 @@ struct Range::TaskRunQueueAdd {
   SWC_CAN_INLINE
   TaskRunQueueAdd(const RangePtr& a_ptr) noexcept : ptr(a_ptr) { }
   TaskRunQueueAdd(RangePtr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+  SWC_CAN_INLINE
+  TaskRunQueueAdd(TaskRunQueueAdd&& other) noexcept
+                : ptr(std::move(other.ptr)) {
+  }
+  TaskRunQueueAdd(const TaskRunQueueAdd&) = delete;
+  TaskRunQueueAdd& operator=(TaskRunQueueAdd&&) = delete;
+  TaskRunQueueAdd& operator=(const TaskRunQueueAdd&) = delete;
   ~TaskRunQueueAdd() noexcept { }
   void operator()() { ptr->_run_add_queue(); }
 };
@@ -302,6 +321,13 @@ void Range::_run_scan_queue() {
         : ptr(std::move(a_ptr)), req(std::move(a_req)) {
       ptr->blocks.processing_increment();
     }
+    SWC_CAN_INLINE
+    Task(Task&& other) noexcept
+        : ptr(std::move(other.ptr)), req(std::move(other.req)) {
+    }
+    Task(const Task&) = delete;
+    Task& operator=(Task&&) = delete;
+    Task& operator=(const Task&) = delete;
     ~Task() noexcept { }
     void operator()() {
       ptr->blocks.scan(std::move(req));
@@ -390,6 +416,11 @@ void Range::internal_take_ownership(int &err,
         SetRgr::Ptr ptr;
         SWC_CAN_INLINE
         Task(SetRgr::Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+        SWC_CAN_INLINE
+        Task(Task&& other) noexcept : ptr(std::move(other.ptr)) { }
+        Task(const Task&) = delete;
+        Task& operator=(Task&&) = delete;
+        Task& operator=(const Task&) = delete;
         ~Task() noexcept { }
         void operator()() {
           int err = ptr->error();
@@ -822,6 +853,11 @@ void Range::last_rgr_chk(int &err, const Callback::RangeLoad::Ptr& req) {
         GetRgr::Ptr ptr;
         SWC_CAN_INLINE
         Task(GetRgr::Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+        SWC_CAN_INLINE
+        Task(Task&& other) noexcept : ptr(std::move(other.ptr)) { }
+        Task(const Task&) = delete;
+        Task& operator=(Task&&) = delete;
+        Task& operator=(const Task&) = delete;
         ~Task() noexcept { }
         void operator()() {
           int err = Error::OK;

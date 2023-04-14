@@ -67,6 +67,11 @@ class CellsUpdate final : public client::ConnQueue::ReqBase {
     make(params, buffer, timeout, args...)->run();
   }
 
+  CellsUpdate(CellsUpdate&&) = delete;
+  CellsUpdate(const CellsUpdate&) = delete;
+  CellsUpdate& operator=(CellsUpdate&&) = delete;
+  CellsUpdate& operator=(const CellsUpdate&) = delete;
+
   virtual ~CellsUpdate() noexcept { }
 
   bool run() override {

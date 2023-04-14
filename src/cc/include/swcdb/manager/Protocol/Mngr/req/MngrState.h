@@ -22,6 +22,11 @@ class MngrState : public client::ConnQueue::ReqBase {
             const EndPoint& mngr_host,
             uint32_t timeout);
 
+  MngrState(MngrState&&) = delete;
+  MngrState(const MngrState&) = delete;
+  MngrState& operator=(MngrState&&) = delete;
+  MngrState& operator=(const MngrState&) = delete;
+
   virtual ~MngrState() noexcept { }
 
   bool insistent() noexcept override { return true; }

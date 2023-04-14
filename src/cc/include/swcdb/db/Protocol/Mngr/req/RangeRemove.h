@@ -41,6 +41,11 @@ class RangeRemove final : public client::ConnQueue::ReqBase {
     make(params, timeout, args...)->run();
   }
 
+  RangeRemove(RangeRemove&&) = delete;
+  RangeRemove(const RangeRemove&) = delete;
+  RangeRemove& operator=(RangeRemove&&) = delete;
+  RangeRemove& operator=(const RangeRemove&) = delete;
+
   virtual ~RangeRemove() noexcept { }
 
   bool valid() override {

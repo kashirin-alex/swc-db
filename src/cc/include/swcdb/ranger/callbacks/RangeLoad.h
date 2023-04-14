@@ -23,6 +23,11 @@ class RangeLoad : public ManageBase {
   RangeLoad(const Comm::ConnHandlerPtr& conn, const Comm::Event::Ptr& ev,
             const cid_t cid, const rid_t rid) noexcept;
 
+  RangeLoad(RangeLoad&&) = delete;
+  RangeLoad(const RangeLoad&) = delete;
+  RangeLoad& operator=(RangeLoad&&) = delete;
+  RangeLoad& operator=(const RangeLoad&) = delete;
+
   virtual ~RangeLoad() noexcept { }
 
   void loaded(int& err);

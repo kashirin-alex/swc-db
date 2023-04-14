@@ -63,10 +63,10 @@ class RangersResources final : private Core::Vector<RangerResources> {
         m_mutex(), m_due(0), m_last_check(0) {
   }
 
-  RangersResources(const RangersResources&) = delete;
   RangersResources(RangersResources&&) = delete;
-  RangersResources& operator=(const RangersResources&) = delete;
+  RangersResources(const RangersResources&) = delete;
   RangersResources& operator=(RangersResources&&) = delete;
+  RangersResources& operator=(const RangersResources&) = delete;
 
   ~RangersResources() noexcept { }
 

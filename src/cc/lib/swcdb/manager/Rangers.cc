@@ -675,6 +675,11 @@ void Rangers::health_check_columns() {
       ColumnHealthCheck::Ptr ptr;
       SWC_CAN_INLINE
       Task(const ColumnHealthCheck::Ptr& a_ptr) noexcept : ptr(a_ptr) { }
+      SWC_CAN_INLINE
+      Task(Task&& other) noexcept : ptr(std::move(other.ptr)) { }
+      Task(const Task&) = delete;
+      Task& operator=(Task&&) = delete;
+      Task& operator=(const Task&) = delete;
       ~Task() noexcept { }
       void operator()() { ptr->run(); }
     };

@@ -24,6 +24,17 @@ class MngrState final : public Serializable {
             : states(a_states), token(a_token), mngr_host(a_mngr_host) {
   }
 
+  SWC_CAN_INLINE
+  MngrState(MngrState&& other) noexcept
+            : states(std::move(other.states)),
+              token(other.token),
+              mngr_host(std::move(other.mngr_host)) {
+  }
+
+  MngrState(const MngrState&) = delete;
+  MngrState& operator=(MngrState&&) = delete;
+  MngrState& operator=(const MngrState&) = delete;
+
   ~MngrState() noexcept { }
 
   Manager::MngrsStatus  states;

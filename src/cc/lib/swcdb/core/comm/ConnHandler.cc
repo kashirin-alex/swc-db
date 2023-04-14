@@ -98,6 +98,13 @@ struct ConnHandler::Sender_noAck final {
   Sender_noAck(ConnHandlerPtr&& a_conn, const Buffers::Ptr& a_cbuf) noexcept
               : conn(std::move(a_conn)), cbuf(a_cbuf) {
   }
+  SWC_CAN_INLINE
+  Sender_noAck(Sender_noAck&& other) noexcept
+            : conn(std::move(other.conn)), cbuf(std::move(other.cbuf)) {
+  }
+  Sender_noAck(const Sender_noAck&) = delete;
+  Sender_noAck& operator=(Sender_noAck&&) = delete;
+  Sender_noAck& operator=(const Sender_noAck&) = delete;
   ~Sender_noAck() noexcept { }
   void operator()(const asio::error_code& ec, uint32_t bytes) noexcept {
     try {
@@ -120,8 +127,19 @@ struct ConnHandler::Sender_Ack final {
   SWC_CAN_INLINE
   Sender_Ack(ConnHandlerPtr&& a_conn, const Buffers::Ptr& a_cbuf,
              DispatchHandler::Ptr&& a_hdlr) noexcept
-            : conn(std::move(a_conn)), cbuf(a_cbuf), hdlr(std::move(a_hdlr)) {
+            : conn(std::move(a_conn)),
+              cbuf(a_cbuf),
+              hdlr(std::move(a_hdlr)) {
   }
+  SWC_CAN_INLINE
+  Sender_Ack(Sender_Ack&& other) noexcept
+            : conn(std::move(other.conn)),
+              cbuf(std::move(other.cbuf)),
+              hdlr(std::move(other.hdlr)) {
+  }
+  Sender_Ack(const Sender_Ack&) = delete;
+  Sender_Ack& operator=(Sender_Ack&&) = delete;
+  Sender_Ack& operator=(const Sender_Ack&) = delete;
   ~Sender_Ack() noexcept { }
   void operator()(const asio::error_code& ec, uint32_t bytes) noexcept {
     try {
@@ -201,6 +219,14 @@ void ConnHandler::write(ConnHandler::Outgoing& outgoing) {
         Buffers::Ptr          cbuf;
         TimerTask(ConnHandlerPtr&& a_conn, const Buffers::Ptr& a_cbuf)
                   noexcept : conn(std::move(a_conn)), cbuf(a_cbuf) { }
+        SWC_CAN_INLINE
+        TimerTask(TimerTask&& other) noexcept
+                  : conn(std::move(other.conn)),
+                    cbuf(std::move(other.cbuf)) {
+        }
+        TimerTask(const TimerTask&) = delete;
+        TimerTask& operator=(TimerTask&&) = delete;
+        TimerTask& operator=(const TimerTask&) = delete;
         ~TimerTask() noexcept { }
         void operator()(const asio::error_code& ec) {
           if(ec == asio::error::operation_aborted)
@@ -231,6 +257,12 @@ struct ConnHandler::Receiver_HeaderPrefix final {
   SWC_CAN_INLINE
   Receiver_HeaderPrefix(ConnHandlerPtr&& a_conn) noexcept
                         : conn(std::move(a_conn)) { }
+  SWC_CAN_INLINE
+  Receiver_HeaderPrefix(Receiver_HeaderPrefix&& other) noexcept
+                        : conn(std::move(other.conn)) { }
+  Receiver_HeaderPrefix(const Receiver_HeaderPrefix&) = delete;
+  Receiver_HeaderPrefix& operator=(Receiver_HeaderPrefix&&) = delete;
+  Receiver_HeaderPrefix& operator=(const Receiver_HeaderPrefix&) = delete;
   ~Receiver_HeaderPrefix() noexcept { }
   void operator()(const asio::error_code& ec, size_t filled) noexcept;
 };
@@ -241,6 +273,12 @@ struct ConnHandler::Receiver_Header final {
   SWC_CAN_INLINE
   Receiver_Header(const ConnHandlerPtr& a_conn, Event::Ptr&& a_ev) noexcept
                  : conn(a_conn), ev(std::move(a_ev)) { }
+  SWC_CAN_INLINE
+  Receiver_Header(Receiver_Header&& other) noexcept
+                  : conn(std::move(other.conn)), ev(std::move(other.ev)) { }
+  Receiver_Header(const Receiver_Header&) = delete;
+  Receiver_Header& operator=(Receiver_Header&&) = delete;
+  Receiver_Header& operator=(const Receiver_Header&) = delete;
   ~Receiver_Header() noexcept { }
   void operator()(asio::error_code ec, size_t filled) noexcept;
 };
@@ -251,6 +289,12 @@ struct ConnHandler::Receiver_Buffer final {
   SWC_CAN_INLINE
   Receiver_Buffer(ConnHandlerPtr&& a_conn, Event::Ptr&& a_ev) noexcept
                   : conn(std::move(a_conn)), ev(std::move(a_ev)) { }
+  SWC_CAN_INLINE
+  Receiver_Buffer(Receiver_Buffer&& other) noexcept
+                  : conn(std::move(other.conn)), ev(std::move(other.ev)) { }
+  Receiver_Buffer(const Receiver_Buffer&) = delete;
+  Receiver_Buffer& operator=(Receiver_Buffer&&) = delete;
+  Receiver_Buffer& operator=(const Receiver_Buffer&) = delete;
   ~Receiver_Buffer() noexcept { }
   void operator()(asio::error_code ec, size_t filled) noexcept;
 };
@@ -469,9 +513,19 @@ void ConnHandler::run_pending(Event::Ptr&& ev) {
       Event::Ptr            ev;
       Task(ConnHandlerPtr&& a_conn, DispatchHandler::Ptr&& a_hdlr,
            Event::Ptr&& a_ev) noexcept
-          : conn(std::move(a_conn)), hdlr(std::move(a_hdlr)),
+          : conn(std::move(a_conn)),
+            hdlr(std::move(a_hdlr)),
             ev(std::move(a_ev)) {
       }
+      SWC_CAN_INLINE
+      Task(Task&& other) noexcept
+                : conn(std::move(other.conn)),
+                  hdlr(std::move(other.hdlr)),
+                  ev(std::move(other.ev)) {
+      }
+      Task(const Task&) = delete;
+      Task& operator=(Task&&) = delete;
+      Task& operator=(const Task&) = delete;
       ~Task() noexcept { }
       void operator()() {
         if(!ev->error && ev->header.buffers)
@@ -490,6 +544,12 @@ void ConnHandler::run_pending(Event::Ptr&& ev) {
       Event::Ptr            ev;
       Task(ConnHandlerPtr&& a_conn, Event::Ptr&& a_ev) noexcept
           : conn(std::move(a_conn)), ev(std::move(a_ev)) { }
+      SWC_CAN_INLINE
+      Task(Task&& other) noexcept
+          : conn(std::move(other.conn)), ev(std::move(other.ev)) { }
+      Task(const Task&) = delete;
+      Task& operator=(Task&&) = delete;
+      Task& operator=(const Task&) = delete;
       ~Task() noexcept { }
       void operator()() {
         if(!ev->error && ev->header.buffers)

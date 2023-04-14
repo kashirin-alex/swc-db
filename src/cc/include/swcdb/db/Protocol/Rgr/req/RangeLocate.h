@@ -49,6 +49,11 @@ class RangeLocate final : public client::ConnQueue::ReqBase {
     request(make(params, timeout, args...), endpoints);
   }
 
+  RangeLocate(RangeLocate&&) = delete;
+  RangeLocate(const RangeLocate&) = delete;
+  RangeLocate& operator=(RangeLocate&&) = delete;
+  RangeLocate& operator=(const RangeLocate&) = delete;
+
   virtual ~RangeLocate() noexcept { }
 
   bool valid() override {

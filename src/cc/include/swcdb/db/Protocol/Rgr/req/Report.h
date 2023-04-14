@@ -29,6 +29,11 @@ class Report: public client::ConnQueue::ReqBase {
          const Serializable& params,
          const uint32_t timeout);
 
+  Report(Report&&) = delete;
+  Report(const Report&) = delete;
+  Report& operator=(Report&&) = delete;
+  Report& operator=(const Report&) = delete;
+
   virtual ~Report() noexcept { }
 
   bool run() override;

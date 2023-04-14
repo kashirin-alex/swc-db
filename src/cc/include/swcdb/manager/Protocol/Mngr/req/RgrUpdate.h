@@ -24,6 +24,11 @@ class RgrUpdate : public client::ConnQueue::ReqBase {
               ) {
   }
 
+  RgrUpdate(RgrUpdate&&) = delete;
+  RgrUpdate(const RgrUpdate&) = delete;
+  RgrUpdate& operator=(RgrUpdate&&) = delete;
+  RgrUpdate& operator=(const RgrUpdate&) = delete;
+
   virtual ~RgrUpdate() noexcept { }
 
   bool insistent() noexcept override { return true; }

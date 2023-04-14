@@ -221,6 +221,13 @@ struct Column::TaskRunMngReq {
   TaskRunMngReq(ColumnPtr&& a_ptr, Callback::ManageBase::Ptr&& a_req)
                 noexcept : ptr(std::move(a_ptr)), req(std::move(a_req)) {
   }
+  SWC_CAN_INLINE
+  TaskRunMngReq(TaskRunMngReq&& other) noexcept
+                : ptr(std::move(other.ptr)), req(std::move(other.req)) {
+  }
+  TaskRunMngReq(const TaskRunMngReq&) = delete;
+  TaskRunMngReq& operator=(TaskRunMngReq&&) = delete;
+  TaskRunMngReq& operator=(const TaskRunMngReq&) = delete;
   ~TaskRunMngReq() noexcept { }
   void operator()() {
     switch(req->action) {

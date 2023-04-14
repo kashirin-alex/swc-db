@@ -31,10 +31,10 @@ class RgrMngId: public client::ConnQueue::ReqBase {
             m_run(true), m_failures(0) {
   }
 
-  RgrMngId(const RgrMngId&) = delete;
   RgrMngId(RgrMngId&&) = delete;
-  RgrMngId& operator=(const RgrMngId&) = delete;
+  RgrMngId(const RgrMngId&) = delete;
   RgrMngId& operator=(RgrMngId&&) = delete;
+  RgrMngId& operator=(const RgrMngId&) = delete;
 
   virtual ~RgrMngId() noexcept { }
 

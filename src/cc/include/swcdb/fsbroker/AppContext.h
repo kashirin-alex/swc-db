@@ -78,6 +78,13 @@ class AppContext final : public Comm::AppContext {
                   : conn(a_conn), ev(a_ev) {
       Env::FsBroker::in_process(1);
     }
+    SWC_CAN_INLINE
+    CommandHandler(CommandHandler&& other) noexcept
+                  : conn(std::move(other.conn)), ev(std::move(other.ev)) {
+    }
+    CommandHandler(const CommandHandler&) = delete;
+    CommandHandler& operator=(CommandHandler&&) = delete;
+    CommandHandler& operator=(const CommandHandler&) = delete;
     ~CommandHandler() noexcept { }
     void operator()() {
       if(!ev->expired() && conn->is_open())

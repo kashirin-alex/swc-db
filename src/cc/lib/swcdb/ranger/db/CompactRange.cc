@@ -339,6 +339,11 @@ void CompactRange::response(int& err) {
       Ptr ptr;
       SWC_CAN_INLINE
       Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+      SWC_CAN_INLINE
+      Task(Task&& other) noexcept : ptr(std::move(other.ptr)) { }
+      Task(const Task&) = delete;
+      Task& operator=(Task&&) = delete;
+      Task& operator=(const Task&) = delete;
       ~Task() noexcept { }
       void operator()() { ptr->quit(); }
     };
@@ -389,6 +394,11 @@ void CompactRange::response(int& err) {
     Ptr ptr;
     SWC_CAN_INLINE
     NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    SWC_CAN_INLINE
+    NextTask(NextTask&& other) noexcept : ptr(std::move(other.ptr)) { }
+    NextTask(const NextTask&) = delete;
+    NextTask& operator=(NextTask&&) = delete;
+    NextTask& operator=(const NextTask&) = delete;
     ~NextTask() noexcept { }
     void operator()() { ptr->process_interval(); }
   };
@@ -495,6 +505,11 @@ void CompactRange::progress_check_timer() {
     Ptr ptr;
     SWC_CAN_INLINE
     TimerTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    SWC_CAN_INLINE
+    TimerTask(TimerTask&& other) noexcept : ptr(std::move(other.ptr)) { }
+    TimerTask(const TimerTask&) = delete;
+    TimerTask& operator=(TimerTask&&) = delete;
+    TimerTask& operator=(const TimerTask&) = delete;
     ~TimerTask() noexcept { }
     void operator()(const asio::error_code& ec) {
       if(ec != asio::error::operation_aborted)
@@ -527,7 +542,11 @@ void CompactRange::request_more() {
     Ptr ptr;
     SWC_CAN_INLINE
     Task(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
-    ~Task() noexcept { }
+    SWC_CAN_INLINE
+    Task(Task&& other) noexcept : ptr(std::move(other.ptr)) { }
+    Task(const Task&) = delete;
+    Task& operator=(Task&&) = delete;
+    Task& operator=(const Task&) = delete;
     void operator()() { ptr->range->scan_internal(ptr); }
   };
   if(!m_get.running())
@@ -540,6 +559,11 @@ void CompactRange::process_interval() {
     Ptr ptr;
     SWC_CAN_INLINE
     NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    SWC_CAN_INLINE
+    NextTask(NextTask&& other) noexcept : ptr(std::move(other.ptr)) { }
+    NextTask(const NextTask&) = delete;
+    NextTask& operator=(NextTask&&) = delete;
+    NextTask& operator=(const NextTask&) = delete;
     ~NextTask() noexcept { }
     void operator()() { ptr->process_encode(); }
   };
@@ -567,6 +591,11 @@ void CompactRange::process_encode() {
     Ptr ptr;
     SWC_CAN_INLINE
     NextTask(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+    SWC_CAN_INLINE
+    NextTask(NextTask&& other) noexcept : ptr(std::move(other.ptr)) { }
+    NextTask(const NextTask&) = delete;
+    NextTask& operator=(NextTask&&) = delete;
+    NextTask& operator=(const NextTask&) = delete;
     ~NextTask() noexcept { }
     void operator()() { ptr->process_write(); }
   };
@@ -870,6 +899,11 @@ struct CompactRange::TaskFinished {
   Ptr ptr;
   SWC_CAN_INLINE
   TaskFinished(Ptr&& a_ptr) noexcept : ptr(std::move(a_ptr)) { }
+  SWC_CAN_INLINE
+  TaskFinished(TaskFinished&& other) noexcept : ptr(std::move(other.ptr)) { }
+  TaskFinished(const TaskFinished&) = delete;
+  TaskFinished& operator=(TaskFinished&&) = delete;
+  TaskFinished& operator=(const TaskFinished&) = delete;
   ~TaskFinished() noexcept { }
   void operator()() { ptr->finished(clear); }
 };

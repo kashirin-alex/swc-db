@@ -25,6 +25,16 @@ struct RangeLoad {
             : conn(a_conn), ev(a_ev) {
   }
 
+  SWC_CAN_INLINE
+  RangeLoad(RangeLoad&& other) noexcept
+            : conn(std::move(other.conn)),
+              ev(std::move(other.ev)) {
+  }
+
+  RangeLoad(const RangeLoad&) = delete;
+  RangeLoad& operator=(RangeLoad&&) = delete;
+  RangeLoad& operator=(const RangeLoad&) = delete;
+
   ~RangeLoad() noexcept { }
 
   void operator()() {

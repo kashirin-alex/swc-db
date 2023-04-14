@@ -27,6 +27,7 @@
 #pragma GCC diagnostic ignored  "-Wsuggest-attribute=pure"
 #pragma GCC diagnostic ignored  "-Wsuggest-attribute=malloc"
 #pragma GCC diagnostic ignored  "-Wsuggest-attribute=cold"
+#pragma GCC diagnostic ignored  "-Weffc++"
 #endif
 
 

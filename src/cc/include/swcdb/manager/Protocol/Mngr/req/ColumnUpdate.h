@@ -43,6 +43,11 @@ class ColumnUpdate : public client::ConnQueue::ReqBase {
                 ) {
   }
 
+  ColumnUpdate(ColumnUpdate&&) = delete;
+  ColumnUpdate(const ColumnUpdate&) = delete;
+  ColumnUpdate& operator=(ColumnUpdate&&) = delete;
+  ColumnUpdate& operator=(const ColumnUpdate&) = delete;
+
   virtual ~ColumnUpdate() noexcept { }
 
   bool insistent() noexcept override { return true; }
