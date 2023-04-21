@@ -29,7 +29,7 @@ class StateSynchronization {
 
   SWC_CAN_INLINE
   void acknowledge() noexcept {
-    Core::UniqueLock lock_wait(m_mutex);
+    Core::ScopedLock lock(m_mutex);
     m_ack = true;
     m_cv.notify_all();
   }
