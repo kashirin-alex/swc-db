@@ -29,7 +29,9 @@ class AppContext final : virtual public BrokerIfFactory,
 
   typedef std::shared_ptr<AppContext> Ptr;
 
-  AppContext() : m_run(true) {
+  AppContext()
+      : m_mutex(), m_run(true), m_cv(), m_connections(),
+        m_mutex_handlers(), m_metrics(nullptr), m_handlers() {
     auto settings = Env::Config::settings();
     Env::IoCtx::init(settings->get_i32("swc.ThriftBroker.clients.handlers"));
 
@@ -239,7 +241,7 @@ class AppContext final : virtual public BrokerIfFactory,
 
   Core::MutexSptd                               m_mutex_handlers;
 
-  Metric::Reporting::Ptr                        m_metrics = nullptr;
+  Metric::Reporting::Ptr                        m_metrics;
 
   struct HandlerLess {
     using is_transparent = void;

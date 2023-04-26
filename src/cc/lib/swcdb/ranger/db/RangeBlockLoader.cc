@@ -76,7 +76,7 @@ BlockLoader::BlockLoader(Block::Ptr a_block)
 
 SWC_CAN_INLINE
 void BlockLoader::add(const ReqScan::Ptr& req) {
-  q_req.push({.req=req, .ts=Time::now_ns()});
+  q_req.push(ReqQueue(req, Time::now_ns()));
 }
 
 SWC_CAN_INLINE

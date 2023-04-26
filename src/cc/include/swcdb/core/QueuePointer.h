@@ -24,7 +24,7 @@ class QueuePointer : private MutexAtomic {
     Pointer(const Pointer&) = delete;
     Pointer& operator=(Pointer&&) = delete;
     Pointer& operator=(const Pointer&) = delete;
-    virtual ~Pointer() noexcept { }
+    /*virtual*/ ~Pointer() noexcept { }
     PtrT _other;
   };
 

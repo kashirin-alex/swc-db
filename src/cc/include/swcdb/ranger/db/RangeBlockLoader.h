@@ -26,6 +26,15 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
   struct ReqQueue {
     ReqScan::Ptr  req;
     const int64_t ts;
+    SWC_CAN_INLINE
+    ReqQueue(const ReqScan::Ptr& a_req, int64_t a_ts) noexcept
+            : req(a_req), ts(a_ts) { }
+    SWC_CAN_INLINE
+    ReqQueue(ReqQueue&& other) noexcept
+            : req(std::move(other.req)), ts(other.ts) { }
+    ReqQueue(const ReqQueue&) = delete;
+    ReqQueue& operator=(ReqQueue&&) = delete;
+    ReqQueue& operator=(const ReqQueue&) = delete;
     ~ReqQueue() noexcept { }
   };
   std::queue<ReqQueue> q_req; // synced by Block mutex
@@ -35,10 +44,9 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
 
   explicit BlockLoader(Block::Ptr block);
 
+  BlockLoader(BlockLoader&&) = delete;
   BlockLoader(const BlockLoader&) = delete;
-
-  BlockLoader(const BlockLoader&&) = delete;
-
+  BlockLoader& operator=(BlockLoader&&) = delete;
   BlockLoader& operator=(const BlockLoader&) = delete;
 
   ~BlockLoader() noexcept { }

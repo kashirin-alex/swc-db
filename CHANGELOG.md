@@ -28,6 +28,17 @@
     fixed Manager Rangers state sync at a run of RANGERS and COLUMNS roles
     changed Python logging in swcdb.thrift.pool to quieter mood
     Resolves Issue: #13
+    added cases of user-defined ctors & operators instead of default or delete
+    added uint32_t Comm:IoContext::get_number_of_threads(bool, int32_t)
+    added Comm:IoContextPtr Comm:IoContext::make(std::string&&, bool, int32_t)
+    added cfg swc.{bkr,mngr,rgr,FsBroker}.concurrency.relative BOOL
+    added cfg swc.fs.{broker,hadoop}.concurrency.relative BOOL
+    added Comm::server::SerializedServer(.. bool concurrency_relative)
+    added relative HW-Concurrency based Thread Pools to Services supported
+    added Ranger swc.rgr.loader.handlers INT32 configuration property
+    changed Ranger BlockLoader load acknowledgement with condition_variable
+    fixed use-after-free possibility of class Ranger::BlockLoader pointer
+    added Utils::shell::Interface at errno EINTR skip break
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.11...master)
 ******

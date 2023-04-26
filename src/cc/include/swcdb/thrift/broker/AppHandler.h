@@ -41,7 +41,8 @@ class AppHandler final : virtual public BrokerIf {
   const std::shared_ptr<thrift::transport::TSocket> socket;
 
   AppHandler(const std::shared_ptr<thrift::transport::TSocket>& a_socket)
-            : socket(a_socket), m_processing(0), m_run(true) {
+            : socket(a_socket),
+              m_mutex(), m_updaters(), m_processing(0), m_run(true) {
   }
 
   virtual ~AppHandler() noexcept { }
@@ -1275,12 +1276,16 @@ class AppHandler final : virtual public BrokerIf {
         Converter::exception(Error::SERVER_SHUTTING_DOWN);
       hdlr->m_processing.fetch_add(1);
     }
+    Processing(Processing&&) = delete;
+    Processing(const Processing&) = delete;
+    Processing& operator=(Processing&&) = delete;
+    Processing& operator=(const Processing&) = delete;
     ~Processing() {
       hdlr->m_processing.fetch_sub(1);
     }
   };
 
-  Core::MutexSptd m_mutex;
+  Core::MutexSptd                                          m_mutex;
   std::unordered_map<
     int64_t, client::Query::Update::Handlers::Common::Ptr> m_updaters;
   Core::Atomic<size_t>                                     m_processing;
