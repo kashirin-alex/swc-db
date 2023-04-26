@@ -45,6 +45,8 @@ void init_app_options(Settings* settings) {
         Core::Encoder::repr_encoding),
      "The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB")
 
+    ("swc.rgr.loader.handlers", i32(4),
+     "Number or HW-Concurrency base of Block Handlers")
     ("swc.rgr.maintenance.handlers", i32(2),
      "Number or HW-Concurrency base of Maintenance Handlers")
 

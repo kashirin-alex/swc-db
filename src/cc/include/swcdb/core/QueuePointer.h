@@ -20,13 +20,17 @@ class QueuePointer : private MutexAtomic {
   struct Pointer {
     constexpr SWC_CAN_INLINE
     Pointer() noexcept : _other(nullptr) { }
+    Pointer(Pointer&&) = delete;
+    Pointer(const Pointer&) = delete;
+    Pointer& operator=(Pointer&&) = delete;
+    Pointer& operator=(const Pointer&) = delete;
+    virtual ~Pointer() noexcept { }
     PtrT _other;
   };
 
   constexpr SWC_CAN_INLINE
   explicit QueuePointer() noexcept : _back(nullptr), _front(nullptr) { }
 
-  QueuePointer(const QueuePointer&) = delete;
 
   QueuePointer(QueuePointer&& other) : _back(nullptr), _front(nullptr) {
     other.lock();
@@ -36,10 +40,11 @@ class QueuePointer : private MutexAtomic {
     other.unlock();
   }
 
+  QueuePointer(const QueuePointer&) = delete;
+  QueuePointer& operator=(QueuePointer&&) = delete;
   QueuePointer& operator=(const QueuePointer&) = delete;
 
-  QueuePointer& operator=(QueuePointer&&) = delete;
-
+  ~QueuePointer() noexcept { }
 
   SWC_CAN_INLINE
   bool push_and_is_1st(PtrT& ptr) noexcept {

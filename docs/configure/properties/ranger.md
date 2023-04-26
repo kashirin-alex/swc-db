@@ -35,6 +35,11 @@ _default_ **```swc.rgr.workers=16```**
 The number or HW-Concurrency base of Application handlers. \
 _default_ **```swc.rgr.handlers=2```**
 
+* ### swc.rgr.loader.handlers
+```TYPE_INT32```
+The number or HW-Concurrency base of Block Loader handlers. \
+_default_ **```swc.rgr.loader.handlers=4```**
+
 
 * ### swc.rgr.maintenance.handlers
 ```TYPE_INT32```

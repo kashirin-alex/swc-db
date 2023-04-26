@@ -121,6 +121,12 @@ class Rgr final {
     m_env->mnt_io->post(std::move(handler));
   }
 
+  template <typename T_Handler>
+  SWC_CAN_INLINE
+  static void block_loader_post(T_Handler&& handler)  {
+    m_env->loader_io->post(std::move(handler));
+  }
+
   SWC_CAN_INLINE
   static System::Resources& res() noexcept {
     return m_env->_resources;
@@ -170,7 +176,9 @@ class Rgr final {
   const SWC::Config::Property::Value_enum_g::Ptr   cfg_blk_enc;
 
   Comm::IoContextPtr                            app_io;
+  Comm::IoContextPtr                            loader_io;
   Comm::IoContextPtr                            mnt_io;
+
   Ranger::Compaction*                           _compaction;
   Ranger::Columns*                              _columns;
   client::Query::Update::Handlers::Common::Ptr  _update_hdlr;
@@ -261,7 +269,17 @@ Rgr::Rgr()
           "Ranger",
           SWC::Env::Config::settings()->get_bool(
             "swc.rgr.concurrency.relative"),
-          SWC::Env::Config::settings()->get_i32("swc.rgr.handlers")
+          SWC::Env::Config::settings()->get_i32(
+            "swc.rgr.handlers")
+        )
+      ),
+      loader_io(
+        Comm::IoContext::make(
+          "Loader",
+          SWC::Env::Config::settings()->get_bool(
+            "swc.rgr.concurrency.relative"),
+          SWC::Env::Config::settings()->get_i32(
+            "swc.rgr.loader.handlers")
         )
       ),
       mnt_io(
@@ -322,6 +340,7 @@ void Rgr::shuttingdown() {
   if(m_env->_compaction)
     m_env->_compaction->stop();
   m_env->mnt_io->stop();
+  m_env->loader_io->stop();
 
   m_env->_update_hdlr->commit_if_need();
   m_env->_update_hdlr->wait();

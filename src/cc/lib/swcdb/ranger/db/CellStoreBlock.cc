@@ -120,7 +120,7 @@ bool Read::load(BlockLoader* loader) {
     case State::LOADING:
       return false;
     default: //case State::LOADED:
-      loader->loaded_blk();
+      loader->loaded(this);
       return false;
   }
 }
@@ -354,7 +354,7 @@ void Read::load_finish(int err) {
       loader = m_queue.front();
       m_queue.pop();
     }
-    loader->loaded_blk();
+    loader->loaded(this);
   }
 }
 

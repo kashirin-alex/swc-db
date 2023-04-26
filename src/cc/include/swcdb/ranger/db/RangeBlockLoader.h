@@ -19,9 +19,9 @@ namespace SWC { namespace Ranger {
 class BlockLoader final : private CommitLog::Fragment::LoadCallback {
   public:
 
-  Block::Ptr           block;
-  Core::Atomic<size_t> count_cs_blocks;
-  Core::Atomic<size_t> count_fragments;
+  Block::Ptr    block;
+  size_t        count_cs_blocks;
+  size_t        count_fragments;
 
   struct ReqQueue {
     ReqScan::Ptr  req;
@@ -29,8 +29,8 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
     ~ReqQueue() noexcept { }
   };
   std::queue<ReqQueue> q_req; // synced by Block mutex
-  Core::Atomic<int>    error;
-  const uint8_t        preload;
+  int           error;
+  const uint8_t preload;
 
 
   explicit BlockLoader(Block::Ptr block);
@@ -49,29 +49,41 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
 
   void add(CellStore::Block::Read::Ptr blk);
 
-  void loaded_blk();
+  void loaded(CellStore::Block::Read::Ptr&& blk);
 
   void loaded(CommitLog::Fragment::Ptr&& frag) override;
 
+  void print(std::ostream& out) {
+    out << "BlockLoader(";
+    Core::ScopedLock lock(m_mutex);
+    out << "blks=" << count_cs_blocks
+        << " frags=" << count_fragments
+        << " error=" << error
+        << " qreq=" << q_req.size()
+        << " ack=" << int(m_ack)
+        << " m_cs_blks=" << m_cs_blks
+        << " logs=" << int(m_logs)
+        << " queue=" << m_queue.size()
+        << " selected=" << m_f_selected.size()
+        << ')';
+  }
+
   private:
 
-  void load_cellstores_cells();
+  void load_cells();
 
-  void load_log(bool is_final, bool is_more=false);
+  struct LoadQueue;
 
-  void load_log_cells();
-
-  void completion();
-
-
-  Core::StateRunning                        m_check_log;
-  bool                                      m_processing;
+  bool                                      m_ack;
   uint8_t                                   m_logs;
-  Core::MutexSptd                           m_mutex;
+  size_t                                    m_cs_blks;
 
-  std::queue<CellStore::Block::Read::Ptr>   m_cs_blocks;
+  std::mutex                                m_mutex;
+  std::condition_variable                   m_cv;
+  std::queue<LoadQueue*>                    m_queue;
   CommitLog::Fragments::Vec                 m_f_selected;
-  std::queue<CommitLog::Fragment::Ptr>      m_fragments;
+  std::queue<CellStore::Block::Read::Ptr>   m_cs_selected;
+  Core::Vector<CellStore::Block::Read::Ptr> m_cs_ready;
 
 };
 

@@ -9,19 +9,69 @@
 
 namespace SWC { namespace Ranger {
 
+class BlockLoader::LoadQueue {
+  public:
+  LoadQueue() noexcept { }
+  LoadQueue(LoadQueue&&) = delete;
+  LoadQueue(const LoadQueue&) = delete;
+  LoadQueue& operator=(LoadQueue&&) = delete;
+  LoadQueue& operator=(const LoadQueue&) = delete;
+  virtual ~LoadQueue() noexcept { }
+  virtual void load_cells(BlockLoader* loader) = 0;
+};
+
+template<typename ItemT, int ErrorT>
+class LoadQueueItem final : public BlockLoader::LoadQueue {
+  public:
+
+  LoadQueueItem(ItemT&& a_ptr, size_t& a_counter) noexcept
+                : ptr(std::move(a_ptr)), counter(a_counter) {
+  }
+
+  LoadQueueItem(LoadQueueItem&&) = delete;
+  LoadQueueItem(const LoadQueueItem&) = delete;
+  LoadQueueItem& operator=(LoadQueueItem&&) = delete;
+  LoadQueueItem& operator=(const LoadQueueItem&) = delete;
+
+  virtual ~LoadQueueItem() noexcept { }
+
+  virtual void load_cells(BlockLoader* loader) override {
+    int err = Error::OK;
+    bool loaded = ptr->loaded(err);
+
+    if(loaded)
+      ptr->load_cells(err, loader->block);
+
+    if(err) {
+      if(!loader->error)
+        loader->error = ErrorT;
+      SWC_LOG_OUT(
+        LOG_WARN,
+        ptr->print(SWC_LOG_OSTREAM << "BlockLoader error(" << err << ')');
+      );
+      if(!loaded)
+        ptr->processing_decrement();
+    }
+    ++counter;
+  }
+
+  private:
+  ItemT   ptr;
+  size_t& counter;
+};
+
+
 
 SWC_CAN_INLINE
 BlockLoader::BlockLoader(Block::Ptr a_block)
-                        : block(a_block),
-                          count_cs_blocks(0), count_fragments(0),
-                          q_req(),
-                          error(Error::OK),
-                          preload(
-                            block->blocks->range->cfg->log_fragment_preload()),
-                          m_check_log(true), m_processing(false),
-                          m_logs(0),
-                          m_mutex(),
-                          m_cs_blocks(), m_f_selected(), m_fragments() {
+  : block(a_block),
+    count_cs_blocks(0), count_fragments(0),
+    q_req(),
+    error(Error::OK),
+    preload(block->blocks->range->cfg->log_fragment_preload()),
+    m_ack(false), m_logs(0), m_cs_blks(1),
+    m_mutex(), m_cv(), m_queue(), m_f_selected(),
+    m_cs_selected(), m_cs_ready() {
 }
 
 SWC_CAN_INLINE
@@ -31,207 +81,114 @@ void BlockLoader::add(const ReqScan::Ptr& req) {
 
 SWC_CAN_INLINE
 void BlockLoader::run() {
+  struct Task {
+    BlockLoader* ptr;
+    SWC_CAN_INLINE
+    Task(BlockLoader* a_ptr) noexcept : ptr(a_ptr) { }
+    Task(Task&& other)  noexcept : ptr(other.ptr) { }
+    Task(const Task&) = delete;
+    Task& operator=(Task&&) = delete;
+    Task& operator=(const Task&) = delete;
+    ~Task() noexcept { }
+    void operator()() { ptr->load_cells(); }
+  };
+  Env::Rgr::block_loader_post(Task(this));
+
   block->blocks->cellstores.load_cells(this);
-  load_log(false);
+
+  Core::ScopedLock lock(m_mutex);
+  --m_cs_blks;
+  m_ack = true;
+  m_cv.notify_all();
 }
 
 //CellStores
 SWC_CAN_INLINE
 void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
-  Core::MutexSptd::scope lock(m_mutex);
-  m_cs_blocks.push(blk);
+  Core::ScopedLock lock(m_mutex);
+  ++m_cs_blks;
+  m_cs_selected.push(blk);
 }
 
 SWC_CAN_INLINE
-void BlockLoader::loaded_blk() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_processing)
-      return;
-    m_processing = true;
+void BlockLoader::loaded(CellStore::Block::Read::Ptr&& blk) {
+  Core::ScopedLock lock(m_mutex);
+  m_cs_ready.push_back(blk);
+  for(auto it = m_cs_ready.begin();
+      it < m_cs_ready.end() && m_cs_selected.front() == *it; ) {
+    m_queue.push(
+      new LoadQueueItem<
+        CellStore::Block::Read::Ptr,
+        Error::RANGE_CELLSTORES
+      >(std::move(*it), count_cs_blocks)
+    );
+    m_cs_ready.erase(it);
+    m_cs_selected.pop();
+    --m_cs_blks;
   }
-  struct Task {
-    BlockLoader* ptr;
-    SWC_CAN_INLINE
-    Task(BlockLoader* a_ptr) noexcept : ptr(a_ptr) { }
-    void operator()() { ptr->load_cellstores_cells(); }
-  };
-  Env::Rgr::post(Task(this));
-}
-
-SWC_CAN_INLINE
-void BlockLoader::load_cellstores_cells() {
-  int err;
-  bool loaded;
-  for(CellStore::Block::Read::Ptr blk; ; ) {
-    {
-      Core::MutexSptd::scope lock(m_mutex);
-      if(m_cs_blocks.empty()) {
-        m_processing = false;
-        break;
-      }
-      loaded = (blk = m_cs_blocks.front())->loaded(err = Error::OK);
-      if(!err && !loaded) {
-        m_processing = false;
-        return;
-      }
-      if(err) {
-        blk->processing_decrement();
-        err = Error::OK;
-        error.compare_exchange_weak(err, Error::RANGE_CELLSTORES);
-      }
-    }
-    if(loaded) {
-      blk->load_cells(err, block);
-      count_cs_blocks.fetch_add(1);
-    }
-    {
-      Core::MutexSptd::scope lock(m_mutex);
-      m_cs_blocks.pop();
-    }
-  }
-  if(!m_check_log.running())
-    load_log(false);
-}
-
-//CommitLog
-
-void BlockLoader::load_log(bool is_final, bool is_more) {
-  check_more:
-  uint8_t vol = preload;
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(m_logs) {
-      vol -= m_logs;
-      if(is_final)
-        is_final = false;
-    }
-  }
-  if(vol) {
-    size_t offset = m_f_selected.size();
-    block->blocks->commitlog.load_cells(this, is_final, m_f_selected, vol);
-    if(offset < m_f_selected.size()) {
-      {
-        Core::MutexSptd::scope lock(m_mutex);
-        m_logs += m_f_selected.size() - offset;
-      }
-      for(auto it=m_f_selected.cbegin() + offset;
-          it != m_f_selected.cend(); ++it) {
-        (*it)->load(this);
-      }
-    }
-  }
-  bool more;
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(((!is_more && m_processing) || !m_cs_blocks.empty()) ||
-        (!(more = is_more || (m_logs && !m_fragments.empty())) &&
-         (m_processing || m_logs || !m_fragments.empty())))  {
-      m_check_log.stop();
-      return;
-    }
-  }
-  if(more) {
-    m_check_log.stop();
-    return loaded(nullptr);
-  }
-  if(is_final)
-    return completion();
-  is_final = true;
-  goto check_more;
+  m_ack = true;
+  m_cv.notify_all();
 }
 
 void BlockLoader::loaded(CommitLog::Fragment::Ptr&& frag) {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(frag)
-      m_fragments.push(std::move(frag));
-    if(m_processing || !m_cs_blocks.empty())
-      return;
-    m_processing = true;
-  }
-  struct Task {
-    BlockLoader* ptr;
-    SWC_CAN_INLINE
-    Task(BlockLoader* a_ptr) noexcept : ptr(a_ptr) { }
-    void operator()() { ptr->load_log_cells(); }
-  };
-  Env::Rgr::post(Task(this));
+  LoadQueue* ptr(
+    new LoadQueueItem<
+      CommitLog::Fragment::Ptr,
+      Error::RANGE_COMMITLOG
+    >(std::move(frag), count_fragments)
+  );
+  Core::ScopedLock lock(m_mutex);
+  m_queue.push(ptr);
+  --m_logs;
+  m_ack = true;
+  m_cv.notify_all();
 }
 
 SWC_CAN_INLINE
-void BlockLoader::load_log_cells() {
-  bool more;
-  bool loaded;
-  int err;
-  for(CommitLog::Fragment::Ptr frag; ; ) {
+void BlockLoader::load_cells() {
+  for(LoadQueue* ptr; ;) {
+    size_t sz;
     {
-      Core::MutexSptd::scope lock(m_mutex);
-      if(m_fragments.empty()) {
-        m_processing = false;
+      Core::UniqueLock lock_wait(m_mutex);
+      if(m_ack)
+        m_cv.wait(lock_wait, [this] { return m_ack; });
+      m_ack = false;
+      if((ptr = m_queue.empty() ? nullptr : m_queue.front()))
+        m_queue.pop();
+      sz = m_cs_blks ? preload : (m_queue.size() + m_logs);
+    }
+    bool is_final = false;
+    if(sz < preload) {
+      uint8_t vol = preload - sz;
+      if((is_final = vol == preload) && ptr) {
+        ptr->load_cells(this);
+        delete ptr;
+        ptr = nullptr;
+      }
+      size_t offset = m_f_selected.size();
+      block->blocks->commitlog.load_cells(this, is_final, m_f_selected, vol);
+      if((sz = m_f_selected.size() - offset)) {
+        {
+          Core::ScopedLock lock(m_mutex);
+          m_logs += sz;
+        }
+        for(auto it=m_f_selected.cbegin() + offset;
+            it != m_f_selected.cend(); ++it) {
+          (*it)->load(this);
+        }
+      } else if(is_final) {
+        SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "Loaded "););
+        block->loader_loaded();
         break;
       }
-      frag = std::move(m_fragments.front());
-      m_fragments.pop();
-      more = m_logs == preload;
-      if((loaded = frag->loaded()))
-        --m_logs;
     }
-    if(!loaded) {
-      // temp-check, that should not be happening
-      SWC_LOG_OUT(LOG_WARN,
-        frag->print(SWC_LOG_OSTREAM << "Fragment not-loaded, load-again ");
-      );
-      frag->load(this);
-      continue;
-    }
-    frag->load_cells(err = Error::OK, block);
-    count_fragments.fetch_add(1);
-    if(more && !m_check_log.running()) {
-      struct Task {
-        BlockLoader* ptr;
-        SWC_CAN_INLINE
-        Task(BlockLoader* a_ptr) noexcept : ptr(a_ptr) { }
-        void operator()() { ptr->load_log(false, true); }
-      };
-      Env::Rgr::post(Task(this));
+    if(ptr) {
+      ptr->load_cells(this);
+      delete ptr;
+      ptr = nullptr;
     }
   }
-
-  if(!m_check_log.running())
-    load_log(true);
 }
-
-SWC_CAN_INLINE
-void BlockLoader::completion() {
-  {
-    Core::MutexSptd::scope lock(m_mutex);
-    if(!m_cs_blocks.empty()) {
-      SWC_LOG_OUT(LOG_ERROR,
-        SWC_LOG_OSTREAM << "Not Loaded CellStores: " << m_cs_blocks.size();
-        for(; !m_cs_blocks.empty(); m_cs_blocks.pop()) {
-          m_cs_blocks.front()->print(SWC_LOG_OSTREAM << "\n\t");
-          m_cs_blocks.front()->processing_decrement();
-        }
-      );
-      error.store(Error::RANGE_CELLSTORES);
-    }
-    if(m_logs || !m_fragments.empty()) {
-      SWC_LOG_OUT(LOG_ERROR,
-        SWC_LOG_OSTREAM << "Not Loaded Log Fragments: " << m_fragments.size();
-        for(; !m_fragments.empty(); m_fragments.pop()) {
-          m_fragments.front()->print(SWC_LOG_OSTREAM << "\n\t");
-          m_fragments.front()->processing_decrement();
-        }
-      );
-      if(!error)
-        error.store(Error::RANGE_COMMITLOG);
-    }
-  }
-
-  block->loader_loaded();
-}
-
 
 
 }}
