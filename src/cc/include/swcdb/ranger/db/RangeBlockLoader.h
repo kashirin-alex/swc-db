@@ -80,7 +80,7 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
 
   void load_cells();
 
-  struct LoadQueue;
+  class LoadQueue;
 
   bool                                      m_ack;
   uint8_t                                   m_logs;
