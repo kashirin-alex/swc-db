@@ -41,6 +41,7 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
   int           error;
   const uint8_t preload;
 
+  class LoadQueue;
 
   explicit BlockLoader(Block::Ptr block);
 
@@ -79,8 +80,6 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
   private:
 
   void load_cells();
-
-  class LoadQueue;
 
   bool                                      m_ack;
   uint8_t                                   m_logs;
