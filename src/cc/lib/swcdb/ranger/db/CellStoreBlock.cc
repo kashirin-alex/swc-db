@@ -258,14 +258,15 @@ void Read::load_open(int err) {
 
   cellstore->smartfd->valid()
     ? Env::FsInterface::fs()->pread(
-        [ptr=this](int _err, const StaticBuffer::Ptr& buff) {
+        [ptr=this](int _err, StaticBuffer&& buff) {
           struct Task {
-            Read*             ptr;
-            int               error;
-            StaticBuffer::Ptr buffer;
+            Read*        ptr;
+            int          error;
+            StaticBuffer buffer;
             SWC_CAN_INLINE
-            Task(Read* a_ptr, int a_error, const StaticBuffer::Ptr& a_buffer)
-                noexcept : ptr(a_ptr), error(a_error), buffer(a_buffer) {
+            Task(Read* a_ptr, int a_error, StaticBuffer&& a_buffer)
+                noexcept : ptr(a_ptr), error(a_error),
+                           buffer(std::move(a_buffer)) {
             }
             SWC_CAN_INLINE
             Task(Task&& other) noexcept
@@ -276,9 +277,9 @@ void Read::load_open(int err) {
             Task& operator=(Task&&) = delete;
             Task& operator=(const Task&) = delete;
             ~Task() noexcept { }
-            void operator()() { ptr->load_read(error, buffer); }
+            void operator()() { ptr->load_read(error, std::move(buffer)); }
           };
-          Env::Rgr::post(Task(ptr, _err, buff));
+          Env::Rgr::post(Task(ptr, _err, std::move(buff)));
         },
         cellstore->smartfd, header.offset_data, header.size_enc
       )
@@ -288,13 +289,13 @@ void Read::load_open(int err) {
       );
 }
 
-void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
+void Read::load_read(int err, StaticBuffer&& buffer) {
   if(!err) {
     if(!Core::checksum_i32_chk(header.checksum_data,
-                               buffer->base, header.size_enc)) {
+                               buffer.base, header.size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
 
-    } else if(buffer->size != header.size_enc) {
+    } else if(buffer.size != header.size_enc) {
       err = Error::FS_EOF;
 
     } else {
@@ -302,13 +303,13 @@ void Read::load_read(int err, const StaticBuffer::Ptr& buffer) {
         StaticBuffer decoded_buf(static_cast<size_t>(header.size_plain));
         Core::Encoder::decode(
           err, header.encoder,
-          buffer->base, header.size_enc,
+          buffer.base, header.size_enc,
           decoded_buf.base, header.size_plain
         );
         if(!err)
           m_buffer.set(decoded_buf);
       } else {
-        m_buffer.set(*buffer.get());
+        m_buffer.set(buffer);
       }
     }
   }

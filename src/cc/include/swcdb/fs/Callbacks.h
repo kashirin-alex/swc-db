@@ -17,29 +17,28 @@ namespace SWC { namespace FS {
 namespace Callback {
 
 
-  typedef std::function<void(int, bool)>              ExistsCb_t;
-  typedef std::function<void(int)>                    RemoveCb_t;
-  typedef std::function<void(int, size_t)>            LengthCb_t;
+  typedef std::function<void(int, bool)>           ExistsCb_t;
+  typedef std::function<void(int)>                 RemoveCb_t;
+  typedef std::function<void(int, size_t)>         LengthCb_t;
 
-  typedef std::function<void(int)>                    MkdirsCb_t;
-  typedef std::function<void(int, DirentList&&)>      ReaddirCb_t;
-  typedef std::function<void(int)>                    RmdirCb_t;
-  typedef std::function<void(int)>                    RenameCb_t;
+  typedef std::function<void(int)>                 MkdirsCb_t;
+  typedef std::function<void(int, DirentList&&)>   ReaddirCb_t;
+  typedef std::function<void(int)>                 RmdirCb_t;
+  typedef std::function<void(int)>                 RenameCb_t;
 
-  typedef std::function<void(int)>                    WriteCb_t;
-  typedef std::function<void(int, StaticBuffer::Ptr)> ReadAllCb_t;
-  typedef std::function<void(int, StaticBuffer::Ptr)> CombiPreadCb_t;
+  typedef std::function<void(int)>                 WriteCb_t;
+  typedef std::function<void(int, StaticBuffer&&)> ReadAllCb_t;
+  typedef std::function<void(int, StaticBuffer&&)> CombiPreadCb_t;
 
-  typedef std::function<void(int)>                    CreateCb_t;
-  typedef std::function<void(int)>                    OpenCb_t;
-  typedef std::function<void(int, StaticBuffer::Ptr)> ReadCb_t;
-  typedef std::function<void(int, StaticBuffer::Ptr)> PreadCb_t;
-  typedef std::function<void(int, size_t)>            AppendCb_t;
-  typedef std::function<void(int)>                    SeekCb_t;
-  typedef std::function<void(int)>                    FlushCb_t;
-  typedef std::function<void(int)>                    SyncCb_t;
-  typedef std::function<void(int)>                    CloseCb_t;
-
+  typedef std::function<void(int)>                 CreateCb_t;
+  typedef std::function<void(int)>                 OpenCb_t;
+  typedef std::function<void(int, StaticBuffer&&)> ReadCb_t;
+  typedef std::function<void(int, StaticBuffer&&)> PreadCb_t;
+  typedef std::function<void(int, size_t)>         AppendCb_t;
+  typedef std::function<void(int)>                 SeekCb_t;
+  typedef std::function<void(int)>                 FlushCb_t;
+  typedef std::function<void(int)>                 SyncCb_t;
+  typedef std::function<void(int)>                 CloseCb_t;
 }
 
 }}

@@ -38,8 +38,10 @@ class Read final : public Base {
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     size_t amount = 0;
     Base::handle_read(ev, smartfd, amount);
-    StaticBuffer::Ptr buf(amount ? new StaticBuffer(ev->data_ext) : nullptr);
-    cb(error, buf);
+    cb(
+      error,
+      std::move(ev->data_ext)
+    );
   }
 
   private:

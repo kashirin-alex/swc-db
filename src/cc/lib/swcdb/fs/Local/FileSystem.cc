@@ -429,7 +429,7 @@ void FileSystemLocal::read(Callback::ReadAllCb_t&& cb,
         err
           ? (err == ENOENT ? Error::FS_PATH_NOT_FOUND : err)
           : (recved != buffer->size ? Error::FS_EOF : err),
-        buffer
+        std::move(*buffer.get())
       );
     }
   };

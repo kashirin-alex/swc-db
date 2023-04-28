@@ -296,9 +296,9 @@ void FileSystem::default_read(int& err, const std::string& name,
 void FileSystem::read(Callback::ReadAllCb_t&& cb,
                       const std::string& name) {
   int err = Error::OK;
-  StaticBuffer::Ptr dst(new StaticBuffer());
-  read(err, name, dst.get());
-  cb(err, dst);
+  StaticBuffer dst;
+  read(err, name, &dst);
+  cb(err, std::move(dst));
 }
 
 void FileSystem::default_combi_pread(int& err, SmartFd::Ptr& smartfd,
@@ -329,9 +329,9 @@ void FileSystem::combi_pread(Callback::CombiPreadCb_t&& cb,
                              SmartFd::Ptr& smartfd,
                              uint64_t offset, uint32_t amount) {
   int err = Error::OK;
-  StaticBuffer::Ptr dst(new StaticBuffer());
-  combi_pread(err, smartfd, offset, amount, dst.get());
-  cb(err, dst);
+  StaticBuffer dst;
+  combi_pread(err, smartfd, offset, amount, &dst);
+  cb(err, std::move(dst)); 
 }
 
 void FileSystem::create(Callback::CreateCb_t&& cb, SmartFd::Ptr& smartfd,
@@ -357,9 +357,9 @@ size_t FileSystem::default_read(int& err, SmartFd::Ptr& smartfd,
 void FileSystem::read(Callback::ReadCb_t&& cb, SmartFd::Ptr& smartfd,
                       size_t amount) {
   int err = Error::OK;
-  StaticBuffer::Ptr dst(new StaticBuffer());
-  read(err, smartfd, dst.get(), amount);
-  cb(err, dst);
+  StaticBuffer dst;
+  read(err, smartfd, &dst, amount);
+  cb(err, std::move(dst));
 }
 
 size_t FileSystem::default_pread(int& err, SmartFd::Ptr& smartfd,
@@ -373,9 +373,9 @@ size_t FileSystem::default_pread(int& err, SmartFd::Ptr& smartfd,
 void FileSystem::pread(Callback::PreadCb_t&& cb, SmartFd::Ptr& smartfd,
                        uint64_t offset, size_t amount) {
   int err = Error::OK;
-  StaticBuffer::Ptr dst(new StaticBuffer());
-  pread(err, smartfd, offset, dst.get(), amount);
-  cb(err, dst);
+  StaticBuffer dst;
+  pread(err, smartfd, offset, &dst, amount);
+  cb(err, std::move(dst));
 }
 
 void FileSystem::append(Callback::AppendCb_t&& cb, SmartFd::Ptr& smartfd,

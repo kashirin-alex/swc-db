@@ -594,7 +594,7 @@ size_t FileSystemBroker::pread(int& err, SmartFd::Ptr& smartfd,
   return hdlr->amount;
 }
 
-void FileSystemBroker::pread(Callback::ReadCb_t&& cb,
+void FileSystemBroker::pread(Callback::PreadCb_t&& cb,
                              SmartFd::Ptr& smartfd,
                              uint64_t offset, size_t amount) {
   SWC_FS_PREAD_START(smartfd, offset, amount);

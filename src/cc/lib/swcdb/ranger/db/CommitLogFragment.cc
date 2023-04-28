@@ -347,13 +347,14 @@ void Fragment::write(int err, uint8_t blk_replicas,
 }
 
 struct Fragment::TaskLoadRead {
-  Ptr               frag;
-  int               err;
-  StaticBuffer::Ptr buffer;
+  Ptr          frag;
+  int          err;
+  StaticBuffer buffer;
   SWC_CAN_INLINE
   TaskLoadRead(Ptr&& a_frag, int a_err,
-               const StaticBuffer::Ptr& a_buffer) noexcept
-              : frag(std::move(a_frag)), err(a_err), buffer(a_buffer) { }
+               StaticBuffer&& a_buffer) noexcept
+              : frag(std::move(a_frag)), err(a_err),
+                buffer(std::move(a_buffer)) { }
   SWC_CAN_INLINE
   TaskLoadRead(TaskLoadRead&& other) noexcept
               : frag(std::move(other.frag)), err(other.err),
@@ -390,8 +391,10 @@ void Fragment::load(Fragment::LoadCallback* cb) {
         ~Task() noexcept { }
         void operator()() {
           Env::FsInterface::fs()->combi_pread(
-            [frag=frag] (int err, const StaticBuffer::Ptr& buffer) mutable {
-              Env::Rgr::post(TaskLoadRead(std::move(frag), err, buffer));
+            [frag=frag] (int err, StaticBuffer&& buffer) mutable {
+              Env::Rgr::post(
+                TaskLoadRead(std::move(frag), err, std::move(buffer))
+              );
             },
             frag->m_smartfd, frag->offset_data, frag->size_enc
           );
@@ -636,7 +639,7 @@ void Fragment::print(std::ostream& out) {
   out << ' ' << interval << ')';
 }
 
-void Fragment::load_read(int err, StaticBuffer::Ptr&& buffer) {
+void Fragment::load_read(int err, StaticBuffer&& buffer) {
   do_load_read:
 
   if(marked_removed())
@@ -654,8 +657,10 @@ void Fragment::load_read(int err, StaticBuffer::Ptr&& buffer) {
         print(SWC_LOG_OSTREAM << ' ');
       );
       Env::FsInterface::fs()->combi_pread(
-        [frag=ptr()] (int _err, const StaticBuffer::Ptr& buff) mutable {
-          Env::Rgr::post(TaskLoadRead(std::move(frag), _err, buff));
+        [frag=ptr()] (int _err, StaticBuffer&& buff) mutable {
+          Env::Rgr::post(
+            TaskLoadRead(std::move(frag), _err, std::move(buff))
+          );
         },
         m_smartfd, offset_data, size_enc
       );
@@ -664,26 +669,26 @@ void Fragment::load_read(int err, StaticBuffer::Ptr&& buffer) {
     }
   }
   if(!err) {
-    if(!Core::checksum_i32_chk(data_checksum, buffer->base, size_enc)) {
+    if(!Core::checksum_i32_chk(data_checksum, buffer.base, size_enc)) {
       err = Error::CHECKSUM_MISMATCH;
 
-    } else if(buffer->size != size_enc) {
+    } else if(buffer.size != size_enc) {
       err = Error::FS_EOF;
 
     } else {
       if(encoder != DB::Types::Encoder::PLAIN) {
           StaticBuffer decoded_buf(size_plain);
         Core::Encoder::decode(
-          err, encoder, buffer->base, size_enc, decoded_buf.base, size_plain);
+          err, encoder, buffer.base, size_enc, decoded_buf.base, size_plain);
         if(!err)
           m_buffer.set(decoded_buf);
       } else {
-        m_buffer.set(*buffer.get());
+        m_buffer.set(buffer);
       }
     }
   }
   if(err) {
-    buffer->free();
+    buffer.free();
     goto do_load_read;
   } else {
     load_finish(err);
