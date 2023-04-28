@@ -129,8 +129,6 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   size_t release();
 
-  bool loaded() const noexcept;
-
   bool loaded(int& err) noexcept;
 
   size_t size_bytes() const noexcept;
@@ -155,7 +153,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
 
   struct TaskLoadRead;
 
-  void load_read(int err, const StaticBuffer::Ptr& buffer);
+  void load_read(int err, StaticBuffer::Ptr&& buffer);
 
   void load_finish(int err);
 

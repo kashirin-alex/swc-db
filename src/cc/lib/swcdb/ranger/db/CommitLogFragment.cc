@@ -363,7 +363,7 @@ struct Fragment::TaskLoadRead {
   TaskLoadRead& operator=(TaskLoadRead&&) = delete;
   TaskLoadRead& operator=(const TaskLoadRead&) = delete;
   ~TaskLoadRead() noexcept { }
-  void operator()() { frag->load_read(err, buffer); }
+  void operator()() { frag->load_read(err, std::move(buffer)); }
 };
 
 void Fragment::load(Fragment::LoadCallback* cb) {
@@ -514,10 +514,15 @@ void Fragment::processing_decrement() noexcept {
 size_t Fragment::release() {
   size_t released = 0;
   bool support;
-  if(!m_processing && !marked_removed() && loaded() &&
+  if(!m_processing &&
+     !marked_removed() &&
+      m_state == State::LOADED &&
       m_mutex.try_full_lock(support)) {
     State at = State::LOADED;
-    if(!marked_removed() && m_queue.empty() && !m_processing &&
+    if(!marked_removed() &&
+        m_state == State::LOADED &&
+        m_queue.empty() &&
+        !m_processing &&
        m_state.compare_exchange_weak(at, State::NONE)) {
       released += size_plain;
       m_buffer.free();
@@ -531,14 +536,9 @@ size_t Fragment::release() {
 }
 
 SWC_CAN_INLINE
-bool Fragment::loaded() const noexcept {
-  return m_state == State::LOADED;
-}
-
-SWC_CAN_INLINE
 bool Fragment::loaded(int& err) noexcept {
   Core::MutexSptd::scope lock(m_mutex);
-  return !(err = m_err) && loaded();
+  return !(err = m_err) && m_state == State::LOADED;
 }
 
 SWC_CAN_INLINE
@@ -548,7 +548,7 @@ size_t Fragment::size_bytes() const noexcept {
 
 SWC_CAN_INLINE
 size_t Fragment::size_bytes(bool only_loaded) const noexcept {
-  return only_loaded && !loaded() ? 0 : size_plain;
+  return only_loaded && m_state == State::NONE ? 0 : size_plain;
 }
 
 SWC_CAN_INLINE
@@ -636,7 +636,7 @@ void Fragment::print(std::ostream& out) {
   out << ' ' << interval << ')';
 }
 
-void Fragment::load_read(int err, const StaticBuffer::Ptr& buffer) {
+void Fragment::load_read(int err, StaticBuffer::Ptr&& buffer) {
   do_load_read:
 
   if(marked_removed())
