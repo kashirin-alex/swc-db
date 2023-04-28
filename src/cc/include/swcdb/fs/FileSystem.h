@@ -179,7 +179,7 @@ class FileSystem : public std::enable_shared_from_this<FileSystem> {
   void default_write(int& err, SmartFd::Ptr& smartfd,
                      uint8_t replication, StaticBuffer& buffer);
   virtual void write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
-                     uint8_t replication, StaticBuffer& buffer);
+                     uint8_t replication, StaticBuffer&& buffer);
 
   virtual void read(int& err, const std::string& name, StaticBuffer* dst) = 0;
   void default_read(int& err, const std::string& name, StaticBuffer* dst);

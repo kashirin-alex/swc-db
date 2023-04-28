@@ -96,7 +96,7 @@ class FileSystemBroker final : public FileSystem {
              uint8_t replication, StaticBuffer& buffer) override;
 
   void write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
-             uint8_t replication, StaticBuffer& buffer) override;
+             uint8_t replication, StaticBuffer&& buffer) override;
 
   void read(int& err, const std::string& name, StaticBuffer* dst) override;
 

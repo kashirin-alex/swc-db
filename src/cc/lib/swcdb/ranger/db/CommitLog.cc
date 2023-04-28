@@ -113,7 +113,7 @@ size_t Fragments::_commit(bool finalize) {
     block_size = range->cfg->block_size();
     Env::Rgr::res().more_mem_future(block_size);
 
-    StaticBuffer::Ptr buff_write(new StaticBuffer());
+    StaticBuffer buff_write;
     {
       DynamicBuffer cells;
       uint32_t cells_count = 0;
@@ -150,12 +150,11 @@ size_t Fragments::_commit(bool finalize) {
       _add(frag);
     }
 
-    buff_write->own = false;
     m_sem.acquire();
     frag->write(
       Error::UNPOSSIBLE,
       range->cfg->file_replication(),
-      buff_write,
+      std::move(buff_write),
       &m_sem
     );
 

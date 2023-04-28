@@ -156,6 +156,10 @@ class Buffers final {
 
   Core::Vector<asio::const_buffer> get_buffers();
 
+  StaticBuffer&& moveout_buf_ext() noexcept {
+    return std::move(buf_ext);
+  }
+
   Header    header;
   int64_t   expiry_ms;
   uint8_t*  data_ptr;

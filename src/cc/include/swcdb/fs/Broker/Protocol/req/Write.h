@@ -21,7 +21,7 @@ class Write final : public Base {
   SWC_CAN_INLINE
   Write(FS::Statistics& stats,
         uint32_t timeout, FS::SmartFd::Ptr& a_smartfd,
-        uint8_t replication, StaticBuffer& buffer,
+        uint8_t replication, StaticBuffer&& buffer,
         FS::Callback::WriteCb_t&& a_cb)
         : Base(
             stats, FS::Statistics::WRITE_ASYNC,
@@ -42,7 +42,7 @@ class Write final : public Base {
 
   void handle(ConnHandlerPtr, const Event::Ptr& ev) override {
     Base::handle_write(ev, smartfd);
-    cb(error);
+    cb(error, std::move(cbp->moveout_buf_ext()));
   }
 
   private:

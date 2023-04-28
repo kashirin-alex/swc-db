@@ -26,7 +26,7 @@ namespace Callback {
   typedef std::function<void(int)>                 RmdirCb_t;
   typedef std::function<void(int)>                 RenameCb_t;
 
-  typedef std::function<void(int)>                 WriteCb_t;
+  typedef std::function<void(int, StaticBuffer&&)> WriteCb_t;
   typedef std::function<void(int, StaticBuffer&&)> ReadAllCb_t;
   typedef std::function<void(int, StaticBuffer&&)> CombiPreadCb_t;
 

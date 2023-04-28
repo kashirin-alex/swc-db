@@ -248,10 +248,10 @@ void FileSystem::default_write(int& err, SmartFd::Ptr& smartfd,
 }
 
 void FileSystem::write(Callback::WriteCb_t&& cb, SmartFd::Ptr& smartfd,
-                       uint8_t replication, StaticBuffer& buffer) {
+                       uint8_t replication, StaticBuffer&& buffer) {
   int err = Error::OK;
   write(err, smartfd, replication, buffer);
-  cb(err);
+  cb(err, std::move(buffer));
 }
 
 void FileSystem::default_read(int& err, const std::string& name,

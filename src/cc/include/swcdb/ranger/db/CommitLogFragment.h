@@ -69,7 +69,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
                         const uint32_t cell_revs,
                         const uint32_t cells_count,
                         DynamicBuffer& cells,
-                        StaticBuffer::Ptr& buffer);
+                        StaticBuffer& buffer);
 
   static void write(int& err,
                     const uint8_t version,
@@ -78,7 +78,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
                     const size_t size_plain, size_t& size_enc,
                     const uint32_t cell_revs, const uint32_t cells_count,
                     uint32_t& data_checksum, uint32_t& offset_data,
-                    DynamicBuffer& cells, StaticBuffer::Ptr& buffer);
+                    DynamicBuffer& cells, StaticBuffer& buffer);
 
 
   const uint8_t                     version;
@@ -112,7 +112,7 @@ class Fragment final : public std::enable_shared_from_this<Fragment> {
   const std::string& get_filepath() const noexcept;
 
   void write(int err, uint8_t blk_replicas,
-             const StaticBuffer::Ptr& buff_write, Core::Semaphore* sem);
+             StaticBuffer&& buff_write, Core::Semaphore* sem);
 
   void load(LoadCallback* cb);
 

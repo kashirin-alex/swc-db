@@ -138,7 +138,7 @@ Fragment::Ptr Fragment::make_write(int& err, std::string&& filepath,
                                    const uint32_t cell_revs,
                                    const uint32_t cells_count,
                                    DynamicBuffer& cells,
-                                   StaticBuffer::Ptr& buffer) {
+                                   StaticBuffer& buffer) {
   auto smartfd = FS::SmartFd::make_ptr(
     std::move(filepath),
     FS::OpenFlags::OPEN_FLAG_OVERWRITE | FS::OpenFlags::WRITE_VALIDATE_LENGTH
@@ -179,7 +179,7 @@ void Fragment::write(int& err,
                      const size_t size_plain, size_t& size_enc,
                      const uint32_t cell_revs, const uint32_t cells_count,
                      uint32_t& data_checksum, uint32_t& offset_data,
-                     DynamicBuffer& cells, StaticBuffer::Ptr& buffer) {
+                     DynamicBuffer& cells, StaticBuffer& buffer) {
   uint32_t header_extlen = interval.encoded_length()+HEADER_EXT_FIXED_SIZE;
   offset_data += HEADER_SIZE;
   offset_data += header_extlen;
@@ -213,7 +213,7 @@ void Fragment::write(int& err,
                      &bufp, data_checksum);
   Core::checksum_i32(header_extptr, bufp, &bufp);
 
-  buffer->set(output);
+  buffer.set(output);
 }
 
 
@@ -259,7 +259,7 @@ const std::string& Fragment::get_filepath() const noexcept {
 }
 
 void Fragment::write(int err, uint8_t blk_replicas,
-                     const StaticBuffer::Ptr& buff_write,
+                     StaticBuffer&& buff_write,
                      Core::Semaphore* sem) {
   if(err && err != Error::SERVER_SHUTTING_DOWN) {
     if(err != Error::UNPOSSIBLE)
@@ -269,19 +269,20 @@ void Fragment::write(int err, uint8_t blk_replicas,
       );
 
     Env::FsInterface::fs()->write(
-      [frag=ptr(), blk_replicas, buff_write, sem] (int _err) mutable {
+      [frag=ptr(), blk_replicas, sem]
+      (int _err, StaticBuffer&& buff_write) mutable {
         struct Task {
           Ptr               frag;
-          StaticBuffer::Ptr buff_write;
+          StaticBuffer      buff_write;
           Core::Semaphore*  sem;
           int               error;
           uint8_t           blk_replicas;
           SWC_CAN_INLINE
           Task(Ptr&& a_frag, uint8_t a_blk_replicas,
-               const StaticBuffer::Ptr& a_buff_write,
+               StaticBuffer&& a_buff_write,
                Core::Semaphore* a_sem, int a_error) noexcept
                : frag(std::move(a_frag)),
-                 buff_write(a_buff_write), sem(a_sem),
+                 buff_write(std::move(a_buff_write)), sem(a_sem),
                  error(a_error),
                  blk_replicas(a_blk_replicas) {
           }
@@ -297,13 +298,16 @@ void Fragment::write(int err, uint8_t blk_replicas,
           Task& operator=(const Task&) = delete;
           ~Task() noexcept { }
           void operator()() {
-            frag->write(error, blk_replicas, buff_write, sem);
+            frag->write(error, blk_replicas, std::move(buff_write), sem);
           }
         };
         Env::Rgr::post(
-          Task(std::move(frag), blk_replicas, buff_write, sem, _err));
+          Task(
+            std::move(frag), blk_replicas, std::move(buff_write), sem, _err
+          )
+        );
       },
-      m_smartfd, blk_replicas, *buff_write.get()
+      m_smartfd, blk_replicas, std::move(buff_write)
     );
     return;
   }
@@ -312,7 +316,6 @@ void Fragment::write(int err, uint8_t blk_replicas,
 
   m_smartfd->flags(0);
   sem->release();
-  buff_write->own = true;
 
   if(err) {
     m_buffer.free();

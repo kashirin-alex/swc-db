@@ -109,7 +109,7 @@ void Compact::Group::write() {
   do {
     DynamicBuffer cells;
     DB::Cells::Interval interval(m_cells.key_seq);
-    StaticBuffer::Ptr buff_write(new StaticBuffer());
+    StaticBuffer buff_write;
     m_cells.write_and_free(
       cells, cells_count = 0, interval,
       compact->log->range->cfg->block_size(),
@@ -132,12 +132,11 @@ void Compact::Group::write() {
       break;
     m_fragments.push_back(frag);
 
-    buff_write->own = false;
     sem.acquire();
     frag->write(
       Error::UNPOSSIBLE,
       compact->log->range->cfg->file_replication(),
-      buff_write,
+      std::move(buff_write),
       &sem
     );
   } while(!error && !m_cells.empty());

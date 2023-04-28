@@ -375,13 +375,14 @@ void FileSystemBroker::write(int& err, SmartFd::Ptr& smartfd,
 void FileSystemBroker::write(Callback::WriteCb_t&& cb,
                              SmartFd::Ptr& smartfd,
                              uint8_t replication,
-                             StaticBuffer& buffer) {
+                             StaticBuffer&& buffer) {
   SWC_FS_WRITE_START(smartfd, replication, buffer.size);
 
   Comm::Protocol::FsBroker::Req::Write::Ptr hdlr(
     new Comm::Protocol::FsBroker::Req::Write(
       statistics,
-      cfg_timeout->get(), smartfd, replication, buffer, std::move(cb)));
+      cfg_timeout->get(), smartfd, replication,
+      std::move(buffer), std::move(cb)));
   while(!send_request(hdlr));
 }
 
