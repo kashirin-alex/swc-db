@@ -39,6 +39,8 @@
     changed Ranger BlockLoader load acknowledgement with condition_variable
     fixed use-after-free possibility of class Ranger::BlockLoader pointer
     added Utils::shell::Interface at errno EINTR skip break
+    changed FS::Callback::*Read* Cb_t from StaticBuffer::Ptr to StaticBuffer&&
+    added StaticBuffer&& argument to SWC::FS::Callback::WriteCb_t callback
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.11...master)
 ******

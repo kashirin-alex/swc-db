@@ -270,26 +270,26 @@ void Fragment::write(int err, uint8_t blk_replicas,
 
     Env::FsInterface::fs()->write(
       [frag=ptr(), blk_replicas, sem]
-      (int _err, StaticBuffer&& buff_write) mutable {
+      (int _err, StaticBuffer&& buff_w) mutable {
         struct Task {
           Ptr               frag;
-          StaticBuffer      buff_write;
+          StaticBuffer      buff_w;
           Core::Semaphore*  sem;
           int               error;
           uint8_t           blk_replicas;
           SWC_CAN_INLINE
           Task(Ptr&& a_frag, uint8_t a_blk_replicas,
-               StaticBuffer&& a_buff_write,
+               StaticBuffer&& a_buff_w,
                Core::Semaphore* a_sem, int a_error) noexcept
                : frag(std::move(a_frag)),
-                 buff_write(std::move(a_buff_write)), sem(a_sem),
+                 buff_w(std::move(a_buff_w)), sem(a_sem),
                  error(a_error),
                  blk_replicas(a_blk_replicas) {
           }
           SWC_CAN_INLINE
           Task(Task&& other) noexcept
               : frag(std::move(other.frag)),
-                buff_write(std::move(other.buff_write)),
+                buff_w(std::move(other.buff_w)),
                 sem(other.sem), error(other.error),
                 blk_replicas(other.blk_replicas) {
           }
@@ -298,12 +298,12 @@ void Fragment::write(int err, uint8_t blk_replicas,
           Task& operator=(const Task&) = delete;
           ~Task() noexcept { }
           void operator()() {
-            frag->write(error, blk_replicas, std::move(buff_write), sem);
+            frag->write(error, blk_replicas, std::move(buff_w), sem);
           }
         };
         Env::Rgr::post(
           Task(
-            std::move(frag), blk_replicas, std::move(buff_write), sem, _err
+            std::move(frag), blk_replicas, std::move(buff_w), sem, _err
           )
         );
       },
