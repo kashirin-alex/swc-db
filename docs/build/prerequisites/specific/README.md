@@ -14,7 +14,7 @@ _use latest version from [https://www.think-async.com/Asio/Download.html](https:
 ```bash
 
 mkdir asio; cd asio;
-ASIO_VERSION="1.24.0";
+ASIO_VERSION="1.28.0";
 wget https://sourceforge.net/projects/asio/files/asio/${ASIO_VERSION}%20%28Stable%29/asio-${ASIO_VERSION}.tar.gz/download \
  -O asio-${ASIO_VERSION}.tar.gz;
 tar -xf asio-${ASIO_VERSION}.tar.gz;
