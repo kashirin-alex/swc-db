@@ -69,7 +69,7 @@ BlockLoader::BlockLoader(Block::Ptr a_block)
     q_req(),
     error(Error::OK),
     preload(block->blocks->range->cfg->log_fragment_preload()),
-    m_ack(false), m_logs(0), m_cs_blks(1),
+    m_logs(0), m_cs_blks(1),
     m_mutex(), m_cv(), m_queue(), m_f_selected(),
     m_cs_selected(), m_cs_ready() {
 }
@@ -98,8 +98,8 @@ void BlockLoader::run() {
 
   Core::ScopedLock lock(m_mutex);
   --m_cs_blks;
-  m_ack = true;
-  m_cv.notify_all();
+  m_queue.push(nullptr);
+  m_cv.notify_one();
 }
 
 //CellStores
@@ -112,22 +112,50 @@ void BlockLoader::add(CellStore::Block::Read::Ptr blk) {
 
 SWC_CAN_INLINE
 void BlockLoader::loaded(CellStore::Block::Read::Ptr&& blk) {
-  Core::ScopedLock lock(m_mutex);
-  m_cs_ready.push_back(blk);
-  for(auto it = m_cs_ready.begin();
-      it < m_cs_ready.end() && m_cs_selected.front() == *it; ) {
-    m_queue.push(
-      new LoadQueueItem<
-        CellStore::Block::Read::Ptr,
-        Error::RANGE_CELLSTORES
-      >(std::move(*it), count_cs_blocks)
-    );
-    m_cs_ready.erase(it);
-    m_cs_selected.pop();
-    --m_cs_blks;
+  {
+    Core::ScopedLock lock(m_mutex);
+    if(m_cs_selected.front() == blk) {
+      m_queue.push(
+        new LoadQueueItem<
+          CellStore::Block::Read::Ptr,
+          Error::RANGE_CELLSTORES
+        >(std::move(blk), count_cs_blocks)
+      );
+      m_cs_selected.pop();
+      --m_cs_blks;
+      m_cv.notify_one();
+      if(m_cs_ready.empty()) {
+        return;
+      }
+    } else {
+      m_cs_ready.push_back(blk);
+    }
   }
-  m_ack = true;
-  m_cv.notify_all();
+  bool init = true;
+  for(Core::Vector<CellStore::Block::Read::Ptr>::iterator it; ;) {
+    Core::ScopedLock lock(m_mutex);
+    if(init) {
+      it = m_cs_ready.begin();
+      init = false;
+    }
+    if(it == m_cs_ready.end())
+      break;
+    if(m_cs_selected.front() == *it) {
+      m_queue.push(
+        new LoadQueueItem<
+          CellStore::Block::Read::Ptr,
+          Error::RANGE_CELLSTORES
+        >(std::move(*it), count_cs_blocks)
+      );
+      m_cs_selected.pop();
+      --m_cs_blks;
+      m_cv.notify_one();
+      m_cs_ready.erase(it);
+      it = m_cs_ready.begin();
+    } else {
+      ++it;
+    }
+  }
 }
 
 void BlockLoader::loaded(CommitLog::Fragment::Ptr&& frag) {
@@ -140,8 +168,7 @@ void BlockLoader::loaded(CommitLog::Fragment::Ptr&& frag) {
   Core::ScopedLock lock(m_mutex);
   m_queue.push(ptr);
   --m_logs;
-  m_ack = true;
-  m_cv.notify_all();
+  m_cv.notify_one();
 }
 
 SWC_CAN_INLINE
@@ -150,11 +177,10 @@ void BlockLoader::load_cells() {
     size_t sz;
     {
       Core::UniqueLock lock_wait(m_mutex);
-      if(m_ack)
-        m_cv.wait(lock_wait, [this] { return m_ack; });
-      m_ack = false;
-      if((ptr = m_queue.empty() ? nullptr : m_queue.front()))
-        m_queue.pop();
+      if(m_queue.empty())
+        m_cv.wait(lock_wait, [this] { return !m_queue.empty(); });
+      ptr = m_queue.front();
+      m_queue.pop();
       sz = m_cs_blks ? preload : (m_queue.size() + m_logs);
     }
     bool is_final = false;
@@ -179,7 +205,7 @@ void BlockLoader::load_cells() {
       } else if(is_final) {
         SWC_LOG_OUT(LOG_DEBUG, print(SWC_LOG_OSTREAM << "Loaded "););
         block->loader_loaded();
-        break;
+        return;
       }
     }
     if(ptr) {

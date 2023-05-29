@@ -69,7 +69,6 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
         << " frags=" << count_fragments
         << " error=" << error
         << " qreq=" << q_req.size()
-        << " ack=" << int(m_ack)
         << " m_cs_blks=" << m_cs_blks
         << " logs=" << int(m_logs)
         << " queue=" << m_queue.size()
@@ -81,7 +80,6 @@ class BlockLoader final : private CommitLog::Fragment::LoadCallback {
 
   void load_cells();
 
-  bool                                      m_ack;
   uint8_t                                   m_logs;
   size_t                                    m_cs_blks;
 
