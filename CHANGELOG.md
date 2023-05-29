@@ -41,6 +41,9 @@
     added Utils::shell::Interface at errno EINTR skip break
     changed FS::Callback::*Read* Cb_t from StaticBuffer::Ptr to StaticBuffer&&
     added StaticBuffer&& argument to SWC::FS::Callback::WriteCb_t callback
+    changed bool ResponseCallback::expired(unit64_t) const noexcept to virtual
+    added bool Ranger::CompactRange::expired(unit64_t) const noexcept override
+    updated for asio-1.28.0 openssl-3.1.0 zstd-1.5.5
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.11...master)
 ******
