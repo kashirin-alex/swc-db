@@ -25,7 +25,7 @@ class ResponseCallback: public std::enable_shared_from_this<ResponseCallback> {
 
   virtual void run() { }
 
-  bool expired(int64_t within=0) const noexcept;
+  virtual bool expired(int64_t within=0) const noexcept;
 
   virtual void response(int& err);
 

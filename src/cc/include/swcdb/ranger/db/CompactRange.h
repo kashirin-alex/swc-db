@@ -41,6 +41,8 @@ class CompactRange final : public ReqScan {
 
   bool add_cell_and_more(const DB::Cells::Cell& cell) override;
 
+  bool expired(int64_t) const noexcept override { return false; }
+
   void response(int &err) override;
 
   void quit();

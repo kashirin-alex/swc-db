@@ -97,6 +97,7 @@ void Result::take(Result& other) {
     Vec::operator=(std::move(other));
     bytes = other.bytes;
   } else {
+    reserve(size() + other.size());
     insert(cend(), other.cbegin(), other.cend());
     other.clear();
     bytes += other.bytes;
