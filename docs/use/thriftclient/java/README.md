@@ -12,7 +12,7 @@ a Maven Project's `pom.xml` requires to add to `<dependencies>`:
   <dependency>
     <groupId>org.swcdb</groupId>
     <artifactId>thrift</artifactId>
-    <version>0.5.11</version>
+    <version>0.5.12</version>
   </dependency>
 ```
 for other project types use the defintions are available at:
@@ -74,9 +74,9 @@ public class ListAllSchemas {
 ##### 2) Define the ClassPaths:
 > for the example the JAR dependencies are at `/root/.m2/repository/`
 ```bash
-SWCDB_VERSION="0.5.11"
+SWCDB_VERSION="0.5.12"
 CLASSPATHS=/root/.m2/repository/org/swcdb/thrift/${SWCDB_VERSION}/thrift-${SWCDB_VERSION}.jar;
-CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/apache/thrift/libthrift/0.17.0/libthrift-0.17.0.jar;
+CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/apache/thrift/libthrift/0.18.1/libthrift-0.18.1.jar;
 CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28.jar;
 ```
 

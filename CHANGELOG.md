@@ -10,6 +10,16 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
+
+
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.12...master)
+******
+
+
+
+
+### [SWC-DB v0.5.12](https://github.com/kashirin-alex/swc-db/releases/tag/v0.5.12) (2023-06-03)
+
     fixed early Core::Comm::server::Acceptor Accept before Init completion
     moved DB::Cells::Interval::align(KeyVec&,KeyVec&) to source file
     removed include swcdb/core/Compat.h from Version.h
@@ -43,9 +53,9 @@
     added StaticBuffer&& argument to SWC::FS::Callback::WriteCb_t callback
     changed bool ResponseCallback::expired(unit64_t) const noexcept to virtual
     added bool Ranger::CompactRange::expired(unit64_t) const noexcept override
-    updated for asio-1.28.0 openssl-3.1.0 zstd-1.5.5
+    updated for asio-1.28.0 openssl-3.1.0 zstd-1.5.5 thrift-0.18.1
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.11...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.12...master)
 ******
 
 

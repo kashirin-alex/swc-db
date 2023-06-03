@@ -1,11 +1,11 @@
 
 Gem::Specification.new do |s|
-  s.name        = 'swcdb'
+  s.name        = "swcdb"
   s.version     = "@SWCDB_VERSION_RUBY@"
   s.summary     = "The SWC-DB Ruby package"
   s.description = "The SWC-DB Ruby module 'swcdb'"
   s.authors     = ["Alex Kashirin"]
-  s.email       = 'kashirin.alex@gmail.com'
+  s.email       = "kashirin.alex@gmail.com"
   s.require_paths = ["lib"]
   s.files       = [
     "lib/swcdb/thrift/client.rb",
@@ -13,8 +13,8 @@ Gem::Specification.new do |s|
     "lib/swcdb/thrift/gen/service_constants.rb",
     "lib/swcdb/thrift/gen/service_types.rb"
   ]
-  s.homepage    = 'https://www.swcdb.org'
-  s.license     = 'GPL-3.0'
+  s.homepage    = "https://www.swcdb.org"
+  s.license     = "GPL-3.0"
 
   s.metadata      = {
     "source_code_uri"   => "https://github.com/kashirin-alex/swc-db",
@@ -26,10 +26,10 @@ Gem::Specification.new do |s|
   }
 
   s.rdoc_options     = ["--charset=UTF-8"]
-  s.extra_rdoc_files = ['README.md']
+  s.extra_rdoc_files = ["README.md"]
 
   s.required_ruby_version     = ">= 2.5.0"
   s.required_rubygems_version = ">= 2.7.0"
 
-  s.add_runtime_dependency("thrift",  "~> 0.17.0")
+  s.add_runtime_dependency("thrift",  "~> 0.18.1")
 end

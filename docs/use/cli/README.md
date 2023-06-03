@@ -106,7 +106,7 @@ Options:
   --swc.comm.ssl.crt             Cluster Certificate file                                                           cluster.crt
   --swc.comm.ssl.key             Server Private-Key file                                                            server.key
   --swc.comm.ssl.secure.network  Networks that do not require SSL                                                   []
-  --swc.comm.ssl.subject_name    CRT/Cluster domain-name, if set SRV-CRT is verified
+  --swc.comm.ssl.subject_name    CRT/Cluster's domain-name, if set SRV-CRT is verified
   --swc.fs                       main FileSystem: local|hadoop|hadoop_jvm|ceph|broker|custom
   --swc.fs.broker.cfg            Specific cfg-file for FS-broker
   --swc.fs.broker.underlying     as main FileSystem, without 'broker': local|hadoop|ceph|custom
