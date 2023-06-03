@@ -64,6 +64,7 @@ void Interval::expand(const Cell& cell) {
   was_set = true;
 }
 
+SWC_CAN_INLINE
 bool Interval::align(const DB::Cell::KeyVec& _min,
                      const DB::Cell::KeyVec& _max) {
   bool start = DB::KeySeq::align(key_seq, aligned_min, _min, Condition::LT);
