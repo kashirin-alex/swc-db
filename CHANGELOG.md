@@ -55,7 +55,7 @@
     added bool Ranger::CompactRange::expired(unit64_t) const noexcept override
     updated for asio-1.28.0 openssl-3.1.0 zstd-1.5.5 thrift-0.18.1
 
-[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.12...master)
+[_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.11...v0.5.12)
 ******
 
 
