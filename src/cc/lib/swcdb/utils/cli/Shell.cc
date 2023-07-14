@@ -164,13 +164,19 @@ CLI Interface::run() {
       if(errno) {
         auto errtmp = errno;
         errno = 0;
-        if(errtmp != ENOTTY && errtmp != EINTR) {
-          if(errtmp != EAGAIN) {
+        switch (errtmp) {
+          case 0:
+          case ENOTTY:
+          case EINTR:
+          case ENOENT:
+          case EAGAIN:
+            break;
+          default: {
             SWC_PRINT << "\033[31mERROR\033[00m: unexpected error="
                       << errtmp << '(' << Error::get_text(errtmp) << ')'
                       << SWC_PRINT_CLOSE;
-          }
-          break;
+            }
+            break;
         }
       }
 
