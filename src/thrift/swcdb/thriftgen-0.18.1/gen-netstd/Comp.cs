@@ -101,4 +101,8 @@ public enum Comp
   /// [ :       ]  :   -fi   (fraction include)
   /// </summary>
   FI = 20,
+  /// <summary>
+  /// [ ||      ]  :   -or   (match any)
+  /// </summary>
+  OR = 21,
 }

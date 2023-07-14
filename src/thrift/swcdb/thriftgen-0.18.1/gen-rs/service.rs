@@ -345,6 +345,8 @@ impl Comp {
   pub const FIP: Comp = Comp(19);
   /// [ :       ]  :   -fi   (fraction include)
   pub const FI: Comp = Comp(20);
+  /// [ ||      ]  :   -or   (match any)
+  pub const OR: Comp = Comp(21);
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
     Self::PF,
@@ -367,6 +369,7 @@ impl Comp {
     Self::FOSPS,
     Self::FIP,
     Self::FI,
+    Self::OR,
   ];
 }
 
@@ -405,6 +408,7 @@ impl From<i32> for Comp {
       18 => Comp::FOSPS,
       19 => Comp::FIP,
       20 => Comp::FI,
+      21 => Comp::OR,
       _ => Comp(i)
     }
   }

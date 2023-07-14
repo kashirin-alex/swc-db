@@ -253,7 +253,11 @@ struct Comp {
     /**
      * [ :       ]  :   -fi   (fraction include)
      */
-    FI = 20
+    FI = 20,
+    /**
+     * [ ||      ]  :   -or   (match any)
+     */
+    OR = 21
   };
 };
 

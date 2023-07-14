@@ -797,12 +797,20 @@ void QuerySelect::read_value(DB::Types::Column col_type,
                              DB::Specs::Value& value) {
   switch(col_type) {
     case DB::Types::Column::SERIAL: {
-      found_comparator(value.comp);
-      if(value.comp == Condition::NONE)
-        value.comp = Condition::EQ;
-      else if(value.comp != Condition::EQ && value.comp != Condition::NE)
-        return error_msg(Error::SQL_PARSE_ERROR,
-          "unsupported 'comparator' allowed EQ, NE");
+      found_comparator(value.comp, Condition::COMP_EXTENDED_DOMAIN);
+      switch (value.comp) {
+        case Condition::NONE: {
+          value.comp = Condition::EQ;
+          break;
+        }
+        case Condition::EQ:
+        case Condition::NE:
+        case Condition::OR:
+          break;
+        default:
+          return error_msg(Error::SQL_PARSE_ERROR,
+            "unsupported 'comparator' allowed EQ, NE, OR");
+      }
 
       bool bracket_square = false;
       bool was_set;

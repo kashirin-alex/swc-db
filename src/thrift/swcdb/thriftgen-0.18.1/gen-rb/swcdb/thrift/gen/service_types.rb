@@ -116,8 +116,10 @@ module Swcdb
         FIP = 19
         # [ :       ]  :   -fi   (fraction include)
         FI = 20
-        VALUE_MAP = {0 => "NONE", 1 => "PF", 2 => "GT", 3 => "GE", 4 => "EQ", 5 => "LE", 6 => "LT", 7 => "NE", 8 => "RE", 9 => "VGT", 10 => "VGE", 11 => "VLE", 12 => "VLT", 13 => "SBS", 14 => "SPS", 15 => "POSBS", 16 => "POSPS", 17 => "FOSBS", 18 => "FOSPS", 19 => "FIP", 20 => "FI"}
-        VALID_VALUES = Set.new([NONE, PF, GT, GE, EQ, LE, LT, NE, RE, VGT, VGE, VLE, VLT, SBS, SPS, POSBS, POSPS, FOSBS, FOSPS, FIP, FI]).freeze
+        # [ ||      ]  :   -or   (match any)
+        OR = 21
+        VALUE_MAP = {0 => "NONE", 1 => "PF", 2 => "GT", 3 => "GE", 4 => "EQ", 5 => "LE", 6 => "LT", 7 => "NE", 8 => "RE", 9 => "VGT", 10 => "VGE", 11 => "VLE", 12 => "VLT", 13 => "SBS", 14 => "SPS", 15 => "POSBS", 16 => "POSPS", 17 => "FOSBS", 18 => "FOSPS", 19 => "FIP", 20 => "FI", 21 => "OR"}
+        VALID_VALUES = Set.new([NONE, PF, GT, GE, EQ, LE, LT, NE, RE, VGT, VGE, VLE, VLT, SBS, SPS, POSBS, POSPS, FOSBS, FOSPS, FIP, FI, OR]).freeze
       end
 
       module SpecFlagsOpt

@@ -47,8 +47,8 @@ bool Value::is_matching_plain(const Cells::Cell& cell) const {
 
 struct MatcherSerial : Value::TypeMatcher {
   SWC_CAN_INLINE
-  MatcherSerial(const uint8_t* data, uint32_t size)
-                : fields(data, size, false) {
+  MatcherSerial(const uint8_t* data, uint32_t size, bool with_state)
+                : fields(data, size, with_state, false) {
   }
   SWC_CAN_INLINE
   ~MatcherSerial() noexcept { }
@@ -59,10 +59,11 @@ bool Value::is_matching_serial(const Cells::Cell& cell) const {
   if(empty())
     return true;
   if(!matcher)
-    matcher = new MatcherSerial(data, size);
-  return static_cast<MatcherSerial*>(matcher)->fields.is_matching(cell)
-    ? comp == Condition::EQ
-    : comp == Condition::NE;
+    matcher = new MatcherSerial(data, size, comp != Condition::OR);
+  auto& fields = static_cast<MatcherSerial*>(matcher)->fields;
+  return comp == Condition::OR
+    ? fields.is_matching_or(cell)
+    : (fields.is_matching(cell) ? comp == Condition::EQ : comp == Condition::NE);
 }
 
 
@@ -98,7 +99,7 @@ void Value::display(Types::Column col_type, std::ostream& out,
   out << "size=" << size << ' ' << Condition::to_string(comp);
   if(size) {
     if(col_type == Types::Column::SERIAL) {
-      Serial::Value::Fields(data, size, false).print(out);
+      Serial::Value::Fields(data, size, false, false).print(out);
     } else {
       out << '"';
       char hex[5];

@@ -94,7 +94,11 @@ public enum Comp implements org.apache.thrift.TEnum {
   /**
    * [ :       ]  :   -fi   (fraction include)
    */
-  FI(20);
+  FI(20),
+  /**
+   * [ ||      ]  :   -or   (match any)
+   */
+  OR(21);
 
   private final int value;
 
@@ -159,6 +163,8 @@ public enum Comp implements org.apache.thrift.TEnum {
         return FIP;
       case 20:
         return FI;
+      case 21:
+        return OR;
       default:
         return null;
     }

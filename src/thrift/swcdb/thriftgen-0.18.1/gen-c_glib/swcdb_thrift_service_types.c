@@ -99,6 +99,7 @@ toString_Comp(int value)
   case SWCDB_THRIFT_COMP_FOSPS:return "SWCDB_THRIFT_COMP_FOSPS";
   case SWCDB_THRIFT_COMP_FIP:return "SWCDB_THRIFT_COMP_FIP";
   case SWCDB_THRIFT_COMP_FI:return "SWCDB_THRIFT_COMP_FI";
+  case SWCDB_THRIFT_COMP_OR:return "SWCDB_THRIFT_COMP_OR";
   default: g_snprintf(buf, 16, "%d", value); return buf;
   }
 }
@@ -1850,7 +1851,7 @@ swcdb_thrift_schema_pattern_class_init (swcdb_thriftSchemaPatternClass * cls)
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -2172,7 +2173,7 @@ swcdb_thrift_schema_tags_patterns_class_init (swcdb_thriftSchemaTagsPatternsClas
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -5179,7 +5180,7 @@ swcdb_thrift_spec_value_serial__i_n_t64_class_init (swcdb_thriftSpecValueSerial_
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -5456,7 +5457,7 @@ swcdb_thrift_spec_value_serial__d_o_u_b_l_e_class_init (swcdb_thriftSpecValueSer
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -5749,7 +5750,7 @@ swcdb_thrift_spec_value_serial__b_y_t_e_s_class_init (swcdb_thriftSpecValueSeria
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -6393,7 +6394,7 @@ swcdb_thrift_spec_value_serial__l_i_class_init (swcdb_thriftSpecValueSerial_LICl
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -6715,7 +6716,7 @@ swcdb_thrift_spec_value_serial__l_b_class_init (swcdb_thriftSpecValueSerial_LBCl
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -7558,7 +7559,7 @@ swcdb_thrift_spec_value_plain_class_init (swcdb_thriftSpecValuePlainClass * cls)
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -7833,7 +7834,7 @@ swcdb_thrift_spec_value_counter_class_init (swcdb_thriftSpecValueCounterClass * 
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -8157,7 +8158,7 @@ swcdb_thrift_spec_value_serial_class_init (swcdb_thriftSpecValueSerialClass * cl
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -8448,7 +8449,7 @@ swcdb_thrift_spec_fraction_class_init (swcdb_thriftSpecFractionClass * cls)
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -8723,7 +8724,7 @@ swcdb_thrift_spec_timestamp_class_init (swcdb_thriftSpecTimestampClass * cls)
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -15558,7 +15559,7 @@ swcdb_thrift_f_u__i_n_t64_class_init (swcdb_thriftFU_INT64Class * cls)
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -15978,7 +15979,7 @@ swcdb_thrift_f_u__d_o_u_b_l_e_class_init (swcdb_thriftFU_DOUBLEClass * cls)
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 
@@ -16414,7 +16415,7 @@ swcdb_thrift_f_u__b_y_t_e_s_class_init (swcdb_thriftFU_BYTESClass * cls)
                        NULL,
                        NULL,
                        0,
-                       20,
+                       21,
                        0,
                        G_PARAM_READWRITE));
 

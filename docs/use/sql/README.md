@@ -103,6 +103,7 @@ The key fields:
 |```FOSPS```   | ``` -> ```           | eq/full ordered superset  |
 |```FIP```     | ``` :< ```           | fraction include prior    |
 |```FI```      | ``` : ```            | fraction include          |
+|```OR```      | ``` || ```           | match any                 |
 
 
 
@@ -356,9 +357,10 @@ The Expression of Value Condition dependable on the [Schema's column value type]
   ``` COMP "VALUE" ``` - not supported Comparators PF, RE, POSBS and POSPS
 
   * **_SERIAL_**: \
-  ``` [ID:TYPE:COMP "VALUE", ... ] ``` - in square-brackets a comma-separated sets, a set is separated by colon with Field-ID, Field-Type and a Comparator with a Value. \
+  ``` COMP [.. serial-value ..] ``` - applicable with only EQ, NE, OR \
+  The serial-value: ``` [ID:TYPE:COMP "VALUE", ... ] ``` - in square-brackets a comma-separated sets, a set is separated by colon with Field-ID, Field-Type and a Comparator with a Value. \
   The applicable Comparators depend on the Field-Type: ```BYTES(B)``` as PLAIN, ```INT64(I)```/```DOUBLE(D)``` as COUNTER, ```KEY(K)``` with KeySeq(LEXIC/VOLUME) followed by a [Condition-Key](#the-condition-key-syntax) and in list-syntax ```COMP[COMP VALUE, .. ]``` ```LIST_INT64(LI)``` Value as COUNTER and ```LIST_BYTES(LB)``` Value as PLAIN. \
-  The SERIAL match requires all field-definitions matching ID+TYPE+COND, whereas Field-ID can have multiple Field-Type and Value definitions.\
+  The SERIAL match requires, all or any(at ```value or [ .. ]```), field-definitions matching ID+TYPE+COND, whereas Field-ID can have multiple Field-Type and Value definitions.\
   _A data-set Example_, a cell-value: \
     ``` TS KEY  [0:I:1, 1:I:5, 2:I:1, 3:D:1.0, 4:B:"aBcdef", 5:K:[abc,def,ghi,4,5], 6:LI:[1,2,3,4,5,6,7], 7:LB:[abc,def], 8:B:"More-Bytes] ``` \
     can have the following Condition-Value syntax: \

@@ -373,7 +373,11 @@ int _kCompValues[] = {
   /**
    * [ :       ]  :   -fi   (fraction include)
    */
-  Comp::FI
+  Comp::FI,
+  /**
+   * [ ||      ]  :   -or   (match any)
+   */
+  Comp::OR
 };
 const char* _kCompNames[] = {
   /**
@@ -459,9 +463,13 @@ const char* _kCompNames[] = {
   /**
    * [ :       ]  :   -fi   (fraction include)
    */
-  "FI"
+  "FI",
+  /**
+   * [ ||      ]  :   -or   (match any)
+   */
+  "OR"
 };
-const std::map<int, const char*> _Comp_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(21, _kCompValues, _kCompNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _Comp_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(22, _kCompValues, _kCompNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const Comp::type& val) {
   std::map<int, const char*>::const_iterator it = _Comp_VALUES_TO_NAMES.find(val);

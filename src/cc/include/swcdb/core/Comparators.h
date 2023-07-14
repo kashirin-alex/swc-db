@@ -21,8 +21,9 @@ namespace SWC {
  */
 namespace Condition {
 
-const uint COMP_EXTENDED_VALUE = 0x01;
-const uint COMP_EXTENDED_KEY   = 0x02;
+const uint8_t COMP_EXTENDED_VALUE  = 0x01;
+const uint8_t COMP_EXTENDED_KEY    = 0x02;
+const uint8_t COMP_EXTENDED_DOMAIN = 0x04;
 
 enum Comp : uint8_t {
   NONE    = 0x00, // [      ] :  -none            (no comparison aplied)
@@ -75,6 +76,8 @@ enum Comp : uint8_t {
   FIP     = 0x13, // [  :<  ] :  -fip             (fraction include prior)
   FI      = 0x14, // [  :   ] :  -fi              (fraction include)
 
+  // COMP_EXTENDED_DOMAIN 
+  OR      = 0x15, // [  ||  ] :  -or              (or)
 };
 
 
@@ -100,6 +103,7 @@ const char COMP_FOSBS[] = "->";
 const char COMP_FOSPS[] = "<-";
 const char COMP_FIP[]   = ":<";
 const char COMP_FI[]    = ":";
+const char COMP_OR[]    = "||";
 
 
 

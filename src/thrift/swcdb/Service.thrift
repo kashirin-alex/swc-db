@@ -282,6 +282,9 @@ enum Comp {
   /** [ :       ]  :   -fi   (fraction include) */
   FI      = 0x14,
 
+  /** [ ||      ]  :   -or   (match any) */
+  OR      = 0x15,
+
 }
 
 

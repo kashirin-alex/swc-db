@@ -337,7 +337,7 @@ struct Fields {
   SWC_CAN_INLINE
   Fields() noexcept : fields(), _fields_ptr() { }
 
-  Fields(const uint8_t* ptr, size_t len, bool own);
+  Fields(const uint8_t* ptr, size_t len, bool with_state, bool own);
 
   ~Fields() noexcept { }
 
@@ -352,6 +352,8 @@ struct Fields {
   void encode(uint8_t** bufp) const;
 
   bool is_matching(const Cells::Cell& cell);
+
+  bool is_matching_or(const Cells::Cell& cell);
 
   SWC_CAN_INLINE
   std::string to_string() const {

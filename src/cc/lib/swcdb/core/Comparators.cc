@@ -139,6 +139,10 @@ Comp from(const char** buf, uint32_t* remainp, uint8_t extended)  noexcept {
         else if(str_case_eq(*buf, "fi", 2))
           comp = Comp::FI;
       }
+      if(extended & COMP_EXTENDED_DOMAIN) {
+        if(str_case_eq(*buf, COMP_OR, 2) || str_case_eq(*buf, "or", 2))
+          comp = Comp::OR;
+      }
     }
 
     if(comp != Comp::NONE) {
@@ -214,6 +218,8 @@ const char* to_string(Comp comp) noexcept {
       return COMP_FIP;
     case Comp::FI:
       return COMP_FI;
+    case Comp::OR:
+      return COMP_OR;
     default:
       return COMP_NONE;
   }

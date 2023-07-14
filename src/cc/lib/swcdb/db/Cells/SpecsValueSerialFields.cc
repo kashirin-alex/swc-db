@@ -678,7 +678,7 @@ void Field_LIST_BYTES::print(std::ostream& out) const {
 
 
 //
-Fields::Fields(const uint8_t* ptr, size_t len, bool own)
+Fields::Fields(const uint8_t* ptr, size_t len, bool with_state, bool own)
               : fields(), _fields_ptr() {
   while(len) {
     switch(Cell::Serial::Value::read_type(&ptr, &len)) {
@@ -710,7 +710,8 @@ Fields::Fields(const uint8_t* ptr, size_t len, bool own)
         break;
     }
   }
-  _fields_ptr.resize(fields.size());
+  if(with_state)
+    _fields_ptr.resize(fields.size());
 }
 
 bool Fields::has_field_id(uint24_t fid) const noexcept {
@@ -838,6 +839,84 @@ bool Fields::is_matching(const Cells::Cell& cell) {
   }
   return false;
 }
+
+
+template<Type TypeT>
+SWC_CAN_INLINE
+bool
+is_matching(const Core::Vector<Field::Ptr>& fields,
+            Cell::Serial::Value::Field* vfieldp) {
+  for(auto& field : fields) {
+    if(field->type() == TypeT && vfieldp->fid == field->fid) {
+      if(field->is_matching(vfieldp))
+        return true;
+    }
+  }
+  return false;
+}
+
+bool Fields::is_matching_or(const Cells::Cell& cell) {
+
+  StaticBuffer v;
+  cell.get_value(v, false);
+  if(!v.size)
+    return false;
+
+  const uint8_t* ptr = v.base;
+  size_t remain = v.size;
+
+  while(remain) {
+    switch(Cell::Serial::Value::read_type(&ptr, &remain)) {
+
+      case Type::INT64: {
+        Cell::Serial::Value::Field_INT64 vfield(&ptr, &remain);
+        if(Value::is_matching<Type::INT64>(fields, &vfield))
+          return true;
+        break;
+      }
+
+      case Type::DOUBLE: {
+        Cell::Serial::Value::Field_DOUBLE vfield(&ptr, &remain);
+        if(Value::is_matching<Type::DOUBLE>(fields, &vfield))
+          return true;
+        break;
+      }
+
+      case Type::BYTES: {
+        Cell::Serial::Value::Field_BYTES vfield(&ptr, &remain, false);
+        if(Value::is_matching<Type::BYTES>(fields, &vfield))
+          return true;
+        break;
+      }
+
+      case Type::KEY: {
+        Cell::Serial::Value::Field_KEY vfield(&ptr, &remain, false);
+        if(Value::is_matching<Type::KEY>(fields, &vfield))
+          return true;
+        break;
+      }
+
+      case Type::LIST_INT64: {
+        Cell::Serial::Value::Field_LIST_INT64 vfield(&ptr, &remain, false);
+        if(Value::is_matching<Type::LIST_INT64>(fields, &vfield))
+          return true;
+        break;
+      }
+
+      case Type::LIST_BYTES: {
+        Cell::Serial::Value::Field_LIST_BYTES vfield(&ptr, &remain, false);
+        if(Value::is_matching<Type::LIST_BYTES>(fields, &vfield))
+          return true;
+        break;
+      }
+
+      default:
+        break;
+    }
+  }
+  return false;
+}
+
 
 void Fields::print(std::ostream& out) const {
   out << "SerialFields(size=" << fields.size() << " [";
