@@ -66,6 +66,11 @@
       <artifactId>libthrift</artifactId>
       <version>@THRIFT_VERSION@</version>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.2</version>
+    </dependency>
   </dependencies>
 
   <distributionManagement>
