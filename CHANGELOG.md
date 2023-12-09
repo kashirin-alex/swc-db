@@ -10,7 +10,14 @@
 
 ### [SWC-DB master](https://github.com/kashirin-alex/swc-db/tree/master) (upcoming-release)
 
-
+    added Scan Specification of Serial Value with an 'OR' condition support
+    added unit8_t Condition::COMP_EXTENDED_DOMAIN = 0x04
+    added Condition::Comp::OR = 0x15
+    added DB::Specs::Serial::Value::Fields ctor option 'with_state'
+    added SQL parsing support for ||(Condition::OR) in select command
+    added bool DB::Specs::Serial::Value::Fields::is_matching_or(const Cell&)
+    updated for openssl-3.2.0 zlib-1.3 thrift-0.19.0
+    Resolves Issue: #14
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.12...master)
 ******

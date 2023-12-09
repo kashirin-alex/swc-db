@@ -76,7 +76,7 @@ public class ListAllSchemas {
 ```bash
 SWCDB_VERSION="0.5.12"
 CLASSPATHS=/root/.m2/repository/org/swcdb/thrift/${SWCDB_VERSION}/thrift-${SWCDB_VERSION}.jar;
-CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/apache/thrift/libthrift/0.18.1/libthrift-0.18.1.jar;
+CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/apache/thrift/libthrift/0.19.0/libthrift-0.19.0.jar;
 CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28.jar;
 ```
 
