@@ -61,9 +61,16 @@ bool Value::is_matching_serial(const Cells::Cell& cell) const {
   if(!matcher)
     matcher = new MatcherSerial(data, size, comp != Condition::OR);
   auto& fields = static_cast<MatcherSerial*>(matcher)->fields;
-  return comp == Condition::OR
-    ? fields.is_matching_or(cell)
-    : (fields.is_matching(cell) ? comp == Condition::EQ : comp == Condition::NE);
+  switch (comp) {
+    case Condition::EQ:
+      return fields.is_matching(cell);
+    case Condition::OR:
+      return fields.is_matching_or(cell);
+    case Condition::NE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 
