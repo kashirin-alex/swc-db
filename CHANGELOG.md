@@ -16,7 +16,7 @@
     added DB::Specs::Serial::Value::Fields ctor option 'with_state'
     added SQL parsing support for ||(Condition::OR) in select command
     added bool DB::Specs::Serial::Value::Fields::is_matching_or(const Cell&)
-    updated for openssl-3.2.0 zlib-1.3 thrift-0.19.0
+    updated for openssl-3.2.1 zlib-1.3 thrift-0.20.0 asio-1.30.2 zstd-1.5.6
     Resolves Issue: #14
 
 [_Full Changelog_](https://github.com/kashirin-alex/swc-db/compare/v0.5.12...master)
