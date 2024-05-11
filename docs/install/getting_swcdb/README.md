@@ -31,7 +31,7 @@ Fill the ```SWCDB_INSTALL_PATH``` ```SWCDB_VERSION``` ```SWCDB_VERSION_SPECIFIC`
 
 ```bash
 SWCDB_INSTALL_PATH="/opt/swcdb";
-SWCDB_VERSION="0.5.12";
+SWCDB_VERSION="0.5.13";
 SWCDB_VERSION_SPECIFIC="debug.amd64";
 
 wget https://github.com/kashirin-alex/swc-db/releases/download/v${SWCDB_VERSION}/swcdb-${SWCDB_VERSION}.${SWCDB_VERSION_SPECIFIC}.tar.xz;
@@ -59,7 +59,7 @@ _installation path defaults to "/opt/swcdb"_
 * #### download:
 
 ```bash
-SWCDB_VERSION="0.5.12";
+SWCDB_VERSION="0.5.13";
 SWCDB_VERSION_SPECIFIC="Ubuntu_20_04_6_LTS.amd64";
 
 wget https://github.com/kashirin-alex/swc-db/releases/download/v${SWCDB_VERSION}/swcdb-${SWCDB_VERSION}.${SWCDB_VERSION_SPECIFIC}.deb;
