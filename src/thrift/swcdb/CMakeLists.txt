@@ -244,3 +244,23 @@ if (LANGS OR LANG_RUBY)
   endif()
 endif(LANGS OR LANG_RUBY)
 
+
+
+######## SET THRIFT GO CLIENT SOURCES
+if (LANGS OR LANG_GO)
+
+  if(NOT EXISTS ${VER_GEN_PATH}/gen-go)
+    if(THRIFT_COMPILER_FOUND)
+      execute_process(COMMAND rm -rf ${VER_GEN_PATH}/gen-go )
+      execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-go )
+
+      message(STATUS "Generating Thrift GO:")
+      execute_process(COMMAND thrift -r --gen go
+                      -o ${VER_GEN_PATH}
+                      ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
+      message("       ${VER_GEN_PATH}/gen-go")
+    endif()
+
+  endif()
+
+endif(LANGS OR LANG_GO)
