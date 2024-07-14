@@ -23,6 +23,9 @@ namespace c_glib  swcdb_thrift
 /* The SWC-DB Thrift-Protocol Java package 'org.swcdb.thrift.gen' */
 namespace java    org.swcdb.thrift.gen
 
+/* The SWC-DB Thrift-Protocol Go package 'org.swcdb.thrift.gen' */
+namespace go      swcdb.thrift.gen
+
 /*
 namespace perl  SWC.thrift
 namespace php   SWC

@@ -13,10 +13,10 @@ import (
 	"strconv"
 	"strings"
 	thrift "github.com/apache/thrift/lib/go/thrift"
-	"service"
+	"swcdb/thrift/gen"
 )
 
-var _ = service.GoUnusedProtection__
+var _ = gen.GoUnusedProtection__
 
 func Usage() {
   fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
@@ -164,7 +164,7 @@ func main() {
   }
   iprot := protocolFactory.GetProtocol(trans)
   oprot := protocolFactory.GetProtocol(trans)
-  client := service.NewServiceClient(thrift.NewTStandardClient(iprot, oprot))
+  client := gen.NewServiceClient(thrift.NewTStandardClient(iprot, oprot))
   if err := trans.Open(); err != nil {
     fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
     os.Exit(1)
@@ -283,7 +283,7 @@ func main() {
       Usage()
      return
     }
-    argvalue1 := service.CellsResult_(tmp1)
+    argvalue1 := gen.CellsResult_(tmp1)
     value1 := argvalue1
     fmt.Print(client.SqlQuery(context.Background(), value0, value1))
     fmt.Print("\n")
@@ -358,14 +358,14 @@ func main() {
     }
     factory340 := thrift.NewTJSONProtocolFactory()
     jsProt341 := factory340.GetProtocol(mbTrans338)
-    containerStruct0 := service.NewServiceUpdatePlainArgs()
+    containerStruct0 := gen.NewServiceUpdatePlainArgs()
     err342 := containerStruct0.ReadField1(context.Background(), jsProt341)
     if err342 != nil {
       Usage()
       return
     }
     argvalue0 := containerStruct0.Cells
-    value0 := service.UCCellsPlain(argvalue0)
+    value0 := gen.UCCellsPlain(argvalue0)
     argvalue1, err343 := (strconv.ParseInt(flag.Arg(2), 10, 64))
     if err343 != nil {
       Usage()
@@ -390,14 +390,14 @@ func main() {
     }
     factory347 := thrift.NewTJSONProtocolFactory()
     jsProt348 := factory347.GetProtocol(mbTrans345)
-    containerStruct0 := service.NewServiceUpdateCounterArgs()
+    containerStruct0 := gen.NewServiceUpdateCounterArgs()
     err349 := containerStruct0.ReadField1(context.Background(), jsProt348)
     if err349 != nil {
       Usage()
       return
     }
     argvalue0 := containerStruct0.Cells
-    value0 := service.UCCellsCounter(argvalue0)
+    value0 := gen.UCCellsCounter(argvalue0)
     argvalue1, err350 := (strconv.ParseInt(flag.Arg(2), 10, 64))
     if err350 != nil {
       Usage()
@@ -422,14 +422,14 @@ func main() {
     }
     factory354 := thrift.NewTJSONProtocolFactory()
     jsProt355 := factory354.GetProtocol(mbTrans352)
-    containerStruct0 := service.NewServiceUpdateSerialArgs()
+    containerStruct0 := gen.NewServiceUpdateSerialArgs()
     err356 := containerStruct0.ReadField1(context.Background(), jsProt355)
     if err356 != nil {
       Usage()
       return
     }
     argvalue0 := containerStruct0.Cells
-    value0 := service.UCCellsSerial(argvalue0)
+    value0 := gen.UCCellsSerial(argvalue0)
     argvalue1, err357 := (strconv.ParseInt(flag.Arg(2), 10, 64))
     if err357 != nil {
       Usage()
@@ -454,14 +454,14 @@ func main() {
     }
     factory361 := thrift.NewTJSONProtocolFactory()
     jsProt362 := factory361.GetProtocol(mbTrans359)
-    containerStruct0 := service.NewServiceUpdateByTypesArgs()
+    containerStruct0 := gen.NewServiceUpdateByTypesArgs()
     err363 := containerStruct0.ReadField1(context.Background(), jsProt362)
     if err363 != nil {
       Usage()
       return
     }
     argvalue0 := containerStruct0.Plain
-    value0 := service.UCCellsPlain(argvalue0)
+    value0 := gen.UCCellsPlain(argvalue0)
     arg364 := flag.Arg(2)
     mbTrans365 := thrift.NewTMemoryBufferLen(len(arg364))
     defer mbTrans365.Close()
@@ -472,14 +472,14 @@ func main() {
     }
     factory367 := thrift.NewTJSONProtocolFactory()
     jsProt368 := factory367.GetProtocol(mbTrans365)
-    containerStruct1 := service.NewServiceUpdateByTypesArgs()
+    containerStruct1 := gen.NewServiceUpdateByTypesArgs()
     err369 := containerStruct1.ReadField2(context.Background(), jsProt368)
     if err369 != nil {
       Usage()
       return
     }
     argvalue1 := containerStruct1.Counter
-    value1 := service.UCCellsCounter(argvalue1)
+    value1 := gen.UCCellsCounter(argvalue1)
     arg370 := flag.Arg(3)
     mbTrans371 := thrift.NewTMemoryBufferLen(len(arg370))
     defer mbTrans371.Close()
@@ -490,14 +490,14 @@ func main() {
     }
     factory373 := thrift.NewTJSONProtocolFactory()
     jsProt374 := factory373.GetProtocol(mbTrans371)
-    containerStruct2 := service.NewServiceUpdateByTypesArgs()
+    containerStruct2 := gen.NewServiceUpdateByTypesArgs()
     err375 := containerStruct2.ReadField3(context.Background(), jsProt374)
     if err375 != nil {
       Usage()
       return
     }
     argvalue2 := containerStruct2.Serial
-    value2 := service.UCCellsSerial(argvalue2)
+    value2 := gen.UCCellsSerial(argvalue2)
     argvalue3, err376 := (strconv.ParseInt(flag.Arg(4), 10, 64))
     if err376 != nil {
       Usage()
@@ -517,7 +517,7 @@ func main() {
       Usage()
      return
     }
-    argvalue0 := service.SchemaFunc(tmp0)
+    argvalue0 := gen.SchemaFunc(tmp0)
     value0 := argvalue0
     arg377 := flag.Arg(2)
     mbTrans378 := thrift.NewTMemoryBufferLen(len(arg377))
@@ -529,7 +529,7 @@ func main() {
     }
     factory380 := thrift.NewTJSONProtocolFactory()
     jsProt381 := factory380.GetProtocol(mbTrans378)
-    argvalue1 := service.NewSchema()
+    argvalue1 := gen.NewSchema()
     err382 := argvalue1.Read(context.Background(), jsProt381)
     if err382 != nil {
       Usage()
@@ -554,7 +554,7 @@ func main() {
     }
     factory386 := thrift.NewTJSONProtocolFactory()
     jsProt387 := factory386.GetProtocol(mbTrans384)
-    argvalue0 := service.NewSpecSchemas()
+    argvalue0 := gen.NewSpecSchemas()
     err388 := argvalue0.Read(context.Background(), jsProt387)
     if err388 != nil {
       Usage()
@@ -579,7 +579,7 @@ func main() {
     }
     factory392 := thrift.NewTJSONProtocolFactory()
     jsProt393 := factory392.GetProtocol(mbTrans390)
-    argvalue0 := service.NewSpecSchemas()
+    argvalue0 := gen.NewSpecSchemas()
     err394 := argvalue0.Read(context.Background(), jsProt393)
     if err394 != nil {
       Usage()
@@ -604,7 +604,7 @@ func main() {
     }
     factory398 := thrift.NewTJSONProtocolFactory()
     jsProt399 := factory398.GetProtocol(mbTrans396)
-    argvalue0 := service.NewSpecScan()
+    argvalue0 := gen.NewSpecScan()
     err400 := argvalue0.Read(context.Background(), jsProt399)
     if err400 != nil {
       Usage()
@@ -629,7 +629,7 @@ func main() {
     }
     factory404 := thrift.NewTJSONProtocolFactory()
     jsProt405 := factory404.GetProtocol(mbTrans402)
-    argvalue0 := service.NewSpecScan()
+    argvalue0 := gen.NewSpecScan()
     err406 := argvalue0.Read(context.Background(), jsProt405)
     if err406 != nil {
       Usage()
@@ -654,7 +654,7 @@ func main() {
     }
     factory410 := thrift.NewTJSONProtocolFactory()
     jsProt411 := factory410.GetProtocol(mbTrans408)
-    argvalue0 := service.NewSpecScan()
+    argvalue0 := gen.NewSpecScan()
     err412 := argvalue0.Read(context.Background(), jsProt411)
     if err412 != nil {
       Usage()
@@ -679,7 +679,7 @@ func main() {
     }
     factory416 := thrift.NewTJSONProtocolFactory()
     jsProt417 := factory416.GetProtocol(mbTrans414)
-    argvalue0 := service.NewSpecScan()
+    argvalue0 := gen.NewSpecScan()
     err418 := argvalue0.Read(context.Background(), jsProt417)
     if err418 != nil {
       Usage()
@@ -704,7 +704,7 @@ func main() {
     }
     factory422 := thrift.NewTJSONProtocolFactory()
     jsProt423 := factory422.GetProtocol(mbTrans420)
-    argvalue0 := service.NewSpecScan()
+    argvalue0 := gen.NewSpecScan()
     err424 := argvalue0.Read(context.Background(), jsProt423)
     if err424 != nil {
       Usage()
@@ -716,7 +716,7 @@ func main() {
       Usage()
      return
     }
-    argvalue1 := service.CellsResult_(tmp1)
+    argvalue1 := gen.CellsResult_(tmp1)
     value1 := argvalue1
     fmt.Print(client.ScanRsltOn(context.Background(), value0, value1))
     fmt.Print("\n")
