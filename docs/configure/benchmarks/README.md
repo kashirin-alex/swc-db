@@ -13,9 +13,7 @@ The benchmarks are a separate work loads of
 ```bash 
 ./swcdb_load_generator --gen-progress=10000000 --gen-col-name=comm_encoder_test \
   --gen-insert=true --gen-cell-a-time=false \
-  --gen-cells=1000000000 \
-  --gen-key-fractions=10 --gen-key-tree=true \
-  --gen-fraction-size=10 --gen-reverse=false \
+  --gen-cells=1000000000 --gen-fractions=10 --gen-fraction-size=10 \
   --gen-col-type=PLAIN --gen-col-seq=VOLUME --gen-cell-versions=1 \
   --gen-value-size=256 \
   --gen-cs-size=1GB --gen-cs-replication=3 --gen-cs-count=2 \

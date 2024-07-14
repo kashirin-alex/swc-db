@@ -4,7 +4,7 @@ _group_name="hdfs"
 _sub_name="lib-cpp"
 
 pkgname=${_group_name}-${_sub_name}
-pkgver=3.3.0
+pkgver=3.3.6
 pkgrel=1
 pkgdesc="Libhdfs++ for Hadoop’s Distributed File System (HDFS)"
 arch=("x86_64")
@@ -14,7 +14,7 @@ provides=(
   libhdfspp.so
 )
 
-url="https://github.com/apache/hadoop/tree/rel/release-3.3.0/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfspp"
+url="https://github.com/apache/hadoop/tree/rel/release-3.3.6/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfspp"
 license=('APACHE')
 
 

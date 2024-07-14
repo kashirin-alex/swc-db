@@ -30,11 +30,11 @@ makedepends=(
   'swcdb-lib-fs'
   'jdk-openjdk'
   'which'
-  'hadoop=3.3.0-1'
+  'hadoop=3.3.6-1'
 )
 
 optdepends=(
-  'hadoop=3.3.0-1'
+  'hadoop=3.3.6-1'
 )
 
 conflicts=()
