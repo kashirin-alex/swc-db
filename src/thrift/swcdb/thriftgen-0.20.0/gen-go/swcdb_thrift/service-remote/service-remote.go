@@ -526,7 +526,7 @@ func main() {
 		factory380 := thrift.NewTJSONProtocolFactory()
 		jsProt381 := factory380.GetProtocol(mbTrans378)
 		argvalue1 := swcdb_thrift.NewSchema()
-		err382 := argvalue1.Read(context.Background(), jsProt381)
+		err382 := argvalue1.read(context.Background(), jsProt381)
 		if err382 != nil {
 			Usage()
 			return
@@ -551,7 +551,7 @@ func main() {
 		factory386 := thrift.NewTJSONProtocolFactory()
 		jsProt387 := factory386.GetProtocol(mbTrans384)
 		argvalue0 := swcdb_thrift.NewSpecSchemas()
-		err388 := argvalue0.Read(context.Background(), jsProt387)
+		err388 := argvalue0.read(context.Background(), jsProt387)
 		if err388 != nil {
 			Usage()
 			return
@@ -576,7 +576,7 @@ func main() {
 		factory392 := thrift.NewTJSONProtocolFactory()
 		jsProt393 := factory392.GetProtocol(mbTrans390)
 		argvalue0 := swcdb_thrift.NewSpecSchemas()
-		err394 := argvalue0.Read(context.Background(), jsProt393)
+		err394 := argvalue0.read(context.Background(), jsProt393)
 		if err394 != nil {
 			Usage()
 			return
@@ -601,7 +601,7 @@ func main() {
 		factory398 := thrift.NewTJSONProtocolFactory()
 		jsProt399 := factory398.GetProtocol(mbTrans396)
 		argvalue0 := swcdb_thrift.NewSpecScan()
-		err400 := argvalue0.Read(context.Background(), jsProt399)
+		err400 := argvalue0.read(context.Background(), jsProt399)
 		if err400 != nil {
 			Usage()
 			return
@@ -626,7 +626,7 @@ func main() {
 		factory404 := thrift.NewTJSONProtocolFactory()
 		jsProt405 := factory404.GetProtocol(mbTrans402)
 		argvalue0 := swcdb_thrift.NewSpecScan()
-		err406 := argvalue0.Read(context.Background(), jsProt405)
+		err406 := argvalue0.read(context.Background(), jsProt405)
 		if err406 != nil {
 			Usage()
 			return
@@ -651,7 +651,7 @@ func main() {
 		factory410 := thrift.NewTJSONProtocolFactory()
 		jsProt411 := factory410.GetProtocol(mbTrans408)
 		argvalue0 := swcdb_thrift.NewSpecScan()
-		err412 := argvalue0.Read(context.Background(), jsProt411)
+		err412 := argvalue0.read(context.Background(), jsProt411)
 		if err412 != nil {
 			Usage()
 			return
@@ -676,7 +676,7 @@ func main() {
 		factory416 := thrift.NewTJSONProtocolFactory()
 		jsProt417 := factory416.GetProtocol(mbTrans414)
 		argvalue0 := swcdb_thrift.NewSpecScan()
-		err418 := argvalue0.Read(context.Background(), jsProt417)
+		err418 := argvalue0.read(context.Background(), jsProt417)
 		if err418 != nil {
 			Usage()
 			return
@@ -701,7 +701,7 @@ func main() {
 		factory422 := thrift.NewTJSONProtocolFactory()
 		jsProt423 := factory422.GetProtocol(mbTrans420)
 		argvalue0 := swcdb_thrift.NewSpecScan()
-		err424 := argvalue0.Read(context.Background(), jsProt423)
+		err424 := argvalue0.read(context.Background(), jsProt423)
 		if err424 != nil {
 			Usage()
 			return

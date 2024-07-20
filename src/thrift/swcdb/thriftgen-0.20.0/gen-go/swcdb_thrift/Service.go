@@ -986,7 +986,7 @@ func (p *Exception) Getmessage() string {
 	return p.message
 }
 
-func (p *Exception) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Exception) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -1054,7 +1054,7 @@ func (p *Exception) ReadField2(ctx context.Context, iprot thrift.TProtocol) erro
 	return nil
 }
 
-func (p *Exception) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Exception) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "Exception"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -1124,19 +1124,6 @@ func (Exception) TExceptionType() thrift.TExceptionType {
 }
 
 var _ thrift.TException = (*Exception)(nil)
-
-func (p *Exception) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Exception",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Exception)(nil)
 
 func (p *Exception) Validate() error {
 	return nil
@@ -1416,7 +1403,7 @@ func (p *Schema) IsSetrevision() bool {
 	return p.revision != nil
 }
 
-func (p *Schema) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Schema) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -1810,7 +1797,7 @@ func (p *Schema) ReadField18(ctx context.Context, iprot thrift.TProtocol) error 
 	return nil
 }
 
-func (p *Schema) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Schema) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "Schema"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -2242,19 +2229,6 @@ func (p *Schema) String() string {
 	return fmt.Sprintf("Schema(%+v)", *p)
 }
 
-func (p *Schema) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Schema",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Schema)(nil)
-
 func (p *Schema) Validate() error {
 	return nil
 }
@@ -2286,7 +2260,7 @@ func (p *SchemaPattern) Getvalue() string {
 	return p.value
 }
 
-func (p *SchemaPattern) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SchemaPattern) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -2355,7 +2329,7 @@ func (p *SchemaPattern) ReadField2(ctx context.Context, iprot thrift.TProtocol) 
 	return nil
 }
 
-func (p *SchemaPattern) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SchemaPattern) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SchemaPattern"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -2416,19 +2390,6 @@ func (p *SchemaPattern) String() string {
 	return fmt.Sprintf("SchemaPattern(%+v)", *p)
 }
 
-func (p *SchemaPattern) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SchemaPattern",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SchemaPattern)(nil)
-
 func (p *SchemaPattern) Validate() error {
 	return nil
 }
@@ -2460,7 +2421,7 @@ func (p *SchemaTagsPatterns) Getvalues() []*SchemaPattern {
 	return p.values
 }
 
-func (p *SchemaTagsPatterns) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SchemaTagsPatterns) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -2529,7 +2490,7 @@ func (p *SchemaTagsPatterns) ReadField2(ctx context.Context, iprot thrift.TProto
 	p.values = tSlice
 	for i := 0; i < size; i++ {
 		_elem2 := &SchemaPattern{}
-		if err := _elem2.Read(ctx, iprot); err != nil {
+		if err := _elem2.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem2), err)
 		}
 		p.values = append(p.values, _elem2)
@@ -2540,7 +2501,7 @@ func (p *SchemaTagsPatterns) ReadField2(ctx context.Context, iprot thrift.TProto
 	return nil
 }
 
-func (p *SchemaTagsPatterns) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SchemaTagsPatterns) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SchemaTagsPatterns"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -2578,7 +2539,7 @@ func (p *SchemaTagsPatterns) writeField2(ctx context.Context, oprot thrift.TProt
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.values {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -2612,19 +2573,6 @@ func (p *SchemaTagsPatterns) String() string {
 	}
 	return fmt.Sprintf("SchemaTagsPatterns(%+v)", *p)
 }
-
-func (p *SchemaTagsPatterns) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SchemaTagsPatterns",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SchemaTagsPatterns)(nil)
 
 func (p *SchemaTagsPatterns) Validate() error {
 	return nil
@@ -2664,7 +2612,7 @@ func (p *SchemaPatterns) IsSettags() bool {
 	return p.tags != nil
 }
 
-func (p *SchemaPatterns) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SchemaPatterns) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -2723,7 +2671,7 @@ func (p *SchemaPatterns) ReadField1(ctx context.Context, iprot thrift.TProtocol)
 	p.names = tSlice
 	for i := 0; i < size; i++ {
 		_elem4 := &SchemaPattern{}
-		if err := _elem4.Read(ctx, iprot); err != nil {
+		if err := _elem4.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem4), err)
 		}
 		p.names = append(p.names, _elem4)
@@ -2736,13 +2684,13 @@ func (p *SchemaPatterns) ReadField1(ctx context.Context, iprot thrift.TProtocol)
 
 func (p *SchemaPatterns) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.tags = &SchemaTagsPatterns{}
-	if err := p.tags.Read(ctx, iprot); err != nil {
+	if err := p.tags.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.tags), err)
 	}
 	return nil
 }
 
-func (p *SchemaPatterns) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SchemaPatterns) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SchemaPatterns"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -2767,7 +2715,7 @@ func (p *SchemaPatterns) writeField1(ctx context.Context, oprot thrift.TProtocol
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.names {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -2784,7 +2732,7 @@ func (p *SchemaPatterns) writeField2(ctx context.Context, oprot thrift.TProtocol
 	if err := oprot.WriteFieldBegin(ctx, "tags", thrift.STRUCT, 2); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:tags: ", p), err)
 	}
-	if err := p.tags.Write(ctx, oprot); err != nil {
+	if err := p.tags.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.tags), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -2814,19 +2762,6 @@ func (p *SchemaPatterns) String() string {
 	}
 	return fmt.Sprintf("SchemaPatterns(%+v)", *p)
 }
-
-func (p *SchemaPatterns) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SchemaPatterns",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SchemaPatterns)(nil)
 
 func (p *SchemaPatterns) Validate() error {
 	return nil
@@ -2874,7 +2809,7 @@ func (p *SpecSchemas) IsSetpatterns() bool {
 	return p.patterns != nil
 }
 
-func (p *SpecSchemas) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecSchemas) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -2980,13 +2915,13 @@ func (p *SpecSchemas) ReadField2(ctx context.Context, iprot thrift.TProtocol) er
 
 func (p *SpecSchemas) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	p.patterns = &SchemaPatterns{}
-	if err := p.patterns.Read(ctx, iprot); err != nil {
+	if err := p.patterns.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.patterns), err)
 	}
 	return nil
 }
 
-func (p *SpecSchemas) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecSchemas) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecSchemas"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -3050,7 +2985,7 @@ func (p *SpecSchemas) writeField3(ctx context.Context, oprot thrift.TProtocol) (
 	if err := oprot.WriteFieldBegin(ctx, "patterns", thrift.STRUCT, 3); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:patterns: ", p), err)
 	}
-	if err := p.patterns.Write(ctx, oprot); err != nil {
+	if err := p.patterns.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.patterns), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -3085,19 +3020,6 @@ func (p *SpecSchemas) String() string {
 	}
 	return fmt.Sprintf("SpecSchemas(%+v)", *p)
 }
-
-func (p *SpecSchemas) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecSchemas",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecSchemas)(nil)
 
 func (p *SpecSchemas) Validate() error {
 	return nil
@@ -3189,7 +3111,7 @@ func (p *SpecFlags) IsSetoptions() bool {
 	return p.options != nil
 }
 
-func (p *SpecFlags) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecFlags) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -3315,7 +3237,7 @@ func (p *SpecFlags) ReadField5(ctx context.Context, iprot thrift.TProtocol) erro
 	return nil
 }
 
-func (p *SpecFlags) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecFlags) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecFlags"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -3456,19 +3378,6 @@ func (p *SpecFlags) String() string {
 	return fmt.Sprintf("SpecFlags(%+v)", *p)
 }
 
-func (p *SpecFlags) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecFlags",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecFlags)(nil)
-
 func (p *SpecFlags) Validate() error {
 	return nil
 }
@@ -3505,7 +3414,7 @@ func (p *SpecUpdateOP) IsSetpos() bool {
 	return p.pos != nil
 }
 
-func (p *SpecUpdateOP) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecUpdateOP) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -3574,7 +3483,7 @@ func (p *SpecUpdateOP) ReadField2(ctx context.Context, iprot thrift.TProtocol) e
 	return nil
 }
 
-func (p *SpecUpdateOP) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecUpdateOP) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecUpdateOP"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -3641,19 +3550,6 @@ func (p *SpecUpdateOP) String() string {
 	}
 	return fmt.Sprintf("SpecUpdateOP(%+v)", *p)
 }
-
-func (p *SpecUpdateOP) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecUpdateOP",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecUpdateOP)(nil)
 
 func (p *SpecUpdateOP) Validate() error {
 	return nil
@@ -3723,7 +3619,7 @@ func (p *SpecIntervalUpdatePlain) IsSetupdate_op() bool {
 	return p.update_op != nil
 }
 
-func (p *SpecIntervalUpdatePlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecIntervalUpdatePlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -3823,13 +3719,13 @@ func (p *SpecIntervalUpdatePlain) ReadField3(ctx context.Context, iprot thrift.T
 
 func (p *SpecIntervalUpdatePlain) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	p.update_op = &SpecUpdateOP{}
-	if err := p.update_op.Read(ctx, iprot); err != nil {
+	if err := p.update_op.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.update_op), err)
 	}
 	return nil
 }
 
-func (p *SpecIntervalUpdatePlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecIntervalUpdatePlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecIntervalUpdatePlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -3896,7 +3792,7 @@ func (p *SpecIntervalUpdatePlain) writeField4(ctx context.Context, oprot thrift.
 		if err := oprot.WriteFieldBegin(ctx, "update_op", thrift.STRUCT, 4); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:update_op: ", p), err)
 		}
-		if err := p.update_op.Write(ctx, oprot); err != nil {
+		if err := p.update_op.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.update_op), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -3935,19 +3831,6 @@ func (p *SpecIntervalUpdatePlain) String() string {
 	}
 	return fmt.Sprintf("SpecIntervalUpdatePlain(%+v)", *p)
 }
-
-func (p *SpecIntervalUpdatePlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecIntervalUpdatePlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecIntervalUpdatePlain)(nil)
 
 func (p *SpecIntervalUpdatePlain) Validate() error {
 	return nil
@@ -4010,7 +3893,7 @@ func (p *SpecIntervalUpdateCounter) IsSetupdate_op() bool {
 	return p.update_op != nil
 }
 
-func (p *SpecIntervalUpdateCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecIntervalUpdateCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -4109,13 +3992,13 @@ func (p *SpecIntervalUpdateCounter) ReadField3(ctx context.Context, iprot thrift
 
 func (p *SpecIntervalUpdateCounter) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	p.update_op = &SpecUpdateOP{}
-	if err := p.update_op.Read(ctx, iprot); err != nil {
+	if err := p.update_op.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.update_op), err)
 	}
 	return nil
 }
 
-func (p *SpecIntervalUpdateCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecIntervalUpdateCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecIntervalUpdateCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -4180,7 +4063,7 @@ func (p *SpecIntervalUpdateCounter) writeField4(ctx context.Context, oprot thrif
 		if err := oprot.WriteFieldBegin(ctx, "update_op", thrift.STRUCT, 4); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:update_op: ", p), err)
 		}
-		if err := p.update_op.Write(ctx, oprot); err != nil {
+		if err := p.update_op.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.update_op), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -4214,19 +4097,6 @@ func (p *SpecIntervalUpdateCounter) String() string {
 	}
 	return fmt.Sprintf("SpecIntervalUpdateCounter(%+v)", *p)
 }
-
-func (p *SpecIntervalUpdateCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecIntervalUpdateCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecIntervalUpdateCounter)(nil)
 
 func (p *SpecIntervalUpdateCounter) Validate() error {
 	return nil
@@ -4297,7 +4167,7 @@ func (p *SpecIntervalUpdateSerial) IsSetupdate_op() bool {
 	return p.update_op != nil
 }
 
-func (p *SpecIntervalUpdateSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecIntervalUpdateSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -4395,7 +4265,7 @@ func (p *SpecIntervalUpdateSerial) ReadField2(ctx context.Context, iprot thrift.
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem10 := &CellValueSerial{}
-		if err := _elem10.Read(ctx, iprot); err != nil {
+		if err := _elem10.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem10), err)
 		}
 		p.v = append(p.v, _elem10)
@@ -4415,7 +4285,7 @@ func (p *SpecIntervalUpdateSerial) ReadField3(ctx context.Context, iprot thrift.
 	p.v_op = tSlice
 	for i := 0; i < size; i++ {
 		_elem11 := &CellValueSerialOp{}
-		if err := _elem11.Read(ctx, iprot); err != nil {
+		if err := _elem11.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem11), err)
 		}
 		p.v_op = append(p.v_op, _elem11)
@@ -4438,13 +4308,13 @@ func (p *SpecIntervalUpdateSerial) ReadField4(ctx context.Context, iprot thrift.
 
 func (p *SpecIntervalUpdateSerial) ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
 	p.update_op = &SpecUpdateOP{}
-	if err := p.update_op.Read(ctx, iprot); err != nil {
+	if err := p.update_op.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.update_op), err)
 	}
 	return nil
 }
 
-func (p *SpecIntervalUpdateSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecIntervalUpdateSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecIntervalUpdateSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -4485,7 +4355,7 @@ func (p *SpecIntervalUpdateSerial) writeField2(ctx context.Context, oprot thrift
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -4506,7 +4376,7 @@ func (p *SpecIntervalUpdateSerial) writeField3(ctx context.Context, oprot thrift
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v_op {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -4539,7 +4409,7 @@ func (p *SpecIntervalUpdateSerial) writeField5(ctx context.Context, oprot thrift
 		if err := oprot.WriteFieldBegin(ctx, "update_op", thrift.STRUCT, 5); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:update_op: ", p), err)
 		}
-		if err := p.update_op.Write(ctx, oprot); err != nil {
+		if err := p.update_op.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.update_op), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -4583,19 +4453,6 @@ func (p *SpecIntervalUpdateSerial) String() string {
 	return fmt.Sprintf("SpecIntervalUpdateSerial(%+v)", *p)
 }
 
-func (p *SpecIntervalUpdateSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecIntervalUpdateSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecIntervalUpdateSerial)(nil)
-
 func (p *SpecIntervalUpdateSerial) Validate() error {
 	return nil
 }
@@ -4627,7 +4484,7 @@ func (p *SpecValueSerial_INT64) Getv() int64 {
 	return p.v
 }
 
-func (p *SpecValueSerial_INT64) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerial_INT64) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -4696,7 +4553,7 @@ func (p *SpecValueSerial_INT64) ReadField2(ctx context.Context, iprot thrift.TPr
 	return nil
 }
 
-func (p *SpecValueSerial_INT64) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerial_INT64) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerial_INT64"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -4757,19 +4614,6 @@ func (p *SpecValueSerial_INT64) String() string {
 	return fmt.Sprintf("SpecValueSerial_INT64(%+v)", *p)
 }
 
-func (p *SpecValueSerial_INT64) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerial_INT64",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerial_INT64)(nil)
-
 func (p *SpecValueSerial_INT64) Validate() error {
 	return nil
 }
@@ -4801,7 +4645,7 @@ func (p *SpecValueSerial_DOUBLE) Getv() float64 {
 	return p.v
 }
 
-func (p *SpecValueSerial_DOUBLE) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerial_DOUBLE) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -4870,7 +4714,7 @@ func (p *SpecValueSerial_DOUBLE) ReadField2(ctx context.Context, iprot thrift.TP
 	return nil
 }
 
-func (p *SpecValueSerial_DOUBLE) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerial_DOUBLE) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerial_DOUBLE"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -4931,19 +4775,6 @@ func (p *SpecValueSerial_DOUBLE) String() string {
 	return fmt.Sprintf("SpecValueSerial_DOUBLE(%+v)", *p)
 }
 
-func (p *SpecValueSerial_DOUBLE) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerial_DOUBLE",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerial_DOUBLE)(nil)
-
 func (p *SpecValueSerial_DOUBLE) Validate() error {
 	return nil
 }
@@ -4975,7 +4806,7 @@ func (p *SpecValueSerial_BYTES) Getv() []byte {
 	return p.v
 }
 
-func (p *SpecValueSerial_BYTES) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerial_BYTES) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -5044,7 +4875,7 @@ func (p *SpecValueSerial_BYTES) ReadField2(ctx context.Context, iprot thrift.TPr
 	return nil
 }
 
-func (p *SpecValueSerial_BYTES) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerial_BYTES) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerial_BYTES"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -5105,19 +4936,6 @@ func (p *SpecValueSerial_BYTES) String() string {
 	return fmt.Sprintf("SpecValueSerial_BYTES(%+v)", *p)
 }
 
-func (p *SpecValueSerial_BYTES) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerial_BYTES",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerial_BYTES)(nil)
-
 func (p *SpecValueSerial_BYTES) Validate() error {
 	return nil
 }
@@ -5149,7 +4967,7 @@ func (p *SpecValueSerial_KEY) Getv() []*SpecFraction {
 	return p.v
 }
 
-func (p *SpecValueSerial_KEY) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerial_KEY) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -5218,7 +5036,7 @@ func (p *SpecValueSerial_KEY) ReadField2(ctx context.Context, iprot thrift.TProt
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem14 := &SpecFraction{}
-		if err := _elem14.Read(ctx, iprot); err != nil {
+		if err := _elem14.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem14), err)
 		}
 		p.v = append(p.v, _elem14)
@@ -5229,7 +5047,7 @@ func (p *SpecValueSerial_KEY) ReadField2(ctx context.Context, iprot thrift.TProt
 	return nil
 }
 
-func (p *SpecValueSerial_KEY) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerial_KEY) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerial_KEY"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -5267,7 +5085,7 @@ func (p *SpecValueSerial_KEY) writeField2(ctx context.Context, oprot thrift.TPro
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -5302,19 +5120,6 @@ func (p *SpecValueSerial_KEY) String() string {
 	return fmt.Sprintf("SpecValueSerial_KEY(%+v)", *p)
 }
 
-func (p *SpecValueSerial_KEY) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerial_KEY",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerial_KEY)(nil)
-
 func (p *SpecValueSerial_KEY) Validate() error {
 	return nil
 }
@@ -5346,7 +5151,7 @@ func (p *SpecValueSerial_LI) Getv() []*SpecValueSerial_INT64 {
 	return p.v
 }
 
-func (p *SpecValueSerial_LI) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerial_LI) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -5415,7 +5220,7 @@ func (p *SpecValueSerial_LI) ReadField2(ctx context.Context, iprot thrift.TProto
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem16 := &SpecValueSerial_INT64{}
-		if err := _elem16.Read(ctx, iprot); err != nil {
+		if err := _elem16.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem16), err)
 		}
 		p.v = append(p.v, _elem16)
@@ -5426,7 +5231,7 @@ func (p *SpecValueSerial_LI) ReadField2(ctx context.Context, iprot thrift.TProto
 	return nil
 }
 
-func (p *SpecValueSerial_LI) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerial_LI) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerial_LI"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -5464,7 +5269,7 @@ func (p *SpecValueSerial_LI) writeField2(ctx context.Context, oprot thrift.TProt
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -5499,19 +5304,6 @@ func (p *SpecValueSerial_LI) String() string {
 	return fmt.Sprintf("SpecValueSerial_LI(%+v)", *p)
 }
 
-func (p *SpecValueSerial_LI) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerial_LI",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerial_LI)(nil)
-
 func (p *SpecValueSerial_LI) Validate() error {
 	return nil
 }
@@ -5543,7 +5335,7 @@ func (p *SpecValueSerial_LB) Getv() []*SpecValueSerial_BYTES {
 	return p.v
 }
 
-func (p *SpecValueSerial_LB) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerial_LB) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -5612,7 +5404,7 @@ func (p *SpecValueSerial_LB) ReadField2(ctx context.Context, iprot thrift.TProto
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem18 := &SpecValueSerial_BYTES{}
-		if err := _elem18.Read(ctx, iprot); err != nil {
+		if err := _elem18.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem18), err)
 		}
 		p.v = append(p.v, _elem18)
@@ -5623,7 +5415,7 @@ func (p *SpecValueSerial_LB) ReadField2(ctx context.Context, iprot thrift.TProto
 	return nil
 }
 
-func (p *SpecValueSerial_LB) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerial_LB) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerial_LB"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -5661,7 +5453,7 @@ func (p *SpecValueSerial_LB) writeField2(ctx context.Context, oprot thrift.TProt
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -5695,19 +5487,6 @@ func (p *SpecValueSerial_LB) String() string {
 	}
 	return fmt.Sprintf("SpecValueSerial_LB(%+v)", *p)
 }
-
-func (p *SpecValueSerial_LB) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerial_LB",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerial_LB)(nil)
 
 func (p *SpecValueSerial_LB) Validate() error {
 	return nil
@@ -5820,7 +5599,7 @@ func (p *SpecValueSerialField) IsSetspec_lb() bool {
 	return p.spec_lb != nil
 }
 
-func (p *SpecValueSerialField) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerialField) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -5931,7 +5710,7 @@ func (p *SpecValueSerialField) ReadField1(ctx context.Context, iprot thrift.TPro
 
 func (p *SpecValueSerialField) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec_int64 = &SpecValueSerial_INT64{}
-	if err := p.spec_int64.Read(ctx, iprot); err != nil {
+	if err := p.spec_int64.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec_int64), err)
 	}
 	return nil
@@ -5939,7 +5718,7 @@ func (p *SpecValueSerialField) ReadField2(ctx context.Context, iprot thrift.TPro
 
 func (p *SpecValueSerialField) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec_double = &SpecValueSerial_DOUBLE{}
-	if err := p.spec_double.Read(ctx, iprot); err != nil {
+	if err := p.spec_double.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec_double), err)
 	}
 	return nil
@@ -5947,7 +5726,7 @@ func (p *SpecValueSerialField) ReadField3(ctx context.Context, iprot thrift.TPro
 
 func (p *SpecValueSerialField) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec_bytes = &SpecValueSerial_BYTES{}
-	if err := p.spec_bytes.Read(ctx, iprot); err != nil {
+	if err := p.spec_bytes.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec_bytes), err)
 	}
 	return nil
@@ -5955,7 +5734,7 @@ func (p *SpecValueSerialField) ReadField4(ctx context.Context, iprot thrift.TPro
 
 func (p *SpecValueSerialField) ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec_key = &SpecValueSerial_KEY{}
-	if err := p.spec_key.Read(ctx, iprot); err != nil {
+	if err := p.spec_key.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec_key), err)
 	}
 	return nil
@@ -5963,7 +5742,7 @@ func (p *SpecValueSerialField) ReadField5(ctx context.Context, iprot thrift.TPro
 
 func (p *SpecValueSerialField) ReadField6(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec_li = &SpecValueSerial_LI{}
-	if err := p.spec_li.Read(ctx, iprot); err != nil {
+	if err := p.spec_li.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec_li), err)
 	}
 	return nil
@@ -5971,13 +5750,13 @@ func (p *SpecValueSerialField) ReadField6(ctx context.Context, iprot thrift.TPro
 
 func (p *SpecValueSerialField) ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec_lb = &SpecValueSerial_LB{}
-	if err := p.spec_lb.Read(ctx, iprot); err != nil {
+	if err := p.spec_lb.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec_lb), err)
 	}
 	return nil
 }
 
-func (p *SpecValueSerialField) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerialField) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerialField"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -6017,7 +5796,7 @@ func (p *SpecValueSerialField) writeField2(ctx context.Context, oprot thrift.TPr
 		if err := oprot.WriteFieldBegin(ctx, "spec_int64", thrift.STRUCT, 2); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:spec_int64: ", p), err)
 		}
-		if err := p.spec_int64.Write(ctx, oprot); err != nil {
+		if err := p.spec_int64.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec_int64), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -6032,7 +5811,7 @@ func (p *SpecValueSerialField) writeField3(ctx context.Context, oprot thrift.TPr
 		if err := oprot.WriteFieldBegin(ctx, "spec_double", thrift.STRUCT, 3); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:spec_double: ", p), err)
 		}
-		if err := p.spec_double.Write(ctx, oprot); err != nil {
+		if err := p.spec_double.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec_double), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -6046,7 +5825,7 @@ func (p *SpecValueSerialField) writeField4(ctx context.Context, oprot thrift.TPr
 	if err := oprot.WriteFieldBegin(ctx, "spec_bytes", thrift.STRUCT, 4); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:spec_bytes: ", p), err)
 	}
-	if err := p.spec_bytes.Write(ctx, oprot); err != nil {
+	if err := p.spec_bytes.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec_bytes), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -6059,7 +5838,7 @@ func (p *SpecValueSerialField) writeField5(ctx context.Context, oprot thrift.TPr
 	if err := oprot.WriteFieldBegin(ctx, "spec_key", thrift.STRUCT, 5); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:spec_key: ", p), err)
 	}
-	if err := p.spec_key.Write(ctx, oprot); err != nil {
+	if err := p.spec_key.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec_key), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -6072,7 +5851,7 @@ func (p *SpecValueSerialField) writeField6(ctx context.Context, oprot thrift.TPr
 	if err := oprot.WriteFieldBegin(ctx, "spec_li", thrift.STRUCT, 6); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:spec_li: ", p), err)
 	}
-	if err := p.spec_li.Write(ctx, oprot); err != nil {
+	if err := p.spec_li.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec_li), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -6085,7 +5864,7 @@ func (p *SpecValueSerialField) writeField7(ctx context.Context, oprot thrift.TPr
 	if err := oprot.WriteFieldBegin(ctx, "spec_lb", thrift.STRUCT, 7); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:spec_lb: ", p), err)
 	}
-	if err := p.spec_lb.Write(ctx, oprot); err != nil {
+	if err := p.spec_lb.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec_lb), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -6116,19 +5895,6 @@ func (p *SpecValueSerialField) String() string {
 	}
 	return fmt.Sprintf("SpecValueSerialField(%+v)", *p)
 }
-
-func (p *SpecValueSerialField) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerialField",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerialField)(nil)
 
 func (p *SpecValueSerialField) Validate() error {
 	return nil
@@ -6161,7 +5927,7 @@ func (p *SpecValuePlain) Getv() []byte {
 	return p.v
 }
 
-func (p *SpecValuePlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValuePlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -6230,7 +5996,7 @@ func (p *SpecValuePlain) ReadField2(ctx context.Context, iprot thrift.TProtocol)
 	return nil
 }
 
-func (p *SpecValuePlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValuePlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValuePlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -6291,19 +6057,6 @@ func (p *SpecValuePlain) String() string {
 	return fmt.Sprintf("SpecValuePlain(%+v)", *p)
 }
 
-func (p *SpecValuePlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValuePlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValuePlain)(nil)
-
 func (p *SpecValuePlain) Validate() error {
 	return nil
 }
@@ -6335,7 +6088,7 @@ func (p *SpecValueCounter) Getv() int64 {
 	return p.v
 }
 
-func (p *SpecValueCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -6404,7 +6157,7 @@ func (p *SpecValueCounter) ReadField2(ctx context.Context, iprot thrift.TProtoco
 	return nil
 }
 
-func (p *SpecValueCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -6465,19 +6218,6 @@ func (p *SpecValueCounter) String() string {
 	return fmt.Sprintf("SpecValueCounter(%+v)", *p)
 }
 
-func (p *SpecValueCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueCounter)(nil)
-
 func (p *SpecValueCounter) Validate() error {
 	return nil
 }
@@ -6509,7 +6249,7 @@ func (p *SpecValueSerial) Getfields() SpecValueSerialFields {
 	return p.fields
 }
 
-func (p *SpecValueSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecValueSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -6578,7 +6318,7 @@ func (p *SpecValueSerial) ReadField2(ctx context.Context, iprot thrift.TProtocol
 	p.fields = tSlice
 	for i := 0; i < size; i++ {
 		_elem20 := &SpecValueSerialField{}
-		if err := _elem20.Read(ctx, iprot); err != nil {
+		if err := _elem20.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem20), err)
 		}
 		p.fields = append(p.fields, _elem20)
@@ -6589,7 +6329,7 @@ func (p *SpecValueSerial) ReadField2(ctx context.Context, iprot thrift.TProtocol
 	return nil
 }
 
-func (p *SpecValueSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecValueSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecValueSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -6627,7 +6367,7 @@ func (p *SpecValueSerial) writeField2(ctx context.Context, oprot thrift.TProtoco
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.fields {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -6662,19 +6402,6 @@ func (p *SpecValueSerial) String() string {
 	return fmt.Sprintf("SpecValueSerial(%+v)", *p)
 }
 
-func (p *SpecValueSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecValueSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecValueSerial)(nil)
-
 func (p *SpecValueSerial) Validate() error {
 	return nil
 }
@@ -6706,7 +6433,7 @@ func (p *SpecFraction) Getf() []byte {
 	return p.f
 }
 
-func (p *SpecFraction) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecFraction) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -6775,7 +6502,7 @@ func (p *SpecFraction) ReadField2(ctx context.Context, iprot thrift.TProtocol) e
 	return nil
 }
 
-func (p *SpecFraction) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecFraction) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecFraction"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -6836,19 +6563,6 @@ func (p *SpecFraction) String() string {
 	return fmt.Sprintf("SpecFraction(%+v)", *p)
 }
 
-func (p *SpecFraction) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecFraction",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecFraction)(nil)
-
 func (p *SpecFraction) Validate() error {
 	return nil
 }
@@ -6880,7 +6594,7 @@ func (p *SpecTimestamp) Getts() int64 {
 	return p.ts
 }
 
-func (p *SpecTimestamp) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecTimestamp) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -6949,7 +6663,7 @@ func (p *SpecTimestamp) ReadField2(ctx context.Context, iprot thrift.TProtocol) 
 	return nil
 }
 
-func (p *SpecTimestamp) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecTimestamp) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecTimestamp"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -7010,19 +6724,6 @@ func (p *SpecTimestamp) String() string {
 	return fmt.Sprintf("SpecTimestamp(%+v)", *p)
 }
 
-func (p *SpecTimestamp) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecTimestamp",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecTimestamp)(nil)
-
 func (p *SpecTimestamp) Validate() error {
 	return nil
 }
@@ -7054,7 +6755,7 @@ func (p *SpecKeyInterval) Getfinish() SpecKey {
 	return p.finish
 }
 
-func (p *SpecKeyInterval) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecKeyInterval) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -7113,7 +6814,7 @@ func (p *SpecKeyInterval) ReadField1(ctx context.Context, iprot thrift.TProtocol
 	p.start = tSlice
 	for i := 0; i < size; i++ {
 		_elem22 := &SpecFraction{}
-		if err := _elem22.Read(ctx, iprot); err != nil {
+		if err := _elem22.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem22), err)
 		}
 		p.start = append(p.start, _elem22)
@@ -7133,7 +6834,7 @@ func (p *SpecKeyInterval) ReadField2(ctx context.Context, iprot thrift.TProtocol
 	p.finish = tSlice
 	for i := 0; i < size; i++ {
 		_elem23 := &SpecFraction{}
-		if err := _elem23.Read(ctx, iprot); err != nil {
+		if err := _elem23.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem23), err)
 		}
 		p.finish = append(p.finish, _elem23)
@@ -7144,7 +6845,7 @@ func (p *SpecKeyInterval) ReadField2(ctx context.Context, iprot thrift.TProtocol
 	return nil
 }
 
-func (p *SpecKeyInterval) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecKeyInterval) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecKeyInterval"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -7169,7 +6870,7 @@ func (p *SpecKeyInterval) writeField1(ctx context.Context, oprot thrift.TProtoco
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.start {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -7190,7 +6891,7 @@ func (p *SpecKeyInterval) writeField2(ctx context.Context, oprot thrift.TProtoco
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.finish {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -7228,19 +6929,6 @@ func (p *SpecKeyInterval) String() string {
 	}
 	return fmt.Sprintf("SpecKeyInterval(%+v)", *p)
 }
-
-func (p *SpecKeyInterval) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecKeyInterval",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecKeyInterval)(nil)
 
 func (p *SpecKeyInterval) Validate() error {
 	return nil
@@ -7387,7 +7075,7 @@ func (p *SpecIntervalPlain) IsSetupdating() bool {
 	return p.updating != nil
 }
 
-func (p *SpecIntervalPlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecIntervalPlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -7611,7 +7299,7 @@ func (p *SpecIntervalPlain) ReadField5(ctx context.Context, iprot thrift.TProtoc
 	p.key_intervals = tSlice
 	for i := 0; i < size; i++ {
 		_elem29 := &SpecKeyInterval{}
-		if err := _elem29.Read(ctx, iprot); err != nil {
+		if err := _elem29.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem29), err)
 		}
 		p.key_intervals = append(p.key_intervals, _elem29)
@@ -7631,7 +7319,7 @@ func (p *SpecIntervalPlain) ReadField6(ctx context.Context, iprot thrift.TProtoc
 	p.values = tSlice
 	for i := 0; i < size; i++ {
 		_elem30 := &SpecValuePlain{}
-		if err := _elem30.Read(ctx, iprot); err != nil {
+		if err := _elem30.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem30), err)
 		}
 		p.values = append(p.values, _elem30)
@@ -7644,7 +7332,7 @@ func (p *SpecIntervalPlain) ReadField6(ctx context.Context, iprot thrift.TProtoc
 
 func (p *SpecIntervalPlain) ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
 	p.ts_start = &SpecTimestamp{}
-	if err := p.ts_start.Read(ctx, iprot); err != nil {
+	if err := p.ts_start.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ts_start), err)
 	}
 	return nil
@@ -7652,7 +7340,7 @@ func (p *SpecIntervalPlain) ReadField7(ctx context.Context, iprot thrift.TProtoc
 
 func (p *SpecIntervalPlain) ReadField8(ctx context.Context, iprot thrift.TProtocol) error {
 	p.ts_finish = &SpecTimestamp{}
-	if err := p.ts_finish.Read(ctx, iprot); err != nil {
+	if err := p.ts_finish.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ts_finish), err)
 	}
 	return nil
@@ -7660,7 +7348,7 @@ func (p *SpecIntervalPlain) ReadField8(ctx context.Context, iprot thrift.TProtoc
 
 func (p *SpecIntervalPlain) ReadField9(ctx context.Context, iprot thrift.TProtocol) error {
 	p.flags = &SpecFlags{}
-	if err := p.flags.Read(ctx, iprot); err != nil {
+	if err := p.flags.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.flags), err)
 	}
 	return nil
@@ -7678,13 +7366,13 @@ func (p *SpecIntervalPlain) ReadField10(ctx context.Context, iprot thrift.TProto
 
 func (p *SpecIntervalPlain) ReadField11(ctx context.Context, iprot thrift.TProtocol) error {
 	p.updating = &SpecIntervalUpdatePlain{}
-	if err := p.updating.Read(ctx, iprot); err != nil {
+	if err := p.updating.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.updating), err)
 	}
 	return nil
 }
 
-func (p *SpecIntervalPlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecIntervalPlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecIntervalPlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -7796,7 +7484,7 @@ func (p *SpecIntervalPlain) writeField5(ctx context.Context, oprot thrift.TProto
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.key_intervals {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -7817,7 +7505,7 @@ func (p *SpecIntervalPlain) writeField6(ctx context.Context, oprot thrift.TProto
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.values {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -7835,7 +7523,7 @@ func (p *SpecIntervalPlain) writeField7(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "ts_start", thrift.STRUCT, 7); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:ts_start: ", p), err)
 		}
-		if err := p.ts_start.Write(ctx, oprot); err != nil {
+		if err := p.ts_start.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ts_start), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -7850,7 +7538,7 @@ func (p *SpecIntervalPlain) writeField8(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "ts_finish", thrift.STRUCT, 8); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:ts_finish: ", p), err)
 		}
-		if err := p.ts_finish.Write(ctx, oprot); err != nil {
+		if err := p.ts_finish.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ts_finish), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -7865,7 +7553,7 @@ func (p *SpecIntervalPlain) writeField9(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "flags", thrift.STRUCT, 9); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:flags: ", p), err)
 		}
-		if err := p.flags.Write(ctx, oprot); err != nil {
+		if err := p.flags.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.flags), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -7895,7 +7583,7 @@ func (p *SpecIntervalPlain) writeField11(ctx context.Context, oprot thrift.TProt
 		if err := oprot.WriteFieldBegin(ctx, "updating", thrift.STRUCT, 11); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 11:updating: ", p), err)
 		}
-		if err := p.updating.Write(ctx, oprot); err != nil {
+		if err := p.updating.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.updating), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -7961,19 +7649,6 @@ func (p *SpecIntervalPlain) String() string {
 	}
 	return fmt.Sprintf("SpecIntervalPlain(%+v)", *p)
 }
-
-func (p *SpecIntervalPlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecIntervalPlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecIntervalPlain)(nil)
 
 func (p *SpecIntervalPlain) Validate() error {
 	return nil
@@ -8120,7 +7795,7 @@ func (p *SpecIntervalCounter) IsSetupdating() bool {
 	return p.updating != nil
 }
 
-func (p *SpecIntervalCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecIntervalCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -8344,7 +8019,7 @@ func (p *SpecIntervalCounter) ReadField5(ctx context.Context, iprot thrift.TProt
 	p.key_intervals = tSlice
 	for i := 0; i < size; i++ {
 		_elem39 := &SpecKeyInterval{}
-		if err := _elem39.Read(ctx, iprot); err != nil {
+		if err := _elem39.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem39), err)
 		}
 		p.key_intervals = append(p.key_intervals, _elem39)
@@ -8364,7 +8039,7 @@ func (p *SpecIntervalCounter) ReadField6(ctx context.Context, iprot thrift.TProt
 	p.values = tSlice
 	for i := 0; i < size; i++ {
 		_elem40 := &SpecValueCounter{}
-		if err := _elem40.Read(ctx, iprot); err != nil {
+		if err := _elem40.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem40), err)
 		}
 		p.values = append(p.values, _elem40)
@@ -8377,7 +8052,7 @@ func (p *SpecIntervalCounter) ReadField6(ctx context.Context, iprot thrift.TProt
 
 func (p *SpecIntervalCounter) ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
 	p.ts_start = &SpecTimestamp{}
-	if err := p.ts_start.Read(ctx, iprot); err != nil {
+	if err := p.ts_start.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ts_start), err)
 	}
 	return nil
@@ -8385,7 +8060,7 @@ func (p *SpecIntervalCounter) ReadField7(ctx context.Context, iprot thrift.TProt
 
 func (p *SpecIntervalCounter) ReadField8(ctx context.Context, iprot thrift.TProtocol) error {
 	p.ts_finish = &SpecTimestamp{}
-	if err := p.ts_finish.Read(ctx, iprot); err != nil {
+	if err := p.ts_finish.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ts_finish), err)
 	}
 	return nil
@@ -8393,7 +8068,7 @@ func (p *SpecIntervalCounter) ReadField8(ctx context.Context, iprot thrift.TProt
 
 func (p *SpecIntervalCounter) ReadField9(ctx context.Context, iprot thrift.TProtocol) error {
 	p.flags = &SpecFlags{}
-	if err := p.flags.Read(ctx, iprot); err != nil {
+	if err := p.flags.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.flags), err)
 	}
 	return nil
@@ -8411,13 +8086,13 @@ func (p *SpecIntervalCounter) ReadField10(ctx context.Context, iprot thrift.TPro
 
 func (p *SpecIntervalCounter) ReadField11(ctx context.Context, iprot thrift.TProtocol) error {
 	p.updating = &SpecIntervalUpdateCounter{}
-	if err := p.updating.Read(ctx, iprot); err != nil {
+	if err := p.updating.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.updating), err)
 	}
 	return nil
 }
 
-func (p *SpecIntervalCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecIntervalCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecIntervalCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -8529,7 +8204,7 @@ func (p *SpecIntervalCounter) writeField5(ctx context.Context, oprot thrift.TPro
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.key_intervals {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -8550,7 +8225,7 @@ func (p *SpecIntervalCounter) writeField6(ctx context.Context, oprot thrift.TPro
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.values {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -8568,7 +8243,7 @@ func (p *SpecIntervalCounter) writeField7(ctx context.Context, oprot thrift.TPro
 		if err := oprot.WriteFieldBegin(ctx, "ts_start", thrift.STRUCT, 7); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:ts_start: ", p), err)
 		}
-		if err := p.ts_start.Write(ctx, oprot); err != nil {
+		if err := p.ts_start.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ts_start), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -8583,7 +8258,7 @@ func (p *SpecIntervalCounter) writeField8(ctx context.Context, oprot thrift.TPro
 		if err := oprot.WriteFieldBegin(ctx, "ts_finish", thrift.STRUCT, 8); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:ts_finish: ", p), err)
 		}
-		if err := p.ts_finish.Write(ctx, oprot); err != nil {
+		if err := p.ts_finish.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ts_finish), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -8598,7 +8273,7 @@ func (p *SpecIntervalCounter) writeField9(ctx context.Context, oprot thrift.TPro
 		if err := oprot.WriteFieldBegin(ctx, "flags", thrift.STRUCT, 9); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:flags: ", p), err)
 		}
-		if err := p.flags.Write(ctx, oprot); err != nil {
+		if err := p.flags.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.flags), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -8628,7 +8303,7 @@ func (p *SpecIntervalCounter) writeField11(ctx context.Context, oprot thrift.TPr
 		if err := oprot.WriteFieldBegin(ctx, "updating", thrift.STRUCT, 11); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 11:updating: ", p), err)
 		}
-		if err := p.updating.Write(ctx, oprot); err != nil {
+		if err := p.updating.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.updating), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -8694,19 +8369,6 @@ func (p *SpecIntervalCounter) String() string {
 	}
 	return fmt.Sprintf("SpecIntervalCounter(%+v)", *p)
 }
-
-func (p *SpecIntervalCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecIntervalCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecIntervalCounter)(nil)
 
 func (p *SpecIntervalCounter) Validate() error {
 	return nil
@@ -8853,7 +8515,7 @@ func (p *SpecIntervalSerial) IsSetupdating() bool {
 	return p.updating != nil
 }
 
-func (p *SpecIntervalSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecIntervalSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -9077,7 +8739,7 @@ func (p *SpecIntervalSerial) ReadField5(ctx context.Context, iprot thrift.TProto
 	p.key_intervals = tSlice
 	for i := 0; i < size; i++ {
 		_elem49 := &SpecKeyInterval{}
-		if err := _elem49.Read(ctx, iprot); err != nil {
+		if err := _elem49.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem49), err)
 		}
 		p.key_intervals = append(p.key_intervals, _elem49)
@@ -9097,7 +8759,7 @@ func (p *SpecIntervalSerial) ReadField6(ctx context.Context, iprot thrift.TProto
 	p.values = tSlice
 	for i := 0; i < size; i++ {
 		_elem50 := &SpecValueSerial{}
-		if err := _elem50.Read(ctx, iprot); err != nil {
+		if err := _elem50.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem50), err)
 		}
 		p.values = append(p.values, _elem50)
@@ -9110,7 +8772,7 @@ func (p *SpecIntervalSerial) ReadField6(ctx context.Context, iprot thrift.TProto
 
 func (p *SpecIntervalSerial) ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
 	p.ts_start = &SpecTimestamp{}
-	if err := p.ts_start.Read(ctx, iprot); err != nil {
+	if err := p.ts_start.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ts_start), err)
 	}
 	return nil
@@ -9118,7 +8780,7 @@ func (p *SpecIntervalSerial) ReadField7(ctx context.Context, iprot thrift.TProto
 
 func (p *SpecIntervalSerial) ReadField8(ctx context.Context, iprot thrift.TProtocol) error {
 	p.ts_finish = &SpecTimestamp{}
-	if err := p.ts_finish.Read(ctx, iprot); err != nil {
+	if err := p.ts_finish.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ts_finish), err)
 	}
 	return nil
@@ -9126,7 +8788,7 @@ func (p *SpecIntervalSerial) ReadField8(ctx context.Context, iprot thrift.TProto
 
 func (p *SpecIntervalSerial) ReadField9(ctx context.Context, iprot thrift.TProtocol) error {
 	p.flags = &SpecFlags{}
-	if err := p.flags.Read(ctx, iprot); err != nil {
+	if err := p.flags.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.flags), err)
 	}
 	return nil
@@ -9144,13 +8806,13 @@ func (p *SpecIntervalSerial) ReadField10(ctx context.Context, iprot thrift.TProt
 
 func (p *SpecIntervalSerial) ReadField11(ctx context.Context, iprot thrift.TProtocol) error {
 	p.updating = &SpecIntervalUpdateSerial{}
-	if err := p.updating.Read(ctx, iprot); err != nil {
+	if err := p.updating.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.updating), err)
 	}
 	return nil
 }
 
-func (p *SpecIntervalSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecIntervalSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecIntervalSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -9262,7 +8924,7 @@ func (p *SpecIntervalSerial) writeField5(ctx context.Context, oprot thrift.TProt
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.key_intervals {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -9283,7 +8945,7 @@ func (p *SpecIntervalSerial) writeField6(ctx context.Context, oprot thrift.TProt
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.values {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -9301,7 +8963,7 @@ func (p *SpecIntervalSerial) writeField7(ctx context.Context, oprot thrift.TProt
 		if err := oprot.WriteFieldBegin(ctx, "ts_start", thrift.STRUCT, 7); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:ts_start: ", p), err)
 		}
-		if err := p.ts_start.Write(ctx, oprot); err != nil {
+		if err := p.ts_start.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ts_start), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -9316,7 +8978,7 @@ func (p *SpecIntervalSerial) writeField8(ctx context.Context, oprot thrift.TProt
 		if err := oprot.WriteFieldBegin(ctx, "ts_finish", thrift.STRUCT, 8); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:ts_finish: ", p), err)
 		}
-		if err := p.ts_finish.Write(ctx, oprot); err != nil {
+		if err := p.ts_finish.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ts_finish), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -9331,7 +8993,7 @@ func (p *SpecIntervalSerial) writeField9(ctx context.Context, oprot thrift.TProt
 		if err := oprot.WriteFieldBegin(ctx, "flags", thrift.STRUCT, 9); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:flags: ", p), err)
 		}
-		if err := p.flags.Write(ctx, oprot); err != nil {
+		if err := p.flags.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.flags), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -9361,7 +9023,7 @@ func (p *SpecIntervalSerial) writeField11(ctx context.Context, oprot thrift.TPro
 		if err := oprot.WriteFieldBegin(ctx, "updating", thrift.STRUCT, 11); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 11:updating: ", p), err)
 		}
-		if err := p.updating.Write(ctx, oprot); err != nil {
+		if err := p.updating.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.updating), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -9428,19 +9090,6 @@ func (p *SpecIntervalSerial) String() string {
 	return fmt.Sprintf("SpecIntervalSerial(%+v)", *p)
 }
 
-func (p *SpecIntervalSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecIntervalSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecIntervalSerial)(nil)
-
 func (p *SpecIntervalSerial) Validate() error {
 	return nil
 }
@@ -9472,7 +9121,7 @@ func (p *SpecColumnPlain) Getintervals() []*SpecIntervalPlain {
 	return p.intervals
 }
 
-func (p *SpecColumnPlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecColumnPlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -9540,7 +9189,7 @@ func (p *SpecColumnPlain) ReadField2(ctx context.Context, iprot thrift.TProtocol
 	p.intervals = tSlice
 	for i := 0; i < size; i++ {
 		_elem56 := &SpecIntervalPlain{}
-		if err := _elem56.Read(ctx, iprot); err != nil {
+		if err := _elem56.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem56), err)
 		}
 		p.intervals = append(p.intervals, _elem56)
@@ -9551,7 +9200,7 @@ func (p *SpecColumnPlain) ReadField2(ctx context.Context, iprot thrift.TProtocol
 	return nil
 }
 
-func (p *SpecColumnPlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecColumnPlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecColumnPlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -9589,7 +9238,7 @@ func (p *SpecColumnPlain) writeField2(ctx context.Context, oprot thrift.TProtoco
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.intervals {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -9624,19 +9273,6 @@ func (p *SpecColumnPlain) String() string {
 	return fmt.Sprintf("SpecColumnPlain(%+v)", *p)
 }
 
-func (p *SpecColumnPlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecColumnPlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecColumnPlain)(nil)
-
 func (p *SpecColumnPlain) Validate() error {
 	return nil
 }
@@ -9668,7 +9304,7 @@ func (p *SpecColumnCounter) Getintervals() []*SpecIntervalCounter {
 	return p.intervals
 }
 
-func (p *SpecColumnCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecColumnCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -9736,7 +9372,7 @@ func (p *SpecColumnCounter) ReadField2(ctx context.Context, iprot thrift.TProtoc
 	p.intervals = tSlice
 	for i := 0; i < size; i++ {
 		_elem58 := &SpecIntervalCounter{}
-		if err := _elem58.Read(ctx, iprot); err != nil {
+		if err := _elem58.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem58), err)
 		}
 		p.intervals = append(p.intervals, _elem58)
@@ -9747,7 +9383,7 @@ func (p *SpecColumnCounter) ReadField2(ctx context.Context, iprot thrift.TProtoc
 	return nil
 }
 
-func (p *SpecColumnCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecColumnCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecColumnCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -9785,7 +9421,7 @@ func (p *SpecColumnCounter) writeField2(ctx context.Context, oprot thrift.TProto
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.intervals {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -9820,19 +9456,6 @@ func (p *SpecColumnCounter) String() string {
 	return fmt.Sprintf("SpecColumnCounter(%+v)", *p)
 }
 
-func (p *SpecColumnCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecColumnCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecColumnCounter)(nil)
-
 func (p *SpecColumnCounter) Validate() error {
 	return nil
 }
@@ -9864,7 +9487,7 @@ func (p *SpecColumnSerial) Getintervals() []*SpecIntervalSerial {
 	return p.intervals
 }
 
-func (p *SpecColumnSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecColumnSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -9932,7 +9555,7 @@ func (p *SpecColumnSerial) ReadField2(ctx context.Context, iprot thrift.TProtoco
 	p.intervals = tSlice
 	for i := 0; i < size; i++ {
 		_elem60 := &SpecIntervalSerial{}
-		if err := _elem60.Read(ctx, iprot); err != nil {
+		if err := _elem60.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem60), err)
 		}
 		p.intervals = append(p.intervals, _elem60)
@@ -9943,7 +9566,7 @@ func (p *SpecColumnSerial) ReadField2(ctx context.Context, iprot thrift.TProtoco
 	return nil
 }
 
-func (p *SpecColumnSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecColumnSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecColumnSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -9981,7 +9604,7 @@ func (p *SpecColumnSerial) writeField2(ctx context.Context, oprot thrift.TProtoc
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.intervals {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -10015,19 +9638,6 @@ func (p *SpecColumnSerial) String() string {
 	}
 	return fmt.Sprintf("SpecColumnSerial(%+v)", *p)
 }
-
-func (p *SpecColumnSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecColumnSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecColumnSerial)(nil)
 
 func (p *SpecColumnSerial) Validate() error {
 	return nil
@@ -10083,7 +9693,7 @@ func (p *SpecScan) IsSetflags() bool {
 	return p.flags != nil
 }
 
-func (p *SpecScan) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *SpecScan) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -10162,7 +9772,7 @@ func (p *SpecScan) ReadField1(ctx context.Context, iprot thrift.TProtocol) error
 	p.columns_plain = tSlice
 	for i := 0; i < size; i++ {
 		_elem62 := &SpecColumnPlain{}
-		if err := _elem62.Read(ctx, iprot); err != nil {
+		if err := _elem62.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem62), err)
 		}
 		p.columns_plain = append(p.columns_plain, _elem62)
@@ -10182,7 +9792,7 @@ func (p *SpecScan) ReadField2(ctx context.Context, iprot thrift.TProtocol) error
 	p.columns_counter = tSlice
 	for i := 0; i < size; i++ {
 		_elem63 := &SpecColumnCounter{}
-		if err := _elem63.Read(ctx, iprot); err != nil {
+		if err := _elem63.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem63), err)
 		}
 		p.columns_counter = append(p.columns_counter, _elem63)
@@ -10202,7 +9812,7 @@ func (p *SpecScan) ReadField3(ctx context.Context, iprot thrift.TProtocol) error
 	p.columns_serial = tSlice
 	for i := 0; i < size; i++ {
 		_elem64 := &SpecColumnSerial{}
-		if err := _elem64.Read(ctx, iprot); err != nil {
+		if err := _elem64.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem64), err)
 		}
 		p.columns_serial = append(p.columns_serial, _elem64)
@@ -10215,13 +9825,13 @@ func (p *SpecScan) ReadField3(ctx context.Context, iprot thrift.TProtocol) error
 
 func (p *SpecScan) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	p.flags = &SpecFlags{}
-	if err := p.flags.Read(ctx, iprot); err != nil {
+	if err := p.flags.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.flags), err)
 	}
 	return nil
 }
 
-func (p *SpecScan) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *SpecScan) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "SpecScan"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -10248,7 +9858,7 @@ func (p *SpecScan) writeField1(ctx context.Context, oprot thrift.TProtocol) (err
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.columns_plain {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -10269,7 +9879,7 @@ func (p *SpecScan) writeField2(ctx context.Context, oprot thrift.TProtocol) (err
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.columns_counter {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -10290,7 +9900,7 @@ func (p *SpecScan) writeField3(ctx context.Context, oprot thrift.TProtocol) (err
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.columns_serial {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -10308,7 +9918,7 @@ func (p *SpecScan) writeField4(ctx context.Context, oprot thrift.TProtocol) (err
 		if err := oprot.WriteFieldBegin(ctx, "flags", thrift.STRUCT, 4); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:flags: ", p), err)
 		}
-		if err := p.flags.Write(ctx, oprot); err != nil {
+		if err := p.flags.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.flags), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -10349,19 +9959,6 @@ func (p *SpecScan) String() string {
 	}
 	return fmt.Sprintf("SpecScan(%+v)", *p)
 }
-
-func (p *SpecScan) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.SpecScan",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*SpecScan)(nil)
 
 func (p *SpecScan) Validate() error {
 	return nil
@@ -10447,7 +10044,7 @@ func (p *UCellPlain) IsSetencoder() bool {
 	return p.encoder != nil
 }
 
-func (p *UCellPlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *UCellPlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -10606,7 +10203,7 @@ func (p *UCellPlain) ReadField6(ctx context.Context, iprot thrift.TProtocol) err
 	return nil
 }
 
-func (p *UCellPlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *UCellPlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "UCellPlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -10760,19 +10357,6 @@ func (p *UCellPlain) String() string {
 	return fmt.Sprintf("UCellPlain(%+v)", *p)
 }
 
-func (p *UCellPlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.UCellPlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*UCellPlain)(nil)
-
 func (p *UCellPlain) Validate() error {
 	return nil
 }
@@ -10850,7 +10434,7 @@ func (p *UCellCounter) IsSetts_desc() bool {
 	return p.ts_desc != nil
 }
 
-func (p *UCellCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *UCellCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -11009,7 +10593,7 @@ func (p *UCellCounter) ReadField6(ctx context.Context, iprot thrift.TProtocol) e
 	return nil
 }
 
-func (p *UCellCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *UCellCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "UCellCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -11156,19 +10740,6 @@ func (p *UCellCounter) String() string {
 	return fmt.Sprintf("UCellCounter(%+v)", *p)
 }
 
-func (p *UCellCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.UCellCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*UCellCounter)(nil)
-
 func (p *UCellCounter) Validate() error {
 	return nil
 }
@@ -11274,7 +10845,7 @@ func (p *CellValueSerial) IsSetv_lb() bool {
 	return p.v_lb != nil
 }
 
-func (p *CellValueSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CellValueSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -11476,7 +11047,7 @@ func (p *CellValueSerial) ReadField7(ctx context.Context, iprot thrift.TProtocol
 	return nil
 }
 
-func (p *CellValueSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CellValueSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CellValueSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -11670,19 +11241,6 @@ func (p *CellValueSerial) String() string {
 	return fmt.Sprintf("CellValueSerial(%+v)", *p)
 }
 
-func (p *CellValueSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CellValueSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CellValueSerial)(nil)
-
 func (p *CellValueSerial) Validate() error {
 	return nil
 }
@@ -11754,7 +11312,7 @@ func (p *FU_INT64) IsSetcomp() bool {
 	return p.comp != nil
 }
 
-func (p *FU_INT64) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FU_INT64) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -11882,7 +11440,7 @@ func (p *FU_INT64) ReadField5(ctx context.Context, iprot thrift.TProtocol) error
 	return nil
 }
 
-func (p *FU_INT64) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FU_INT64) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FU_INT64"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -12002,19 +11560,6 @@ func (p *FU_INT64) String() string {
 	return fmt.Sprintf("FU_INT64(%+v)", *p)
 }
 
-func (p *FU_INT64) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FU_INT64",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FU_INT64)(nil)
-
 func (p *FU_INT64) Validate() error {
 	return nil
 }
@@ -12086,7 +11631,7 @@ func (p *FU_DOUBLE) IsSetcomp() bool {
 	return p.comp != nil
 }
 
-func (p *FU_DOUBLE) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FU_DOUBLE) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -12214,7 +11759,7 @@ func (p *FU_DOUBLE) ReadField5(ctx context.Context, iprot thrift.TProtocol) erro
 	return nil
 }
 
-func (p *FU_DOUBLE) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FU_DOUBLE) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FU_DOUBLE"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -12334,19 +11879,6 @@ func (p *FU_DOUBLE) String() string {
 	return fmt.Sprintf("FU_DOUBLE(%+v)", *p)
 }
 
-func (p *FU_DOUBLE) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FU_DOUBLE",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FU_DOUBLE)(nil)
-
 func (p *FU_DOUBLE) Validate() error {
 	return nil
 }
@@ -12418,7 +11950,7 @@ func (p *FU_BYTES) IsSetcomp() bool {
 	return p.comp != nil
 }
 
-func (p *FU_BYTES) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FU_BYTES) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -12546,7 +12078,7 @@ func (p *FU_BYTES) ReadField5(ctx context.Context, iprot thrift.TProtocol) error
 	return nil
 }
 
-func (p *FU_BYTES) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FU_BYTES) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FU_BYTES"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -12666,19 +12198,6 @@ func (p *FU_BYTES) String() string {
 	return fmt.Sprintf("FU_BYTES(%+v)", *p)
 }
 
-func (p *FU_BYTES) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FU_BYTES",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FU_BYTES)(nil)
-
 func (p *FU_BYTES) Validate() error {
 	return nil
 }
@@ -12735,7 +12254,7 @@ func (p *FU_LI) IsSetpos() bool {
 	return p.pos != nil
 }
 
-func (p *FU_LI) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FU_LI) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -12845,7 +12364,7 @@ func (p *FU_LI) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 		_elem78 := &FU_INT64{
 			op: 0,
 		}
-		if err := _elem78.Read(ctx, iprot); err != nil {
+		if err := _elem78.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem78), err)
 		}
 		p.v = append(p.v, _elem78)
@@ -12856,7 +12375,7 @@ func (p *FU_LI) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *FU_LI) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FU_LI) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FU_LI"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -12924,7 +12443,7 @@ func (p *FU_LI) writeField4(ctx context.Context, oprot thrift.TProtocol) (err er
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -12965,19 +12484,6 @@ func (p *FU_LI) String() string {
 	}
 	return fmt.Sprintf("FU_LI(%+v)", *p)
 }
-
-func (p *FU_LI) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FU_LI",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FU_LI)(nil)
 
 func (p *FU_LI) Validate() error {
 	return nil
@@ -13035,7 +12541,7 @@ func (p *FU_LB) IsSetpos() bool {
 	return p.pos != nil
 }
 
-func (p *FU_LB) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FU_LB) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -13145,7 +12651,7 @@ func (p *FU_LB) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 		_elem80 := &FU_BYTES{
 			op: 0,
 		}
-		if err := _elem80.Read(ctx, iprot); err != nil {
+		if err := _elem80.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem80), err)
 		}
 		p.v = append(p.v, _elem80)
@@ -13156,7 +12662,7 @@ func (p *FU_LB) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *FU_LB) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FU_LB) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FU_LB"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -13224,7 +12730,7 @@ func (p *FU_LB) writeField4(ctx context.Context, oprot thrift.TProtocol) (err er
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -13265,19 +12771,6 @@ func (p *FU_LB) String() string {
 	}
 	return fmt.Sprintf("FU_LB(%+v)", *p)
 }
-
-func (p *FU_LB) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FU_LB",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FU_LB)(nil)
 
 func (p *FU_LB) Validate() error {
 	return nil
@@ -13390,7 +12883,7 @@ func (p *CellValueSerialOp) IsSetv_lb() bool {
 	return p.v_lb != nil
 }
 
-func (p *CellValueSerialOp) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CellValueSerialOp) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -13503,7 +12996,7 @@ func (p *CellValueSerialOp) ReadField2(ctx context.Context, iprot thrift.TProtoc
 	p.v_int64 = &FU_INT64{
 		op: 0,
 	}
-	if err := p.v_int64.Read(ctx, iprot); err != nil {
+	if err := p.v_int64.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.v_int64), err)
 	}
 	return nil
@@ -13513,7 +13006,7 @@ func (p *CellValueSerialOp) ReadField3(ctx context.Context, iprot thrift.TProtoc
 	p.v_double = &FU_DOUBLE{
 		op: 0,
 	}
-	if err := p.v_double.Read(ctx, iprot); err != nil {
+	if err := p.v_double.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.v_double), err)
 	}
 	return nil
@@ -13523,7 +13016,7 @@ func (p *CellValueSerialOp) ReadField4(ctx context.Context, iprot thrift.TProtoc
 	p.v_bytes = &FU_BYTES{
 		op: 0,
 	}
-	if err := p.v_bytes.Read(ctx, iprot); err != nil {
+	if err := p.v_bytes.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.v_bytes), err)
 	}
 	return nil
@@ -13555,7 +13048,7 @@ func (p *CellValueSerialOp) ReadField6(ctx context.Context, iprot thrift.TProtoc
 	p.v_li = &FU_LI{
 		op: 0,
 	}
-	if err := p.v_li.Read(ctx, iprot); err != nil {
+	if err := p.v_li.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.v_li), err)
 	}
 	return nil
@@ -13565,13 +13058,13 @@ func (p *CellValueSerialOp) ReadField7(ctx context.Context, iprot thrift.TProtoc
 	p.v_lb = &FU_LB{
 		op: 0,
 	}
-	if err := p.v_lb.Read(ctx, iprot); err != nil {
+	if err := p.v_lb.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.v_lb), err)
 	}
 	return nil
 }
 
-func (p *CellValueSerialOp) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CellValueSerialOp) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CellValueSerialOp"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -13611,7 +13104,7 @@ func (p *CellValueSerialOp) writeField2(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "v_int64", thrift.STRUCT, 2); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:v_int64: ", p), err)
 		}
-		if err := p.v_int64.Write(ctx, oprot); err != nil {
+		if err := p.v_int64.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.v_int64), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -13626,7 +13119,7 @@ func (p *CellValueSerialOp) writeField3(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "v_double", thrift.STRUCT, 3); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:v_double: ", p), err)
 		}
-		if err := p.v_double.Write(ctx, oprot); err != nil {
+		if err := p.v_double.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.v_double), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -13641,7 +13134,7 @@ func (p *CellValueSerialOp) writeField4(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "v_bytes", thrift.STRUCT, 4); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:v_bytes: ", p), err)
 		}
-		if err := p.v_bytes.Write(ctx, oprot); err != nil {
+		if err := p.v_bytes.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.v_bytes), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -13679,7 +13172,7 @@ func (p *CellValueSerialOp) writeField6(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "v_li", thrift.STRUCT, 6); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:v_li: ", p), err)
 		}
-		if err := p.v_li.Write(ctx, oprot); err != nil {
+		if err := p.v_li.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.v_li), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -13694,7 +13187,7 @@ func (p *CellValueSerialOp) writeField7(ctx context.Context, oprot thrift.TProto
 		if err := oprot.WriteFieldBegin(ctx, "v_lb", thrift.STRUCT, 7); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:v_lb: ", p), err)
 		}
-		if err := p.v_lb.Write(ctx, oprot); err != nil {
+		if err := p.v_lb.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.v_lb), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -13730,19 +13223,6 @@ func (p *CellValueSerialOp) String() string {
 	}
 	return fmt.Sprintf("CellValueSerialOp(%+v)", *p)
 }
-
-func (p *CellValueSerialOp) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CellValueSerialOp",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CellValueSerialOp)(nil)
 
 func (p *CellValueSerialOp) Validate() error {
 	return nil
@@ -13828,7 +13308,7 @@ func (p *UCellSerial) IsSetencoder() bool {
 	return p.encoder != nil
 }
 
-func (p *UCellSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *UCellSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -13977,7 +13457,7 @@ func (p *UCellSerial) ReadField5(ctx context.Context, iprot thrift.TProtocol) er
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem85 := &CellValueSerial{}
-		if err := _elem85.Read(ctx, iprot); err != nil {
+		if err := _elem85.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem85), err)
 		}
 		p.v = append(p.v, _elem85)
@@ -13998,7 +13478,7 @@ func (p *UCellSerial) ReadField6(ctx context.Context, iprot thrift.TProtocol) er
 	return nil
 }
 
-func (p *UCellSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *UCellSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "UCellSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -14091,7 +13571,7 @@ func (p *UCellSerial) writeField5(ctx context.Context, oprot thrift.TProtocol) (
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -14164,19 +13644,6 @@ func (p *UCellSerial) String() string {
 	return fmt.Sprintf("UCellSerial(%+v)", *p)
 }
 
-func (p *UCellSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.UCellSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*UCellSerial)(nil)
-
 func (p *UCellSerial) Validate() error {
 	return nil
 }
@@ -14224,7 +13691,7 @@ func (p *CellPlain) Getv() []byte {
 	return p.v
 }
 
-func (p *CellPlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CellPlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -14343,7 +13810,7 @@ func (p *CellPlain) ReadField4(ctx context.Context, iprot thrift.TProtocol) erro
 	return nil
 }
 
-func (p *CellPlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CellPlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CellPlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -14446,19 +13913,6 @@ func (p *CellPlain) String() string {
 	return fmt.Sprintf("CellPlain(%+v)", *p)
 }
 
-func (p *CellPlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CellPlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CellPlain)(nil)
-
 func (p *CellPlain) Validate() error {
 	return nil
 }
@@ -14521,7 +13975,7 @@ func (p *CellCounter) IsSeteq() bool {
 	return p.eq != nil
 }
 
-func (p *CellCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CellCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -14659,7 +14113,7 @@ func (p *CellCounter) ReadField5(ctx context.Context, iprot thrift.TProtocol) er
 	return nil
 }
 
-func (p *CellCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CellCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CellCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -14784,19 +14238,6 @@ func (p *CellCounter) String() string {
 	return fmt.Sprintf("CellCounter(%+v)", *p)
 }
 
-func (p *CellCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CellCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CellCounter)(nil)
-
 func (p *CellCounter) Validate() error {
 	return nil
 }
@@ -14844,7 +14285,7 @@ func (p *CellSerial) Getv() CellValuesSerial {
 	return p.v
 }
 
-func (p *CellSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CellSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -14963,7 +14404,7 @@ func (p *CellSerial) ReadField4(ctx context.Context, iprot thrift.TProtocol) err
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem93 := &CellValueSerial{}
-		if err := _elem93.Read(ctx, iprot); err != nil {
+		if err := _elem93.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem93), err)
 		}
 		p.v = append(p.v, _elem93)
@@ -14974,7 +14415,7 @@ func (p *CellSerial) ReadField4(ctx context.Context, iprot thrift.TProtocol) err
 	return nil
 }
 
-func (p *CellSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CellSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CellSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -15048,7 +14489,7 @@ func (p *CellSerial) writeField4(ctx context.Context, oprot thrift.TProtocol) (e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -15089,19 +14530,6 @@ func (p *CellSerial) String() string {
 	return fmt.Sprintf("CellSerial(%+v)", *p)
 }
 
-func (p *CellSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CellSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CellSerial)(nil)
-
 func (p *CellSerial) Validate() error {
 	return nil
 }
@@ -15141,7 +14569,7 @@ func (p *Cells) Getserial_cells() CellsSerial {
 	return p.serial_cells
 }
 
-func (p *Cells) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Cells) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -15210,7 +14638,7 @@ func (p *Cells) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.plain_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem96 := &CellPlain{}
-		if err := _elem96.Read(ctx, iprot); err != nil {
+		if err := _elem96.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem96), err)
 		}
 		p.plain_cells = append(p.plain_cells, _elem96)
@@ -15230,7 +14658,7 @@ func (p *Cells) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.counter_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem97 := &CellCounter{}
-		if err := _elem97.Read(ctx, iprot); err != nil {
+		if err := _elem97.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem97), err)
 		}
 		p.counter_cells = append(p.counter_cells, _elem97)
@@ -15250,7 +14678,7 @@ func (p *Cells) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	p.serial_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem98 := &CellSerial{}
-		if err := _elem98.Read(ctx, iprot); err != nil {
+		if err := _elem98.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem98), err)
 		}
 		p.serial_cells = append(p.serial_cells, _elem98)
@@ -15261,7 +14689,7 @@ func (p *Cells) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *Cells) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Cells) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "Cells"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -15287,7 +14715,7 @@ func (p *Cells) writeField1(ctx context.Context, oprot thrift.TProtocol) (err er
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.plain_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -15308,7 +14736,7 @@ func (p *Cells) writeField2(ctx context.Context, oprot thrift.TProtocol) (err er
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.counter_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -15329,7 +14757,7 @@ func (p *Cells) writeField3(ctx context.Context, oprot thrift.TProtocol) (err er
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.serial_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -15373,19 +14801,6 @@ func (p *Cells) String() string {
 	return fmt.Sprintf("Cells(%+v)", *p)
 }
 
-func (p *Cells) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Cells",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Cells)(nil)
-
 func (p *Cells) Validate() error {
 	return nil
 }
@@ -15425,7 +14840,7 @@ func (p *CCellPlain) Getv() []byte {
 	return p.v
 }
 
-func (p *CCellPlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CCellPlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -15525,7 +14940,7 @@ func (p *CCellPlain) ReadField3(ctx context.Context, iprot thrift.TProtocol) err
 	return nil
 }
 
-func (p *CCellPlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CCellPlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CCellPlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -15613,19 +15028,6 @@ func (p *CCellPlain) String() string {
 	return fmt.Sprintf("CCellPlain(%+v)", *p)
 }
 
-func (p *CCellPlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CCellPlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CCellPlain)(nil)
-
 func (p *CCellPlain) Validate() error {
 	return nil
 }
@@ -15680,7 +15082,7 @@ func (p *CCellCounter) IsSeteq() bool {
 	return p.eq != nil
 }
 
-func (p *CCellCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CCellCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -15799,7 +15201,7 @@ func (p *CCellCounter) ReadField4(ctx context.Context, iprot thrift.TProtocol) e
 	return nil
 }
 
-func (p *CCellCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CCellCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CCellCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -15909,19 +15311,6 @@ func (p *CCellCounter) String() string {
 	return fmt.Sprintf("CCellCounter(%+v)", *p)
 }
 
-func (p *CCellCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CCellCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CCellCounter)(nil)
-
 func (p *CCellCounter) Validate() error {
 	return nil
 }
@@ -15961,7 +15350,7 @@ func (p *CCellSerial) Getv() CellValuesSerial {
 	return p.v
 }
 
-func (p *CCellSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CCellSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -16061,7 +15450,7 @@ func (p *CCellSerial) ReadField3(ctx context.Context, iprot thrift.TProtocol) er
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem107 := &CellValueSerial{}
-		if err := _elem107.Read(ctx, iprot); err != nil {
+		if err := _elem107.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem107), err)
 		}
 		p.v = append(p.v, _elem107)
@@ -16072,7 +15461,7 @@ func (p *CCellSerial) ReadField3(ctx context.Context, iprot thrift.TProtocol) er
 	return nil
 }
 
-func (p *CCellSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CCellSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CCellSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -16132,7 +15521,7 @@ func (p *CCellSerial) writeField3(ctx context.Context, oprot thrift.TProtocol) (
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -16171,19 +15560,6 @@ func (p *CCellSerial) String() string {
 	}
 	return fmt.Sprintf("CCellSerial(%+v)", *p)
 }
-
-func (p *CCellSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CCellSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CCellSerial)(nil)
 
 func (p *CCellSerial) Validate() error {
 	return nil
@@ -16224,7 +15600,7 @@ func (p *cCells) Getserial_cells() []*CCellSerial {
 	return p.serial_cells
 }
 
-func (p *cCells) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *cCells) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -16293,7 +15669,7 @@ func (p *cCells) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.plain_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem110 := &CCellPlain{}
-		if err := _elem110.Read(ctx, iprot); err != nil {
+		if err := _elem110.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem110), err)
 		}
 		p.plain_cells = append(p.plain_cells, _elem110)
@@ -16313,7 +15689,7 @@ func (p *cCells) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.counter_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem111 := &CCellCounter{}
-		if err := _elem111.Read(ctx, iprot); err != nil {
+		if err := _elem111.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem111), err)
 		}
 		p.counter_cells = append(p.counter_cells, _elem111)
@@ -16333,7 +15709,7 @@ func (p *cCells) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	p.serial_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem112 := &CCellSerial{}
-		if err := _elem112.Read(ctx, iprot); err != nil {
+		if err := _elem112.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem112), err)
 		}
 		p.serial_cells = append(p.serial_cells, _elem112)
@@ -16344,7 +15720,7 @@ func (p *cCells) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *cCells) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *cCells) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "cCells"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -16370,7 +15746,7 @@ func (p *cCells) writeField1(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.plain_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -16391,7 +15767,7 @@ func (p *cCells) writeField2(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.counter_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -16412,7 +15788,7 @@ func (p *cCells) writeField3(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.serial_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -16456,19 +15832,6 @@ func (p *cCells) String() string {
 	return fmt.Sprintf("cCells(%+v)", *p)
 }
 
-func (p *cCells) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.cCells",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*cCells)(nil)
-
 func (p *cCells) Validate() error {
 	return nil
 }
@@ -16508,7 +15871,7 @@ func (p *KCellPlain) Getv() []byte {
 	return p.v
 }
 
-func (p *KCellPlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KCellPlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -16595,7 +15958,7 @@ func (p *KCellPlain) ReadField3(ctx context.Context, iprot thrift.TProtocol) err
 	return nil
 }
 
-func (p *KCellPlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *KCellPlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "KCellPlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -16671,19 +16034,6 @@ func (p *KCellPlain) String() string {
 	return fmt.Sprintf("KCellPlain(%+v)", *p)
 }
 
-func (p *KCellPlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.KCellPlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*KCellPlain)(nil)
-
 func (p *KCellPlain) Validate() error {
 	return nil
 }
@@ -16738,7 +16088,7 @@ func (p *KCellCounter) IsSeteq() bool {
 	return p.eq != nil
 }
 
-func (p *KCellCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KCellCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -16844,7 +16194,7 @@ func (p *KCellCounter) ReadField4(ctx context.Context, iprot thrift.TProtocol) e
 	return nil
 }
 
-func (p *KCellCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *KCellCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "KCellCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -16942,19 +16292,6 @@ func (p *KCellCounter) String() string {
 	return fmt.Sprintf("KCellCounter(%+v)", *p)
 }
 
-func (p *KCellCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.KCellCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*KCellCounter)(nil)
-
 func (p *KCellCounter) Validate() error {
 	return nil
 }
@@ -16994,7 +16331,7 @@ func (p *KCellSerial) Getv() CellValuesSerial {
 	return p.v
 }
 
-func (p *KCellSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KCellSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -17081,7 +16418,7 @@ func (p *KCellSerial) ReadField3(ctx context.Context, iprot thrift.TProtocol) er
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem116 := &CellValueSerial{}
-		if err := _elem116.Read(ctx, iprot); err != nil {
+		if err := _elem116.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem116), err)
 		}
 		p.v = append(p.v, _elem116)
@@ -17092,7 +16429,7 @@ func (p *KCellSerial) ReadField3(ctx context.Context, iprot thrift.TProtocol) er
 	return nil
 }
 
-func (p *KCellSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *KCellSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "KCellSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -17144,7 +16481,7 @@ func (p *KCellSerial) writeField3(ctx context.Context, oprot thrift.TProtocol) (
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -17179,19 +16516,6 @@ func (p *KCellSerial) String() string {
 	}
 	return fmt.Sprintf("KCellSerial(%+v)", *p)
 }
-
-func (p *KCellSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.KCellSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*KCellSerial)(nil)
 
 func (p *KCellSerial) Validate() error {
 	return nil
@@ -17240,7 +16564,7 @@ func (p *kCells) Getserial_cells() []*KCellSerial {
 	return p.serial_cells
 }
 
-func (p *kCells) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *kCells) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -17341,7 +16665,7 @@ func (p *kCells) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.plain_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem119 := &KCellPlain{}
-		if err := _elem119.Read(ctx, iprot); err != nil {
+		if err := _elem119.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem119), err)
 		}
 		p.plain_cells = append(p.plain_cells, _elem119)
@@ -17361,7 +16685,7 @@ func (p *kCells) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	p.counter_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem120 := &KCellCounter{}
-		if err := _elem120.Read(ctx, iprot); err != nil {
+		if err := _elem120.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem120), err)
 		}
 		p.counter_cells = append(p.counter_cells, _elem120)
@@ -17381,7 +16705,7 @@ func (p *kCells) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	p.serial_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem121 := &KCellSerial{}
-		if err := _elem121.Read(ctx, iprot); err != nil {
+		if err := _elem121.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem121), err)
 		}
 		p.serial_cells = append(p.serial_cells, _elem121)
@@ -17392,7 +16716,7 @@ func (p *kCells) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *kCells) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *kCells) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "kCells"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -17440,7 +16764,7 @@ func (p *kCells) writeField2(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.plain_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -17461,7 +16785,7 @@ func (p *kCells) writeField3(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.counter_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -17482,7 +16806,7 @@ func (p *kCells) writeField4(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.serial_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -17531,19 +16855,6 @@ func (p *kCells) String() string {
 	return fmt.Sprintf("kCells(%+v)", *p)
 }
 
-func (p *kCells) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.kCells",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*kCells)(nil)
-
 func (p *kCells) Validate() error {
 	return nil
 }
@@ -17583,7 +16894,7 @@ func (p *FCellPlain) Getv() []byte {
 	return p.v
 }
 
-func (p *FCellPlain) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FCellPlain) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -17670,7 +16981,7 @@ func (p *FCellPlain) ReadField3(ctx context.Context, iprot thrift.TProtocol) err
 	return nil
 }
 
-func (p *FCellPlain) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FCellPlain) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FCellPlain"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -17746,19 +17057,6 @@ func (p *FCellPlain) String() string {
 	return fmt.Sprintf("FCellPlain(%+v)", *p)
 }
 
-func (p *FCellPlain) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FCellPlain",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FCellPlain)(nil)
-
 func (p *FCellPlain) Validate() error {
 	return nil
 }
@@ -17813,7 +17111,7 @@ func (p *FCellCounter) IsSeteq() bool {
 	return p.eq != nil
 }
 
-func (p *FCellCounter) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FCellCounter) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -17919,7 +17217,7 @@ func (p *FCellCounter) ReadField4(ctx context.Context, iprot thrift.TProtocol) e
 	return nil
 }
 
-func (p *FCellCounter) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FCellCounter) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FCellCounter"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -18017,19 +17315,6 @@ func (p *FCellCounter) String() string {
 	return fmt.Sprintf("FCellCounter(%+v)", *p)
 }
 
-func (p *FCellCounter) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FCellCounter",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FCellCounter)(nil)
-
 func (p *FCellCounter) Validate() error {
 	return nil
 }
@@ -18069,7 +17354,7 @@ func (p *FCellSerial) Getv() CellValuesSerial {
 	return p.v
 }
 
-func (p *FCellSerial) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FCellSerial) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -18156,7 +17441,7 @@ func (p *FCellSerial) ReadField3(ctx context.Context, iprot thrift.TProtocol) er
 	p.v = tSlice
 	for i := 0; i < size; i++ {
 		_elem126 := &CellValueSerial{}
-		if err := _elem126.Read(ctx, iprot); err != nil {
+		if err := _elem126.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem126), err)
 		}
 		p.v = append(p.v, _elem126)
@@ -18167,7 +17452,7 @@ func (p *FCellSerial) ReadField3(ctx context.Context, iprot thrift.TProtocol) er
 	return nil
 }
 
-func (p *FCellSerial) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FCellSerial) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FCellSerial"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -18219,7 +17504,7 @@ func (p *FCellSerial) writeField3(ctx context.Context, oprot thrift.TProtocol) (
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.v {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -18254,19 +17539,6 @@ func (p *FCellSerial) String() string {
 	}
 	return fmt.Sprintf("FCellSerial(%+v)", *p)
 }
-
-func (p *FCellSerial) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FCellSerial",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FCellSerial)(nil)
 
 func (p *FCellSerial) Validate() error {
 	return nil
@@ -18315,7 +17587,7 @@ func (p *FCells) Getserial_cells() []*FCellSerial {
 	return p.serial_cells
 }
 
-func (p *FCells) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *FCells) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -18400,7 +17672,7 @@ func (p *FCells) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 			_key128 = v
 		}
 		_val129 := &FCells{}
-		if err := _val129.Read(ctx, iprot); err != nil {
+		if err := _val129.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _val129), err)
 		}
 		p.f[_key128] = _val129
@@ -18420,7 +17692,7 @@ func (p *FCells) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.plain_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem130 := &FCellPlain{}
-		if err := _elem130.Read(ctx, iprot); err != nil {
+		if err := _elem130.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem130), err)
 		}
 		p.plain_cells = append(p.plain_cells, _elem130)
@@ -18440,7 +17712,7 @@ func (p *FCells) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
 	p.counter_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem131 := &FCellCounter{}
-		if err := _elem131.Read(ctx, iprot); err != nil {
+		if err := _elem131.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem131), err)
 		}
 		p.counter_cells = append(p.counter_cells, _elem131)
@@ -18460,7 +17732,7 @@ func (p *FCells) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	p.serial_cells = tSlice
 	for i := 0; i < size; i++ {
 		_elem132 := &FCellSerial{}
-		if err := _elem132.Read(ctx, iprot); err != nil {
+		if err := _elem132.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem132), err)
 		}
 		p.serial_cells = append(p.serial_cells, _elem132)
@@ -18471,7 +17743,7 @@ func (p *FCells) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *FCells) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *FCells) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "FCells"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -18501,7 +17773,7 @@ func (p *FCells) writeField1(ctx context.Context, oprot thrift.TProtocol) (err e
 		if err := oprot.WriteString(ctx, string(k)); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err)
 		}
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -18522,7 +17794,7 @@ func (p *FCells) writeField2(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.plain_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -18543,7 +17815,7 @@ func (p *FCells) writeField3(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.counter_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -18564,7 +17836,7 @@ func (p *FCells) writeField4(ctx context.Context, oprot thrift.TProtocol) (err e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.serial_cells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -18612,19 +17884,6 @@ func (p *FCells) String() string {
 	}
 	return fmt.Sprintf("FCells(%+v)", *p)
 }
-
-func (p *FCells) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.FCells",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*FCells)(nil)
 
 func (p *FCells) Validate() error {
 	return nil
@@ -18687,7 +17946,7 @@ func (p *CellsGroup) IsSetfcells() bool {
 	return p.fcells != nil
 }
 
-func (p *CellsGroup) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CellsGroup) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -18759,7 +18018,7 @@ func (p *CellsGroup) Read(ctx context.Context, iprot thrift.TProtocol) error {
 
 func (p *CellsGroup) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.cells = &Cells{}
-	if err := p.cells.Read(ctx, iprot); err != nil {
+	if err := p.cells.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.cells), err)
 	}
 	return nil
@@ -18780,7 +18039,7 @@ func (p *CellsGroup) ReadField2(ctx context.Context, iprot thrift.TProtocol) err
 			_key137 = v
 		}
 		_val138 := &cCells{}
-		if err := _val138.Read(ctx, iprot); err != nil {
+		if err := _val138.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _val138), err)
 		}
 		p.ccells[_key137] = _val138
@@ -18800,7 +18059,7 @@ func (p *CellsGroup) ReadField3(ctx context.Context, iprot thrift.TProtocol) err
 	p.kcells = tSlice
 	for i := 0; i < size; i++ {
 		_elem139 := &kCells{}
-		if err := _elem139.Read(ctx, iprot); err != nil {
+		if err := _elem139.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem139), err)
 		}
 		p.kcells = append(p.kcells, _elem139)
@@ -18813,13 +18072,13 @@ func (p *CellsGroup) ReadField3(ctx context.Context, iprot thrift.TProtocol) err
 
 func (p *CellsGroup) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
 	p.fcells = &FCells{}
-	if err := p.fcells.Read(ctx, iprot); err != nil {
+	if err := p.fcells.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.fcells), err)
 	}
 	return nil
 }
 
-func (p *CellsGroup) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CellsGroup) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CellsGroup"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -18842,7 +18101,7 @@ func (p *CellsGroup) writeField1(ctx context.Context, oprot thrift.TProtocol) (e
 	if err := oprot.WriteFieldBegin(ctx, "cells", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:cells: ", p), err)
 	}
-	if err := p.cells.Write(ctx, oprot); err != nil {
+	if err := p.cells.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.cells), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -18862,7 +18121,7 @@ func (p *CellsGroup) writeField2(ctx context.Context, oprot thrift.TProtocol) (e
 		if err := oprot.WriteString(ctx, string(k)); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err)
 		}
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -18883,7 +18142,7 @@ func (p *CellsGroup) writeField3(ctx context.Context, oprot thrift.TProtocol) (e
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.kcells {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -18900,7 +18159,7 @@ func (p *CellsGroup) writeField4(ctx context.Context, oprot thrift.TProtocol) (e
 	if err := oprot.WriteFieldBegin(ctx, "fcells", thrift.STRUCT, 4); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:fcells: ", p), err)
 	}
-	if err := p.fcells.Write(ctx, oprot); err != nil {
+	if err := p.fcells.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.fcells), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -18937,19 +18196,6 @@ func (p *CellsGroup) String() string {
 	return fmt.Sprintf("CellsGroup(%+v)", *p)
 }
 
-func (p *CellsGroup) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CellsGroup",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CellsGroup)(nil)
-
 func (p *CellsGroup) Validate() error {
 	return nil
 }
@@ -18981,7 +18227,7 @@ func (p *CompactResult_) Geterr() int32 {
 	return p.err
 }
 
-func (p *CompactResult_) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *CompactResult_) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -19049,7 +18295,7 @@ func (p *CompactResult_) ReadField2(ctx context.Context, iprot thrift.TProtocol)
 	return nil
 }
 
-func (p *CompactResult_) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *CompactResult_) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "CompactResult"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -19110,19 +18356,6 @@ func (p *CompactResult_) String() string {
 	return fmt.Sprintf("CompactResult_(%+v)", *p)
 }
 
-func (p *CompactResult_) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.CompactResult_",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*CompactResult_)(nil)
-
 func (p *CompactResult_) Validate() error {
 	return nil
 }
@@ -19169,7 +18402,7 @@ func (p *Result_) IsSetcells() bool {
 	return p.cells != nil
 }
 
-func (p *Result_) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Result_) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -19238,7 +18471,7 @@ func (p *Result_) ReadField1(ctx context.Context, iprot thrift.TProtocol) error 
 	p.schemas = tSlice
 	for i := 0; i < size; i++ {
 		_elem142 := &Schema{}
-		if err := _elem142.Read(ctx, iprot); err != nil {
+		if err := _elem142.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem142), err)
 		}
 		p.schemas = append(p.schemas, _elem142)
@@ -19251,7 +18484,7 @@ func (p *Result_) ReadField1(ctx context.Context, iprot thrift.TProtocol) error 
 
 func (p *Result_) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.cells = &Cells{}
-	if err := p.cells.Read(ctx, iprot); err != nil {
+	if err := p.cells.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.cells), err)
 	}
 	return nil
@@ -19266,7 +18499,7 @@ func (p *Result_) ReadField3(ctx context.Context, iprot thrift.TProtocol) error 
 	p.compact = tSlice
 	for i := 0; i < size; i++ {
 		_elem143 := &CompactResult_{}
-		if err := _elem143.Read(ctx, iprot); err != nil {
+		if err := _elem143.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem143), err)
 		}
 		p.compact = append(p.compact, _elem143)
@@ -19277,7 +18510,7 @@ func (p *Result_) ReadField3(ctx context.Context, iprot thrift.TProtocol) error 
 	return nil
 }
 
-func (p *Result_) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Result_) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "Result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -19303,7 +18536,7 @@ func (p *Result_) writeField1(ctx context.Context, oprot thrift.TProtocol) (err 
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.schemas {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -19320,7 +18553,7 @@ func (p *Result_) writeField2(ctx context.Context, oprot thrift.TProtocol) (err 
 	if err := oprot.WriteFieldBegin(ctx, "cells", thrift.STRUCT, 2); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:cells: ", p), err)
 	}
-	if err := p.cells.Write(ctx, oprot); err != nil {
+	if err := p.cells.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.cells), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -19337,7 +18570,7 @@ func (p *Result_) writeField3(ctx context.Context, oprot thrift.TProtocol) (err 
 		return thrift.PrependError("error writing list begin: ", err)
 	}
 	for _, v := range p.compact {
-		if err := v.Write(ctx, oprot); err != nil {
+		if err := v.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 		}
 	}
@@ -19376,19 +18609,6 @@ func (p *Result_) String() string {
 	}
 	return fmt.Sprintf("Result_(%+v)", *p)
 }
-
-func (p *Result_) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Result_",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Result_)(nil)
 
 func (p *Result_) Validate() error {
 	return nil
@@ -19525,7 +18745,7 @@ type Service interface {	//The SWC-DB Thrift Service
 	// The direct method to Manage Column
 	// 
 	// Parameters:
-	//  - Func: The Action Function to use
+	//  - func: The Action Function to use
 	//  - schema: The Schema for the Action
 	// 
 	mng_column(ctx context.Context, func_a1 SchemaFunc, schema *Schema) (_err error)
@@ -20082,12 +19302,12 @@ func (p *ServiceClient) update_by_types(ctx context.Context, plain UCCellsPlain,
 // The direct method to Manage Column
 // 
 // Parameters:
-//  - Func: The Action Function to use
+//  - func: The Action Function to use
 //  - schema: The Schema for the Action
 // 
 func (p *ServiceClient) mng_column(ctx context.Context, func_a1 SchemaFunc, schema *Schema) (_err error) {
 	var _args207 Servicemng_column_args
-	_args207.Func = func_a1
+	_args207.func = func_a1
 	_args207.schema = schema
 	var _result209 Servicemng_column_result
 	var _meta208 thrift.ResponseMeta
@@ -20350,7 +19570,7 @@ type serviceProcessorsql_mng_column struct {
 func (p *serviceProcessorsql_mng_column) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err236 error
 	args := Servicesql_mng_column_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_mng_column", thrift.EXCEPTION, seqId)
@@ -20426,7 +19646,7 @@ func (p *serviceProcessorsql_mng_column) Process(ctx context.Context, seqId int3
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_mng_column", thrift.REPLY, seqId); err2 != nil {
 		_write_err236 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err236 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err236 == nil && err2 != nil {
 		_write_err236 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err236 == nil && err2 != nil {
@@ -20448,7 +19668,7 @@ type serviceProcessorsql_list_columns struct {
 func (p *serviceProcessorsql_list_columns) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err238 error
 	args := Servicesql_list_columns_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_list_columns", thrift.EXCEPTION, seqId)
@@ -20526,7 +19746,7 @@ func (p *serviceProcessorsql_list_columns) Process(ctx context.Context, seqId in
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_list_columns", thrift.REPLY, seqId); err2 != nil {
 		_write_err238 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err238 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err238 == nil && err2 != nil {
 		_write_err238 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err238 == nil && err2 != nil {
@@ -20548,7 +19768,7 @@ type serviceProcessorsql_compact_columns struct {
 func (p *serviceProcessorsql_compact_columns) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err240 error
 	args := Servicesql_compact_columns_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_compact_columns", thrift.EXCEPTION, seqId)
@@ -20626,7 +19846,7 @@ func (p *serviceProcessorsql_compact_columns) Process(ctx context.Context, seqId
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_compact_columns", thrift.REPLY, seqId); err2 != nil {
 		_write_err240 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err240 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err240 == nil && err2 != nil {
 		_write_err240 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err240 == nil && err2 != nil {
@@ -20648,7 +19868,7 @@ type serviceProcessorsql_select_plain struct {
 func (p *serviceProcessorsql_select_plain) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err242 error
 	args := Servicesql_select_plain_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_select_plain", thrift.EXCEPTION, seqId)
@@ -20726,7 +19946,7 @@ func (p *serviceProcessorsql_select_plain) Process(ctx context.Context, seqId in
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_select_plain", thrift.REPLY, seqId); err2 != nil {
 		_write_err242 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err242 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err242 == nil && err2 != nil {
 		_write_err242 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err242 == nil && err2 != nil {
@@ -20748,7 +19968,7 @@ type serviceProcessorsql_select_counter struct {
 func (p *serviceProcessorsql_select_counter) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err244 error
 	args := Servicesql_select_counter_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_select_counter", thrift.EXCEPTION, seqId)
@@ -20826,7 +20046,7 @@ func (p *serviceProcessorsql_select_counter) Process(ctx context.Context, seqId 
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_select_counter", thrift.REPLY, seqId); err2 != nil {
 		_write_err244 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err244 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err244 == nil && err2 != nil {
 		_write_err244 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err244 == nil && err2 != nil {
@@ -20848,7 +20068,7 @@ type serviceProcessorsql_select_serial struct {
 func (p *serviceProcessorsql_select_serial) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err246 error
 	args := Servicesql_select_serial_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_select_serial", thrift.EXCEPTION, seqId)
@@ -20926,7 +20146,7 @@ func (p *serviceProcessorsql_select_serial) Process(ctx context.Context, seqId i
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_select_serial", thrift.REPLY, seqId); err2 != nil {
 		_write_err246 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err246 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err246 == nil && err2 != nil {
 		_write_err246 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err246 == nil && err2 != nil {
@@ -20948,7 +20168,7 @@ type serviceProcessorsql_select struct {
 func (p *serviceProcessorsql_select) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err248 error
 	args := Servicesql_select_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_select", thrift.EXCEPTION, seqId)
@@ -21026,7 +20246,7 @@ func (p *serviceProcessorsql_select) Process(ctx context.Context, seqId int32, i
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_select", thrift.REPLY, seqId); err2 != nil {
 		_write_err248 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err248 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err248 == nil && err2 != nil {
 		_write_err248 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err248 == nil && err2 != nil {
@@ -21048,7 +20268,7 @@ type serviceProcessorsql_select_rslt_on_column struct {
 func (p *serviceProcessorsql_select_rslt_on_column) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err250 error
 	args := Servicesql_select_rslt_on_column_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_select_rslt_on_column", thrift.EXCEPTION, seqId)
@@ -21126,7 +20346,7 @@ func (p *serviceProcessorsql_select_rslt_on_column) Process(ctx context.Context,
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_select_rslt_on_column", thrift.REPLY, seqId); err2 != nil {
 		_write_err250 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err250 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err250 == nil && err2 != nil {
 		_write_err250 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err250 == nil && err2 != nil {
@@ -21148,7 +20368,7 @@ type serviceProcessorsql_select_rslt_on_key struct {
 func (p *serviceProcessorsql_select_rslt_on_key) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err252 error
 	args := Servicesql_select_rslt_on_key_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_select_rslt_on_key", thrift.EXCEPTION, seqId)
@@ -21226,7 +20446,7 @@ func (p *serviceProcessorsql_select_rslt_on_key) Process(ctx context.Context, se
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_select_rslt_on_key", thrift.REPLY, seqId); err2 != nil {
 		_write_err252 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err252 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err252 == nil && err2 != nil {
 		_write_err252 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err252 == nil && err2 != nil {
@@ -21248,7 +20468,7 @@ type serviceProcessorsql_select_rslt_on_fraction struct {
 func (p *serviceProcessorsql_select_rslt_on_fraction) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err254 error
 	args := Servicesql_select_rslt_on_fraction_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_select_rslt_on_fraction", thrift.EXCEPTION, seqId)
@@ -21326,7 +20546,7 @@ func (p *serviceProcessorsql_select_rslt_on_fraction) Process(ctx context.Contex
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_select_rslt_on_fraction", thrift.REPLY, seqId); err2 != nil {
 		_write_err254 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err254 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err254 == nil && err2 != nil {
 		_write_err254 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err254 == nil && err2 != nil {
@@ -21348,7 +20568,7 @@ type serviceProcessorsql_query struct {
 func (p *serviceProcessorsql_query) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err256 error
 	args := Servicesql_query_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_query", thrift.EXCEPTION, seqId)
@@ -21426,7 +20646,7 @@ func (p *serviceProcessorsql_query) Process(ctx context.Context, seqId int32, ip
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_query", thrift.REPLY, seqId); err2 != nil {
 		_write_err256 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err256 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err256 == nil && err2 != nil {
 		_write_err256 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err256 == nil && err2 != nil {
@@ -21448,7 +20668,7 @@ type serviceProcessorsql_update struct {
 func (p *serviceProcessorsql_update) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err258 error
 	args := Servicesql_update_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "sql_update", thrift.EXCEPTION, seqId)
@@ -21524,7 +20744,7 @@ func (p *serviceProcessorsql_update) Process(ctx context.Context, seqId int32, i
 	if err2 := oprot.WriteMessageBegin(ctx, "sql_update", thrift.REPLY, seqId); err2 != nil {
 		_write_err258 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err258 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err258 == nil && err2 != nil {
 		_write_err258 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err258 == nil && err2 != nil {
@@ -21546,7 +20766,7 @@ type serviceProcessorexec_sql struct {
 func (p *serviceProcessorexec_sql) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err260 error
 	args := Serviceexec_sql_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "exec_sql", thrift.EXCEPTION, seqId)
@@ -21624,7 +20844,7 @@ func (p *serviceProcessorexec_sql) Process(ctx context.Context, seqId int32, ipr
 	if err2 := oprot.WriteMessageBegin(ctx, "exec_sql", thrift.REPLY, seqId); err2 != nil {
 		_write_err260 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err260 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err260 == nil && err2 != nil {
 		_write_err260 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err260 == nil && err2 != nil {
@@ -21646,7 +20866,7 @@ type serviceProcessorupdater_create struct {
 func (p *serviceProcessorupdater_create) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err262 error
 	args := Serviceupdater_create_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "updater_create", thrift.EXCEPTION, seqId)
@@ -21724,7 +20944,7 @@ func (p *serviceProcessorupdater_create) Process(ctx context.Context, seqId int3
 	if err2 := oprot.WriteMessageBegin(ctx, "updater_create", thrift.REPLY, seqId); err2 != nil {
 		_write_err262 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err262 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err262 == nil && err2 != nil {
 		_write_err262 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err262 == nil && err2 != nil {
@@ -21746,7 +20966,7 @@ type serviceProcessorupdater_close struct {
 func (p *serviceProcessorupdater_close) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err264 error
 	args := Serviceupdater_close_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "updater_close", thrift.EXCEPTION, seqId)
@@ -21822,7 +21042,7 @@ func (p *serviceProcessorupdater_close) Process(ctx context.Context, seqId int32
 	if err2 := oprot.WriteMessageBegin(ctx, "updater_close", thrift.REPLY, seqId); err2 != nil {
 		_write_err264 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err264 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err264 == nil && err2 != nil {
 		_write_err264 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err264 == nil && err2 != nil {
@@ -21844,7 +21064,7 @@ type serviceProcessorupdate_plain struct {
 func (p *serviceProcessorupdate_plain) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err266 error
 	args := Serviceupdate_plain_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "update_plain", thrift.EXCEPTION, seqId)
@@ -21920,7 +21140,7 @@ func (p *serviceProcessorupdate_plain) Process(ctx context.Context, seqId int32,
 	if err2 := oprot.WriteMessageBegin(ctx, "update_plain", thrift.REPLY, seqId); err2 != nil {
 		_write_err266 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err266 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err266 == nil && err2 != nil {
 		_write_err266 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err266 == nil && err2 != nil {
@@ -21942,7 +21162,7 @@ type serviceProcessorupdate_counter struct {
 func (p *serviceProcessorupdate_counter) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err268 error
 	args := Serviceupdate_counter_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "update_counter", thrift.EXCEPTION, seqId)
@@ -22018,7 +21238,7 @@ func (p *serviceProcessorupdate_counter) Process(ctx context.Context, seqId int3
 	if err2 := oprot.WriteMessageBegin(ctx, "update_counter", thrift.REPLY, seqId); err2 != nil {
 		_write_err268 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err268 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err268 == nil && err2 != nil {
 		_write_err268 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err268 == nil && err2 != nil {
@@ -22040,7 +21260,7 @@ type serviceProcessorupdate_serial struct {
 func (p *serviceProcessorupdate_serial) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err270 error
 	args := Serviceupdate_serial_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "update_serial", thrift.EXCEPTION, seqId)
@@ -22116,7 +21336,7 @@ func (p *serviceProcessorupdate_serial) Process(ctx context.Context, seqId int32
 	if err2 := oprot.WriteMessageBegin(ctx, "update_serial", thrift.REPLY, seqId); err2 != nil {
 		_write_err270 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err270 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err270 == nil && err2 != nil {
 		_write_err270 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err270 == nil && err2 != nil {
@@ -22138,7 +21358,7 @@ type serviceProcessorupdate_by_types struct {
 func (p *serviceProcessorupdate_by_types) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err272 error
 	args := Serviceupdate_by_types_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "update_by_types", thrift.EXCEPTION, seqId)
@@ -22214,7 +21434,7 @@ func (p *serviceProcessorupdate_by_types) Process(ctx context.Context, seqId int
 	if err2 := oprot.WriteMessageBegin(ctx, "update_by_types", thrift.REPLY, seqId); err2 != nil {
 		_write_err272 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err272 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err272 == nil && err2 != nil {
 		_write_err272 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err272 == nil && err2 != nil {
@@ -22236,7 +21456,7 @@ type serviceProcessormng_column struct {
 func (p *serviceProcessormng_column) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err274 error
 	args := Servicemng_column_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "mng_column", thrift.EXCEPTION, seqId)
@@ -22274,7 +21494,7 @@ func (p *serviceProcessormng_column) Process(ctx context.Context, seqId int32, i
 	}
 
 	result := Servicemng_column_result{}
-	if err2 := p.handler.mng_column(ctx, args.Func, args.schema); err2 != nil {
+	if err2 := p.handler.mng_column(ctx, args.func, args.schema); err2 != nil {
 		tickerCancel()
 		err = thrift.WrapTException(err2)
 		switch v := err2.(type) {
@@ -22312,7 +21532,7 @@ func (p *serviceProcessormng_column) Process(ctx context.Context, seqId int32, i
 	if err2 := oprot.WriteMessageBegin(ctx, "mng_column", thrift.REPLY, seqId); err2 != nil {
 		_write_err274 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err274 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err274 == nil && err2 != nil {
 		_write_err274 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err274 == nil && err2 != nil {
@@ -22334,7 +21554,7 @@ type serviceProcessorlist_columns struct {
 func (p *serviceProcessorlist_columns) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err276 error
 	args := Servicelist_columns_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "list_columns", thrift.EXCEPTION, seqId)
@@ -22412,7 +21632,7 @@ func (p *serviceProcessorlist_columns) Process(ctx context.Context, seqId int32,
 	if err2 := oprot.WriteMessageBegin(ctx, "list_columns", thrift.REPLY, seqId); err2 != nil {
 		_write_err276 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err276 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err276 == nil && err2 != nil {
 		_write_err276 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err276 == nil && err2 != nil {
@@ -22434,7 +21654,7 @@ type serviceProcessorcompact_columns struct {
 func (p *serviceProcessorcompact_columns) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err278 error
 	args := Servicecompact_columns_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "compact_columns", thrift.EXCEPTION, seqId)
@@ -22512,7 +21732,7 @@ func (p *serviceProcessorcompact_columns) Process(ctx context.Context, seqId int
 	if err2 := oprot.WriteMessageBegin(ctx, "compact_columns", thrift.REPLY, seqId); err2 != nil {
 		_write_err278 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err278 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err278 == nil && err2 != nil {
 		_write_err278 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err278 == nil && err2 != nil {
@@ -22534,7 +21754,7 @@ type serviceProcessorscan struct {
 func (p *serviceProcessorscan) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err280 error
 	args := Servicescan_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "scan", thrift.EXCEPTION, seqId)
@@ -22612,7 +21832,7 @@ func (p *serviceProcessorscan) Process(ctx context.Context, seqId int32, iprot, 
 	if err2 := oprot.WriteMessageBegin(ctx, "scan", thrift.REPLY, seqId); err2 != nil {
 		_write_err280 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err280 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err280 == nil && err2 != nil {
 		_write_err280 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err280 == nil && err2 != nil {
@@ -22634,7 +21854,7 @@ type serviceProcessorscan_rslt_on_column struct {
 func (p *serviceProcessorscan_rslt_on_column) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err282 error
 	args := Servicescan_rslt_on_column_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "scan_rslt_on_column", thrift.EXCEPTION, seqId)
@@ -22712,7 +21932,7 @@ func (p *serviceProcessorscan_rslt_on_column) Process(ctx context.Context, seqId
 	if err2 := oprot.WriteMessageBegin(ctx, "scan_rslt_on_column", thrift.REPLY, seqId); err2 != nil {
 		_write_err282 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err282 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err282 == nil && err2 != nil {
 		_write_err282 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err282 == nil && err2 != nil {
@@ -22734,7 +21954,7 @@ type serviceProcessorscan_rslt_on_key struct {
 func (p *serviceProcessorscan_rslt_on_key) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err284 error
 	args := Servicescan_rslt_on_key_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "scan_rslt_on_key", thrift.EXCEPTION, seqId)
@@ -22812,7 +22032,7 @@ func (p *serviceProcessorscan_rslt_on_key) Process(ctx context.Context, seqId in
 	if err2 := oprot.WriteMessageBegin(ctx, "scan_rslt_on_key", thrift.REPLY, seqId); err2 != nil {
 		_write_err284 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err284 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err284 == nil && err2 != nil {
 		_write_err284 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err284 == nil && err2 != nil {
@@ -22834,7 +22054,7 @@ type serviceProcessorscan_rslt_on_fraction struct {
 func (p *serviceProcessorscan_rslt_on_fraction) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err286 error
 	args := Servicescan_rslt_on_fraction_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "scan_rslt_on_fraction", thrift.EXCEPTION, seqId)
@@ -22912,7 +22132,7 @@ func (p *serviceProcessorscan_rslt_on_fraction) Process(ctx context.Context, seq
 	if err2 := oprot.WriteMessageBegin(ctx, "scan_rslt_on_fraction", thrift.REPLY, seqId); err2 != nil {
 		_write_err286 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err286 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err286 == nil && err2 != nil {
 		_write_err286 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err286 == nil && err2 != nil {
@@ -22934,7 +22154,7 @@ type serviceProcessorscan_rslt_on struct {
 func (p *serviceProcessorscan_rslt_on) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
 	var _write_err288 error
 	args := Servicescan_rslt_on_args{}
-	if err2 := args.Read(ctx, iprot); err2 != nil {
+	if err2 := args.read(ctx, iprot); err2 != nil {
 		iprot.ReadMessageEnd(ctx)
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
 		oprot.WriteMessageBegin(ctx, "scan_rslt_on", thrift.EXCEPTION, seqId)
@@ -23012,7 +22232,7 @@ func (p *serviceProcessorscan_rslt_on) Process(ctx context.Context, seqId int32,
 	if err2 := oprot.WriteMessageBegin(ctx, "scan_rslt_on", thrift.REPLY, seqId); err2 != nil {
 		_write_err288 = thrift.WrapTException(err2)
 	}
-	if err2 := result.Write(ctx, oprot); _write_err288 == nil && err2 != nil {
+	if err2 := result.write(ctx, oprot); _write_err288 == nil && err2 != nil {
 		_write_err288 = thrift.WrapTException(err2)
 	}
 	if err2 := oprot.WriteMessageEnd(ctx); _write_err288 == nil && err2 != nil {
@@ -23047,7 +22267,7 @@ func (p *Servicesql_mng_column_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_mng_column_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_mng_column_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -23096,7 +22316,7 @@ func (p *Servicesql_mng_column_args) ReadField1(ctx context.Context, iprot thrif
 	return nil
 }
 
-func (p *Servicesql_mng_column_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_mng_column_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_mng_column_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -23132,19 +22352,6 @@ func (p *Servicesql_mng_column_args) String() string {
 	return fmt.Sprintf("Servicesql_mng_column_args(%+v)", *p)
 }
 
-func (p *Servicesql_mng_column_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_mng_column_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_mng_column_args)(nil)
-
 // Attributes:
 //  - e
 // 
@@ -23169,7 +22376,7 @@ func (p *Servicesql_mng_column_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_mng_column_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_mng_column_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -23211,13 +22418,13 @@ func (p *Servicesql_mng_column_result) Read(ctx context.Context, iprot thrift.TP
 
 func (p *Servicesql_mng_column_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_mng_column_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_mng_column_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_mng_column_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -23238,7 +22445,7 @@ func (p *Servicesql_mng_column_result) writeField1(ctx context.Context, oprot th
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -23254,19 +22461,6 @@ func (p *Servicesql_mng_column_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_mng_column_result(%+v)", *p)
 }
-
-func (p *Servicesql_mng_column_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_mng_column_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_mng_column_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -23285,7 +22479,7 @@ func (p *Servicesql_list_columns_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_list_columns_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_list_columns_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -23334,7 +22528,7 @@ func (p *Servicesql_list_columns_args) ReadField1(ctx context.Context, iprot thr
 	return nil
 }
 
-func (p *Servicesql_list_columns_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_list_columns_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_list_columns_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -23369,19 +22563,6 @@ func (p *Servicesql_list_columns_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_list_columns_args(%+v)", *p)
 }
-
-func (p *Servicesql_list_columns_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_list_columns_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_list_columns_args)(nil)
 
 // Attributes:
 //  - success
@@ -23420,7 +22601,7 @@ func (p *Servicesql_list_columns_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_list_columns_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_list_columns_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -23479,7 +22660,7 @@ func (p *Servicesql_list_columns_result) ReadField0(ctx context.Context, iprot t
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem290 := &Schema{}
-		if err := _elem290.Read(ctx, iprot); err != nil {
+		if err := _elem290.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem290), err)
 		}
 		p.success = append(p.success, _elem290)
@@ -23492,13 +22673,13 @@ func (p *Servicesql_list_columns_result) ReadField0(ctx context.Context, iprot t
 
 func (p *Servicesql_list_columns_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_list_columns_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_list_columns_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_list_columns_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -23524,7 +22705,7 @@ func (p *Servicesql_list_columns_result) writeField0(ctx context.Context, oprot 
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -23543,7 +22724,7 @@ func (p *Servicesql_list_columns_result) writeField1(ctx context.Context, oprot 
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -23559,19 +22740,6 @@ func (p *Servicesql_list_columns_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_list_columns_result(%+v)", *p)
 }
-
-func (p *Servicesql_list_columns_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_list_columns_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_list_columns_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -23590,7 +22758,7 @@ func (p *Servicesql_compact_columns_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_compact_columns_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_compact_columns_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -23639,7 +22807,7 @@ func (p *Servicesql_compact_columns_args) ReadField1(ctx context.Context, iprot 
 	return nil
 }
 
-func (p *Servicesql_compact_columns_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_compact_columns_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_compact_columns_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -23674,19 +22842,6 @@ func (p *Servicesql_compact_columns_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_compact_columns_args(%+v)", *p)
 }
-
-func (p *Servicesql_compact_columns_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_compact_columns_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_compact_columns_args)(nil)
 
 // Attributes:
 //  - success
@@ -23725,7 +22880,7 @@ func (p *Servicesql_compact_columns_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_compact_columns_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_compact_columns_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -23784,7 +22939,7 @@ func (p *Servicesql_compact_columns_result) ReadField0(ctx context.Context, ipro
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem291 := &CompactResult_{}
-		if err := _elem291.Read(ctx, iprot); err != nil {
+		if err := _elem291.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem291), err)
 		}
 		p.success = append(p.success, _elem291)
@@ -23797,13 +22952,13 @@ func (p *Servicesql_compact_columns_result) ReadField0(ctx context.Context, ipro
 
 func (p *Servicesql_compact_columns_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_compact_columns_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_compact_columns_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_compact_columns_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -23829,7 +22984,7 @@ func (p *Servicesql_compact_columns_result) writeField0(ctx context.Context, opr
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -23848,7 +23003,7 @@ func (p *Servicesql_compact_columns_result) writeField1(ctx context.Context, opr
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -23864,19 +23019,6 @@ func (p *Servicesql_compact_columns_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_compact_columns_result(%+v)", *p)
 }
-
-func (p *Servicesql_compact_columns_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_compact_columns_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_compact_columns_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -23895,7 +23037,7 @@ func (p *Servicesql_select_plain_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_select_plain_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_plain_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -23944,7 +23086,7 @@ func (p *Servicesql_select_plain_args) ReadField1(ctx context.Context, iprot thr
 	return nil
 }
 
-func (p *Servicesql_select_plain_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_plain_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_plain_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -23979,19 +23121,6 @@ func (p *Servicesql_select_plain_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_plain_args(%+v)", *p)
 }
-
-func (p *Servicesql_select_plain_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_plain_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_plain_args)(nil)
 
 // Attributes:
 //  - success
@@ -24030,7 +23159,7 @@ func (p *Servicesql_select_plain_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_select_plain_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_plain_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -24089,7 +23218,7 @@ func (p *Servicesql_select_plain_result) ReadField0(ctx context.Context, iprot t
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem292 := &CellPlain{}
-		if err := _elem292.Read(ctx, iprot); err != nil {
+		if err := _elem292.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem292), err)
 		}
 		p.success = append(p.success, _elem292)
@@ -24102,13 +23231,13 @@ func (p *Servicesql_select_plain_result) ReadField0(ctx context.Context, iprot t
 
 func (p *Servicesql_select_plain_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_select_plain_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_plain_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_plain_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -24134,7 +23263,7 @@ func (p *Servicesql_select_plain_result) writeField0(ctx context.Context, oprot 
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -24153,7 +23282,7 @@ func (p *Servicesql_select_plain_result) writeField1(ctx context.Context, oprot 
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -24169,19 +23298,6 @@ func (p *Servicesql_select_plain_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_plain_result(%+v)", *p)
 }
-
-func (p *Servicesql_select_plain_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_plain_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_plain_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -24200,7 +23316,7 @@ func (p *Servicesql_select_counter_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_select_counter_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_counter_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -24249,7 +23365,7 @@ func (p *Servicesql_select_counter_args) ReadField1(ctx context.Context, iprot t
 	return nil
 }
 
-func (p *Servicesql_select_counter_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_counter_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_counter_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -24284,19 +23400,6 @@ func (p *Servicesql_select_counter_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_counter_args(%+v)", *p)
 }
-
-func (p *Servicesql_select_counter_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_counter_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_counter_args)(nil)
 
 // Attributes:
 //  - success
@@ -24335,7 +23438,7 @@ func (p *Servicesql_select_counter_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_select_counter_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_counter_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -24394,7 +23497,7 @@ func (p *Servicesql_select_counter_result) ReadField0(ctx context.Context, iprot
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem293 := &CellCounter{}
-		if err := _elem293.Read(ctx, iprot); err != nil {
+		if err := _elem293.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem293), err)
 		}
 		p.success = append(p.success, _elem293)
@@ -24407,13 +23510,13 @@ func (p *Servicesql_select_counter_result) ReadField0(ctx context.Context, iprot
 
 func (p *Servicesql_select_counter_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_select_counter_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_counter_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_counter_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -24439,7 +23542,7 @@ func (p *Servicesql_select_counter_result) writeField0(ctx context.Context, opro
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -24458,7 +23561,7 @@ func (p *Servicesql_select_counter_result) writeField1(ctx context.Context, opro
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -24474,19 +23577,6 @@ func (p *Servicesql_select_counter_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_counter_result(%+v)", *p)
 }
-
-func (p *Servicesql_select_counter_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_counter_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_counter_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -24505,7 +23595,7 @@ func (p *Servicesql_select_serial_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_select_serial_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_serial_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -24554,7 +23644,7 @@ func (p *Servicesql_select_serial_args) ReadField1(ctx context.Context, iprot th
 	return nil
 }
 
-func (p *Servicesql_select_serial_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_serial_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_serial_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -24589,19 +23679,6 @@ func (p *Servicesql_select_serial_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_serial_args(%+v)", *p)
 }
-
-func (p *Servicesql_select_serial_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_serial_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_serial_args)(nil)
 
 // Attributes:
 //  - success
@@ -24640,7 +23717,7 @@ func (p *Servicesql_select_serial_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_select_serial_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_serial_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -24699,7 +23776,7 @@ func (p *Servicesql_select_serial_result) ReadField0(ctx context.Context, iprot 
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem294 := &CellSerial{}
-		if err := _elem294.Read(ctx, iprot); err != nil {
+		if err := _elem294.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem294), err)
 		}
 		p.success = append(p.success, _elem294)
@@ -24712,13 +23789,13 @@ func (p *Servicesql_select_serial_result) ReadField0(ctx context.Context, iprot 
 
 func (p *Servicesql_select_serial_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_select_serial_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_serial_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_serial_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -24744,7 +23821,7 @@ func (p *Servicesql_select_serial_result) writeField0(ctx context.Context, oprot
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -24763,7 +23840,7 @@ func (p *Servicesql_select_serial_result) writeField1(ctx context.Context, oprot
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -24779,19 +23856,6 @@ func (p *Servicesql_select_serial_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_serial_result(%+v)", *p)
 }
-
-func (p *Servicesql_select_serial_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_serial_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_serial_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -24810,7 +23874,7 @@ func (p *Servicesql_select_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_select_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -24859,7 +23923,7 @@ func (p *Servicesql_select_args) ReadField1(ctx context.Context, iprot thrift.TP
 	return nil
 }
 
-func (p *Servicesql_select_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -24894,19 +23958,6 @@ func (p *Servicesql_select_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_args(%+v)", *p)
 }
-
-func (p *Servicesql_select_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_args)(nil)
 
 // Attributes:
 //  - success
@@ -24947,7 +23998,7 @@ func (p *Servicesql_select_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_select_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -24999,7 +24050,7 @@ func (p *Servicesql_select_result) Read(ctx context.Context, iprot thrift.TProto
 
 func (p *Servicesql_select_result) ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
 	p.success = &Cells{}
-	if err := p.success.Read(ctx, iprot); err != nil {
+	if err := p.success.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.success), err)
 	}
 	return nil
@@ -25007,13 +24058,13 @@ func (p *Servicesql_select_result) ReadField0(ctx context.Context, iprot thrift.
 
 func (p *Servicesql_select_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_select_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -25035,7 +24086,7 @@ func (p *Servicesql_select_result) writeField0(ctx context.Context, oprot thrift
 		if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.success.Write(ctx, oprot); err != nil {
+		if err := p.success.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.success), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -25050,7 +24101,7 @@ func (p *Servicesql_select_result) writeField1(ctx context.Context, oprot thrift
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -25066,19 +24117,6 @@ func (p *Servicesql_select_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_result(%+v)", *p)
 }
-
-func (p *Servicesql_select_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -25097,7 +24135,7 @@ func (p *Servicesql_select_rslt_on_column_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_select_rslt_on_column_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_column_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -25146,7 +24184,7 @@ func (p *Servicesql_select_rslt_on_column_args) ReadField1(ctx context.Context, 
 	return nil
 }
 
-func (p *Servicesql_select_rslt_on_column_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_column_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_rslt_on_column_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -25181,19 +24219,6 @@ func (p *Servicesql_select_rslt_on_column_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_rslt_on_column_args(%+v)", *p)
 }
-
-func (p *Servicesql_select_rslt_on_column_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_rslt_on_column_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_rslt_on_column_args)(nil)
 
 // Attributes:
 //  - success
@@ -25232,7 +24257,7 @@ func (p *Servicesql_select_rslt_on_column_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_select_rslt_on_column_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_column_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -25297,7 +24322,7 @@ func (p *Servicesql_select_rslt_on_column_result) ReadField0(ctx context.Context
 			_key295 = v
 		}
 		_val296 := &cCells{}
-		if err := _val296.Read(ctx, iprot); err != nil {
+		if err := _val296.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _val296), err)
 		}
 		p.success[_key295] = _val296
@@ -25310,13 +24335,13 @@ func (p *Servicesql_select_rslt_on_column_result) ReadField0(ctx context.Context
 
 func (p *Servicesql_select_rslt_on_column_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_select_rslt_on_column_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_column_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_rslt_on_column_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -25345,7 +24370,7 @@ func (p *Servicesql_select_rslt_on_column_result) writeField0(ctx context.Contex
 			if err := oprot.WriteString(ctx, string(k)); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err)
 			}
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -25364,7 +24389,7 @@ func (p *Servicesql_select_rslt_on_column_result) writeField1(ctx context.Contex
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -25380,19 +24405,6 @@ func (p *Servicesql_select_rslt_on_column_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_rslt_on_column_result(%+v)", *p)
 }
-
-func (p *Servicesql_select_rslt_on_column_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_rslt_on_column_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_rslt_on_column_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -25411,7 +24423,7 @@ func (p *Servicesql_select_rslt_on_key_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_select_rslt_on_key_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_key_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -25460,7 +24472,7 @@ func (p *Servicesql_select_rslt_on_key_args) ReadField1(ctx context.Context, ipr
 	return nil
 }
 
-func (p *Servicesql_select_rslt_on_key_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_key_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_rslt_on_key_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -25495,19 +24507,6 @@ func (p *Servicesql_select_rslt_on_key_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_rslt_on_key_args(%+v)", *p)
 }
-
-func (p *Servicesql_select_rslt_on_key_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_rslt_on_key_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_rslt_on_key_args)(nil)
 
 // Attributes:
 //  - success
@@ -25546,7 +24545,7 @@ func (p *Servicesql_select_rslt_on_key_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_select_rslt_on_key_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_key_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -25605,7 +24604,7 @@ func (p *Servicesql_select_rslt_on_key_result) ReadField0(ctx context.Context, i
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem297 := &kCells{}
-		if err := _elem297.Read(ctx, iprot); err != nil {
+		if err := _elem297.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem297), err)
 		}
 		p.success = append(p.success, _elem297)
@@ -25618,13 +24617,13 @@ func (p *Servicesql_select_rslt_on_key_result) ReadField0(ctx context.Context, i
 
 func (p *Servicesql_select_rslt_on_key_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_select_rslt_on_key_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_key_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_rslt_on_key_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -25650,7 +24649,7 @@ func (p *Servicesql_select_rslt_on_key_result) writeField0(ctx context.Context, 
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -25669,7 +24668,7 @@ func (p *Servicesql_select_rslt_on_key_result) writeField1(ctx context.Context, 
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -25685,19 +24684,6 @@ func (p *Servicesql_select_rslt_on_key_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_rslt_on_key_result(%+v)", *p)
 }
-
-func (p *Servicesql_select_rslt_on_key_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_rslt_on_key_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_rslt_on_key_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -25716,7 +24702,7 @@ func (p *Servicesql_select_rslt_on_fraction_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Servicesql_select_rslt_on_fraction_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_fraction_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -25765,7 +24751,7 @@ func (p *Servicesql_select_rslt_on_fraction_args) ReadField1(ctx context.Context
 	return nil
 }
 
-func (p *Servicesql_select_rslt_on_fraction_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_fraction_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_rslt_on_fraction_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -25800,19 +24786,6 @@ func (p *Servicesql_select_rslt_on_fraction_args) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_rslt_on_fraction_args(%+v)", *p)
 }
-
-func (p *Servicesql_select_rslt_on_fraction_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_rslt_on_fraction_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_rslt_on_fraction_args)(nil)
 
 // Attributes:
 //  - success
@@ -25853,7 +24826,7 @@ func (p *Servicesql_select_rslt_on_fraction_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_select_rslt_on_fraction_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_fraction_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -25905,7 +24878,7 @@ func (p *Servicesql_select_rslt_on_fraction_result) Read(ctx context.Context, ip
 
 func (p *Servicesql_select_rslt_on_fraction_result) ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
 	p.success = &FCells{}
-	if err := p.success.Read(ctx, iprot); err != nil {
+	if err := p.success.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.success), err)
 	}
 	return nil
@@ -25913,13 +24886,13 @@ func (p *Servicesql_select_rslt_on_fraction_result) ReadField0(ctx context.Conte
 
 func (p *Servicesql_select_rslt_on_fraction_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_select_rslt_on_fraction_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_select_rslt_on_fraction_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_select_rslt_on_fraction_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -25941,7 +24914,7 @@ func (p *Servicesql_select_rslt_on_fraction_result) writeField0(ctx context.Cont
 		if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.success.Write(ctx, oprot); err != nil {
+		if err := p.success.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.success), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -25956,7 +24929,7 @@ func (p *Servicesql_select_rslt_on_fraction_result) writeField1(ctx context.Cont
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -25972,19 +24945,6 @@ func (p *Servicesql_select_rslt_on_fraction_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_select_rslt_on_fraction_result(%+v)", *p)
 }
-
-func (p *Servicesql_select_rslt_on_fraction_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_select_rslt_on_fraction_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_select_rslt_on_fraction_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -26011,7 +24971,7 @@ func (p *Servicesql_query_args) Getrslt() CellsResult_ {
 	return p.rslt
 }
 
-func (p *Servicesql_query_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_query_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -26080,7 +25040,7 @@ func (p *Servicesql_query_args) ReadField2(ctx context.Context, iprot thrift.TPr
 	return nil
 }
 
-func (p *Servicesql_query_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_query_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_query_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -26130,19 +25090,6 @@ func (p *Servicesql_query_args) String() string {
 	return fmt.Sprintf("Servicesql_query_args(%+v)", *p)
 }
 
-func (p *Servicesql_query_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_query_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_query_args)(nil)
-
 // Attributes:
 //  - success
 //  - e
@@ -26182,7 +25129,7 @@ func (p *Servicesql_query_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_query_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_query_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -26234,7 +25181,7 @@ func (p *Servicesql_query_result) Read(ctx context.Context, iprot thrift.TProtoc
 
 func (p *Servicesql_query_result) ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
 	p.success = &CellsGroup{}
-	if err := p.success.Read(ctx, iprot); err != nil {
+	if err := p.success.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.success), err)
 	}
 	return nil
@@ -26242,13 +25189,13 @@ func (p *Servicesql_query_result) ReadField0(ctx context.Context, iprot thrift.T
 
 func (p *Servicesql_query_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_query_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_query_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_query_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -26270,7 +25217,7 @@ func (p *Servicesql_query_result) writeField0(ctx context.Context, oprot thrift.
 		if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.success.Write(ctx, oprot); err != nil {
+		if err := p.success.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.success), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -26285,7 +25232,7 @@ func (p *Servicesql_query_result) writeField1(ctx context.Context, oprot thrift.
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -26301,19 +25248,6 @@ func (p *Servicesql_query_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_query_result(%+v)", *p)
 }
-
-func (p *Servicesql_query_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_query_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_query_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -26340,7 +25274,7 @@ func (p *Servicesql_update_args) Getupdater_id() int64 {
 	return p.updater_id
 }
 
-func (p *Servicesql_update_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_update_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -26408,7 +25342,7 @@ func (p *Servicesql_update_args) ReadField2(ctx context.Context, iprot thrift.TP
 	return nil
 }
 
-func (p *Servicesql_update_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_update_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_update_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -26458,19 +25392,6 @@ func (p *Servicesql_update_args) String() string {
 	return fmt.Sprintf("Servicesql_update_args(%+v)", *p)
 }
 
-func (p *Servicesql_update_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_update_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_update_args)(nil)
-
 // Attributes:
 //  - e
 // 
@@ -26495,7 +25416,7 @@ func (p *Servicesql_update_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicesql_update_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicesql_update_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -26537,13 +25458,13 @@ func (p *Servicesql_update_result) Read(ctx context.Context, iprot thrift.TProto
 
 func (p *Servicesql_update_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicesql_update_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicesql_update_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "sql_update_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -26564,7 +25485,7 @@ func (p *Servicesql_update_result) writeField1(ctx context.Context, oprot thrift
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -26580,19 +25501,6 @@ func (p *Servicesql_update_result) String() string {
 	}
 	return fmt.Sprintf("Servicesql_update_result(%+v)", *p)
 }
-
-func (p *Servicesql_update_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicesql_update_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicesql_update_result)(nil)
 
 // Attributes:
 //  - sql: The SQL string to Execute
@@ -26611,7 +25519,7 @@ func (p *Serviceexec_sql_args) Getsql() string {
 	return p.sql
 }
 
-func (p *Serviceexec_sql_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceexec_sql_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -26660,7 +25568,7 @@ func (p *Serviceexec_sql_args) ReadField1(ctx context.Context, iprot thrift.TPro
 	return nil
 }
 
-func (p *Serviceexec_sql_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceexec_sql_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "exec_sql_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -26695,19 +25603,6 @@ func (p *Serviceexec_sql_args) String() string {
 	}
 	return fmt.Sprintf("Serviceexec_sql_args(%+v)", *p)
 }
-
-func (p *Serviceexec_sql_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceexec_sql_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceexec_sql_args)(nil)
 
 // Attributes:
 //  - success
@@ -26748,7 +25643,7 @@ func (p *Serviceexec_sql_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Serviceexec_sql_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceexec_sql_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -26800,7 +25695,7 @@ func (p *Serviceexec_sql_result) Read(ctx context.Context, iprot thrift.TProtoco
 
 func (p *Serviceexec_sql_result) ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
 	p.success = &Result_{}
-	if err := p.success.Read(ctx, iprot); err != nil {
+	if err := p.success.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.success), err)
 	}
 	return nil
@@ -26808,13 +25703,13 @@ func (p *Serviceexec_sql_result) ReadField0(ctx context.Context, iprot thrift.TP
 
 func (p *Serviceexec_sql_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Serviceexec_sql_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceexec_sql_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "exec_sql_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -26836,7 +25731,7 @@ func (p *Serviceexec_sql_result) writeField0(ctx context.Context, oprot thrift.T
 		if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.success.Write(ctx, oprot); err != nil {
+		if err := p.success.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.success), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -26851,7 +25746,7 @@ func (p *Serviceexec_sql_result) writeField1(ctx context.Context, oprot thrift.T
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -26867,19 +25762,6 @@ func (p *Serviceexec_sql_result) String() string {
 	}
 	return fmt.Sprintf("Serviceexec_sql_result(%+v)", *p)
 }
-
-func (p *Serviceexec_sql_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceexec_sql_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceexec_sql_result)(nil)
 
 // Attributes:
 //  - buffer_size: The buffer size of the Updater
@@ -26898,7 +25780,7 @@ func (p *Serviceupdater_create_args) Getbuffer_size() int32 {
 	return p.buffer_size
 }
 
-func (p *Serviceupdater_create_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdater_create_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -26947,7 +25829,7 @@ func (p *Serviceupdater_create_args) ReadField1(ctx context.Context, iprot thrif
 	return nil
 }
 
-func (p *Serviceupdater_create_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdater_create_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "updater_create_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -26982,19 +25864,6 @@ func (p *Serviceupdater_create_args) String() string {
 	}
 	return fmt.Sprintf("Serviceupdater_create_args(%+v)", *p)
 }
-
-func (p *Serviceupdater_create_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdater_create_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdater_create_args)(nil)
 
 // Attributes:
 //  - success
@@ -27035,7 +25904,7 @@ func (p *Serviceupdater_create_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Serviceupdater_create_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdater_create_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -27096,13 +25965,13 @@ func (p *Serviceupdater_create_result) ReadField0(ctx context.Context, iprot thr
 
 func (p *Serviceupdater_create_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Serviceupdater_create_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdater_create_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "updater_create_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -27139,7 +26008,7 @@ func (p *Serviceupdater_create_result) writeField1(ctx context.Context, oprot th
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -27155,19 +26024,6 @@ func (p *Serviceupdater_create_result) String() string {
 	}
 	return fmt.Sprintf("Serviceupdater_create_result(%+v)", *p)
 }
-
-func (p *Serviceupdater_create_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdater_create_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdater_create_result)(nil)
 
 // Attributes:
 //  - id: The Updater ID to close
@@ -27186,7 +26042,7 @@ func (p *Serviceupdater_close_args) Getid() int64 {
 	return p.id
 }
 
-func (p *Serviceupdater_close_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdater_close_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -27235,7 +26091,7 @@ func (p *Serviceupdater_close_args) ReadField1(ctx context.Context, iprot thrift
 	return nil
 }
 
-func (p *Serviceupdater_close_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdater_close_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "updater_close_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -27271,19 +26127,6 @@ func (p *Serviceupdater_close_args) String() string {
 	return fmt.Sprintf("Serviceupdater_close_args(%+v)", *p)
 }
 
-func (p *Serviceupdater_close_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdater_close_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdater_close_args)(nil)
-
 // Attributes:
 //  - e
 // 
@@ -27308,7 +26151,7 @@ func (p *Serviceupdater_close_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Serviceupdater_close_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdater_close_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -27350,13 +26193,13 @@ func (p *Serviceupdater_close_result) Read(ctx context.Context, iprot thrift.TPr
 
 func (p *Serviceupdater_close_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Serviceupdater_close_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdater_close_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "updater_close_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -27377,7 +26220,7 @@ func (p *Serviceupdater_close_result) writeField1(ctx context.Context, oprot thr
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -27393,19 +26236,6 @@ func (p *Serviceupdater_close_result) String() string {
 	}
 	return fmt.Sprintf("Serviceupdater_close_result(%+v)", *p)
 }
-
-func (p *Serviceupdater_close_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdater_close_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdater_close_result)(nil)
 
 // Attributes:
 //  - cells: The Cells to update
@@ -27432,7 +26262,7 @@ func (p *Serviceupdate_plain_args) Getupdater_id() int64 {
 	return p.updater_id
 }
 
-func (p *Serviceupdate_plain_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_plain_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -27504,7 +26334,7 @@ func (p *Serviceupdate_plain_args) ReadField1(ctx context.Context, iprot thrift.
 		_val299 := tSlice
 		for i := 0; i < size; i++ {
 			_elem300 := &UCellPlain{}
-			if err := _elem300.Read(ctx, iprot); err != nil {
+			if err := _elem300.read(ctx, iprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem300), err)
 			}
 			_val299 = append(_val299, _elem300)
@@ -27529,7 +26359,7 @@ func (p *Serviceupdate_plain_args) ReadField2(ctx context.Context, iprot thrift.
 	return nil
 }
 
-func (p *Serviceupdate_plain_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_plain_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_plain_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -27561,7 +26391,7 @@ func (p *Serviceupdate_plain_args) writeField1(ctx context.Context, oprot thrift
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range v {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -27598,19 +26428,6 @@ func (p *Serviceupdate_plain_args) String() string {
 	return fmt.Sprintf("Serviceupdate_plain_args(%+v)", *p)
 }
 
-func (p *Serviceupdate_plain_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_plain_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_plain_args)(nil)
-
 // Attributes:
 //  - e
 // 
@@ -27635,7 +26452,7 @@ func (p *Serviceupdate_plain_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Serviceupdate_plain_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_plain_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -27677,13 +26494,13 @@ func (p *Serviceupdate_plain_result) Read(ctx context.Context, iprot thrift.TPro
 
 func (p *Serviceupdate_plain_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Serviceupdate_plain_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_plain_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_plain_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -27704,7 +26521,7 @@ func (p *Serviceupdate_plain_result) writeField1(ctx context.Context, oprot thri
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -27720,19 +26537,6 @@ func (p *Serviceupdate_plain_result) String() string {
 	}
 	return fmt.Sprintf("Serviceupdate_plain_result(%+v)", *p)
 }
-
-func (p *Serviceupdate_plain_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_plain_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_plain_result)(nil)
 
 // Attributes:
 //  - cells: The Counter Cells to update
@@ -27759,7 +26563,7 @@ func (p *Serviceupdate_counter_args) Getupdater_id() int64 {
 	return p.updater_id
 }
 
-func (p *Serviceupdate_counter_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_counter_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -27831,7 +26635,7 @@ func (p *Serviceupdate_counter_args) ReadField1(ctx context.Context, iprot thrif
 		_val302 := tSlice
 		for i := 0; i < size; i++ {
 			_elem303 := &UCellCounter{}
-			if err := _elem303.Read(ctx, iprot); err != nil {
+			if err := _elem303.read(ctx, iprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem303), err)
 			}
 			_val302 = append(_val302, _elem303)
@@ -27856,7 +26660,7 @@ func (p *Serviceupdate_counter_args) ReadField2(ctx context.Context, iprot thrif
 	return nil
 }
 
-func (p *Serviceupdate_counter_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_counter_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_counter_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -27888,7 +26692,7 @@ func (p *Serviceupdate_counter_args) writeField1(ctx context.Context, oprot thri
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range v {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -27925,19 +26729,6 @@ func (p *Serviceupdate_counter_args) String() string {
 	return fmt.Sprintf("Serviceupdate_counter_args(%+v)", *p)
 }
 
-func (p *Serviceupdate_counter_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_counter_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_counter_args)(nil)
-
 // Attributes:
 //  - e
 // 
@@ -27962,7 +26753,7 @@ func (p *Serviceupdate_counter_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Serviceupdate_counter_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_counter_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -28004,13 +26795,13 @@ func (p *Serviceupdate_counter_result) Read(ctx context.Context, iprot thrift.TP
 
 func (p *Serviceupdate_counter_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Serviceupdate_counter_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_counter_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_counter_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -28031,7 +26822,7 @@ func (p *Serviceupdate_counter_result) writeField1(ctx context.Context, oprot th
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -28047,19 +26838,6 @@ func (p *Serviceupdate_counter_result) String() string {
 	}
 	return fmt.Sprintf("Serviceupdate_counter_result(%+v)", *p)
 }
-
-func (p *Serviceupdate_counter_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_counter_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_counter_result)(nil)
 
 // Attributes:
 //  - cells: The Serial Cells to update
@@ -28086,7 +26864,7 @@ func (p *Serviceupdate_serial_args) Getupdater_id() int64 {
 	return p.updater_id
 }
 
-func (p *Serviceupdate_serial_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_serial_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -28158,7 +26936,7 @@ func (p *Serviceupdate_serial_args) ReadField1(ctx context.Context, iprot thrift
 		_val305 := tSlice
 		for i := 0; i < size; i++ {
 			_elem306 := &UCellSerial{}
-			if err := _elem306.Read(ctx, iprot); err != nil {
+			if err := _elem306.read(ctx, iprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem306), err)
 			}
 			_val305 = append(_val305, _elem306)
@@ -28183,7 +26961,7 @@ func (p *Serviceupdate_serial_args) ReadField2(ctx context.Context, iprot thrift
 	return nil
 }
 
-func (p *Serviceupdate_serial_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_serial_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_serial_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -28215,7 +26993,7 @@ func (p *Serviceupdate_serial_args) writeField1(ctx context.Context, oprot thrif
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range v {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -28252,19 +27030,6 @@ func (p *Serviceupdate_serial_args) String() string {
 	return fmt.Sprintf("Serviceupdate_serial_args(%+v)", *p)
 }
 
-func (p *Serviceupdate_serial_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_serial_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_serial_args)(nil)
-
 // Attributes:
 //  - e
 // 
@@ -28289,7 +27054,7 @@ func (p *Serviceupdate_serial_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Serviceupdate_serial_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_serial_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -28331,13 +27096,13 @@ func (p *Serviceupdate_serial_result) Read(ctx context.Context, iprot thrift.TPr
 
 func (p *Serviceupdate_serial_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Serviceupdate_serial_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_serial_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_serial_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -28358,7 +27123,7 @@ func (p *Serviceupdate_serial_result) writeField1(ctx context.Context, oprot thr
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -28374,19 +27139,6 @@ func (p *Serviceupdate_serial_result) String() string {
 	}
 	return fmt.Sprintf("Serviceupdate_serial_result(%+v)", *p)
 }
-
-func (p *Serviceupdate_serial_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_serial_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_serial_result)(nil)
 
 // Attributes:
 //  - plain: The PLAIN Cells to update
@@ -28429,7 +27181,7 @@ func (p *Serviceupdate_by_types_args) Getupdater_id() int64 {
 	return p.updater_id
 }
 
-func (p *Serviceupdate_by_types_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_by_types_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -28521,7 +27273,7 @@ func (p *Serviceupdate_by_types_args) ReadField1(ctx context.Context, iprot thri
 		_val308 := tSlice
 		for i := 0; i < size; i++ {
 			_elem309 := &UCellPlain{}
-			if err := _elem309.Read(ctx, iprot); err != nil {
+			if err := _elem309.read(ctx, iprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem309), err)
 			}
 			_val308 = append(_val308, _elem309)
@@ -28559,7 +27311,7 @@ func (p *Serviceupdate_by_types_args) ReadField2(ctx context.Context, iprot thri
 		_val311 := tSlice
 		for i := 0; i < size; i++ {
 			_elem312 := &UCellCounter{}
-			if err := _elem312.Read(ctx, iprot); err != nil {
+			if err := _elem312.read(ctx, iprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem312), err)
 			}
 			_val311 = append(_val311, _elem312)
@@ -28597,7 +27349,7 @@ func (p *Serviceupdate_by_types_args) ReadField3(ctx context.Context, iprot thri
 		_val314 := tSlice
 		for i := 0; i < size; i++ {
 			_elem315 := &UCellSerial{}
-			if err := _elem315.Read(ctx, iprot); err != nil {
+			if err := _elem315.read(ctx, iprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem315), err)
 			}
 			_val314 = append(_val314, _elem315)
@@ -28622,7 +27374,7 @@ func (p *Serviceupdate_by_types_args) ReadField4(ctx context.Context, iprot thri
 	return nil
 }
 
-func (p *Serviceupdate_by_types_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_by_types_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_by_types_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -28656,7 +27408,7 @@ func (p *Serviceupdate_by_types_args) writeField1(ctx context.Context, oprot thr
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range v {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -28688,7 +27440,7 @@ func (p *Serviceupdate_by_types_args) writeField2(ctx context.Context, oprot thr
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range v {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -28720,7 +27472,7 @@ func (p *Serviceupdate_by_types_args) writeField3(ctx context.Context, oprot thr
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range v {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -28757,19 +27509,6 @@ func (p *Serviceupdate_by_types_args) String() string {
 	return fmt.Sprintf("Serviceupdate_by_types_args(%+v)", *p)
 }
 
-func (p *Serviceupdate_by_types_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_by_types_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_by_types_args)(nil)
-
 // Attributes:
 //  - e
 // 
@@ -28794,7 +27533,7 @@ func (p *Serviceupdate_by_types_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Serviceupdate_by_types_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Serviceupdate_by_types_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -28836,13 +27575,13 @@ func (p *Serviceupdate_by_types_result) Read(ctx context.Context, iprot thrift.T
 
 func (p *Serviceupdate_by_types_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Serviceupdate_by_types_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Serviceupdate_by_types_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "update_by_types_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -28863,7 +27602,7 @@ func (p *Serviceupdate_by_types_result) writeField1(ctx context.Context, oprot t
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -28880,25 +27619,12 @@ func (p *Serviceupdate_by_types_result) String() string {
 	return fmt.Sprintf("Serviceupdate_by_types_result(%+v)", *p)
 }
 
-func (p *Serviceupdate_by_types_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Serviceupdate_by_types_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Serviceupdate_by_types_result)(nil)
-
 // Attributes:
-//  - Func: The Action Function to use
+//  - func: The Action Function to use
 //  - schema: The Schema for the Action
 // 
 type Servicemng_column_args struct {
-	Func SchemaFunc `thrift:"func,1" db:"func" json:"func"`
+	func SchemaFunc `thrift:"func,1" db:"func" json:"func"`
 	schema *Schema `thrift:"schema,2" db:"schema" json:"schema"`
 }
 
@@ -28908,8 +27634,8 @@ func NewServicemng_column_args() *Servicemng_column_args {
 
 
 
-func (p *Servicemng_column_args) GetFunc() SchemaFunc {
-	return p.Func
+func (p *Servicemng_column_args) Getfunc() SchemaFunc {
+	return p.func
 }
 
 var Servicemng_column_args_schema_DEFAULT *Schema
@@ -28925,7 +27651,7 @@ func (p *Servicemng_column_args) IsSetschema() bool {
 	return p.schema != nil
 }
 
-func (p *Servicemng_column_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicemng_column_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -28980,20 +27706,20 @@ func (p *Servicemng_column_args) ReadField1(ctx context.Context, iprot thrift.TP
 		return thrift.PrependError("error reading field 1: ", err)
 	} else {
 		temp := SchemaFunc(v)
-		p.Func = temp
+		p.func = temp
 	}
 	return nil
 }
 
 func (p *Servicemng_column_args) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
 	p.schema = &Schema{}
-	if err := p.schema.Read(ctx, iprot); err != nil {
+	if err := p.schema.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.schema), err)
 	}
 	return nil
 }
 
-func (p *Servicemng_column_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicemng_column_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "mng_column_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -29014,7 +27740,7 @@ func (p *Servicemng_column_args) writeField1(ctx context.Context, oprot thrift.T
 	if err := oprot.WriteFieldBegin(ctx, "func", thrift.I32, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:func: ", p), err)
 	}
-	if err := oprot.WriteI32(ctx, int32(p.Func)); err != nil {
+	if err := oprot.WriteI32(ctx, int32(p.func)); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T.func (1) field write error: ", p), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29027,7 +27753,7 @@ func (p *Servicemng_column_args) writeField2(ctx context.Context, oprot thrift.T
 	if err := oprot.WriteFieldBegin(ctx, "schema", thrift.STRUCT, 2); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:schema: ", p), err)
 	}
-	if err := p.schema.Write(ctx, oprot); err != nil {
+	if err := p.schema.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.schema), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29042,19 +27768,6 @@ func (p *Servicemng_column_args) String() string {
 	}
 	return fmt.Sprintf("Servicemng_column_args(%+v)", *p)
 }
-
-func (p *Servicemng_column_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicemng_column_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicemng_column_args)(nil)
 
 // Attributes:
 //  - e
@@ -29080,7 +27793,7 @@ func (p *Servicemng_column_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicemng_column_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicemng_column_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -29122,13 +27835,13 @@ func (p *Servicemng_column_result) Read(ctx context.Context, iprot thrift.TProto
 
 func (p *Servicemng_column_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicemng_column_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicemng_column_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "mng_column_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -29149,7 +27862,7 @@ func (p *Servicemng_column_result) writeField1(ctx context.Context, oprot thrift
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29165,19 +27878,6 @@ func (p *Servicemng_column_result) String() string {
 	}
 	return fmt.Sprintf("Servicemng_column_result(%+v)", *p)
 }
-
-func (p *Servicemng_column_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicemng_column_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicemng_column_result)(nil)
 
 // Attributes:
 //  - spec: The Schemas Specifications to match Schema for response
@@ -29203,7 +27903,7 @@ func (p *Servicelist_columns_args) IsSetspec() bool {
 	return p.spec != nil
 }
 
-func (p *Servicelist_columns_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicelist_columns_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -29245,13 +27945,13 @@ func (p *Servicelist_columns_args) Read(ctx context.Context, iprot thrift.TProto
 
 func (p *Servicelist_columns_args) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec = &SpecSchemas{}
-	if err := p.spec.Read(ctx, iprot); err != nil {
+	if err := p.spec.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec), err)
 	}
 	return nil
 }
 
-func (p *Servicelist_columns_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicelist_columns_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "list_columns_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -29271,7 +27971,7 @@ func (p *Servicelist_columns_args) writeField1(ctx context.Context, oprot thrift
 	if err := oprot.WriteFieldBegin(ctx, "spec", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:spec: ", p), err)
 	}
-	if err := p.spec.Write(ctx, oprot); err != nil {
+	if err := p.spec.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29286,19 +27986,6 @@ func (p *Servicelist_columns_args) String() string {
 	}
 	return fmt.Sprintf("Servicelist_columns_args(%+v)", *p)
 }
-
-func (p *Servicelist_columns_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicelist_columns_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicelist_columns_args)(nil)
 
 // Attributes:
 //  - success
@@ -29337,7 +28024,7 @@ func (p *Servicelist_columns_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicelist_columns_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicelist_columns_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -29396,7 +28083,7 @@ func (p *Servicelist_columns_result) ReadField0(ctx context.Context, iprot thrif
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem316 := &Schema{}
-		if err := _elem316.Read(ctx, iprot); err != nil {
+		if err := _elem316.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem316), err)
 		}
 		p.success = append(p.success, _elem316)
@@ -29409,13 +28096,13 @@ func (p *Servicelist_columns_result) ReadField0(ctx context.Context, iprot thrif
 
 func (p *Servicelist_columns_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicelist_columns_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicelist_columns_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "list_columns_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -29441,7 +28128,7 @@ func (p *Servicelist_columns_result) writeField0(ctx context.Context, oprot thri
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -29460,7 +28147,7 @@ func (p *Servicelist_columns_result) writeField1(ctx context.Context, oprot thri
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29476,19 +28163,6 @@ func (p *Servicelist_columns_result) String() string {
 	}
 	return fmt.Sprintf("Servicelist_columns_result(%+v)", *p)
 }
-
-func (p *Servicelist_columns_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicelist_columns_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicelist_columns_result)(nil)
 
 // Attributes:
 //  - spec: The Schemas Specifications to match columns to Compact
@@ -29514,7 +28188,7 @@ func (p *Servicecompact_columns_args) IsSetspec() bool {
 	return p.spec != nil
 }
 
-func (p *Servicecompact_columns_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicecompact_columns_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -29556,13 +28230,13 @@ func (p *Servicecompact_columns_args) Read(ctx context.Context, iprot thrift.TPr
 
 func (p *Servicecompact_columns_args) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec = &SpecSchemas{}
-	if err := p.spec.Read(ctx, iprot); err != nil {
+	if err := p.spec.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec), err)
 	}
 	return nil
 }
 
-func (p *Servicecompact_columns_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicecompact_columns_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "compact_columns_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -29582,7 +28256,7 @@ func (p *Servicecompact_columns_args) writeField1(ctx context.Context, oprot thr
 	if err := oprot.WriteFieldBegin(ctx, "spec", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:spec: ", p), err)
 	}
-	if err := p.spec.Write(ctx, oprot); err != nil {
+	if err := p.spec.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29597,19 +28271,6 @@ func (p *Servicecompact_columns_args) String() string {
 	}
 	return fmt.Sprintf("Servicecompact_columns_args(%+v)", *p)
 }
-
-func (p *Servicecompact_columns_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicecompact_columns_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicecompact_columns_args)(nil)
 
 // Attributes:
 //  - success
@@ -29648,7 +28309,7 @@ func (p *Servicecompact_columns_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicecompact_columns_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicecompact_columns_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -29707,7 +28368,7 @@ func (p *Servicecompact_columns_result) ReadField0(ctx context.Context, iprot th
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem317 := &CompactResult_{}
-		if err := _elem317.Read(ctx, iprot); err != nil {
+		if err := _elem317.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem317), err)
 		}
 		p.success = append(p.success, _elem317)
@@ -29720,13 +28381,13 @@ func (p *Servicecompact_columns_result) ReadField0(ctx context.Context, iprot th
 
 func (p *Servicecompact_columns_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicecompact_columns_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicecompact_columns_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "compact_columns_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -29752,7 +28413,7 @@ func (p *Servicecompact_columns_result) writeField0(ctx context.Context, oprot t
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -29771,7 +28432,7 @@ func (p *Servicecompact_columns_result) writeField1(ctx context.Context, oprot t
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29787,19 +28448,6 @@ func (p *Servicecompact_columns_result) String() string {
 	}
 	return fmt.Sprintf("Servicecompact_columns_result(%+v)", *p)
 }
-
-func (p *Servicecompact_columns_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicecompact_columns_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicecompact_columns_result)(nil)
 
 // Attributes:
 //  - spec: The Scan Specifications for the scan
@@ -29825,7 +28473,7 @@ func (p *Servicescan_args) IsSetspec() bool {
 	return p.spec != nil
 }
 
-func (p *Servicescan_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -29867,13 +28515,13 @@ func (p *Servicescan_args) Read(ctx context.Context, iprot thrift.TProtocol) err
 
 func (p *Servicescan_args) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec = &SpecScan{}
-	if err := p.spec.Read(ctx, iprot); err != nil {
+	if err := p.spec.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -29893,7 +28541,7 @@ func (p *Servicescan_args) writeField1(ctx context.Context, oprot thrift.TProtoc
 	if err := oprot.WriteFieldBegin(ctx, "spec", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:spec: ", p), err)
 	}
-	if err := p.spec.Write(ctx, oprot); err != nil {
+	if err := p.spec.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -29908,19 +28556,6 @@ func (p *Servicescan_args) String() string {
 	}
 	return fmt.Sprintf("Servicescan_args(%+v)", *p)
 }
-
-func (p *Servicescan_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_args)(nil)
 
 // Attributes:
 //  - success
@@ -29961,7 +28596,7 @@ func (p *Servicescan_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicescan_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -30013,7 +28648,7 @@ func (p *Servicescan_result) Read(ctx context.Context, iprot thrift.TProtocol) e
 
 func (p *Servicescan_result) ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
 	p.success = &Cells{}
-	if err := p.success.Read(ctx, iprot); err != nil {
+	if err := p.success.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.success), err)
 	}
 	return nil
@@ -30021,13 +28656,13 @@ func (p *Servicescan_result) ReadField0(ctx context.Context, iprot thrift.TProto
 
 func (p *Servicescan_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -30049,7 +28684,7 @@ func (p *Servicescan_result) writeField0(ctx context.Context, oprot thrift.TProt
 		if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.success.Write(ctx, oprot); err != nil {
+		if err := p.success.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.success), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30064,7 +28699,7 @@ func (p *Servicescan_result) writeField1(ctx context.Context, oprot thrift.TProt
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30080,19 +28715,6 @@ func (p *Servicescan_result) String() string {
 	}
 	return fmt.Sprintf("Servicescan_result(%+v)", *p)
 }
-
-func (p *Servicescan_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_result)(nil)
 
 // Attributes:
 //  - spec: The Scan Specifications for the scan
@@ -30118,7 +28740,7 @@ func (p *Servicescan_rslt_on_column_args) IsSetspec() bool {
 	return p.spec != nil
 }
 
-func (p *Servicescan_rslt_on_column_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_column_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -30160,13 +28782,13 @@ func (p *Servicescan_rslt_on_column_args) Read(ctx context.Context, iprot thrift
 
 func (p *Servicescan_rslt_on_column_args) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec = &SpecScan{}
-	if err := p.spec.Read(ctx, iprot); err != nil {
+	if err := p.spec.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_rslt_on_column_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_column_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_column_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -30186,7 +28808,7 @@ func (p *Servicescan_rslt_on_column_args) writeField1(ctx context.Context, oprot
 	if err := oprot.WriteFieldBegin(ctx, "spec", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:spec: ", p), err)
 	}
-	if err := p.spec.Write(ctx, oprot); err != nil {
+	if err := p.spec.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30201,19 +28823,6 @@ func (p *Servicescan_rslt_on_column_args) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_column_args(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_column_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_column_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_column_args)(nil)
 
 // Attributes:
 //  - success
@@ -30252,7 +28861,7 @@ func (p *Servicescan_rslt_on_column_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicescan_rslt_on_column_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_column_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -30317,7 +28926,7 @@ func (p *Servicescan_rslt_on_column_result) ReadField0(ctx context.Context, ipro
 			_key318 = v
 		}
 		_val319 := &cCells{}
-		if err := _val319.Read(ctx, iprot); err != nil {
+		if err := _val319.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _val319), err)
 		}
 		p.success[_key318] = _val319
@@ -30330,13 +28939,13 @@ func (p *Servicescan_rslt_on_column_result) ReadField0(ctx context.Context, ipro
 
 func (p *Servicescan_rslt_on_column_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_rslt_on_column_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_column_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_column_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -30365,7 +28974,7 @@ func (p *Servicescan_rslt_on_column_result) writeField0(ctx context.Context, opr
 			if err := oprot.WriteString(ctx, string(k)); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err)
 			}
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -30384,7 +28993,7 @@ func (p *Servicescan_rslt_on_column_result) writeField1(ctx context.Context, opr
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30400,19 +29009,6 @@ func (p *Servicescan_rslt_on_column_result) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_column_result(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_column_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_column_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_column_result)(nil)
 
 // Attributes:
 //  - spec: The Scan Specifications for the scan
@@ -30438,7 +29034,7 @@ func (p *Servicescan_rslt_on_key_args) IsSetspec() bool {
 	return p.spec != nil
 }
 
-func (p *Servicescan_rslt_on_key_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_key_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -30480,13 +29076,13 @@ func (p *Servicescan_rslt_on_key_args) Read(ctx context.Context, iprot thrift.TP
 
 func (p *Servicescan_rslt_on_key_args) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec = &SpecScan{}
-	if err := p.spec.Read(ctx, iprot); err != nil {
+	if err := p.spec.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_rslt_on_key_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_key_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_key_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -30506,7 +29102,7 @@ func (p *Servicescan_rslt_on_key_args) writeField1(ctx context.Context, oprot th
 	if err := oprot.WriteFieldBegin(ctx, "spec", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:spec: ", p), err)
 	}
-	if err := p.spec.Write(ctx, oprot); err != nil {
+	if err := p.spec.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30521,19 +29117,6 @@ func (p *Servicescan_rslt_on_key_args) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_key_args(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_key_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_key_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_key_args)(nil)
 
 // Attributes:
 //  - success
@@ -30572,7 +29155,7 @@ func (p *Servicescan_rslt_on_key_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicescan_rslt_on_key_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_key_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -30631,7 +29214,7 @@ func (p *Servicescan_rslt_on_key_result) ReadField0(ctx context.Context, iprot t
 	p.success = tSlice
 	for i := 0; i < size; i++ {
 		_elem320 := &kCells{}
-		if err := _elem320.Read(ctx, iprot); err != nil {
+		if err := _elem320.read(ctx, iprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem320), err)
 		}
 		p.success = append(p.success, _elem320)
@@ -30644,13 +29227,13 @@ func (p *Servicescan_rslt_on_key_result) ReadField0(ctx context.Context, iprot t
 
 func (p *Servicescan_rslt_on_key_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_rslt_on_key_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_key_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_key_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -30676,7 +29259,7 @@ func (p *Servicescan_rslt_on_key_result) writeField0(ctx context.Context, oprot 
 			return thrift.PrependError("error writing list begin: ", err)
 		}
 		for _, v := range p.success {
-			if err := v.Write(ctx, oprot); err != nil {
+			if err := v.write(ctx, oprot); err != nil {
 				return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
 			}
 		}
@@ -30695,7 +29278,7 @@ func (p *Servicescan_rslt_on_key_result) writeField1(ctx context.Context, oprot 
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30711,19 +29294,6 @@ func (p *Servicescan_rslt_on_key_result) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_key_result(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_key_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_key_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_key_result)(nil)
 
 // Attributes:
 //  - spec: The Scan Specifications for the scan
@@ -30749,7 +29319,7 @@ func (p *Servicescan_rslt_on_fraction_args) IsSetspec() bool {
 	return p.spec != nil
 }
 
-func (p *Servicescan_rslt_on_fraction_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_fraction_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -30791,13 +29361,13 @@ func (p *Servicescan_rslt_on_fraction_args) Read(ctx context.Context, iprot thri
 
 func (p *Servicescan_rslt_on_fraction_args) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec = &SpecScan{}
-	if err := p.spec.Read(ctx, iprot); err != nil {
+	if err := p.spec.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_rslt_on_fraction_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_fraction_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_fraction_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -30817,7 +29387,7 @@ func (p *Servicescan_rslt_on_fraction_args) writeField1(ctx context.Context, opr
 	if err := oprot.WriteFieldBegin(ctx, "spec", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:spec: ", p), err)
 	}
-	if err := p.spec.Write(ctx, oprot); err != nil {
+	if err := p.spec.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30832,19 +29402,6 @@ func (p *Servicescan_rslt_on_fraction_args) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_fraction_args(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_fraction_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_fraction_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_fraction_args)(nil)
 
 // Attributes:
 //  - success
@@ -30885,7 +29442,7 @@ func (p *Servicescan_rslt_on_fraction_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicescan_rslt_on_fraction_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_fraction_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -30937,7 +29494,7 @@ func (p *Servicescan_rslt_on_fraction_result) Read(ctx context.Context, iprot th
 
 func (p *Servicescan_rslt_on_fraction_result) ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
 	p.success = &FCells{}
-	if err := p.success.Read(ctx, iprot); err != nil {
+	if err := p.success.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.success), err)
 	}
 	return nil
@@ -30945,13 +29502,13 @@ func (p *Servicescan_rslt_on_fraction_result) ReadField0(ctx context.Context, ip
 
 func (p *Servicescan_rslt_on_fraction_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_rslt_on_fraction_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_fraction_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_fraction_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -30973,7 +29530,7 @@ func (p *Servicescan_rslt_on_fraction_result) writeField0(ctx context.Context, o
 		if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.success.Write(ctx, oprot); err != nil {
+		if err := p.success.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.success), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -30988,7 +29545,7 @@ func (p *Servicescan_rslt_on_fraction_result) writeField1(ctx context.Context, o
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -31004,19 +29561,6 @@ func (p *Servicescan_rslt_on_fraction_result) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_fraction_result(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_fraction_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_fraction_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_fraction_result)(nil)
 
 // Attributes:
 //  - spec: The Scan Specifications for the scan
@@ -31050,7 +29594,7 @@ func (p *Servicescan_rslt_on_args) IsSetspec() bool {
 	return p.spec != nil
 }
 
-func (p *Servicescan_rslt_on_args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_args) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -31102,7 +29646,7 @@ func (p *Servicescan_rslt_on_args) Read(ctx context.Context, iprot thrift.TProto
 
 func (p *Servicescan_rslt_on_args) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.spec = &SpecScan{}
-	if err := p.spec.Read(ctx, iprot); err != nil {
+	if err := p.spec.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.spec), err)
 	}
 	return nil
@@ -31118,7 +29662,7 @@ func (p *Servicescan_rslt_on_args) ReadField2(ctx context.Context, iprot thrift.
 	return nil
 }
 
-func (p *Servicescan_rslt_on_args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_args) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -31139,7 +29683,7 @@ func (p *Servicescan_rslt_on_args) writeField1(ctx context.Context, oprot thrift
 	if err := oprot.WriteFieldBegin(ctx, "spec", thrift.STRUCT, 1); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:spec: ", p), err)
 	}
-	if err := p.spec.Write(ctx, oprot); err != nil {
+	if err := p.spec.write(ctx, oprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.spec), err)
 	}
 	if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -31167,19 +29711,6 @@ func (p *Servicescan_rslt_on_args) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_args(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_args) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_args",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_args)(nil)
 
 // Attributes:
 //  - success
@@ -31220,7 +29751,7 @@ func (p *Servicescan_rslt_on_result) IsSete() bool {
 	return p.e != nil
 }
 
-func (p *Servicescan_rslt_on_result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_result) read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
 	}
@@ -31272,7 +29803,7 @@ func (p *Servicescan_rslt_on_result) Read(ctx context.Context, iprot thrift.TPro
 
 func (p *Servicescan_rslt_on_result) ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
 	p.success = &CellsGroup{}
-	if err := p.success.Read(ctx, iprot); err != nil {
+	if err := p.success.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.success), err)
 	}
 	return nil
@@ -31280,13 +29811,13 @@ func (p *Servicescan_rslt_on_result) ReadField0(ctx context.Context, iprot thrif
 
 func (p *Servicescan_rslt_on_result) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
 	p.e = &Exception{}
-	if err := p.e.Read(ctx, iprot); err != nil {
+	if err := p.e.read(ctx, iprot); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.e), err)
 	}
 	return nil
 }
 
-func (p *Servicescan_rslt_on_result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *Servicescan_rslt_on_result) write(ctx context.Context, oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin(ctx, "scan_rslt_on_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
@@ -31308,7 +29839,7 @@ func (p *Servicescan_rslt_on_result) writeField0(ctx context.Context, oprot thri
 		if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
 		}
-		if err := p.success.Write(ctx, oprot); err != nil {
+		if err := p.success.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.success), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -31323,7 +29854,7 @@ func (p *Servicescan_rslt_on_result) writeField1(ctx context.Context, oprot thri
 		if err := oprot.WriteFieldBegin(ctx, "e", thrift.STRUCT, 1); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:e: ", p), err)
 		}
-		if err := p.e.Write(ctx, oprot); err != nil {
+		if err := p.e.write(ctx, oprot); err != nil {
 			return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.e), err)
 		}
 		if err := oprot.WriteFieldEnd(ctx); err != nil {
@@ -31339,18 +29870,5 @@ func (p *Servicescan_rslt_on_result) String() string {
 	}
 	return fmt.Sprintf("Servicescan_rslt_on_result(%+v)", *p)
 }
-
-func (p *Servicescan_rslt_on_result) LogValue() slog.Value {
-	if p == nil {
-		return slog.AnyValue(nil)
-	}
-	v := thrift.SlogTStructWrapper{
-		Type: "*swcdb_thrift.Servicescan_rslt_on_result",
-		Value: p,
-	}
-	return slog.AnyValue(v)
-}
-
-var _ slog.LogValuer = (*Servicescan_rslt_on_result)(nil)
 
 
