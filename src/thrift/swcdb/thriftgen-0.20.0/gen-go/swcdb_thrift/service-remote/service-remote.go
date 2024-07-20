@@ -160,7 +160,7 @@ func main() {
 	}
 	iprot := protocolFactory.GetProtocol(trans)
 	oprot := protocolFactory.GetProtocol(trans)
-	client := swcdb_thrift.NewServiceClient(thrift.NewTStandardClient(iprot, oprot))
+	client := swcdb_thrift.New_ServiceClient(thrift.NewTStandardClient(iprot, oprot))
 	if err := trans.Open(); err != nil {
 		fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
 		os.Exit(1)
@@ -169,107 +169,107 @@ func main() {
 	switch cmd {
 	case "sql_mng_column":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_mng_column requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_mng_column requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_mng_column(context.Background(), value0))
+		fmt.Print(client._sql_mng_column(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_list_columns":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_list_columns requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_list_columns requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_list_columns(context.Background(), value0))
+		fmt.Print(client._sql_list_columns(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_compact_columns":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_compact_columns requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_compact_columns requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_compact_columns(context.Background(), value0))
+		fmt.Print(client._sql_compact_columns(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_select_plain":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_select_plain requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_select_plain requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_select_plain(context.Background(), value0))
+		fmt.Print(client._sql_select_plain(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_select_counter":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_select_counter requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_select_counter requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_select_counter(context.Background(), value0))
+		fmt.Print(client._sql_select_counter(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_select_serial":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_select_serial requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_select_serial requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_select_serial(context.Background(), value0))
+		fmt.Print(client._sql_select_serial(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_select":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_select requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_select requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_select(context.Background(), value0))
+		fmt.Print(client._sql_select(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_select_rslt_on_column":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_select_rslt_on_column requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_select_rslt_on_column requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_select_rslt_on_column(context.Background(), value0))
+		fmt.Print(client._sql_select_rslt_on_column(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_select_rslt_on_key":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_select_rslt_on_key requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_select_rslt_on_key requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_select_rslt_on_key(context.Background(), value0))
+		fmt.Print(client._sql_select_rslt_on_key(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_select_rslt_on_fraction":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "sql_select_rslt_on_fraction requires 1 args")
+			fmt.Fprintln(os.Stderr, "_sql_select_rslt_on_fraction requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.sql_select_rslt_on_fraction(context.Background(), value0))
+		fmt.Print(client._sql_select_rslt_on_fraction(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "sql_query":
 		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "sql_query requires 2 args")
+			fmt.Fprintln(os.Stderr, "_sql_query requires 2 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
@@ -279,14 +279,14 @@ func main() {
 			Usage()
 			return
 		}
-		argvalue1 := swcdb_thrift.CellsResult_(tmp1)
+		argvalue1 := swcdb_thrift._CellsResult_(tmp1)
 		value1 := argvalue1
-		fmt.Print(client.sql_query(context.Background(), value0, value1))
+		fmt.Print(client._sql_query(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "sql_update":
 		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "sql_update requires 2 args")
+			fmt.Fprintln(os.Stderr, "_sql_update requires 2 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
@@ -297,22 +297,22 @@ func main() {
 			return
 		}
 		value1 := argvalue1
-		fmt.Print(client.sql_update(context.Background(), value0, value1))
+		fmt.Print(client._sql_update(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "exec_sql":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "exec_sql requires 1 args")
+			fmt.Fprintln(os.Stderr, "_exec_sql requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.exec_sql(context.Background(), value0))
+		fmt.Print(client._exec_sql(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "updater_create":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "updater_create requires 1 args")
+			fmt.Fprintln(os.Stderr, "_updater_create requires 1 args")
 			flag.Usage()
 		}
 		tmp0, err335 := (strconv.Atoi(flag.Arg(1)))
@@ -322,12 +322,12 @@ func main() {
 		}
 		argvalue0 := int32(tmp0)
 		value0 := argvalue0
-		fmt.Print(client.updater_create(context.Background(), value0))
+		fmt.Print(client._updater_create(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "updater_close":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "updater_close requires 1 args")
+			fmt.Fprintln(os.Stderr, "_updater_close requires 1 args")
 			flag.Usage()
 		}
 		argvalue0, err336 := (strconv.ParseInt(flag.Arg(1), 10, 64))
@@ -336,12 +336,12 @@ func main() {
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.updater_close(context.Background(), value0))
+		fmt.Print(client._updater_close(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "update_plain":
 		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "update_plain requires 2 args")
+			fmt.Fprintln(os.Stderr, "_update_plain requires 2 args")
 			flag.Usage()
 		}
 		arg337 := flag.Arg(1)
@@ -354,26 +354,26 @@ func main() {
 		}
 		factory340 := thrift.NewTJSONProtocolFactory()
 		jsProt341 := factory340.GetProtocol(mbTrans338)
-		containerStruct0 := swcdb_thrift.NewServiceupdate_plain_args()
+		containerStruct0 := swcdb_thrift.New_Service_update_plain_args()
 		err342 := containerStruct0.ReadField1(context.Background(), jsProt341)
 		if err342 != nil {
 			Usage()
 			return
 		}
-		argvalue0 := containerStruct0.cells
-		value0 := swcdb_thrift.UCCellsPlain(argvalue0)
+		argvalue0 := containerStruct0._cells
+		value0 := swcdb_thrift._UCCellsPlain(argvalue0)
 		argvalue1, err343 := (strconv.ParseInt(flag.Arg(2), 10, 64))
 		if err343 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
-		fmt.Print(client.update_plain(context.Background(), value0, value1))
+		fmt.Print(client._update_plain(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "update_counter":
 		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "update_counter requires 2 args")
+			fmt.Fprintln(os.Stderr, "_update_counter requires 2 args")
 			flag.Usage()
 		}
 		arg344 := flag.Arg(1)
@@ -386,26 +386,26 @@ func main() {
 		}
 		factory347 := thrift.NewTJSONProtocolFactory()
 		jsProt348 := factory347.GetProtocol(mbTrans345)
-		containerStruct0 := swcdb_thrift.NewServiceupdate_counter_args()
+		containerStruct0 := swcdb_thrift.New_Service_update_counter_args()
 		err349 := containerStruct0.ReadField1(context.Background(), jsProt348)
 		if err349 != nil {
 			Usage()
 			return
 		}
-		argvalue0 := containerStruct0.cells
-		value0 := swcdb_thrift.UCCellsCounter(argvalue0)
+		argvalue0 := containerStruct0._cells
+		value0 := swcdb_thrift._UCCellsCounter(argvalue0)
 		argvalue1, err350 := (strconv.ParseInt(flag.Arg(2), 10, 64))
 		if err350 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
-		fmt.Print(client.update_counter(context.Background(), value0, value1))
+		fmt.Print(client._update_counter(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "update_serial":
 		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "update_serial requires 2 args")
+			fmt.Fprintln(os.Stderr, "_update_serial requires 2 args")
 			flag.Usage()
 		}
 		arg351 := flag.Arg(1)
@@ -418,26 +418,26 @@ func main() {
 		}
 		factory354 := thrift.NewTJSONProtocolFactory()
 		jsProt355 := factory354.GetProtocol(mbTrans352)
-		containerStruct0 := swcdb_thrift.NewServiceupdate_serial_args()
+		containerStruct0 := swcdb_thrift.New_Service_update_serial_args()
 		err356 := containerStruct0.ReadField1(context.Background(), jsProt355)
 		if err356 != nil {
 			Usage()
 			return
 		}
-		argvalue0 := containerStruct0.cells
-		value0 := swcdb_thrift.UCCellsSerial(argvalue0)
+		argvalue0 := containerStruct0._cells
+		value0 := swcdb_thrift._UCCellsSerial(argvalue0)
 		argvalue1, err357 := (strconv.ParseInt(flag.Arg(2), 10, 64))
 		if err357 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
-		fmt.Print(client.update_serial(context.Background(), value0, value1))
+		fmt.Print(client._update_serial(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "update_by_types":
 		if flag.NArg() - 1 != 4 {
-			fmt.Fprintln(os.Stderr, "update_by_types requires 4 args")
+			fmt.Fprintln(os.Stderr, "_update_by_types requires 4 args")
 			flag.Usage()
 		}
 		arg358 := flag.Arg(1)
@@ -450,14 +450,14 @@ func main() {
 		}
 		factory361 := thrift.NewTJSONProtocolFactory()
 		jsProt362 := factory361.GetProtocol(mbTrans359)
-		containerStruct0 := swcdb_thrift.NewServiceupdate_by_types_args()
+		containerStruct0 := swcdb_thrift.New_Service_update_by_types_args()
 		err363 := containerStruct0.ReadField1(context.Background(), jsProt362)
 		if err363 != nil {
 			Usage()
 			return
 		}
-		argvalue0 := containerStruct0.plain
-		value0 := swcdb_thrift.UCCellsPlain(argvalue0)
+		argvalue0 := containerStruct0._plain
+		value0 := swcdb_thrift._UCCellsPlain(argvalue0)
 		arg364 := flag.Arg(2)
 		mbTrans365 := thrift.NewTMemoryBufferLen(len(arg364))
 		defer mbTrans365.Close()
@@ -468,14 +468,14 @@ func main() {
 		}
 		factory367 := thrift.NewTJSONProtocolFactory()
 		jsProt368 := factory367.GetProtocol(mbTrans365)
-		containerStruct1 := swcdb_thrift.NewServiceupdate_by_types_args()
+		containerStruct1 := swcdb_thrift.New_Service_update_by_types_args()
 		err369 := containerStruct1.ReadField2(context.Background(), jsProt368)
 		if err369 != nil {
 			Usage()
 			return
 		}
-		argvalue1 := containerStruct1.counter
-		value1 := swcdb_thrift.UCCellsCounter(argvalue1)
+		argvalue1 := containerStruct1._counter
+		value1 := swcdb_thrift._UCCellsCounter(argvalue1)
 		arg370 := flag.Arg(3)
 		mbTrans371 := thrift.NewTMemoryBufferLen(len(arg370))
 		defer mbTrans371.Close()
@@ -486,26 +486,26 @@ func main() {
 		}
 		factory373 := thrift.NewTJSONProtocolFactory()
 		jsProt374 := factory373.GetProtocol(mbTrans371)
-		containerStruct2 := swcdb_thrift.NewServiceupdate_by_types_args()
+		containerStruct2 := swcdb_thrift.New_Service_update_by_types_args()
 		err375 := containerStruct2.ReadField3(context.Background(), jsProt374)
 		if err375 != nil {
 			Usage()
 			return
 		}
-		argvalue2 := containerStruct2.serial
-		value2 := swcdb_thrift.UCCellsSerial(argvalue2)
+		argvalue2 := containerStruct2._serial
+		value2 := swcdb_thrift._UCCellsSerial(argvalue2)
 		argvalue3, err376 := (strconv.ParseInt(flag.Arg(4), 10, 64))
 		if err376 != nil {
 			Usage()
 			return
 		}
 		value3 := argvalue3
-		fmt.Print(client.update_by_types(context.Background(), value0, value1, value2, value3))
+		fmt.Print(client._update_by_types(context.Background(), value0, value1, value2, value3))
 		fmt.Print("\n")
 		break
 	case "mng_column":
 		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "mng_column requires 2 args")
+			fmt.Fprintln(os.Stderr, "_mng_column requires 2 args")
 			flag.Usage()
 		}
 		tmp0, err := (strconv.Atoi(flag.Arg(1)))
@@ -513,7 +513,7 @@ func main() {
 			Usage()
 			return
 		}
-		argvalue0 := swcdb_thrift.SchemaFunc(tmp0)
+		argvalue0 := swcdb_thrift._SchemaFunc(tmp0)
 		value0 := argvalue0
 		arg377 := flag.Arg(2)
 		mbTrans378 := thrift.NewTMemoryBufferLen(len(arg377))
@@ -525,19 +525,19 @@ func main() {
 		}
 		factory380 := thrift.NewTJSONProtocolFactory()
 		jsProt381 := factory380.GetProtocol(mbTrans378)
-		argvalue1 := swcdb_thrift.NewSchema()
+		argvalue1 := swcdb_thrift.New_Schema()
 		err382 := argvalue1.Read(context.Background(), jsProt381)
 		if err382 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
-		fmt.Print(client.mng_column(context.Background(), value0, value1))
+		fmt.Print(client._mng_column(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "list_columns":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "list_columns requires 1 args")
+			fmt.Fprintln(os.Stderr, "_list_columns requires 1 args")
 			flag.Usage()
 		}
 		arg383 := flag.Arg(1)
@@ -550,19 +550,19 @@ func main() {
 		}
 		factory386 := thrift.NewTJSONProtocolFactory()
 		jsProt387 := factory386.GetProtocol(mbTrans384)
-		argvalue0 := swcdb_thrift.NewSpecSchemas()
+		argvalue0 := swcdb_thrift.New_SpecSchemas()
 		err388 := argvalue0.Read(context.Background(), jsProt387)
 		if err388 != nil {
 			Usage()
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.list_columns(context.Background(), value0))
+		fmt.Print(client._list_columns(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "compact_columns":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "compact_columns requires 1 args")
+			fmt.Fprintln(os.Stderr, "_compact_columns requires 1 args")
 			flag.Usage()
 		}
 		arg389 := flag.Arg(1)
@@ -575,19 +575,19 @@ func main() {
 		}
 		factory392 := thrift.NewTJSONProtocolFactory()
 		jsProt393 := factory392.GetProtocol(mbTrans390)
-		argvalue0 := swcdb_thrift.NewSpecSchemas()
+		argvalue0 := swcdb_thrift.New_SpecSchemas()
 		err394 := argvalue0.Read(context.Background(), jsProt393)
 		if err394 != nil {
 			Usage()
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.compact_columns(context.Background(), value0))
+		fmt.Print(client._compact_columns(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "scan":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "scan requires 1 args")
+			fmt.Fprintln(os.Stderr, "_scan requires 1 args")
 			flag.Usage()
 		}
 		arg395 := flag.Arg(1)
@@ -600,19 +600,19 @@ func main() {
 		}
 		factory398 := thrift.NewTJSONProtocolFactory()
 		jsProt399 := factory398.GetProtocol(mbTrans396)
-		argvalue0 := swcdb_thrift.NewSpecScan()
+		argvalue0 := swcdb_thrift.New_SpecScan()
 		err400 := argvalue0.Read(context.Background(), jsProt399)
 		if err400 != nil {
 			Usage()
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.scan(context.Background(), value0))
+		fmt.Print(client._scan(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "scan_rslt_on_column":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "scan_rslt_on_column requires 1 args")
+			fmt.Fprintln(os.Stderr, "_scan_rslt_on_column requires 1 args")
 			flag.Usage()
 		}
 		arg401 := flag.Arg(1)
@@ -625,19 +625,19 @@ func main() {
 		}
 		factory404 := thrift.NewTJSONProtocolFactory()
 		jsProt405 := factory404.GetProtocol(mbTrans402)
-		argvalue0 := swcdb_thrift.NewSpecScan()
+		argvalue0 := swcdb_thrift.New_SpecScan()
 		err406 := argvalue0.Read(context.Background(), jsProt405)
 		if err406 != nil {
 			Usage()
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.scan_rslt_on_column(context.Background(), value0))
+		fmt.Print(client._scan_rslt_on_column(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "scan_rslt_on_key":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "scan_rslt_on_key requires 1 args")
+			fmt.Fprintln(os.Stderr, "_scan_rslt_on_key requires 1 args")
 			flag.Usage()
 		}
 		arg407 := flag.Arg(1)
@@ -650,19 +650,19 @@ func main() {
 		}
 		factory410 := thrift.NewTJSONProtocolFactory()
 		jsProt411 := factory410.GetProtocol(mbTrans408)
-		argvalue0 := swcdb_thrift.NewSpecScan()
+		argvalue0 := swcdb_thrift.New_SpecScan()
 		err412 := argvalue0.Read(context.Background(), jsProt411)
 		if err412 != nil {
 			Usage()
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.scan_rslt_on_key(context.Background(), value0))
+		fmt.Print(client._scan_rslt_on_key(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "scan_rslt_on_fraction":
 		if flag.NArg() - 1 != 1 {
-			fmt.Fprintln(os.Stderr, "scan_rslt_on_fraction requires 1 args")
+			fmt.Fprintln(os.Stderr, "_scan_rslt_on_fraction requires 1 args")
 			flag.Usage()
 		}
 		arg413 := flag.Arg(1)
@@ -675,19 +675,19 @@ func main() {
 		}
 		factory416 := thrift.NewTJSONProtocolFactory()
 		jsProt417 := factory416.GetProtocol(mbTrans414)
-		argvalue0 := swcdb_thrift.NewSpecScan()
+		argvalue0 := swcdb_thrift.New_SpecScan()
 		err418 := argvalue0.Read(context.Background(), jsProt417)
 		if err418 != nil {
 			Usage()
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.scan_rslt_on_fraction(context.Background(), value0))
+		fmt.Print(client._scan_rslt_on_fraction(context.Background(), value0))
 		fmt.Print("\n")
 		break
 	case "scan_rslt_on":
 		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "scan_rslt_on requires 2 args")
+			fmt.Fprintln(os.Stderr, "_scan_rslt_on requires 2 args")
 			flag.Usage()
 		}
 		arg419 := flag.Arg(1)
@@ -700,7 +700,7 @@ func main() {
 		}
 		factory422 := thrift.NewTJSONProtocolFactory()
 		jsProt423 := factory422.GetProtocol(mbTrans420)
-		argvalue0 := swcdb_thrift.NewSpecScan()
+		argvalue0 := swcdb_thrift.New_SpecScan()
 		err424 := argvalue0.Read(context.Background(), jsProt423)
 		if err424 != nil {
 			Usage()
@@ -712,9 +712,9 @@ func main() {
 			Usage()
 			return
 		}
-		argvalue1 := swcdb_thrift.CellsResult_(tmp1)
+		argvalue1 := swcdb_thrift._CellsResult_(tmp1)
 		value1 := argvalue1
-		fmt.Print(client.scan_rslt_on(context.Background(), value0, value1))
+		fmt.Print(client._scan_rslt_on(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "":
