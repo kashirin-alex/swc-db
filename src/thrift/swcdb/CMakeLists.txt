@@ -255,7 +255,7 @@ if (LANGS OR LANG_GO)
       execute_process(COMMAND mkdir -p ${VER_GEN_PATH}/gen-go )
 
       message(STATUS "Generating Thrift GO:")
-      execute_process(COMMAND thrift -r --gen go
+      execute_process(COMMAND thrift -r --gen go:case_sensitive
                       -o ${VER_GEN_PATH}
                       ${CMAKE_CURRENT_SOURCE_DIR}/Service.thrift)
       message("       ${VER_GEN_PATH}/gen-go")
