@@ -1,10 +1,16 @@
-remote_theme: rundocs/jekyll-rtd-theme@v1.1.7
+# The original `rundocs/jekyll-rtd-theme` repository was removed from GitHub.
+# `StarHPC/jekyll-rtd-theme` is a maintained fork keeping the same gem name,
+# layouts and configuration API (forked from rundocs at v2.0.10).
+remote_theme: StarHPC/jekyll-rtd-theme@2.0.13
 
 rougify: gruvbox
 fluid: true
 
-# url: "https://www.swcdb.org"  # for remote
-baseurl: "/swc-db"  # for github "/swc-db", for local ""
+# Site is served at https://swcdb.org/ via `docs/CNAME`, so baseurl is empty.
+# When publishing without the CNAME (i.e. from https://kashirin-alex.github.io/swc-db/),
+# set baseurl to "/swc-db".
+url: "https://swcdb.org"
+baseurl: ""
 repository: "kashirin-alex/swc-db"
 
 encoding: utf-8
@@ -19,11 +25,9 @@ copyright:
   revision: false # is show the revision
 
 addons:
-  - github
-addons:
   - github:
-    - homepage
-    - issues
+      - homepage
+      - issues
 
 
 

@@ -2,17 +2,18 @@
 
 source "https://rubygems.org"
 
-
-gem "jekyll-rtd-theme", '~> 1.1', '>= 1.1.7'
-
+# Match the GitHub Pages environment for local previews.
+# https://pages.github.com/versions/
+gem "github-pages", group: :jekyll_plugins
 
 group :jekyll_plugins do
+  gem "jekyll-remote-theme"
   gem "jekyll-default-layout"
   gem "jekyll-readme-index"
   gem "jekyll-github-metadata"
   gem "jekyll-titles-from-headings"
+  gem "jekyll-sitemap"
   gem "jemoji"
   gem "jekyll-avatar"
   gem "jekyll-mentions"
-  gem "jekyll-remote-theme"
 end
