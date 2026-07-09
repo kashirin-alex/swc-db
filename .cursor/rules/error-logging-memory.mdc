@@ -1,0 +1,28 @@
+---
+description: SWC_THROW/SWC_LOG macros and RAII memory rules
+globs: src/cc/**/*.{h,cc}
+alwaysApply: false
+---
+
+# Errors, Logging, Memory
+
+## Exceptions (`swcdb/core/Exception.h`)
+
+- Throw: `SWC_THROW(code, msg)`, `SWC_THROWF(code, fmt, ...)`
+- Assert: `SWC_EXPECT(expr, code)`, `SWC_ASSERT(expr)`
+- Wrap/log current exception: `SWC_LOG_CURRENT_EXCEPTION(scope)` (defined in Exception.h)
+- Daemon `run()` often uses `SWC_TRY_OR_LOG` to log and continue
+
+Do not catch-and-swallow without logging. Prefer `SWC::Error::Exception` over bare `std::exception` throws.
+
+## Logging (`swcdb/core/Logger.h`)
+
+- `SWC_LOG(priority, message)`, `SWC_LOGF(priority, fmt, ...)`
+- Fatal: `SWC_LOG_FATAL` / `SWC_LOG_FATALF`
+- Priorities: `LOG_FATAL` … `LOG_DEBUG`
+
+## Memory
+
+- RAII via `shared_ptr` / `Ptr`; avoid raw `delete` in application code
+- Factories commonly `new` into a `Ptr`; rely on smart-pointer lifetime
+- Respect existing `SWC_CAN_INLINE` / move-only class patterns

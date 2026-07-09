@@ -1,0 +1,27 @@
+---
+description: SWC-DB module map, daemon roles, and namespace layout
+alwaysApply: true
+---
+
+# SWC-DB Architecture Overview
+
+C++20 Super Wide Column DBMS. Full map: root `AGENTS.md`.
+
+## Modules (`src/cc/{include,lib,bin}/swcdb/`)
+
+- `core` — logging, exceptions, config, `comm/` networking
+- `common` — shared header-only helpers
+- `db` — cells, columns, protocol, client, SQL
+- `fs` — FS interface + Local/Ceph/Hadoop/Broker backends
+- `manager` / `ranger` / `broker` / `fsbroker` / `thrift` — daemons
+- `utils` — CLI shells
+
+## Daemons
+
+Clients → `swcdbBroker` / `swcdbThriftBroker` → `swcdbManager` (metadata) → `swcdbRanger` (storage) → `swcdbFsBroker` / `libswcdb_fs_*`.
+
+## Namespaces
+
+`SWC::<Module>` mirrors directories. Process state: `SWC::Env::*`. Protocol: `SWC::Comm::Protocol::{Rgr,Mngr,Bkr}`.
+
+When planning features, place code in the matching module; do not invent parallel trees outside `swcdb/`.

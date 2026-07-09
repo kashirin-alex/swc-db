@@ -1,0 +1,23 @@
+---
+description: AppContext, SerializedServer, Env, and protocol command wiring
+globs: src/cc/**/{manager,ranger,broker,fsbroker}/**
+alwaysApply: false
+---
+
+# Daemons and Protocol
+
+## Daemon pattern
+
+1. Thin `bin/swcdb/<daemon>/main.cc`: `Env::Config::init` → create `AppContext` → `Comm::server::SerializedServer::run()` (Thrift uses `TThreadPoolServer` instead).
+2. Handlers registered in the daemon `AppContext` dispatch table.
+3. Process state via `SWC::Env::{Mngr,Rgr,Bkr,…}` singletons and `*Env.h`.
+
+Match the existing daemon when adding endpoints; do not invent a parallel server framework.
+
+## Adding a wire command
+
+1. Add the command id in `src/cc/include/swcdb/db/Protocol/Commands.h` under the right `Rgr` / `Mngr` / `Bkr` enum.
+2. Add handler under the daemon `Protocol/handlers/` (or `handlers/` for fsbroker).
+3. Add request/params types under `Protocol/*/req/` and `params/` as peers do.
+4. Wire the handler into that daemon's `AppContext` dispatch table.
+5. Update client-side callers under `db/client/` or peer `Protocol/*/req/` if needed.

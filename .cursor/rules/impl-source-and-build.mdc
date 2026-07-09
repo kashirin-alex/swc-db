@@ -1,0 +1,29 @@
+---
+description: Dual build model, SWC_IMPL_SOURCE, SWC_BUILD_PKG, CMake helpers
+globs: "**/CMakeLists.txt"
+alwaysApply: false
+---
+
+# Build Model and CMake
+
+## Two source-inclusion models
+
+1. **Reusable libs** (`core`, `db`, `fs`): compiled from `lib/**/*.cc`. Headers may also pull their `.cc` when `SWC_IMPL_SOURCE` is on:
+
+```cpp
+#ifdef SWC_IMPL_SOURCE
+#include "swcdb/core/Time.cc"
+#endif
+```
+
+2. **Daemon logic** (manager/ranger/broker/fsbroker): no separate compiled lib. Env headers aggregate `.cc` files **unconditionally** (e.g. `MngrEnv.h` includes `MngrRole.cc`, `Rangers.cc`, …).
+
+Do not add a new shared library for daemon-only code unless packaging explicitly requires it.
+
+## CMake helpers (`cmake/Utils.cmake`)
+
+Use existing functions: `SET_DEPS`, `ADD_LIB_TARGET`, `ADD_EXEC_TARGET`, `ADD_TEST_TARGET`, `ADD_TEST_EXEC`.
+
+Respect `SWC_BUILD_PKG` gates (empty = full build; values like `manager`, `lib-core`, `doc`). Tests/examples only when `SWC_BUILD_PKG` is empty.
+
+Key options: `O_LEVEL`, `SWC_IMPL_SOURCE`, `SWC_LANGUAGES`, `CMAKE_INSTALL_PREFIX` (often `/opt/swcdb`).

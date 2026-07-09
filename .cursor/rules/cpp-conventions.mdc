@@ -1,0 +1,31 @@
+---
+description: C++ naming, headers, includes, Ptr typedefs, copyright
+globs: src/cc/**/*.{h,cc}
+alwaysApply: false
+---
+
+# SWC-DB C++ Conventions
+
+## Files and headers
+
+- Extensions: `.h` / `.cc` (not `.hpp` / `.cpp`)
+- PascalCase type files: `AppContext.h`, `CellKey.h`
+- Path mirrors namespace: `swcdb/manager/MngdColumns.h` → `SWC::Manager::MngdColumns`
+- Guards: `#ifndef swcdb_<module>_<Path>_<Name>_h` — never `#pragma once`
+- Project includes: `"swcdb/..."` (quoted). Third-party: `<...>`
+
+## Copyright (required on new source)
+
+```cpp
+/*
+ * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
+ * License details at <https://github.com/kashirin-alex/swc-db/#license>
+ */
+```
+
+## Types and ownership
+
+- Prefer `std::shared_ptr<T>` with `typedef std::shared_ptr<T> Ptr` on the class
+- Delete copy ctor/assignment when ownership is shared or move-only
+- Nest under `SWC::` matching the directory module
+- Match existing style; `-Werror` is on — no new warnings

@@ -1,0 +1,29 @@
+---
+description: Custom CTest tests, testdiff golden files, cluster integration
+globs: tests/**
+alwaysApply: false
+---
+
+# Testing
+
+## Framework
+
+- No GTest / Catch2. Tests are custom C++ executables registered with CTest.
+- Register via `ADD_TEST_TARGET` / `ADD_TEST_EXEC` in `cmake/Utils.cmake`.
+- Fail with non-zero exit / clear stderr messages (see `tests/libswcdb_core/`).
+
+## Layout
+
+- `tests/libswcdb_core/` — unit tests for `swcdb_core`
+- `tests/libswcdb/` — unit tests for `libswcdb` (include `SWC_IMPL_SOURCE` variants when relevant)
+- `tests/integration/` — needs installed prefix + `swcdb_cluster` (Fabric/SSH)
+- Golden output: `tests/testutils/testdiff` vs `.golden` files
+
+## Running
+
+```bash
+make test
+# or: ctest --output-on-failure in the build tree
+```
+
+Integration prerequisites: `make install`, writable data dirs, passwordless SSH for `swcdb_cluster`. Prefer unit tests under `libswcdb*` for local changes; extend integration only when cluster behavior is involved.

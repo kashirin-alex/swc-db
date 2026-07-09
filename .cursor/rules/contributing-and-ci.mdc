@@ -1,0 +1,32 @@
+---
+description: Copyright header requirement and CI [TEST COMMIT] gate
+alwaysApply: false
+---
+
+# Contributing and CI
+
+## New source files
+
+Per `CONTRIBUTING.md`, every new code file must start with:
+
+```cpp
+/*
+ * SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
+ * License details at <https://github.com/kashirin-alex/swc-db/#license>
+ */
+```
+
+CMake files use `#` comment form of the same notice. Contributions grant rights under project copyright; see `CONTRIBUTING.md` before submitting.
+
+## Style enforcement
+
+- No `.clang-format` / `.editorconfig` — match neighboring code
+- Compiler: `-Wall -Werror` (and C++ `-Wextra -Wpedantic`) via `cmake/FlagsWarnings.cmake`
+
+## CI (`.github/workflows/ci.yml`)
+
+- Job runs only if the commit message contains `[TEST COMMIT]`
+- Matrix: Ubuntu, g++/clang, `O_LEVEL`, `SWC_IMPL_SOURCE` ON/OFF
+- Default CI configure uses `-DSWC_LANGUAGES=NONE`; install prefix `/opt/swcdb`
+
+Do not assume CI ran on every push; include `[TEST COMMIT]` when intentionally triggering the workflow.
