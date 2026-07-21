@@ -321,6 +321,12 @@ void ConnHandler::Receiver_HeaderPrefix::operator()(
         filled);
       goto _quit;
     }
+    if(ev->header.header_len > Header::MAX_LENGTH) {
+      SWC_LOGF(LOG_WARN,
+        "read, REQUEST HEADER_PREFIX_BAD_LEN: header_len=%d max=%d",
+        ev->header.header_len, Header::MAX_LENGTH);
+      goto _quit;
+    }
     filled = ev->header.header_len - Header::PREFIX_LENGTH;
     conn->do_async_read(
       conn->_buf_header + Header::PREFIX_LENGTH,
