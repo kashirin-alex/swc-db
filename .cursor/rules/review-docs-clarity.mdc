@@ -1,0 +1,35 @@
+---
+description: User-docs readiness, integrity, and TOC/link gates for docs PRs
+globs: docs/**
+alwaysApply: false
+---
+
+# Docs Clarity Review Checklist
+
+Full scored report: `evals/DOCS_CLARITY_EVALUATION.md`. Human process: `CONTRIBUTING.md` (Documentation Pull Requests).
+
+## Integrity gates
+
+- [ ] **Release sync:** version bumps update `docs/install/getting_swcdb/` download table, `swc.install.archive` default, and `SWCDB_VERSION=` examples together
+- [ ] **Link check:** new/changed relative links under `docs/` resolve (especially `use/thriftclient/*`)
+- [ ] **TOC sync:** new `docs/**/README.md` with `title:` → intro TOC line, sidebar-only note, or `nav_exclude: true` for redirects
+- [ ] **Code↔docs:** changes to Comparators / Thrift `Comp`, CMake options, or `src/etc/swcdb` defaults update matching docs in the same PR
+
+## Page hygiene
+
+- [ ] Keep YAML frontmatter (`title`, `sort`)
+- [ ] Prefer factual integrity (versions, broken links, TOC gaps) over drive-by rewrites
+- [ ] Section hubs list children with one-line purpose (not stub-only)
+- [ ] Redirect stubs: `nav_exclude: true` so sidebar shows one canonical entry
+- [ ] Canonical OS-tuning path is `docs/configure/os_tuning/` (`os_tunning/` is redirect-only)
+
+## Mirrors (when mentioning published docs)
+
+- www.swcdb.org — latest **release** docs
+- GitHub Pages (`kashirin-alex.github.io/swc-db`) — current **master**
+- ReadTheDocs — additional mirror
+
+## Remaining known gaps (do not invent as fixed)
+
+- Source `0.5.13` vs packages `0.5.12` until next package release
+- Thin CLI admin shells; optional automated link-check CI still open

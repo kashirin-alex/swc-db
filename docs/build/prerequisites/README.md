@@ -68,7 +68,7 @@ mkdir swcdb;
   * [maven](https://maven.apache.org/) - [Java-Thrift client]
 
   * Thrift Broker:
-    * [Apache Thrift 0.13.0+](https://github.com/apache/thrift)
+    * [Apache Thrift 0.13.0+](https://github.com/apache/thrift) (CI validates with **0.20.0**; build from source if distro packages are too old)
     * [libevent 2.1.11+](https://github.com/libevent/libevent)
   
   * C_GLIB-Thrift client & PAM module:

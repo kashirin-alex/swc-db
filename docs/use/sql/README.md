@@ -21,6 +21,7 @@ sort: 2
     * [A get columns example](#a-get-columns-example)
   * [Compact Columns](#compact-columns)
     * [A compact columns example](#a-compact-columns-example)
+  * [Dump / Load](#dump--load)
   * [Select Query](#select-query)
     * [The Select Query syntax](#the-select-query-syntax)
     * [The Columns-Intervals syntax](#the-columns-intervals-syntax)
@@ -99,8 +100,8 @@ The key fields:
 |```SPS```     | ``` <% ```           | superset                  |
 |```POSBS```   | ``` ~> ```           | eq/part ordered subset    |
 |```POSPS```   | ``` <~ ```           | eq/part ordered superset  |
-|```FOSBS```   | ``` <- ```           | eq/full ordered superset  |
-|```FOSPS```   | ``` -> ```           | eq/full ordered superset  |
+|```FOSBS```   | ``` -> ```           | eq/full ordered subset    |
+|```FOSPS```   | ``` <- ```           | eq/full ordered superset  |
 |```FIP```     | ``` :< ```           | fraction include prior    |
 |```FI```      | ``` : ```            | fraction include          |
 |```OR```      | ``` || ```           | match any                 |
@@ -133,16 +134,16 @@ As example, the Selector `nameOne, 2, =^'test', tags%>[2,v>"5",=1]` result will 
 ## The Available Commands
 
 * Columns Management Commands :
-  * [**Create Column**](#createmodifyremove-columns)     - _[```Add``` / ```Create```] ``` ``` [```Column``` / ```Schema```]_ - Create a new Column.
-  * [**Modify Column**](#createmodifyremove-columns)     - _[```Modify``` / ```Update```] ``` ``` [```Column``` / ```Schema```]_ - Modify an exting Column Schema.
-  * [**Remove Column**](#createmodifyremove-columns)     - _[```Remove``` / ```Delete```] ``` ``` [```Column``` / ```Schema```]_ - Remove a Column.
-  * [**Get Columns**](#get-columns)       - _[```Get``` / ```List```] ``` ``` [```Column/s``` / ```Schema/s```]/_ - List all or the requested columns.
-  * [**Compact Columns**](#compact-columns)   - _```Compact``` ``` ``` [```Column/s``` / ```Schema/s```]_ - Compact all or the requested columns.
+  * [**Create Column**](#createmodifyremove-columns) — Add/Create Column/Schema — Create a new Column.
+  * [**Modify Column**](#createmodifyremove-columns) — Modify/Change/Update Column/Update Schema — Modify an existing Column Schema.
+  * [**Remove Column**](#createmodifyremove-columns) — Remove/Delete Column/Schema — Remove a Column.
+  * [**Get Columns**](#get-columns) — Get/List Column(s)/Schema(s) — List all or the requested columns.
+  * [**Compact Columns**](#compact-columns) — Compact Column(s)/Schema(s) — Compact all or the requested columns.
 
 * Data Commands:
-  * [**Select [where_clause]**](#select-query) - A Query command to scan and select cells.
-
-  * [**Update [cell]**](#update-query) - A Query command to update (insert/delete) cells.
+  * [**Select [where_clause]**](#select-query) — A Query command to scan and select cells.
+  * [**Update [cell]**](#update-query) — A Query command to update (insert/delete) cells. Bare `update` (without `column`/`schema`) is the cell UPDATE command; `update column` / `update schema` modify a column schema.
+  * [**Dump / Load**](#dump--load) — CLI-oriented commands to dump a column to the filesystem and load TSV data back (also used for [backup & restore]({{ site.baseurl }}/use/cli/db_client/backup_restore/)).
 
 
 
@@ -155,11 +156,11 @@ As example, the Selector `nameOne, 2, =^'test', tags%>[2,v>"5",=1]` result will 
 ### Create/Modify/Remove Columns
 > These commands have aliases for Verb and for Noun:
 > * ```create``` == ```add```
-> * ```modify``` == ```update```
-> * ```remove``` == ```delete```
+> * ```modify``` == ```change``` == ```update column``` == ```update schema```
 > * ```remove``` == ```delete```
 > * ```column``` == ```schema```
 
+> Bare ```update``` (without the noun ```column```/```schema```) is the [cell Update Query](#update-query), not schema modify.
 The Syntax of the **Create/Modify/Remove Column** command [```The Command```] [```(```[The Schema Definition](#the-schema-syntax) ```)```]
 
 On Error, the command returns/throw the associated Exception.
@@ -239,11 +240,33 @@ The Syntax of the **Compact Columns** command [```The Command```] and, optionall
 
 #### _a ```compact columns``` example:_
 ```
-get compact 1,SYS_MASTER_VOLUME
+compact columns 1,SYS_MASTER_VOLUME
 ```
 > The expected response will be a list of Compact-Result [(cid=1 err=CODE), (cid=2 err=CODE)]
 
 
+
+
+
+
+### Dump / Load
+> Dump and Load are available from the [DB-Client CLI]({{ site.baseurl }}/use/cli/db_client/) (and related shells that share the SQL helpers). They read/write through a configured filesystem (`fs=LOCAL`, `fs=BROKER`, etc.).
+
+#### Dump
+Syntax: `dump col=CID|NAME into [fs=FS] path='PATH' [split=SIZE] [ext=EXT] [level=N] [DisplayFlags]`
+
+```
+dump col=1 into fs=LOCAL path='dumps/1' ext=zst level=6 DISPLAY_STATS
+```
+
+#### Load
+Syntax: `load from [fs=FS] path='PATH' into col=CID|NAME [DisplayFlags]`
+
+```
+load from fs=LOCAL path='dumps/1' into col=1 DISPLAY_STATS
+```
+
+For a full backup/restore workflow, see [Backup & Restore]({{ site.baseurl }}/use/cli/db_client/backup_restore/).
 
 
 

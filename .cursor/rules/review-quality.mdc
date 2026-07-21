@@ -1,0 +1,33 @@
+---
+description: P0/P1 correctness and security risks when changing comm, ranger storage, or CI
+alwaysApply: false
+---
+
+# Quality Review Checklist
+
+Full scored report: `evals/QUALITY_EVALUATION_REPORT.md`. Use when touching untrusted I/O, on-disk cells, compaction, or CI.
+
+## P0 — do not regress / prefer fix when editing
+
+- [ ] `ConnHandler` header body read: enforce `header_len <= Header::MAX_LENGTH` before writing `_buf_header`
+- [ ] Payload `reallocate(remain)`: enforce a configured/hard max before allocate
+- [ ] Unexpected `catch(...)` on receive/send: log (`SWC_LOG_CURRENT_EXCEPTION`) — do not add new empty catches
+- [ ] `SerializedClient` connect: honor caller `timeout` (today ignored)
+
+## P1 — data integrity when editing ranger / CellStore / CommitLog
+
+- [ ] Truncated/corrupt cell decode: fail-fast (`err`) rather than log-and-continue with partial cells
+- [ ] CellStore `blks_count` / `idx_size_*`: sanity-cap against schema/RAM
+- [ ] Compaction `Blocks::apply_new`: avoid CS-live + old-log-remain window if `commitlog.remove` fails after `cellstores.replace`
+- [ ] Do **not** “fix” insistent FS Interface sync retries — intentional outage resilience
+
+## CI / tests (when changing workflows or claiming coverage)
+
+- [ ] Remember: CI runs only with `[TEST COMMIT]`; default matrix does **not** run `TEST=2` integration
+- [ ] Prefer unit tests under `tests/libswcdb*`; extend integration only for cluster behavior
+- [ ] Null-check `m_metrics` on `ev->error` paths if touching AppContext error handling
+
+## Related
+
+- Conventions: `cpp-error-logging-memory.mdc`, `build-impl-source.mdc`, `build-testing.mdc`
+- Human CI notes: `CONTRIBUTING.md`, `docs/build/test/`

@@ -1,0 +1,33 @@
+---
+description: Hand-written Thrift wrappers, IDL, and generation ownership
+globs: "src/cc/include/swcdb/thrift/broker/**,src/cc/include/swcdb/thrift/client/**,src/cc/include/swcdb/thrift/utils/**,src/thrift/swcdb/*.thrift,src/thrift/swcdb/CMakeLists.txt"
+alwaysApply: false
+---
+
+# Thrift Hand-Written Layer (Layer A for Thrift)
+
+Applies to IDL, generation CMake, and wrappers — **not** to `thriftgen-*` / `gen-*` (see `thrift-generated-layer.mdc`).
+
+## Layout
+
+| Path | Role |
+|------|------|
+| `src/thrift/swcdb/Service.thrift` | Types + `Service` RPC API |
+| `src/thrift/swcdb/Broker.thrift` | Empty `Broker extends Service` for C++ server stubs |
+| `src/thrift/swcdb/CMakeLists.txt` | Generate into `thriftgen-${THRIFT_VERSION}`, copy to consumer `gen-*` |
+| `thrift/broker/AppHandler.h` | Implements `BrokerIf` — server RPC logic |
+| `thrift/broker/AppContext.h` | Handler factory + includes generated `Broker.cpp` when needed |
+| `thrift/utils/Converter.h` | Thrift ↔ `SWC::DB` conversions |
+| `thrift/client/Client.h` | Wraps generated `Service` client |
+
+## Rules
+
+- Follow normal C++ conventions (copyright, guards, `Ptr`, `SWC_LOG` / errors) on wrapper code
+- Keep Thrift↔DB mapping in `Converter`; keep RPC orchestration in `AppHandler`
+- Prefer splitting oversized wrappers when touching them (`AppHandler.h` is a known god file)
+- Including generated `.h` / `.cpp` from wrappers is an **intentional** A↔B boundary — do not “fix” the generated targets
+- Binding clients (Java/Python/Ruby/C) wrap generated `Service.Client`; keep wrappers hand-written and copyrighted
+
+## Review
+
+Use the **Layer A** checklist in `.cursor/rules/review-standards-clarity.mdc` (full report: `evals/STANDARDS_CLARITY_EVALUATION.md`).

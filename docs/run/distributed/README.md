@@ -17,7 +17,7 @@ cd sbin/;
 
   **swcdb_cluster needs to set [as by instructions]({{ site.baseurl }}/install/swcdb_cluster/)**
 
-  _List the available commdand of swcdb_cluster_
+  _List the available command of swcdb_cluster_
 
 ```
 ./swcdb_cluster --help;

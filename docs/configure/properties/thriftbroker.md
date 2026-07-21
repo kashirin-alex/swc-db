@@ -24,9 +24,9 @@ The number of workers a comm-reactor initalizes. \
 _default_ **```swc.ThriftBroker.workers=32```**
 
 * ### swc.ThriftBroker.connections.max
-```TYPE_INT32```
+```TYPE_INT64```
 The Max client Connections allowed, any new connections above the Open-Connections will be dropped and the Max-Total is the number of Endpoints(Thrift-Broker is listening-on) by `swc.ThriftBroker.connections.max`. If open-file-descriptors is above allowed-limit Thrift-Broker will shutdown, unplanned shutdown can be avoided by the max limit. \
-_default_ **```swc.ThriftBroker.workers=INT64_MAX```**
+_default_ **```swc.ThriftBroker.connections.max=INT64_MAX```**
 
 * ### swc.ThriftBroker.transport
 ```TYPE_STRING```

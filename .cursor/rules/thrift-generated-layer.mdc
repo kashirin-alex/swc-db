@@ -1,0 +1,26 @@
+---
+description: Thrift-generated layer — do not edit; regenerate from IDL; no hand-written clarity rules
+globs: "**/thriftgen-*/**,**/gen-cpp/**,**/gen-c_glib/**,**/swcdb/thrift/**/gen/**,**/org/swcdb/thrift/gen/**"
+alwaysApply: false
+---
+
+# Thrift Generated Layer (Layer B)
+
+These trees are **Apache Thrift compiler output**. They are a separate standards layer from hand-written C++.
+
+## Do
+
+- Change API/types in `src/thrift/swcdb/Service.thrift` or `Broker.thrift`
+- Regenerate via CMake (`thriftgen-${THRIFT_VERSION}` staging, then copy to consumer `gen-*`)
+- Put business logic in hand-written wrappers: `thrift/broker/`, `thrift/client/`, `thrift/utils/`, or binding clients
+
+## Do not
+
+- Edit generated bodies for style, naming, formatting, or “clarity”
+- Apply `.cursor/rules/cpp-conventions.mdc` (or other Layer A nits) to these files
+- Add/remove project copyright headers or rewrite include guards inside generated trees
+- Implement product behavior in `*_server.skeleton.cpp` or other generated skeletons
+
+## Review
+
+Use the **Layer B** checklist in `.cursor/rules/review-standards-clarity.mdc` (full report: `evals/STANDARDS_CLARITY_EVALUATION.md`).

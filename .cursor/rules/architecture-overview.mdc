@@ -1,27 +1,70 @@
 ---
-description: SWC-DB module map, daemon roles, and namespace layout
+description: SWC-DB module map, daemon roles, glossary, and namespace layout
 alwaysApply: true
 ---
 
 # SWC-DB Architecture Overview
 
-C++20 Super Wide Column DBMS. Full map: root `AGENTS.md`.
+C++20 Super Wide Column DBMS. Slim index: root `AGENTS.md`. Audits: `evals/`.
 
 ## Modules (`src/cc/{include,lib,bin}/swcdb/`)
 
-- `core` — logging, exceptions, config, `comm/` networking
-- `common` — shared header-only helpers
-- `db` — cells, columns, protocol, client, SQL
-- `fs` — FS interface + Local/Ceph/Hadoop/Broker backends
-- `manager` / `ranger` / `broker` / `fsbroker` / `thrift` — daemons
-- `utils` — CLI shells
+| Module | Role |
+|--------|------|
+| `core` | Foundation: types, logging, exceptions, serialization, config, networking (`comm/`) |
+| `common` | Shared header-only utilities (stats, sys resources, file schemas) |
+| `db` | Domain model, wire protocol, client library, SQL |
+| `fs` | Filesystem abstraction + backends (Local, Ceph, Hadoop, Broker) |
+| `manager` | Cluster manager: metadata, ranger coordination |
+| `ranger` | Range server: CellStore, CommitLog, compaction, queries |
+| `broker` | Client-facing query broker (proxies to rangers) |
+| `fsbroker` | Remote FS RPC server |
+| `thrift` | Apache Thrift API gateway |
+| `utils` | CLI shells and tools (`swcdb` launcher) |
 
-## Daemons
+Other trees: `src/{c,java,py,rb,thrift,etc}`, `tests/`, `examples/`, `cmake/`, `docs/`, `packaging/`.
+
+## Daemons and data flow
 
 Clients → `swcdbBroker` / `swcdbThriftBroker` → `swcdbManager` (metadata) → `swcdbRanger` (storage) → `swcdbFsBroker` / `libswcdb_fs_*`.
 
+| Binary | Role |
+|--------|------|
+| `swcdbManager` | Metadata, column/range management, ranger assignment |
+| `swcdbRanger` | Range storage, cell select/update, compaction |
+| `swcdbBroker` | Client-facing cell/column ops (proxies to rangers) |
+| `swcdbFsBroker` | Remote filesystem operations |
+| `swcdbThriftBroker` | Thrift RPC gateway (`TThreadPoolServer`) |
+| `swcdb` | CLI utility launcher (`dlopen` of `libswcdb_utils_*.so`) |
+| `swcdb_load_generator` | Load/benchmark tool |
+
+Typical daemon pattern (except Thrift): `Env::Config::init` → `AppContext` → `Comm::server::SerializedServer::run()`.
+
+## Domain glossary
+
+| Term | Meaning |
+|------|---------|
+| **Manager** | Cluster coordinator; owns schemas and range placement |
+| **Ranger** | Data node holding ranges |
+| **Broker** | Stateless query front-end to Manager/Ranger |
+| **FsBroker** | Dedicated FS RPC process |
+| **Column** | Named wide-column table (schema + ranges) |
+| **Schema** | Column definition (types, encoding, etc.) |
+| **Range** | Contiguous key-space shard of a column |
+| **Cell** | Keyed value unit (see `db/Cells/`) |
+| **Specs** | Query/scan/update specifications |
+| **CellStore** | On-disk sorted cell storage on a Ranger |
+| **CommitLog** | Write-ahead / recent-write log before flush |
+| **Compaction** | Merge/rewrite of CellStores and CommitLog |
+| **KeySeq** | Key sequencing / comparator mode for columns |
+
+Wire commands: `src/cc/include/swcdb/db/Protocol/Commands.h` under `SWC::Comm::Protocol::{Rgr,Mngr,Bkr}`.
+
 ## Namespaces
 
-`SWC::<Module>` mirrors directories. Process state: `SWC::Env::*`. Protocol: `SWC::Comm::Protocol::{Rgr,Mngr,Bkr}`.
+- Top-level: `SWC`
+- Modules mirror directories: `SWC::Core`, `SWC::FS`, `SWC::Manager`, `SWC::Ranger`, `SWC::Broker`, `SWC::FsBroker`, `SWC::ThriftBroker`, `SWC::client`, …
+- Process singletons: `SWC::Env::{Config,Mngr,Rgr,Bkr,Clients,FsInterface,IoCtx,…}`
+- Protocol: `SWC::Comm::Protocol::{Rgr,Mngr,Bkr}`
 
 When planning features, place code in the matching module; do not invent parallel trees outside `swcdb/`.

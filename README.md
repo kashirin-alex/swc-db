@@ -9,10 +9,14 @@
 
 * ##### [TODOS & WANTS](https://github.com/kashirin-alex/swc-db/labels/enhancement) _- Issues with the label 'enhancement'_
 
+* ##### [ROADMAP](https://github.com/kashirin-alex/swc-db/blob/master/ROADMAP.md) _- Major development phases (stability, verification, release, performance, product)_
+
 
 ### DOCUMENTATIONS
 
 _All the documentations are based on the ./docs/_.
+
+**Which mirror to use:** [swcdb.org](https://www.swcdb.org) tracks the **latest release**; [GitHub Pages](https://kashirin-alex.github.io/swc-db/) tracks **master**; [ReadTheDocs](https://swc-db.readthedocs.io/) is an additional mirror — prefer swcdb.org for stable installs, GitHub Pages for in-development docs.
 
 * ###### [SWC-DB Website - https://www.swcdb.org](https://www.swcdb.org) - The latest-release docs plus the origins of the [Additional Documentations](https://www.swcdb.org/additional-docs/)
 
@@ -35,6 +39,11 @@ _All the documentations are based on the ./docs/_.
 
 ### ISSUES
 * ###### open an issue at [github.com/kashirin-alex/swc-db/issues](https://github.com/kashirin-alex/swc-db/issues) in case there is an issue(bug/feature) that can be fully described.
+
+
+
+### CONTRIBUTING
+* ###### [CONTRIBUTING.md](https://github.com/kashirin-alex/swc-db/blob/master/CONTRIBUTING.md) — contribution terms, copyright header, commit messages (`[TEST COMMIT]` CI gate), pull requests, and local testing
 
 
 

@@ -1,0 +1,39 @@
+---
+description: Two-layer standards/clarity PR and agent review checklist
+alwaysApply: false
+---
+
+# Standards & Clarity Review Checklist
+
+Full scored report: `evals/STANDARDS_CLARITY_EVALUATION.md`. Apply **only** the section matching touched paths.
+
+## Path triage
+
+| Path pattern | Layer |
+|--------------|-------|
+| `src/cc/**` except `**/gen-*/**` | A |
+| `src/thrift/swcdb/*.{thrift,CMakeLists.txt}` | A |
+| `src/cc/include/swcdb/thrift/{broker,client,utils}/**` | A |
+| `**/thriftgen-*/**`, `**/gen-cpp/**`, `**/gen-c_glib/**`, `**/thrift/**/gen/**`, py/java/rb gen variants | B |
+
+## Layer A — Hand-written
+
+- [ ] Copyright header on **new** source
+- [ ] `.h`/`.cc`; PascalCase type files; guard `#ifndef swcdb_..._h` (no `#pragma once`)
+- [ ] `"swcdb/..."` project includes; `<...>` third-party
+- [ ] Namespace/directory matches module map (`.cursor/rules/architecture-overview.mdc`)
+- [ ] `Ptr` typedef / shared ownership patterns; match neighbor style
+- [ ] `SWC_THROW` / `SWC_LOG*`; no new silent `catch(...)`
+- [ ] Wire command: `Commands.h` → handler → params/req → AppContext → clients
+- [ ] No upward/`core`→`db` or daemon cross-includes
+- [ ] No new unconditional `#include "*.cc"` in daemon headers without note
+- [ ] Prefer new files under 1000 LOC; justify exceptions
+- [ ] Thrift behavior: edit IDL and/or wrappers — not `gen-*`
+
+## Layer B — Thrift-generated
+
+- [ ] Do **not** edit for style/naming/clarity
+- [ ] Shape changes in IDL → regenerate (`thriftgen-${VER}` / CMake)
+- [ ] Logic stays in wrappers (`AppHandler`, `Client`, `Converter`, binding clients)
+- [ ] Do not apply Layer A formatting or copyright/guard renames to generated trees
+- [ ] Do not build on `*_server.skeleton.cpp`

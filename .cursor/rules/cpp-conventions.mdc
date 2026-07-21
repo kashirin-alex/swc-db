@@ -6,6 +6,8 @@ alwaysApply: false
 
 # SWC-DB C++ Conventions
 
+**Does not apply** to Thrift-generated trees (`thriftgen-*`, `gen-cpp`, `gen-c_glib`, other `gen-*`). Those are Layer B — see `thrift-generated-layer.mdc`.
+
 ## Files and headers
 
 - Extensions: `.h` / `.cc` (not `.hpp` / `.cpp`)

@@ -11,8 +11,13 @@ sort: 3
 
 | CONFIG OPTION | DESCRIPTION | VALUE OPTIONS | DEFAULT VALUE |
 | ---  | --- | --- | --- |
-|O_LEVEL| Level of optimizations: <br/>  0: = -Os <br/>  1: = -O2s <br/>  2: += -floop-interchange -flto=1 -fuse-linker-plugin -ffat-lto-objects <br/>  3: = -O3 <br/>  4: += -flto=1 -fuse-linker-plugin -ffat-lto-objects<br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
+|O_LEVEL| Level of optimizations: <br/>  0: = -Os <br/>  1: = -O2 <br/>  2: = -O2 plus -floop-interchange -flto=1 -fuse-linker-plugin -ffat-lto-objects (GCC; Clang uses -flto) <br/>  3: = -O3 <br/>  4: += -flto=1 -fuse-linker-plugin -ffat-lto-objects<br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
 |SWC_IMPL_SOURCE| when possible implement SWC-DB source-code | ON/OFF | OFF |
+|SWC_IMPL_COMPARATORS_BASIC| use the basic comparator implementation (`-DSWC_IMPL_COMPARATORS_BASIC`) | ON/OFF | OFF |
+|SWC_IO_URING_AS_DEFAULT| enable ASIO io_uring and disable epoll as the default reactor | ON/OFF | OFF |
+|SWC_FS_LOCAL_USE_IO_URING| build Local FS with io_uring support (`-DSWC_FS_LOCAL_USE_IO_URING`; also enables ASIO io_uring) | ON/OFF | OFF |
+|SWC_RANGER_WITH_RANGEDATA| build Manager/Ranger with RangeData support (`-DSWC_RANGER_WITH_RANGEDATA`) | ON/OFF | OFF |
+|SWC_PROFILE| emit stack-usage / profile-oriented compiler flags | STACK / ALL | OFF |
 |USE_REPLXX| whether to use Libreplxx | ON/OFF | OFF(ON if found) |
 |USE_GNU_READLINE| whether to use GNU libreadline | ON/OFF | OFF(ON if EDITLINE not found) |
 |LOOKUP_INCLUDE_PATHS| additional paths to headers | posix-dir-path_LIST; | "/opt/local/include;/usr/local/include;usr/local/lib;/usr/include" |
@@ -34,10 +39,10 @@ sort: 3
 |USE_MIMALLOC| use libmimalloc | ON/OFF | OFF |
 |USE_TCMALLOC| use libtcmalloc | ON/OFF | OFF(default libtcmalloc_minimal or USE_DEFAULT_MALLOC) |
 |USE_LIBSSL| The SSL-Library to use | open/wolf | open |
-|SWC_LANGUAGES| require to build with support of listed languages  | NONE or ANY / applicable CSV: py2,py3,pypy2,pypy3,java,netstd,c_glib | any possible |
+|SWC_LANGUAGES| require to build with support of listed languages. CSV values are handled by `FindLanguages.cmake`: `py2`, `py3`, `pypy2`, `pypy3`, `ruby`, `java`. Use `ALL` (or leave unset) for every available language binding. C-Glib Thrift is controlled by `WITHOUT_THRIFT_C` / `SWC_BUILD_PKG=lib-thrift-c`, not this CSV. Netstd generation is part of a full/ALL Thrift language build, not a CSV token. | NONE / ALL / CSV: py2,py3,pypy2,pypy3,ruby,java | any possible |
 |SWC_BUILTIN_FS| builtin filesystems (impl./prelinked without use of dynamic linking loader), suggested=local,broker | applicable CSV: local,broker,hadoop_jvm,hadoop,ceph | any possible |
 |SWC_DEFAULT_ENCODER| the encoder to use for default config value | PLAIN/ZLIB/SNAPPY/ZSTD | ZSTD |
-|SWC_BUILD_PKG| Build only the specified package | _Environment:_ <br/> * env  <br/> * doc  <br/> _Libraries:_ <br/> * lib-core <br/>   * lib <br/>   * lib-fs <br/>   * lib-fs-local <br/>   * lib-fs-broker <br/>   * lib-fs-ceph <br/>   * lib-fs-hadoop <br/>   * lib-fs-hadoop-jvm <br/>   * lib-thrift <br/>   * lib-thrift-c <br/>   * pam-max-retries <br/>  _Applications:_ <br/>   * manager <br/>   * ranger <br/>   * fsbroker <br/>   * thiriftbroker <br/>   * utils | NONE(build-all) |
+|SWC_BUILD_PKG| Build only the specified package | _Environment:_ <br/> * env  <br/> * doc  <br/> _Libraries:_ <br/> * lib-core <br/>   * lib <br/>   * lib-fs <br/>   * lib-fs-local <br/>   * lib-fs-broker <br/>   * lib-fs-ceph <br/>   * lib-fs-hadoop <br/>   * lib-fs-hadoop-jvm <br/>   * lib-thrift <br/>   * lib-thrift-c <br/>   * pam (any value matching `^pam`, e.g. `pam-max-retries`) <br/>  _Applications:_ <br/>   * manager <br/>   * ranger <br/>   * broker <br/>   * fsbroker <br/>   * thriftbroker <br/>   * utils | NONE(build-all) |
 |SWC_PATH_ETC| Build with specific `/etc/` path | posix-dir-path, finish with slash `/` | application-base/../etc/swcdb/ |
 |SWC_PATH_LOG| Build with specific `/log/` path | posix-dir-path, finish with slash `/` | application-base/../var/log/swcdb/ |
 |SWC_PATH_RUN| Build with specific `/run/` path | posix-dir-path, finish with slash `/` | application-base/../run/ |
@@ -50,7 +55,7 @@ sort: 3
 | CONFIG OPTION | DESCRIPTION | VALUE OPTIONS | DEFAULT VALUE |
 | ---  | --- | --- | --- |
 |CMAKE_SKIP_RPATH| runtime-linking | ON/OFF | OFF |
-|CMAKE_INSTALL_PREFIX| SWC-DB path of installation, suggested /opt/swcdb | posix-dir-path | /usr/local |
+|CMAKE_INSTALL_PREFIX| SWC-DB path of installation. Examples and packaged layouts use **`/opt/swcdb`**; CMake's own default remains `/usr/local` if unset. | posix-dir-path | /usr/local |
 |CMAKE_BUILD_TYPE| Build Type (the 'Release' applies NDEBUG to O_LEVEL) | Debug/Release | Debug |
 
 
@@ -61,17 +66,24 @@ sort: 3
 
 ## Configuring
 
-*  while at builds [path as by instructions]({{ site.baseurl }}/build/prerequisites/)
+Pick a build directory layout, then run `cmake` with `-D{option}={value}`:
+
+| Layout | From build directory | Typical command |
+| --- | --- | --- |
+| Sibling tree (`builds/swcdb` next to a `swc-db` checkout) | `cd builds/swcdb` | `cmake ../swc-db …` |
+| Nested under the checkout (`swc-db/builds/swcdb`) | `cd builds/swcdb` | `cmake ../../swc-db …` |
+
+* while at builds [path as by instructions]({{ site.baseurl }}/build/prerequisites/)
 ```
-cd swcdb;
+cd builds/swcdb;
 ```
 
-_The Configuration Option Format ```-D{option}={value}) ```_
+_The Configuration Option Format ```-D{option}={value}```_
 
 ```cmake
 cmake ../swc-db [SWC-DB Configuration Options] [Cmake Configuration Options];
 ```
-
+> Adjust the relative path (`../swc-db` vs `../../swc-db`) to match the layout above. Prefer `-DCMAKE_INSTALL_PREFIX=/opt/swcdb` so installed binaries match the Getting Started and run guides.
 
 
 ***

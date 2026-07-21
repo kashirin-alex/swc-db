@@ -23,13 +23,14 @@ The benchmarks are a separate work loads of
 ``` 
 
 **SWC-DB cluster run-time setup:**
-  * FileSytem ```swc.fs=broker``` with ```swc.fs.broker.underlying=hadoop_jvm```
+  * Filesystem ```swc.fs=broker``` with ```swc.fs.broker.underlying=hadoop_jvm```
   * 5x machine with CPU Intel E3-1246V3 RAM 32GB SW-RAID 2x 2TB-7200rpm NIC 1Gbit/s
   * 1x SWC-DB Manager, 5x SWC-DB Ranger, 5x SWC-DB FsBroker, 5x Hadoop Datanode and 2x Hadoop Namenode
   * The `swcdb_load_generator` was running by ns1-1.thither.direct
 
 #### NIC Input Data Rate KB/s on the Public-IP with an Encoder set to ZSTD rate is +50x times less
-![SWC-DB With and Without Communications Encoder - NIC Input Data Rate](swc-db_diff-with-Encoder.png)
+
+> Historical result: NIC input rate with communications encoder **ZSTD** was reported as on the order of **+50×** lower than without an encoder under the workload above. (Chart image previously linked here is not shipped in the docs tree.)
 
 #### Result of `swcdb_load_generator` (with an Encoder setting)
 ```bash

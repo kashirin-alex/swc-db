@@ -54,7 +54,7 @@ _default_ **```swc.bkr.metrics.enabled=true```**
 The encoding to use in communication, options PLAIN/ZSTD/SNAPPY/ZLIB.
 > If address of local & remote is the same, the Encoder is set to PLAIN.
 
-  _default_ **```swc.mngr.comm.encoder=ZSTD```**
+  _default_ **```swc.bkr.comm.encoder=ZSTD```**
 
 * ### swc.bkr.ram.allowed.percent
 ```TYPE_INT32_G```

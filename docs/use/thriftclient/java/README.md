@@ -15,9 +15,13 @@ a Maven Project's `pom.xml` requires to add to `<dependencies>`:
     <version>0.5.13</version>
   </dependency>
 ```
+> Confirm the published artifact version on [Maven Central](https://search.maven.org/artifact/org.swcdb/thrift) — Java client releases can track the source tree (`CMakeLists.txt`) while downloadable server packages lag (see [Getting SWC-DB]({{ site.baseurl }}/install/getting_swcdb/)).
+
 for other project types use the defintions are available at:
 * [Maven Central Repository](https://search.maven.org/artifact/org.swcdb/thrift)
 * [MVNrepository.com](https://mvnrepository.com/artifact/org.swcdb/thrift/)
+
+When building from this tree with Java enabled, CMake also installs a JDBC driver JAR (`swcdb-jdbc-thrift-*-bundled.jar`). JDBC URL: `jdbc:swcdb:thrift:hostname:18000/`. Install notes: [Thrift Clients]({{ site.baseurl }}/install/thrift_clients/#java--maven--jdbc).
 
 
 ***
@@ -76,7 +80,7 @@ public class ListAllSchemas {
 ```bash
 SWCDB_VERSION="0.5.13"
 CLASSPATHS=/root/.m2/repository/org/swcdb/thrift/${SWCDB_VERSION}/thrift-${SWCDB_VERSION}.jar;
-CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/apache/thrift/libthrift/0.19.0/libthrift-0.19.0.jar;
+CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/apache/thrift/libthrift/0.20.0/libthrift-0.20.0.jar;
 CLASSPATHS=${CLASSPATHS}:/root/.m2/repository/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28.jar;
 ```
 

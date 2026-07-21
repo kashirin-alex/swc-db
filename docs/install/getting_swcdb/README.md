@@ -27,11 +27,13 @@ Choose the `.tar.xz package` from the  [Available for Download](#available-for-d
 
 Fill the ```SWCDB_INSTALL_PATH``` ```SWCDB_VERSION``` ```SWCDB_VERSION_SPECIFIC``` as required.
 
+> Set ```SWCDB_VERSION``` to the newest version listed in [Available for Download](#available-for-download) (or on the [Releases page](https://github.com/kashirin-alex/swc-db/releases)) and ```SWCDB_VERSION_SPECIFIC``` to a matching build/platform from that same row. The source tree may be ahead of published packages (e.g. **0.5.13** in `CMakeLists.txt` while **0.5.12** is the latest downloadable release).
+
 * #### download:
 
 ```bash
 SWCDB_INSTALL_PATH="/opt/swcdb";
-SWCDB_VERSION="0.5.13";
+SWCDB_VERSION="0.5.12";
 SWCDB_VERSION_SPECIFIC="debug.amd64";
 
 wget https://github.com/kashirin-alex/swc-db/releases/download/v${SWCDB_VERSION}/swcdb-${SWCDB_VERSION}.${SWCDB_VERSION_SPECIFIC}.tar.xz;
@@ -59,7 +61,7 @@ _installation path defaults to "/opt/swcdb"_
 * #### download:
 
 ```bash
-SWCDB_VERSION="0.5.13";
+SWCDB_VERSION="0.5.12";
 SWCDB_VERSION_SPECIFIC="Ubuntu_20_04_6_LTS.amd64";
 
 wget https://github.com/kashirin-alex/swc-db/releases/download/v${SWCDB_VERSION}/swcdb-${SWCDB_VERSION}.${SWCDB_VERSION_SPECIFIC}.deb;
@@ -83,8 +85,8 @@ The steps of proceeding with SWC-DB cluster installation. The pack includes only
 
 > In-case the source-host needs to be a machine running SWC-DB, the [release package should be installed](#the-swc-db-tarxz-package) and proceed to step-3.
 
-1. [download and install the 'install-pack' version-specific](#download)
-2. use the default archive-url or use the archive-path of a [downloaded SWC-DB .tar.xz package](#download)
+1. [download and install the 'install-pack' version-specific](#available-for-download)
+2. use the default archive-url or use the archive-path of a [downloaded SWC-DB .tar.xz package](#available-for-download)
 3. follow-up with instructions on [Running SWC-DB Distributed Cluster]({{ site.baseurl }}/run/distributed/)
 
 

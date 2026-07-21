@@ -14,10 +14,10 @@ sort: 1
 
 
 ## Introduction to the SWC-DB
-The SWC-DB _(Super Wide Column Database)_ a Super Fast database management system designed to handle [Yottabytes+](https://en.wikipedia.org/wiki/Yottabyte) on a [quadrillion](https://en.wikipedia.org/wiki/Orders_of_magnitude_(numbers)#1024) base of entries. Latest release of SWC-DB is available at [github.com/kashirin-alex/swc-db](https://github.com/kashirin-alex/swc-db/releases/) more details at [Getting SWC-DB]({{ site.baseurl }}/install/getting_swcdb/) .
+The SWC-DB _(Super Wide Column Database)_ a Super Fast database management system designed to handle [Yottabytes+](https://en.wikipedia.org/wiki/Yottabyte) on a [quadrillion](https://en.wikipedia.org/wiki/Orders_of_magnitude_(numbers)#1024) base of entries. Latest release of SWC-DB is available at [github.com/kashirin-alex/swc-db](https://github.com/kashirin-alex/swc-db/releases/) more details at [Getting SWC-DB]({{ site.baseurl }}/install/getting_swcdb/) . New users: start with [Getting Started]({{ site.baseurl }}/getting-started/).
 
 
-_The proven test with SWC-DB v0.4.9, on one machine(CPU Intel E3-1246V3 RAM 32GB SW-RAID 2x 2TB-7200rpm) run the DB and the Client, capabilities standing is a dozen terabytes of raw-data with 100+billion of record entries with performace input of ~250,000+ cells a second and random scan/select of one entry surrounds the microseconds to milliseconds, whereas performance varies on applied configurations and hardware. **Testing facillity is required for in deep and further testing.**_
+_A benchmark from SWC-DB v0.4.9 (historical, kept for reference), on one machine(CPU Intel E3-1246V3 RAM 32GB SW-RAID 2x 2TB-7200rpm) run the DB and the Client, capabilities standing is a dozen terabytes of raw-data with 100+billion of record entries with performance input of ~250,000+ cells a second and random scan/select of one entry surrounds the microseconds to milliseconds, whereas performance varies on applied configurations and hardware. **A testing facility is required for in-depth and further testing.**_
 
 
 
@@ -30,14 +30,14 @@ _The proven test with SWC-DB v0.4.9, on one machine(CPU Intel E3-1246V3 RAM 32GB
 |                                                 |  | Legend: <br/> ```✔``` - Yes <br/>  ```–✔``` - Require Enabling Feature <br/>  ```✗``` - No |
 | **a Key Value DB**                                    | **```✔```**  |          |
 | **a Wide Column Database DB**                         | **```✔```**  |          |
-| **a NOSQL (Not Only Structual Query Language) DB**    | **```✔```**  |          |
-| **a [SQL]({{ site.baseurl }}/use/sql/) (Structual Query Language) DB**  | **```✔```**  | no joins |
+| **a NOSQL (Not Only Structural Query Language) DB**    | **```✔```**  |          |
+| **a [SQL]({{ site.baseurl }}/use/sql/) (Structural Query Language) DB**  | **```✔```**  | no joins |
 | **a DB with ACID(concept) for a single data-entry**   | **```✔```**  | write with acknowledgment on base of one data-entry(cell) or with update of matching Cells-Interval Scan-Specifications |
 | **a DB with ACID(concept) for a many data-entries**   | **```✗```**  | write with acknowledgment many data-entries(cells) with one request, problem - one entry can exist while other yet to exist |
 | **a Relational DB**                                   | **```✗```**  | achievable by the client-side |
 | **a Time Series DB**                                  | **```✔```**  | without relational propotions |
 | **an Object Oriented DB**                              | **```–✔```** | binary key(Fractions) and value allowed, user defined Serialization IO or/and Serializations available with the SERIAL column-type |
-| **a XML DB / Tripel Stores**                          | **```–✔```** | require Native XML Client process XML-schema to Database structure |
+| **a XML DB / Triple Stores**                          | **```–✔```** | require Native XML Client process XML-schema to Database structure |
 | **a Schema Free DB**                                  | **```✔```**  | except to data/column type, schema/column-definition is without inner data schematics |
 | **a DB with User Concepts (Access Controls)**         | **```✗```**  |     |
 | **a Shard Partitioning DB**                           | **```✔```**  |     |
@@ -76,7 +76,7 @@ cells with key ```[>F(), F(2nd)]``` returning the cells with second fraction equ
 
 
 #### The Comparators in SWC-DB
-The [Comparators]({{ site.baseurl }}/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF ,GT, GE, EQ, LE, LT, NE, RE, FIP, FI and domain-object(Fully/Partially sub/sup set) SBS, SPS, POSBS, POSPS, FOSBS and FOSPS, while some Comparators have limitations for range-locator as regexp is evaluated as
+The [Comparators]({{ site.baseurl }}/use/sql/#comparators-syntax) available in SWC-DB are NONE, PF, GT, GE, EQ, LE, LT, NE, RE, VGT, VGE, VLE, VLT, FIP, FI, OR and domain-object (fully/partially sub/superset) SBS, SPS, POSBS, POSPS, FOSBS and FOSPS, while some Comparators have limitations for range-locator as regexp is evaluated as
 NONE being anything-match. Additionally the conditions of comparators applied on the corresponding [“ key-sequence ”]({{ site.baseurl }}/use/thriftclient/#enumeration-keyseq) by column's schema that include
 LEXIC, VOLUME, FC_LEXIC, FC_VOLUME that define the sequence of cells in a range. If a prefix (PF) is desired than the choice will be the LEXIC or with
 FC_LEXIC as VOLUME (volumetric) will not correspond to the char-byte sequence while if desired to have for example a decimal sequence of 0, 1, 2 .. 11
@@ -151,11 +151,13 @@ In worst case of outdated data being used with a request the Ranger return an er
 
 ## The Documentations Table of Contents
 
+* [Getting Started]({{ site.baseurl }}/getting-started/)
 * [Introduction to the SWC-DB](#introduction-to-the-swc-db)
 * USING
   * [SQL]({{ site.baseurl }}/use/sql/)
-  * [Thrift Client]({{ site.baseurl }}/use/thriftclient/)
   * [CLI Client]({{ site.baseurl }}/use/cli/)
+  * [Thrift Client]({{ site.baseurl }}/use/thriftclient/)
+  * [C++ Client / libswcdb]({{ site.baseurl }}/use/client_library/)
   * [Load Generator]({{ site.baseurl }}/use/load_generator/)
 * RUNNING
   * [Pseudomode]({{ site.baseurl }}/run/pseudomode/)
@@ -163,11 +165,14 @@ In worst case of outdated data being used with a request the Ranger return an er
 * CONFIGURING
   * [The Config Files]({{ site.baseurl }}/configure/the_config_files/)
   * [The Properties]({{ site.baseurl }}/configure/properties/)
+  * [OS Tuning]({{ site.baseurl }}/configure/os_tuning/)
+  * [Benchmarks]({{ site.baseurl }}/configure/benchmarks/)
 * INSTALLING
   * [Installation Steps]({{ site.baseurl }}/install/steps/)
   * [Dependencies]({{ site.baseurl }}/install/dependencies/)
   * [Getting SWC-DB]({{ site.baseurl }}/install/getting_swcdb/)
   * [Setting up swcdb_cluster]({{ site.baseurl }}/install/swcdb_cluster/)
+  * [Installing Thrift Clients]({{ site.baseurl }}/install/thrift_clients/)
 * BUILDING
   * [Build Steps]({{ site.baseurl }}/build/steps/)
   * [Prerequisites]({{ site.baseurl }}/build/prerequisites/)
@@ -175,6 +180,8 @@ In worst case of outdated data being used with a request the Ranger return an er
   * [Make]({{ site.baseurl }}/build/make/)
   * [Documentations]({{ site.baseurl }}/build/documentations/)
   * [Test]({{ site.baseurl }}/build/test/)
+* ADDITIONAL DOCS
+  * [C++ API (cpp.swcdb.org)]({{ site.baseurl }}/additional-docs/cpp.html)
 * SUPPORT & LICENSE
   * [Support on SWC-DB]({{ site.baseurl }}/support_license/support.html)
   * [License of SWC-DB]({{ site.baseurl }}/support_license/license.html)
@@ -201,6 +208,6 @@ In worst case of outdated data being used with a request the Ranger return an er
 
 
 
-![SWC-DB©]({{ site.baseurl }}/logo.svg)
+![SWC-DB©]({{ site.baseurl }}/logo-big.svg)
 
 

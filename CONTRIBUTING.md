@@ -48,6 +48,89 @@ Author ..
 
 
 
+### Development Workflow
+For development (Pull-Request) contributions:
+
+1. Fork or branch from `master`.
+2. Make focused changes; match neighboring code style (there is no `.clang-format` / `.editorconfig`).
+3. Build and test locally (see [Local Testing](#local-testing) and [docs/build/test/](docs/build/test/)).
+4. Open a Pull Request against `master` (or `CI-test` when intentionally exercising CI).
+
+Compiler warnings are errors (`cmake/FlagsWarnings.cmake`). Prefer small, reviewable PRs.
+
+**Code style:** There is no `.clang-format`. Match neighboring code; use the Layer A / Layer B checklist in [`evals/STANDARDS_CLARITY_EVALUATION.md`](evals/STANDARDS_CLARITY_EVALUATION.md) §9 (also `.cursor/rules/review-standards-clarity.mdc`, `cpp-conventions.mdc`, Thrift layer rules).
+
+
+
+### Commit Messages
+Write a clear subject that states why the change exists. A short body is welcome when the rationale is not obvious from the diff.
+
+#### Triggering GitHub Actions CI — `[TEST COMMIT]`
+CI (`.github/workflows/ci.yml`) runs **only** when the commit message contains the exact substring `[TEST COMMIT]`.
+
+- Include `[TEST COMMIT]` when you intentionally want the workflow to run on push/PR.
+- If the marker is absent, **do not assume CI ran** — the job is skipped.
+- Example subject: `Fix range unload path [TEST COMMIT]`
+
+There is no required Conventional Commits format; keep messages readable and accurate.
+
+
+
+### What CI Runs Today
+When triggered with `[TEST COMMIT]`, the workflow builds a matrix on Ubuntu with several compilers, `O_LEVEL` values, and `SWC_IMPL_SOURCE` ON/OFF. Default configure uses `-DSWC_LANGUAGES=NONE` and install prefix `/opt/swcdb`. Thrift version in CI is currently `0.20.0`.
+
+| Fact | Behavior |
+|------|----------|
+| Opt-in gate | Job runs only if the commit message contains `[TEST COMMIT]` |
+| Matrix `TEST` | Default is `1` |
+| Unit tests | Run only on a subset of the matrix (`O_LEVEL=3`+`IMPL=OFF` or `O_LEVEL=6`+`IMPL=ON`) |
+| Integration | Steps gated on `TEST == '2'` — **not** in the default matrix |
+| Languages / bindings | Not built in default CI (`SWC_LANGUAGES=NONE`) |
+| Sanitizers | Supported by CMake locally; not configured as CI jobs |
+
+Local `make test` and a full cluster still matter for confidence that CI does not cover. See also [`evals/QUALITY_EVALUATION_REPORT.md`](evals/QUALITY_EVALUATION_REPORT.md) for a detailed CI truth table.
+
+
+
+### Pull Requests
+Use the repository Pull Request template. In the description:
+
+- Summarize the change and why it is needed.
+- List how you tested (local build/test, and whether you used `[TEST COMMIT]`).
+- For **new** source files, include the copyright header above.
+- For code style and Thrift layer boundaries, follow the checklist in [`evals/STANDARDS_CLARITY_EVALUATION.md`](evals/STANDARDS_CLARITY_EVALUATION.md) §9 (Layer A hand-written vs Layer B generated). A short agent-oriented copy lives in `.cursor/rules/review-standards-clarity.mdc`.
+
+Do not hand-edit Thrift `thriftgen-*` / `gen-*` trees for behavior or style; change the IDL and/or hand-written wrappers, then regenerate.
+
+
+
+### Local Testing
+- Unit / build tests: follow [Building](docs/build/) then [Testing](docs/build/test/) (`make test` from the build directory).
+- Integration-oriented `make test` expects an installed tree and `swcdb_cluster` set up as in [Setting up swcdb_cluster](docs/install/swcdb_cluster/).
+- Optional: sanitizer builds via CMake (`SWC_ENABLE_SANITIZER` = `address` or `thread`) when debugging memory/concurrency issues.
+
+Document what you ran in the PR.
+
+
+
+### Documentation Pull Requests
+User-facing docs live under `docs/` (Jekyll). Contributor process for commits/PRs stays in this file (not duplicated as a full chapter on the docs site).
+
+- Preserve YAML frontmatter (`title`, `sort`) on section pages.
+- Prefer fixing factual integrity (versions, broken links, TOC gaps) over drive-by rewrites.
+- Preview locally with the Gemfile under `docs/` (`bundle install`, then `bundle exec jekyll serve` from `docs/`).
+- Scope and backlog for docs clarity: [`evals/DOCS_CLARITY_EVALUATION.md`](evals/DOCS_CLARITY_EVALUATION.md) (agent checklist: `.cursor/rules/review-docs-clarity.mdc`).
+- Redirect-only stubs (keep old URLs alive) should set `nav_exclude: true` so they do not duplicate the sidebar entry for the canonical page.
+
+**Integrity gates for docs PRs:**
+
+1. **Release sync:** When publishing a new version, update in one change: `docs/install/getting_swcdb/` download table, `swc.install.archive` default in `docs/configure/properties/swcdb_cluster.md`, and any `SWCDB_VERSION=` examples.
+2. **Link check:** Verify new/changed relative links under `docs/` (especially `use/thriftclient/*`).
+3. **TOC sync:** If you add a new `docs/**/README.md` with `title:`, add a line to the intro TOC in `docs/README.md`, mark it sidebar-only in the PR, or set `nav_exclude: true` for redirect stubs.
+4. **Code↔docs sync:** Changes to `Comparators.h` / Thrift `Comp`, CMake options in `cmake/` / `docs/build/configure/`, or defaults in `src/etc/swcdb/*.dyn.cfg` should update the matching docs in the same PR.
+
+
+
 ---
 
 

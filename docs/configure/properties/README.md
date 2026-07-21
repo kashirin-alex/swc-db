@@ -69,7 +69,7 @@ _default_ **```False```**
 * ### swc.cfg.path
 ```TYPE_STRING```
 The path to location of configuration files. \
-_default_ **```swc.cfg.path=SWC_INSTALL_PREIFX/etc/swcdb/```**
+_default_ **```swc.cfg.path=SWC_INSTALL_PREFIX/etc/swcdb/```**
 
 * ### swc.cfg
 ```TYPE_STRING```
@@ -85,7 +85,7 @@ _default_ **```swc.cfg.dyn=```**
 * ### swc.logging.path
 ```TYPE_STRINGS```
 The path of log directories and files, ```YYYY/MM/DD``` sub-folders are create on this path. \
-_default_ **```swc.logging.path=SWC_INSTALL_PREIFX/var/log/swcdb/```**
+_default_ **```swc.logging.path=SWC_INSTALL_PREFIX/var/log/swcdb/```**
 
 
 ***

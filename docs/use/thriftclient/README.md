@@ -17,10 +17,10 @@ sort: 3
   * [Ruby](ruby/)
   * [C-Glib](c_glib/)
 
- _**Additional only generated SWC-DB Thrift Client Service**_:
+ _**Additional generated-only SWC-DB Thrift Client Services**_ (code is generated, no usage guide yet):
 
-  * [Netstd](netstd/)
-  * [Rust](rust/)
+  * Netstd
+  * Rust
 
 
 > Languages Support can be extended upto [supported languages by Apache-Thrift ](https://github.com/apache/thrift/blob/master/LANGUAGES.md)
@@ -227,6 +227,7 @@ The available logical Comparators, plus extended logic options applied with 'v' 
 |```FOSPS```|```18```|[ &lt;-   ]  :   -fosupset [fosps]  (eq/full ordered superset) |
 |```FIP```|```19```|[ :&lt;   ]  :   -fip  (fraction include prior) |
 |```FI```|```20```|[ :       ]  :   -fi   (fraction include) |
+|```OR```|```21```|[ &#124;&#124;     ]  :   -or   (match any) |
 
 ### Enumeration: SpecFlagsOpt
 The Scan options Flags Specifications for the SpecFlags 'options' bit 

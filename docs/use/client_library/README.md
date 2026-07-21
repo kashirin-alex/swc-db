@@ -94,8 +94,8 @@ The SWC-DB Clients Instance is required by most of [protocols commands'](https:/
   * [Scanner](https://cpp.swcdb.org/classSWC_1_1client_1_1Query_1_1Select_1_1Scanner.html)
   * [Broker-Scanner](https://cpp.swcdb.org/classSWC_1_1client_1_1Query_1_1Select_1_1BrokerScanner.html)
 * [Update](https://cpp.swcdb.org/namespaceSWC_1_1client_1_1Query_1_1Update.html)
-  * [Commiter](https://cpp.swcdb.org/classSWC_1_1client_1_1Query_1_1Update_1_1Committer.html)
-  * [Broker-Commiter](https://cpp.swcdb.org/classSWC_1_1client_1_1Query_1_1Update_1_1BrokerCommitter.html)
+  * [Committer](https://cpp.swcdb.org/classSWC_1_1client_1_1Query_1_1Update_1_1Committer.html)
+  * [Broker-Committer](https://cpp.swcdb.org/classSWC_1_1client_1_1Query_1_1Update_1_1BrokerCommitter.html)
   * [Metric-Reporting](https://cpp.swcdb.org/classSWC_1_1client_1_1Query_1_1Update_1_1Handlers_1_1Metric_1_1Reporting.html)
 
 ***
