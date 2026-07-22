@@ -13,11 +13,11 @@
 |--|--|
 | **Overall score** | **2.6 / 5.0** (weighted) |
 | **Maturity** | Build-strong, automation-weak; architecture intent clear, implementation modularity and test gates lag |
-| **Top risks** | (1) Comm `header_len` buffer overflow, (2) unbounded payload alloc, (3) truncated on-disk cells continue, (4) CI false confidence, (5) metrics null-deref on `ev->error` |
+| **Top risks** | (1) Truncated on-disk cells continue, (2) CI false confidence, (3) metrics null-deref on `ev->error`, (4) connect timeout ignored, (5) empty `catch(...)` on receive |
 
 SWC-DB has a coherent product topology (clients → broker/thrift → manager → ranger → FS), centralized wire protocol, strict compiler warnings-as-errors, and clean module layering at the `#include` level. Quality debt concentrates in: untrusted-input bounds on the native comm path, ranger on-disk integrity policy under corruption, opt-in CI that never runs integration, and daemon build aggregation that produces god-sized translation units.
 
-**Recommendation:** Treat P0 comm bounds and P1 truncated-cell / compaction apply-ordering as the first engineering fixes; in parallel, fix CI so every PR runs unit tests and a scheduled job runs integration.
+**Recommendation:** Treat remaining P0 (empty `catch(...)`, connect timeout) and P1 truncated-cell / compaction apply-ordering as the next engineering fixes; in parallel, fix CI so every PR runs unit tests and a scheduled job runs integration.
 
 ---
 
@@ -26,7 +26,7 @@ SWC-DB has a coherent product topology (clients → broker/thrift → manager �
 | Dimension | Weight | Score (1–5) | Weighted | Summary |
 |-----------|--------|-------------|----------|---------|
 | Correctness & reliability | 30% | **2.8** | 0.84 | Strong intentional patterns (CellStore rename-rollback; insistent FS I/O); remaining: truncated-cell continue, compaction apply window |
-| Security & robustness | 25% | **2.0** | 0.50 | Confirmed header overflow + unbounded payload; serialization layer itself is generally sound when lengths are trusted |
+| Security & robustness | 25% | **2.0** | 0.50 | Score frozen at 2026-07-12 audit — re-score on next pass |
 | Test & CI maturity | 20% | **2.0** | 0.40 | Capable local harness; CI opt-in and `TEST=1` never runs integration; compaction/Rgr protocol gaps |
 | Architecture & modularity | 15% | **3.5** | 0.525 | Excellent layering and protocol centralization; weak compile-time modularity (`.cc`-in-header) |
 | Maintainability | 10% | **3.0** | 0.30 | Consistent style, low TODO noise; god files and duplicated AppContext/metrics |
@@ -119,19 +119,6 @@ Technical debt appears mainly as commented-out code and large files, not inline 
 Classification: **Confirmed** / **Partial** / **False positive** / **Intentional design**.
 
 ### P0 — Security / crash
-
-#### R-P0-1: `header_len` vs `_buf_header` — **Confirmed**
-
-- `_buf_header` is `uint8_t[Header::MAX_LENGTH]` with `MAX_LENGTH = 48` (`ConnHandler.h:246`, `Header.h:23`).
-- After prefix decode, remaining header bytes are read with length `header_len - PREFIX_LENGTH` with **no** `header_len <= MAX_LENGTH` check (`ConnHandler.cc:324–329`).
-- Wire `header_len` is `uint8_t` (up to 255) → up to 253 bytes into a 48-byte member of a heap-allocated `ConnHandler` → **heap / adjacent-member overflow**.
-- Header checksum runs only in `Header::decode()` after the full header read (`Header.h:165`) and cannot prevent the overwrite.
-
-#### R-P0-2: Unbounded payload allocation — **Confirmed**
-
-- `recv_buffers()` sets `remain = ev->header.data.size` (or `data_ext.size`) and calls `buffer->reallocate(remain)` with no cluster max (`ConnHandler.cc:421–436`).
-- Checksum verified only after the full read (`Receiver_Buffer`, lines 384–386).
-- Risk: remote DoS via large allocations.
 
 #### R-P0-3: Empty `catch(...)` on receive — **Partial (confirmed pattern, narrower than “silent close”)**
 
@@ -321,19 +308,17 @@ See §3.2. Ranger `db/` cluster (~8k LOC across Range/Compact/CommitLog/CellStor
 
 | Priority | Item | Severity | Effort (est.) | Rationale |
 |----------|------|----------|---------------|-----------|
-| **1** | Cap `header_len <= Header::MAX_LENGTH` before header body read; reject/close otherwise | P0 | S | Confirmed heap buffer overflow |
-| **2** | Enforce max payload size before `reallocate()` (config + hard default) | P0 | S–M | Remote DoS |
-| **3** | Fail-fast on truncated/corrupt CellStore/CommitLog cell reads (set `err`, abort load/split/compact) | P1 | M | Data integrity |
-| **4** | Cap CellStore `blks_count` / `idx_size_*` against schema/RAM; fail load on violation | P1 | M | Corrupt metadata DoS/corruption |
-| **5** | Fix CI: run unit tests without `[TEST COMMIT]` (or on all PRs); add `TEST=2` / nightly integration; add broker step | P2 | M | Stop false confidence |
-| **6** | Compaction + CommitLogCompact + Ranger protocol integration tests; enable commented compact path | P2 | L | Cover highest-risk untested code |
-| **7** | Null-check `m_metrics` on all `ev->error` paths in AppContexts | P2 | S | Latent crash when metrics off |
-| **8** | Log unexpected exceptions in ConnHandler receive/send catches; apply connect timeout | P0/P2 | S | Observability + correctness |
-| **9** | Harden `apply_new` (two-phase / fail closed if log remove fails after CS replace) | P1 | M | Compaction atomicity |
-| **10** | Extract shared daemon bootstrap; unify manager/ranger to table dispatch | P3 | L | Drift / duplication |
-| **11** | Split `CompactRange.cc`, `Range.cc`, `AppHandler.h` | P3 | L | Reviewability |
-| **12** | Longer-term: compiled daemon libs instead of `.cc`-in-header | P3 | XL | Build/test modularity |
-| **13** | Binding smoke tests + document `[TEST COMMIT]` / sanitizer builds in CONTRIBUTING + docs/build/test | P2 | S–M | Ecosystem drift |
+| **1** | Fail-fast on truncated/corrupt CellStore/CommitLog cell reads (set `err`, abort load/split/compact) | P1 | M | Data integrity |
+| **2** | Cap CellStore `blks_count` / `idx_size_*` against schema/RAM; fail load on violation | P1 | M | Corrupt metadata DoS/corruption |
+| **3** | Fix CI: run unit tests without `[TEST COMMIT]` (or on all PRs); add `TEST=2` / nightly integration; add broker step | P2 | M | Stop false confidence |
+| **4** | Compaction + CommitLogCompact + Ranger protocol integration tests; enable commented compact path | P2 | L | Cover highest-risk untested code |
+| **5** | Null-check `m_metrics` on all `ev->error` paths in AppContexts | P2 | S | Latent crash when metrics off |
+| **6** | Log unexpected exceptions in ConnHandler receive/send catches; apply connect timeout | P0/P2 | S | Observability + correctness |
+| **7** | Harden `apply_new` (two-phase / fail closed if log remove fails after CS replace) | P1 | M | Compaction atomicity |
+| **8** | Extract shared daemon bootstrap; unify manager/ranger to table dispatch | P3 | L | Drift / duplication |
+| **9** | Split `CompactRange.cc`, `Range.cc`, `AppHandler.h` | P3 | L | Reviewability |
+| **10** | Longer-term: compiled daemon libs instead of `.cc`-in-header | P3 | XL | Build/test modularity |
+| **11** | Binding smoke tests + document `[TEST COMMIT]` / sanitizer builds in CONTRIBUTING + docs/build/test | P2 | S–M | Ecosystem drift |
 
 S ≈ days, M ≈ ≤1–2 weeks, L ≈ multi-week, XL ≈ project-scale.
 

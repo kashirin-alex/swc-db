@@ -18,7 +18,7 @@ alwaysApply: false
 
 2. **Daemon logic** (manager/ranger/broker/fsbroker): no separate compiled lib. Env headers aggregate `.cc` files **unconditionally** (e.g. `MngrEnv.h` includes `MngrRole.cc`, `Rangers.cc`, …).
 
-Do not add a new shared library for daemon-only code unless packaging explicitly requires it.
+Do not add a new shared library for daemon-only code unless packaging explicitly requires it. Prefer non-trivial method bodies in `.cc` files (see `cpp-conventions.mdc`).
 
 ## CMake helpers (`cmake/Utils.cmake`)
 

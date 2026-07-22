@@ -15,6 +15,7 @@ alwaysApply: false
 - Path mirrors namespace: `swcdb/manager/MngdColumns.h` → `SWC::Manager::MngdColumns`
 - Guards: `#ifndef swcdb_<module>_<Path>_<Name>_h` — never `#pragma once`
 - Project includes: `"swcdb/..."` (quoted). Third-party: `<...>`
+- Prefer non-trivial method bodies in the `.cc` (libs also compile under `SWC_IMPL_SOURCE` header inclusion). Headers: declarations, `SWC_CAN_INLINE` one-liners, and existing peer patterns only.
 
 ## Copyright (required on new source)
 
@@ -31,3 +32,9 @@ alwaysApply: false
 - Delete copy ctor/assignment when ownership is shared or move-only
 - Nest under `SWC::` matching the directory module
 - Match existing style; `-Werror` is on — no new warnings
+
+## Config properties
+
+- Registered options always have a default (file optional). Prefer `0` as “disable this check/limit” when adding caps.
+- Runtime-updatable knobs use guarded types (`g_i64` / `Value_*_g`); pass the `Property::…::Ptr` into `AppContext` (or peer) ctors — do not look settings up inside the base ctor.
+- New `swc.*` options: register in the matching `Settings.cc` and document under `docs/configure/properties/`.

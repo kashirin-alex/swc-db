@@ -20,6 +20,7 @@ Do not catch-and-swallow without logging. Prefer `SWC::Error::Exception` over ba
 - `SWC_LOG(priority, message)`, `SWC_LOGF(priority, fmt, ...)`
 - Fatal: `SWC_LOG_FATAL` / `SWC_LOG_FATALF`
 - Priorities: `LOG_FATAL` … `LOG_DEBUG`
+- Integer format macros (`swcdb/core/Compat.h`): `SWC_FMT_LU` / `SWC_FMT_LD` (expand to `PRIu64` / `PRId64`). Cast args to `uint64_t` / `int64_t` — do not use raw `%d` / `%u` for sized integers in `SWC_LOGF`
 
 ## Memory
 

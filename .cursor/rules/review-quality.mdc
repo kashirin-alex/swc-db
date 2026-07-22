@@ -7,12 +7,11 @@ alwaysApply: false
 
 Full scored report: `evals/QUALITY_EVALUATION_REPORT.md`. Use when touching untrusted I/O, on-disk cells, compaction, or CI.
 
-## P0 — do not regress / prefer fix when editing
+## P0 — prefer fix when editing
 
-- [ ] `ConnHandler` header body read: enforce `header_len <= Header::MAX_LENGTH` before writing `_buf_header`
-- [ ] Payload `reallocate(remain)`: enforce a configured/hard max before allocate
-- [ ] Unexpected `catch(...)` on receive/send: log (`SWC_LOG_CURRENT_EXCEPTION`) — do not add new empty catches
-- [ ] `SerializedClient` connect: honor caller `timeout` (today ignored)
+- [ ] Unexpected `catch(...)` on receive/send: log (`SWC_LOG_CURRENT_EXCEPTION`) — do not add new empty catches (R-P0-3)
+- [ ] `SerializedClient` connect: honor caller `timeout` (today ignored) (R-P0-4)
+- [ ] Do not remove existing `header_len` / `swc.comm.payload.max` receive guards
 
 ## P1 — data integrity when editing ranger / CellStore / CommitLog
 

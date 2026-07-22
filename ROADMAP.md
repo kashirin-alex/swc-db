@@ -28,12 +28,12 @@ Feature ideas from the community: GitHub issues with the [`enhancement`](https:/
 
 | Concern | Work |
 |---------|------|
-| **Stability** | Cap `header_len` vs `Header::MAX_LENGTH`; bound payload before `reallocate()`; honor connect timeout; null-check `m_metrics` on `ev->error`; log unexpected `catch(...)` in [`ConnHandler.cc`](src/cc/lib/swcdb/core/comm/ConnHandler.cc) |
+| **Stability** | Honor connect timeout (R-P0-4); null-check `m_metrics` on `ev->error`; log unexpected `catch(...)` in [`ConnHandler.cc`](src/cc/lib/swcdb/core/comm/ConnHandler.cc) (R-P0-3) |
 | **Stability** | Fail-fast on truncated CellStore/CommitLog cells; sanity-cap CellStore index metadata; harden compaction `apply_new` ordering in ranger storage |
 | **Usability** | Document the fail-fast corruption policy in operator docs (what operators see / how to recover) |
 | **Performance / Features** | Out of scope except avoiding regressions on the touched paths |
 
-**Detailed backlog:** Quality eval §4 (P0/P1 register) — items R-P0-1 through R-P1-3 in [`evals/QUALITY_EVALUATION_REPORT.md`](evals/QUALITY_EVALUATION_REPORT.md).
+**Detailed backlog:** Quality eval §4 (P0/P1 register) — R-P0-3/4 and R-P1-* in [`evals/QUALITY_EVALUATION_REPORT.md`](evals/QUALITY_EVALUATION_REPORT.md).
 
 **Exit criteria:** Quality P0 items closed; truncated-cell and compaction apply risks addressed or explicitly deferred with tests; quality re-score target ≥ **3.2** on security/correctness dimensions.
 
@@ -134,6 +134,6 @@ Feature ideas from the community: GitHub issues with the [`enhancement`](https:/
 | [`evals/DOCS_CLARITY_EVALUATION.md`](evals/DOCS_CLARITY_EVALUATION.md) | Docs backlog and integrity gates |
 | [`evals/STANDARDS_CLARITY_EVALUATION.md`](evals/STANDARDS_CLARITY_EVALUATION.md) | Layer A/B standards, god-file and build-model debt |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Human workflow, CI gates, local testing |
-| [`AGENTS.md`](AGENTS.md) | Agent entry point and module map |
+| [`AGENTS.md`](AGENTS.md) | Slim agent index (map lives in `.cursor/rules/architecture-overview.mdc`) |
 
 Refresh `evals/` reports on purpose when re-scoring a phase; update this roadmap when phase scope or ordering changes.
