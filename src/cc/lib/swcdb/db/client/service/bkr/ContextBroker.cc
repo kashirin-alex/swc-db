@@ -12,7 +12,9 @@ namespace SWC { namespace client {
 ContextBroker::ContextBroker(const Config::Settings& settings)
     : Comm::AppContext(
         settings.get<Config::Property::Value_enum_g>(
-          "swc.client.Bkr.comm.encoder")) {
+          "swc.client.Bkr.comm.encoder"),
+        settings.get<Config::Property::Value_uint64_g>(
+          "swc.comm.payload.max")) {
 }
 
 void ContextBroker::handle(Comm::ConnHandlerPtr, //conn

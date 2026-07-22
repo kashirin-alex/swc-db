@@ -22,11 +22,14 @@ class AppContext : public std::enable_shared_from_this<AppContext> {
   public:
   typedef std::shared_ptr<AppContext> Ptr;
 
-  const Config::Property::Value_enum_g::Ptr cfg_encoder;
+  const Config::Property::Value_enum_g::Ptr   cfg_encoder;
+  const Config::Property::Value_uint64_g::Ptr cfg_payload_max;
 
   SWC_CAN_INLINE
-  AppContext(Config::Property::Value_enum_g::Ptr a_cfg_encoder) noexcept
-            : cfg_encoder(a_cfg_encoder) {
+  AppContext(Config::Property::Value_enum_g::Ptr a_cfg_encoder,
+             Config::Property::Value_uint64_g::Ptr a_cfg_payload_max) noexcept
+            : cfg_encoder(a_cfg_encoder),
+              cfg_payload_max(a_cfg_payload_max) {
   }
 
   AppContext(AppContext&&)                 = delete;

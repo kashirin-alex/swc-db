@@ -101,7 +101,9 @@ class AppContext final : public Comm::AppContext {
   AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::Value_enum_g>(
-            "swc.FsBroker.comm.encoder")) {
+            "swc.FsBroker.comm.encoder"),
+          Env::Config::settings()->get<Config::Property::Value_uint64_g>(
+            "swc.comm.payload.max")) {
 
     auto settings = Env::Config::settings();
 

@@ -434,6 +434,15 @@ void ConnHandler::recv_buffers(Event::Ptr&& ev) {
     buffer = &ev->data_ext;
     remain = ev->header.data_ext.size;
   }
+  uint64_t max_payload = app_ctx->cfg_payload_max->get();
+  if(max_payload && remain > max_payload) {
+    SWC_LOGF(LOG_WARN,
+      "read, REQUEST PAYLOAD_BAD_SIZE: size=" SWC_FMT_LU
+      " max=" SWC_FMT_LU,
+      uint64_t(remain), max_payload);
+    do_close_recv();
+    return;
+  }
   buffer->reallocate(remain);
   do_async_read(
     buffer->base, remain,

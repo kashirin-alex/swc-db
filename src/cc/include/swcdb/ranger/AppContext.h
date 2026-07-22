@@ -97,7 +97,9 @@ class AppContext final : public Comm::AppContext {
   AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::Value_enum_g>(
-            "swc.rgr.comm.encoder")),
+            "swc.rgr.comm.encoder"),
+          Env::Config::settings()->get<Config::Property::Value_uint64_g>(
+            "swc.comm.payload.max")),
         id_mngr(nullptr),
         m_srv(nullptr),
         m_metrics(Env::Rgr::metrics_track()),

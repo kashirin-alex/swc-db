@@ -141,6 +141,13 @@ The Network Priority Access, By available endpoints of a server, try to establis
 
   _default_ **```swc.comm.network.priority```**
 
+* ### swc.comm.payload.max
+```TYPE_UINT64_G```
+Maximum bytes allowed for a single receive payload buffer on the native
+comm path. Declared sizes above this limit are rejected and the connection
+is closed before allocation (DoS guard). Zero disables the check. \
+_default_ **```swc.comm.payload.max=268435456```** (256 MiB)
+
 * ### swc.comm.ssl
 ```TYPE_BOOL```
 whether to use SSL in communications layer. \

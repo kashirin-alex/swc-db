@@ -12,7 +12,9 @@ namespace SWC { namespace client {
 ContextRanger::ContextRanger(const Config::Settings& settings)
     : Comm::AppContext(
         settings.get<Config::Property::Value_enum_g>(
-          "swc.client.Rgr.comm.encoder")) {
+          "swc.client.Rgr.comm.encoder"),
+        settings.get<Config::Property::Value_uint64_g>(
+          "swc.comm.payload.max")) {
 }
 
 void ContextRanger::handle(Comm::ConnHandlerPtr, //conn

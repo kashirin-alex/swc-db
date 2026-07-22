@@ -12,7 +12,9 @@ namespace SWC { namespace client {
 ContextManager::ContextManager(const Config::Settings& settings)
     : Comm::AppContext(
         settings.get<Config::Property::Value_enum_g>(
-          "swc.client.Mngr.comm.encoder")) {
+          "swc.client.Mngr.comm.encoder"),
+        settings.get<Config::Property::Value_uint64_g>(
+          "swc.comm.payload.max")) {
 }
 
 void ContextManager::handle(Comm::ConnHandlerPtr, //conn

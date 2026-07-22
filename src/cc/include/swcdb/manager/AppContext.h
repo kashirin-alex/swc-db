@@ -47,7 +47,9 @@ class AppContext final : public Comm::AppContext {
   AppContext()
       : Comm::AppContext(
           Env::Config::settings()->get<Config::Property::Value_enum_g>(
-            "swc.mngr.comm.encoder")
+            "swc.mngr.comm.encoder"),
+          Env::Config::settings()->get<Config::Property::Value_uint64_g>(
+            "swc.comm.payload.max")
         ),
         m_srv(nullptr), m_metrics(nullptr) {
     auto settings = Env::Config::settings();

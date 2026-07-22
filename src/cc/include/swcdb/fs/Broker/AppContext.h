@@ -28,7 +28,9 @@ class AppContext final : public Comm::AppContext {
   AppContext(const Config::Settings& settings)
       : Comm::AppContext(
           settings.get<Config::Property::Value_enum_g>(
-            "swc.fs.broker.comm.encoder")) {
+            "swc.fs.broker.comm.encoder"),
+          settings.get<Config::Property::Value_uint64_g>(
+            "swc.comm.payload.max")) {
   }
 
   virtual ~AppContext() noexcept { }

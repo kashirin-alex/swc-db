@@ -26,6 +26,14 @@ ADD_TEST_TARGET(
 )
 
 
+ADD_TEST_TARGET(
+  NAME      test_payload_max
+  SRCS      test_payload_max.cc
+  TARGETS   swcdb_core swcdb_core_config swcdb_core_comm swcdb
+  ARGS      "--swc.cfg.path=${CMAKE_INSTALL_PREFIX}/etc/swcdb/"
+)
+
+
 add_test(
   NAME    test-swcdb_cluster-stop_managers
   COMMAND ${CMAKE_INSTALL_PREFIX}/sbin/swcdb_cluster stop-managers

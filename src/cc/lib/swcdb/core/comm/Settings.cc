@@ -19,6 +19,9 @@ void init_comm_options(Settings* settings) {
 
     ("swc.comm.network.priority", strs({}), "Network Priority Access")
 
+    ("swc.comm.payload.max", g_i64(268435456ULL),
+     "Max bytes for a single receive payload buffer, zero disables the check")
+
     ("swc.comm.ssl", boo(false), "Use SSL in comm layer")
     ("swc.comm.ssl.secure.network", strs({}),
      "Networks that do not require SSL")
