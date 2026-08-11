@@ -25,11 +25,11 @@ Leave **`SWC_BUILD_PKG` empty** (full tree) so CMake registers tests and example
 
 ## Unit vs integration
 
-| Kind | Paths | Needs install + cluster? | Default CI (`TEST=1`) |
-|------|-------|--------------------------|------------------------|
-| Unit (`libswcdb_core`) | `tests/libswcdb_core/` | No | Yes (subset of matrix) |
-| Unit (`libswcdb`) | `tests/libswcdb/` | No | Yes (subset of matrix) |
-| Integration | `tests/integration/{client,comm,fs,manager,ranger,broker,thrift,utils}/` | Yes | No — steps need `TEST=2` |
+| Kind | Paths | Needs install + cluster? | CI coverage |
+|------|-------|--------------------------|-------------|
+| Unit (`libswcdb_core`) | `tests/libswcdb_core/` | No | Yes on subset (`TEST=1` or `2`, specific O_LEVEL/IMPL) |
+| Unit (`libswcdb`) | `tests/libswcdb/` | No | Yes on subset (`TEST=1` or `2`, specific O_LEVEL/IMPL) |
+| Integration | `tests/integration/{client,comm,fs,manager,ranger,broker,thrift,utils}/` | Yes | Sparse `TEST=2` matrix includes (not the full compiler grid) |
 
 Prefer unit targets for local C++/core changes. Extend or run integration only when cluster behavior, install layout, or a daemon path is involved.
 
@@ -78,13 +78,14 @@ If `start` reports success but ThriftBroker is down, check [Thrift shared librar
 
 ## GitHub Actions CI and `[TEST COMMIT]`
 
-Automated CI (`.github/workflows/ci.yml`) does **not** run on every push or pull request. The workflow job starts only if the commit message contains `[TEST COMMIT]`.
+Automated CI (`.github/workflows/ci.yml`) does **not** run on every push or pull request. A `gate` job opens the main matrix only if the **head** commit message (push tip or PR head SHA) contains `[TEST COMMIT]`.
 
 | Note | Detail |
 |------|--------|
-| Opt-in | Without `[TEST COMMIT]`, assume CI did not run |
-| Default matrix | Builds several compilers / `O_LEVEL` / `SWC_IMPL_SOURCE`; unit tests only on a subset |
-| Integration in CI | Default matrix `TEST` is `1`; steps that require `TEST=2` are not in the default matrix |
+| Opt-in | Without `[TEST COMMIT]` on the head commit, assume the main CI job did not run |
+| Default matrix | Builds several compilers / `O_LEVEL` / `SWC_IMPL_SOURCE` with `THRIFT=0.20.0` and `TEST=1`; unit tests only on a subset |
+| Integration in CI | Sparse matrix `include` entries set `TEST=2` (g++-11, unit-test O_LEVEL/IMPL pairs) so integration steps run |
+| Thrift 0.23.0 | Sparse `include` builds with `THRIFT=0.23.0` so `thriftgen-0.23.0` is compiled in CI |
 | Languages | Default CI configure uses `-DSWC_LANGUAGES=NONE` |
 
 Contributor rules for commits, pull requests, and when to trigger CI: [CONTRIBUTING.md](https://github.com/kashirin-alex/swc-db/blob/master/CONTRIBUTING.md).

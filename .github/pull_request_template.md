@@ -12,7 +12,7 @@
 
 - [ ] Built locally (describe configure/make if relevant)
 - [ ] Ran local tests (`make test` and/or other — note what)
-- [ ] Included `[TEST COMMIT]` in a commit message to trigger GitHub Actions CI (optional; CI is skipped without it)
+- [ ] Included `[TEST COMMIT]` in the **head** commit message to trigger GitHub Actions CI (optional; main job is skipped without it — works for push and PR)
 - [ ] N/A — docs-only / no binary change
 
 

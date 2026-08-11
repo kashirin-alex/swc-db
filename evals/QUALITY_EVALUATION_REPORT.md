@@ -11,11 +11,11 @@
 
 | | |
 |--|--|
-| **Overall score** | **2.6 / 5.0** (weighted) |
+| **Overall score** | **2.7 / 5.0** (weighted) |
 | **Maturity** | Build-strong, automation-weak; architecture intent clear, implementation modularity and test gates lag |
 | **Top risks** | (1) Truncated on-disk cells continue, (2) CI false confidence, (3) metrics null-deref on `ev->error`, (4) connect timeout ignored, (5) empty `catch(...)` on receive |
 
-SWC-DB has a coherent product topology (clients → broker/thrift → manager → ranger → FS), centralized wire protocol, strict compiler warnings-as-errors, and clean module layering at the `#include` level. Quality debt concentrates in: untrusted-input bounds on the native comm path, ranger on-disk integrity policy under corruption, opt-in CI that never runs integration, and daemon build aggregation that produces god-sized translation units.
+SWC-DB has a coherent product topology (clients → broker/thrift → manager → ranger → FS), centralized wire protocol, strict compiler warnings-as-errors, and clean module layering at the `#include` level. Quality debt concentrates in: untrusted-input bounds on the native comm path, ranger on-disk integrity policy under corruption, opt-in CI (sparse `TEST=2` integration when gated), and daemon build aggregation that produces god-sized translation units.
 
 **Recommendation:** Treat remaining P0 (empty `catch(...)`, connect timeout) and P1 truncated-cell / compaction apply-ordering as the next engineering fixes; in parallel, fix CI so every PR runs unit tests and a scheduled job runs integration.
 
@@ -27,10 +27,10 @@ SWC-DB has a coherent product topology (clients → broker/thrift → manager �
 |-----------|--------|-------------|----------|---------|
 | Correctness & reliability | 30% | **2.8** | 0.84 | Strong intentional patterns (CellStore rename-rollback; insistent FS I/O); remaining: truncated-cell continue, compaction apply window |
 | Security & robustness | 25% | **2.0** | 0.50 | Score frozen at 2026-07-12 audit — re-score on next pass |
-| Test & CI maturity | 20% | **2.0** | 0.40 | Capable local harness; CI opt-in and `TEST=1` never runs integration; compaction/Rgr protocol gaps |
+| Test & CI maturity | 20% | **2.5** | 0.50 | Capable local harness; CI opt-in with sparse `TEST=2` integration includes; compaction/Rgr protocol gaps |
 | Architecture & modularity | 15% | **3.5** | 0.525 | Excellent layering and protocol centralization; weak compile-time modularity (`.cc`-in-header) |
 | Maintainability | 10% | **3.0** | 0.30 | Consistent style, low TODO noise; god files and duplicated AppContext/metrics |
-| **Overall** | 100% | | **2.565 ≈ 2.6** | |
+| **Overall** | 100% | | **2.665 ≈ 2.7** | |
 
 ---
 
@@ -94,10 +94,11 @@ Client integration expands to **288** query permutations (`2×2×3×3×4×2` in 
 
 | Fact | Evidence |
 |------|----------|
-| Opt-in gate | Job `if:` requires `[TEST COMMIT]` in commit message (line 17) |
-| Matrix `TEST` | Always `[1]` (line 28) |
+| Opt-in gate | `gate` job checks head commit message for `[TEST COMMIT]` (PR head SHA or push tip); `main` needs `gate` |
+| Matrix `TEST` | Default `[1]`; sparse `include` adds `TEST=2` (g++-11, O_LEVEL 3/OFF and 6/ON) |
 | Unit tests | Run only when `TEST` is 1 or 2 **and** (`O_LEVEL=3`+`IMPL=OFF`) or (`O_LEVEL=6`+`IMPL=ON`) |
-| Integration | All steps require `TEST == '2'` → **never runs in current matrix** |
+| Integration | Steps require `TEST == '2'` → run on the sparse includes above |
+| Thrift | Default `0.20.0`; sparse `include` builds `THRIFT=0.23.0` |
 | Broker integration | **No CI step** (CMake/target exists locally) |
 | Languages | `-DSWC_LANGUAGES=NONE` |
 | Ceph FS test | `-DSWC_SKIP_TEST_FS_CEPH=ON` |
@@ -197,9 +198,9 @@ Aligned with project “insistent” vocabulary elsewhere (`ClientConnQueue::ins
 
 ### P2 — Process / false confidence
 
-#### R-P2-1: CI never runs integration; opt-in — **Confirmed**
+#### R-P2-1: CI opt-in; integration only on sparse includes — **Partial** (addressed)
 
-See §3.6. Most commits and even `[TEST COMMIT]` runs with current matrix verify **compile + narrow unit subset**, not cluster correctness.
+See §3.6. Default matrix remains compile + narrow unit subset. Sparse `include` entries now set `TEST=2` (and `THRIFT=0.23.0`) when `[TEST COMMIT]` opens the gate; broker integration step and non-opt-in PR CI remain open.
 
 #### R-P2-2: Compaction / Ranger protocol / non-local FS untested — **Confirmed**
 
@@ -208,7 +209,7 @@ See §3.6. Most commits and even `[TEST COMMIT]` runs with current matrix verify
 | `CompactRange.cc` / `CommitLogCompact.cc` | No dedicated tests; commitlog compact path commented in `test_commitlog.cc:68` |
 | `Protocol/Rgr` (CellsSelect/Update, RangeLoad, …) | **No** test references under `tests/` |
 | Ceph / Hadoop FS | CI skips Ceph; no hadoop test refs; ranger tests hardcode `--swc.fs=local` |
-| SQL / client query | Integration only (288 cases); not in CI |
+| SQL / client query | Integration (288 cases); sparse `TEST=2` CI includes |
 
 #### R-P2-3: `m_metrics` null deref on `ev->error` — **Confirmed**
 
@@ -262,22 +263,22 @@ See §3.2. Ranger `db/` cluster (~8k LOC across Range/Compact/CommitLog/CellStor
 
 **Strengths to preserve:** module map matching runtime roles; centralized commands; broker table-driven dispatch; CellStore rename-with-rollback; insistent FS Interface I/O; rich `Error::Code` taxonomy; `-Wall -Werror`.
 
-### 5.2 Test & CI (score 2.0 / 5)
+### 5.2 Test & CI (score 2.5 / 5)
 
 | Criterion | Score | Evidence |
 |-----------|------:|----------|
 | Unit breadth | 2 | ~14 logical unit targets; cells/core only |
 | Integration design | 4 | Rich matrix (288 queries), thrift C++ client, ranger in-process |
-| Integration automation | 1 | Present in workflow but unreachable (`TEST=1`) |
+| Integration automation | 3 | Sparse `TEST=2` matrix includes (g++-11 unit-test pairs); not full grid / nightly |
 | Golden / wire regression | 1 | Single golden file |
 | Sanitizer / coverage | 1 | CMake supports ASan/TSan; unused in CI |
-| Docs for testing/CI | 2 | `docs/build/test/README.md` thin; CONTRIBUTING omits `[TEST COMMIT]` |
+| Docs for testing/CI | 3 | CONTRIBUTING + `docs/build/test/` document `[TEST COMMIT]` gate and `TEST=2` |
 
 ### 5.3 Bindings (score 1.5 / 5)
 
 | Binding | Status |
 |---------|--------|
-| Thrift C++ | Strong integration client (~935 lines) — **not in CI** |
+| Thrift C++ | Strong integration client (~935 lines) — sparse `TEST=2` CI |
 | Thrift C | Minimal smoke (list columns) |
 | Python | `add_test` lines **commented out** in `src/py/CMakeLists.txt` |
 | Java | Built with `-Dmaven.test.skip=true`; thrift-tests module exists but skipped at package |
@@ -310,7 +311,7 @@ See §3.2. Ranger `db/` cluster (~8k LOC across Range/Compact/CommitLog/CellStor
 |----------|------|----------|---------------|-----------|
 | **1** | Fail-fast on truncated/corrupt CellStore/CommitLog cell reads (set `err`, abort load/split/compact) | P1 | M | Data integrity |
 | **2** | Cap CellStore `blks_count` / `idx_size_*` against schema/RAM; fail load on violation | P1 | M | Corrupt metadata DoS/corruption |
-| **3** | Fix CI: run unit tests without `[TEST COMMIT]` (or on all PRs); add `TEST=2` / nightly integration; add broker step | P2 | M | Stop false confidence |
+| **3** | Widen CI: unit tests without `[TEST COMMIT]` (or on all PRs); nightly/full-matrix `TEST=2`; add broker step | P2 | M | Reduce remaining false confidence |
 | **4** | Compaction + CommitLogCompact + Ranger protocol integration tests; enable commented compact path | P2 | L | Cover highest-risk untested code |
 | **5** | Null-check `m_metrics` on all `ev->error` paths in AppContexts | P2 | S | Latent crash when metrics off |
 | **6** | Log unexpected exceptions in ConnHandler receive/send catches; apply connect timeout | P0/P2 | S | Observability + correctness |

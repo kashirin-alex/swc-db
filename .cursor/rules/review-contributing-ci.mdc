@@ -27,9 +27,9 @@ CMake files use `#` comment form of the same notice. Contributions grant rights 
 
 ## CI (`.github/workflows/ci.yml`)
 
-- Job runs only if the commit message contains `[TEST COMMIT]`
-- Matrix: Ubuntu, g++/clang, `O_LEVEL`, `SWC_IMPL_SOURCE` ON/OFF
+- `gate` job runs on every push/PR; main matrix runs only if the **head** commit message contains `[TEST COMMIT]` (PR head SHA or push tip — not `github.event.head_commit`, which is null on `pull_request`)
+- Matrix: Ubuntu, g++/clang, `O_LEVEL`, `SWC_IMPL_SOURCE` ON/OFF; default `THRIFT: ['0.20.0']`, `TEST: [1]`
+- Sparse `include`: `TEST=2` integration on g++-11 unit-test O_LEVEL/IMPL pairs; one `THRIFT=0.23.0` build
 - Default CI configure uses `-DSWC_LANGUAGES=NONE`; install prefix `/opt/swcdb`
-- Default matrix `TEST: [1]` — integration steps requiring `TEST == '2'` do not run
 
-Do not assume CI ran on every push; include `[TEST COMMIT]` when intentionally triggering the workflow. See also `docs/build/test/` and `evals/QUALITY_EVALUATION_REPORT.md`.
+Do not assume CI ran on every push; include `[TEST COMMIT]` on the head commit when intentionally triggering the workflow. See also `docs/build/test/` and `evals/QUALITY_EVALUATION_REPORT.md`.

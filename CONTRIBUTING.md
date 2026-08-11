@@ -66,10 +66,11 @@ Compiler warnings are errors (`cmake/FlagsWarnings.cmake`). Prefer small, review
 Write a clear subject that states why the change exists. A short body is welcome when the rationale is not obvious from the diff.
 
 #### Triggering GitHub Actions CI — `[TEST COMMIT]`
-CI (`.github/workflows/ci.yml`) runs **only** when the commit message contains the exact substring `[TEST COMMIT]`.
+CI (`.github/workflows/ci.yml`) runs **only** when the **head** commit message contains the exact substring `[TEST COMMIT]`.
 
-- Include `[TEST COMMIT]` when you intentionally want the workflow to run on push/PR.
-- If the marker is absent, **do not assume CI ran** — the job is skipped.
+- Include `[TEST COMMIT]` when you intentionally want the workflow to run on push or pull request.
+- The workflow uses a small `gate` job that checks out the push tip or PR head SHA and inspects that commit’s message (pull_request events do not set `github.event.head_commit`).
+- If the marker is absent from the head commit, **do not assume CI ran** — the main job is skipped.
 - Example subject: `Fix range unload path [TEST COMMIT]`
 
 There is no required Conventional Commits format; keep messages readable and accurate.
@@ -77,14 +78,15 @@ There is no required Conventional Commits format; keep messages readable and acc
 
 
 ### What CI Runs Today
-When triggered with `[TEST COMMIT]`, the workflow builds a matrix on Ubuntu with several compilers, `O_LEVEL` values, and `SWC_IMPL_SOURCE` ON/OFF. Default configure uses `-DSWC_LANGUAGES=NONE` and install prefix `/opt/swcdb`. Thrift version in CI is currently `0.20.0`.
+When triggered with `[TEST COMMIT]`, the workflow builds a matrix on Ubuntu with several compilers, `O_LEVEL` values, and `SWC_IMPL_SOURCE` ON/OFF. Default configure uses `-DSWC_LANGUAGES=NONE` and install prefix `/opt/swcdb`. Default Thrift version in CI is `0.20.0`; a sparse matrix `include` also builds `0.23.0`.
 
 | Fact | Behavior |
 |------|----------|
-| Opt-in gate | Job runs only if the commit message contains `[TEST COMMIT]` |
-| Matrix `TEST` | Default is `1` |
+| Opt-in gate | `gate` job opens only if the head commit message contains `[TEST COMMIT]` (push tip or PR head) |
+| Matrix `TEST` | Default is `1`; sparse `include` adds `TEST=2` on g++-11 with the unit-test O_LEVEL/IMPL pairs |
 | Unit tests | Run only on a subset of the matrix (`O_LEVEL=3`+`IMPL=OFF` or `O_LEVEL=6`+`IMPL=ON`) |
-| Integration | Steps gated on `TEST == '2'` — **not** in the default matrix |
+| Integration | Steps gated on `TEST == '2'` — run on the sparse `TEST=2` includes above |
+| Thrift | Default `0.20.0`; sparse `include` compiles `thriftgen-0.23.0` (`THRIFT=0.23.0`, `TEST=1`) |
 | Languages / bindings | Not built in default CI (`SWC_LANGUAGES=NONE`) |
 | Sanitizers | Supported by CMake locally; not configured as CI jobs |
 

@@ -13,8 +13,35 @@ on:
 
 jobs:
 
+  # pull_request events have no github.event.head_commit; inspect the PR head
+  # (or push tip) commit message so [TEST COMMIT] works for both event types.
+  gate:
+    runs-on: ubuntu-20.04
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        fetch-depth: 1
+
+    - name: Check for [TEST COMMIT]
+      id: check
+      run: |
+        msg=$(git log -1 --pretty=%B)
+        if printf '%s\n' "$msg" | grep -Fq '[TEST COMMIT]'; then
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "Gate open — head commit contains [TEST COMMIT]"
+        else
+          echo "run=false" >> "$GITHUB_OUTPUT"
+          echo "Gate closed — include [TEST COMMIT] in the head commit message to run CI"
+        fi
+
+
   main:
-    if: "contains(github.event.head_commit.message, '[TEST COMMIT]')"
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
 
     strategy:
       fail-fast: false
@@ -39,10 +66,35 @@ jobs:
             O_LEVEL:  5
           - compiler: clang++-12
             O_LEVEL:  6
+        # Sparse extras: do not multiply the full compiler/O_LEVEL grid.
+        include:
+          # Integration (TEST=2) on the same O_LEVEL/IMPL pairs that run unit tests
+          - runs-on: ubuntu-20.04
+            compiler: g++-11
+            build_type: Release
+            O_LEVEL: '3'
+            IMPL_SOURCE: 'OFF'
+            THRIFT: '0.20.0'
+            TEST: 2
+          - runs-on: ubuntu-20.04
+            compiler: g++-11
+            build_type: Release
+            O_LEVEL: '6'
+            IMPL_SOURCE: 'ON'
+            THRIFT: '0.20.0'
+            TEST: 2
+          # Compile/validate thriftgen-0.23.0 (not covered by default THRIFT matrix)
+          - runs-on: ubuntu-20.04
+            compiler: g++-11
+            build_type: Release
+            O_LEVEL: '3'
+            IMPL_SOURCE: 'OFF'
+            THRIFT: '0.23.0'
+            TEST: 1
 
     runs-on: ${{ matrix.runs-on }}
 
-    name: ${{ matrix.runs-on }} ${{ matrix.compiler }} O=${{ matrix.O_LEVEL }} IMPL=${{ matrix.IMPL_SOURCE }} ${{ matrix.build_type }}
+    name: ${{ matrix.runs-on }} ${{ matrix.compiler }} O=${{ matrix.O_LEVEL }} IMPL=${{ matrix.IMPL_SOURCE }} THRIFT=${{ matrix.THRIFT }} TEST=${{ matrix.TEST }} ${{ matrix.build_type }}
 
     env:
       CXX: ${{ matrix.compiler }}
@@ -233,4 +285,3 @@ jobs:
       working-directory: ${{github.workspace}}/build/tests/integration/thrift/
       shell: bash
       run: ctest --output-on-failure -C ${{ matrix.build_type }}
- 

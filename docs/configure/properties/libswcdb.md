@@ -35,6 +35,16 @@ The Dynamic cfg-file check interval in milliseconds, The check is Off if value i
 _default_ **```swc.cfg.dyn.period=600000```**
 
 
+* ### swc.comm.payload.max
+```TYPE_UINT64_G```
+Maximum bytes allowed for a single receive payload buffer on the native
+comm path (DoS guard used by client `AppContext` constructors). Also
+declared by ```init_comm_options```; registered here so client-only
+embedders that call only ```init_client_options``` do not throw at
+construction. Zero disables the check. \
+_default_ **```swc.comm.payload.max=268435456```** (256 MiB)
+
+
 * ### swc.mngr.host
 ```TYPE_STRINGS_G```
 The Manager Host/s. The value format ```{ROLES}```|```{COLUMNS}```|```{ENDPOINTS}```|```PORT```  delimitted with ```|``` and aligned groupings of Role & Columns is require. The order is part of used configuration defnition to assign host-priority, 1st has initial preference for Active-State.

@@ -4,12 +4,5 @@
 .local
 *.pyc
 .vs
-CMakeLists.txt
-CMakeCache.txt
-CMakeFiles/
-Makefile
-cmake_install.cmake
-CTestTestfile.cmake
-build/
 src/cc/include/swcdb/Version.h
 src/c/include/swcdb/version.h
