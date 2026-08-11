@@ -22,24 +22,25 @@ int run(const std::string& cmd, bool custom=false) {
     lib_path.append(SWC_DSO_EXT);// {lib-path}/libswcdb_utils_shell.so
   }
 
-  const char* err = dlerror();
   void* handle = dlopen(lib_path.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_LOCAL);
-  if (handle == nullptr || err != nullptr)
+  if (handle == nullptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
-              "Shared Lib %s, open fail: %s\n", lib_path.c_str(), err);
+              "Shared Lib %s, open fail: %s\n", lib_path.c_str(), dlerror());
 
-  err = dlerror();
+  dlerror(); // clear before dlsym (NULL can be a valid symbol address)
   std::string handler_name =  "swcdb_utils_apply_cfg";
   void* f_cfg_ptr = dlsym(handle, handler_name.c_str());
+  const char* err = dlerror();
   if(err || !f_cfg_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Shared Lib %s, link(%s) fail: %s handle=%p\n",
               lib_path.c_str(), handler_name.c_str(), err, handle);
   reinterpret_cast<swcdb_utils_apply_cfg_t*>(f_cfg_ptr)(Env::Config::get());
 
-  err = dlerror();
+  dlerror(); // clear before dlsym
   handler_name =  "swcdb_utils_run";
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
+  err = dlerror();
   if(err || !f_new_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Shared Lib %s, link(%s) fail: %s handle=%p\n",

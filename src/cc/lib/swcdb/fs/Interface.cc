@@ -93,16 +93,16 @@ Interface::use_filesystem(const Config::Settings::Ptr& settings) {
     fs_lib.append(SWC_DSO_EXT);
   }
 
-  const char* err = dlerror();
   void* handle = dlopen(fs_lib.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_LOCAL);
-  if (err || !handle)
+  if (!handle)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Shared Lib %s, open fail: %s\n",
-              fs_lib.c_str(), err);
+              fs_lib.c_str(), dlerror());
 
-  err = dlerror();
+  dlerror(); // clear before dlsym (NULL can be a valid symbol address)
   std::string handler_name("fs_make_new_" + fs_name);
   void* f_new_ptr = dlsym(handle, handler_name.c_str());
+  const char* err = dlerror();
   if (err || !f_new_ptr)
     SWC_THROWF(Error::CONFIG_BAD_VALUE,
               "Shared Lib %s, link(%s) fail: %s handle=%p\n",
