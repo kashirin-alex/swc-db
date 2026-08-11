@@ -4,12 +4,22 @@
 
 set(PYTHON_EXECUTABLES )
 
+# Probe include dir + version via stdlib sysconfig (Python 3.12+ removed distutils).
+# Fallback to distutils for older interpreters that still ship it (e.g. Python 2).
+set(_SWC_PY_PROBE [=[
+try:
+  import sysconfig as s
+  print(s.get_path("platinclude") or s.get_path("include"))
+  print(s.get_python_version())
+except Exception:
+  from distutils import sysconfig as s
+  print(s.get_python_inc(plat_specific=True))
+  print(s.get_python_version())
+]=])
+
 # PYTHON 2
 if (LANGS OR LANG_PY2)
-  execute_process(COMMAND python -c "from distutils import sysconfig as s;
-print(s.get_python_inc(plat_specific=True));
-print(s.get_python_version());
-"
+  execute_process(COMMAND python -c "${_SWC_PY_PROBE}"
   RESULT_VARIABLE _PY_SUCCESS
   OUTPUT_VARIABLE _PY_VALUES
   )
@@ -37,10 +47,7 @@ endif ()
 
 # PYTHON 3
 if (LANGS OR LANG_PY3)
-  execute_process(COMMAND python3 -c "from distutils import sysconfig as s;
-print(s.get_python_inc(plat_specific=True));
-print(s.get_python_version());
-"
+  execute_process(COMMAND python3 -c "${_SWC_PY_PROBE}"
   RESULT_VARIABLE _PY_SUCCESS
   OUTPUT_VARIABLE _PY_VALUES
   )
@@ -67,10 +74,7 @@ endif ()
 
 # PYPY 2
 if (LANGS OR LANG_PYPY2)
-  execute_process(COMMAND pypy -c "from distutils import sysconfig as s;
-print(s.get_python_inc(plat_specific=True));
-print(s.get_python_version());
-"
+  execute_process(COMMAND pypy -c "${_SWC_PY_PROBE}"
   RESULT_VARIABLE _PY_SUCCESS
   OUTPUT_VARIABLE _PY_VALUES
   )
@@ -98,10 +102,7 @@ endif ()
 
 # PYPY 3
 if (LANGS OR LANG_PYPY3)
-  execute_process(COMMAND pypy3 -c "from distutils import sysconfig as s;
-print(s.get_python_inc(plat_specific=True));
-print(s.get_python_version());
-"
+  execute_process(COMMAND pypy3 -c "${_SWC_PY_PROBE}"
   RESULT_VARIABLE _PY_SUCCESS
   OUTPUT_VARIABLE _PY_VALUES
   )
@@ -124,8 +125,6 @@ print(s.get_python_version());
       message(FATAL_ERROR "Requested for language, pypy3 is not available")
   endif ()
 endif ()
-
-
 
 
 

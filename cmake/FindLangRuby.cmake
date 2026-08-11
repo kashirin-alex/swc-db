@@ -5,9 +5,13 @@
 
 if (LANGS OR LANG_RUBY)
 
-  exec_program(env ARGS ruby --version OUTPUT_VARIABLE RUBY_VERSION
-               RETURN_VALUE Ruby_RETURN)
-  if (Ruby_RETURN STREQUAL "0")
+  execute_process(
+    COMMAND ruby --version
+    OUTPUT_VARIABLE RUBY_VERSION
+    RESULT_VARIABLE Ruby_RETURN
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  if (Ruby_RETURN EQUAL 0)
     set(RUBY_FOUND TRUE)
     string(REPLACE "\n" ";" RUBY_VERSION ${RUBY_VERSION})
     list(GET RUBY_VERSION 0 RUBY_VERSION)

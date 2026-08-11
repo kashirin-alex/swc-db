@@ -4,10 +4,14 @@
 
 
 
-exec_program(env ARGS thrift -version OUTPUT_VARIABLE THRIFT_VERSION
-             RETURN_VALUE Thrift_RETURN)
+execute_process(
+  COMMAND thrift -version
+  OUTPUT_VARIABLE THRIFT_VERSION
+  RESULT_VARIABLE Thrift_RETURN
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
-if(THRIFT_VERSION MATCHES "^Thrift version")
+if(Thrift_RETURN EQUAL 0 AND THRIFT_VERSION MATCHES "^Thrift version")
   set(THRIFT_COMPILER_FOUND TRUE)
   message("-- Found THRIFT compiler")
   message("       compiler: ${THRIFT_VERSION}")
@@ -45,9 +49,12 @@ if(THRIFT_CPP_FOUND)
 
   if(NOT THRIFT_VERSION)
     list(GET THRIFT_CPP_LIBRARIES_SHARED 0 libthrift)
-    exec_program(env ARGS objdump -p ${libthrift} | grep SONAME | cut -f 2 -d'-' | cut -f 1-3 -d'.'
+    execute_process(
+      COMMAND bash -c "objdump -p '${libthrift}' | grep SONAME | cut -f 2 -d'-' | cut -f 1-3 -d'.'"
       OUTPUT_VARIABLE THRIFT_VERSION
-      RETURN_VALUE Thrift_RETURN)
+      RESULT_VARIABLE Thrift_RETURN
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
   endif()
 
   if(THRIFT_VERSION AND NOT SWC_BUILD_PKG)

@@ -2,6 +2,8 @@
 # SWC-DB© Copyright since 2019 Alex Kashirin <kashirin.alex@gmail.com>
 # License details at <https://github.com/kashirin-alex/swc-db/#license>
 
+set(_SWC_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
 ####
 # File Content:
 #
@@ -293,7 +295,7 @@ function(SET_DEPS)
 
     if(INCLUDE_DIRS)
       message("       Include path: ${INCLUDE_DIRS}")
-      include_directories(${INCLUDE_DIRS})  # per target ?
+      include_directories(SYSTEM ${INCLUDE_DIRS})  # per target ? (-isystem for deps)
     endif ()
 
   else ()
@@ -406,9 +408,13 @@ function(INSTALL_LIBS)
   foreach(fpath ${OPT_LIBS})
     set(soname )
     if(NOT OPT_ARCHIVE)
-      exec_program(bash ARGS ${CMAKE_CURRENT_LIST_DIR}/soname.sh ${fpath}
-                  OUTPUT_VARIABLE SONAME_OUT RETURN_VALUE SONAME_RETURN)
-      if (SONAME_RETURN STREQUAL "0")
+      execute_process(
+        COMMAND bash "${_SWC_CMAKE_DIR}/soname.sh" ${fpath}
+        OUTPUT_VARIABLE SONAME_OUT
+        RESULT_VARIABLE SONAME_RETURN
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+      if (SONAME_RETURN EQUAL 0)
         set(soname ${SONAME_OUT})
       endif()
     endif()
