@@ -342,15 +342,8 @@ void Block::loader_loaded() {
   } while(!m_loader->q_req.empty());
 
   int err = m_loader->error;
-  {
-    Core::MutexSptd::scope lock(m_mutex_state);
-    delete m_loader;
-    m_loader = nullptr;
-    if(err)
-      m_state.store(State::NONE);
-  }
+  size_t released = 0;
   if(err) {
-    size_t released;
     {
       Core::ScopedLock lock(m_mutex);
       released = m_releasable_bytes.exchange(0);
@@ -358,6 +351,13 @@ void Block::loader_loaded() {
     }
     if(released && DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
       Env::Rgr::res().less_mem_releasable(released);
+  }
+  {
+    Core::MutexSptd::scope lock(m_mutex_state);
+    delete m_loader;
+    m_loader = nullptr;
+    if(err)
+      m_state.store(State::NONE);
   }
 }
 
