@@ -54,11 +54,9 @@ extern SWC_MALLOC_ATTRIBS
   void* operator new[](size_t sz)
   SWC_MALLOC_NEW_ATTRIBS;
 extern SWC_MALLOC_ATTRIBS
-  void* operator new(size_t sz, const std::nothrow_t&)
-  SWC_MALLOC_NEW_ATTRIBS;
+  void* operator new(size_t sz, const std::nothrow_t&) noexcept;
 extern SWC_MALLOC_ATTRIBS
-  void* operator new[](size_t sz, const std::nothrow_t&)
-  SWC_MALLOC_NEW_ATTRIBS;
+  void* operator new[](size_t sz, const std::nothrow_t&) noexcept;
 
 extern SWC_MALLOC_ATTRIBS
   void* operator new(const size_t sz, std::align_val_t al)
@@ -68,10 +66,10 @@ extern SWC_MALLOC_ATTRIBS
   SWC_MALLOC_NEW_ATTRIBS;
 extern SWC_MALLOC_ATTRIBS
   void* operator new(size_t sz, std::align_val_t al, const std::nothrow_t&)
-  SWC_MALLOC_NEW_ATTRIBS;
+  noexcept;
 extern SWC_MALLOC_ATTRIBS
   void* operator new[](size_t sz, std::align_val_t al, const std::nothrow_t&)
-  SWC_MALLOC_NEW_ATTRIBS;
+  noexcept;
 
 
 extern SWC_MALLOC_ATTRIBS
@@ -100,7 +98,7 @@ void* operator new(const size_t sz) {
 }
 
 SWC_MALLOC_ATTRIBS
-void* operator new(size_t sz, const std::nothrow_t&) {
+void* operator new(size_t sz, const std::nothrow_t&) noexcept {
   return SWC::Memory::allocate(sz);
 }
 
@@ -110,7 +108,7 @@ void* operator new[](size_t sz) {
 }
 
 SWC_MALLOC_ATTRIBS
-void* operator new[](size_t sz, const std::nothrow_t&) {
+void* operator new[](size_t sz, const std::nothrow_t&) noexcept {
   return SWC::Memory::allocate(sz);
 }
 
@@ -121,7 +119,8 @@ void* operator new(const size_t sz, std::align_val_t al) {
 }
 
 SWC_MALLOC_ATTRIBS
-void* operator new(size_t sz, std::align_val_t al, const std::nothrow_t&) {
+void* operator new(size_t sz, std::align_val_t al, const std::nothrow_t&)
+noexcept {
   return SWC::Memory::allocate(sz, al);
 }
 
@@ -131,7 +130,8 @@ void* operator new[](size_t sz, std::align_val_t al) {
 }
 
 SWC_MALLOC_ATTRIBS
-void* operator new[](size_t sz, std::align_val_t al, const std::nothrow_t&) {
+void* operator new[](size_t sz, std::align_val_t al, const std::nothrow_t&)
+noexcept {
   return SWC::Memory::allocate(sz, al);
 }
 
