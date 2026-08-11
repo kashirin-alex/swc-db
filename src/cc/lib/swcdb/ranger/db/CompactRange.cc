@@ -966,8 +966,18 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
       &new_range->blocks.commitlog
     );
 
-    splitter.run();
-    range->blocks.commitlog.remove(err, fragments_old);
+    if((err = splitter.run())) {
+      SWC_LOG_OUT(LOG_ERROR,
+        Error::print(
+          SWC_LOG_OSTREAM
+            << "COMPACT-SPLIT commitlog truncated/corrupt ", err);
+        SWC_LOG_PRINTF(
+          " " SWC_FMT_LU "/" SWC_FMT_LU " new-rid=" SWC_FMT_LU
+          " (CellStores already applied; continuing)",
+          range->cfg->cid, range->rid, new_rid);
+      );
+    }
+    range->blocks.commitlog.remove(err = Error::OK, fragments_old);
 
     range->blocks.commitlog.commit_finalize();
     new_range->blocks.commitlog.commit_finalize();

@@ -339,7 +339,7 @@ void Fragments::load_cells(BlockLoader* loader, bool& is_final,
   uint8_t base = vol;
   Core::SharedLock lock(m_mutex);
   _load_cells(loader, frags, vol);
-  if(is_final && (is_final = base == vol)) {
+  if(is_final && (is_final = base == vol) && !loader->error) {
     Core::SharedLock lock_cells(m_mutex_cells);
     loader->block->load_final(m_cells);
   }

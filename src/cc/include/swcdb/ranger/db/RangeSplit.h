@@ -149,7 +149,32 @@ class RangeSplit final {
         &new_range->blocks.commitlog
       );
 
-      splitter.run();
+      if((err = splitter.run())) {
+        SWC_LOG_OUT(LOG_ERROR,
+          Error::print(
+            SWC_LOG_OSTREAM
+              << "COMPACT-SPLIT RANGE commitlog truncated/corrupt ", err);
+          SWC_LOG_PRINTF(
+            " " SWC_FMT_LU "/" SWC_FMT_LU " new-rid=" SWC_FMT_LU,
+            range->cfg->cid, range->rid, new_rid);
+        );
+        int tmperr = Error::OK;
+        CellStore::Readers::Vec mv_back;
+        mv_back.assign(new_range->blocks.cellstores.cbegin(),
+                       new_range->blocks.cellstores.cend());
+        range->blocks.cellstores.move_from(tmperr, mv_back);
+        if(!tmperr) {
+          for(auto cs_it = new_range->blocks.cellstores.begin();
+              cs_it != new_range->blocks.cellstores.end(); ) {
+            delete *cs_it;
+            new_range->blocks.cellstores.erase(cs_it);
+          }
+        }
+        new_range->compacting(Range::COMPACT_NONE);
+        col->internal_remove(tmperr = Error::OK, new_rid);
+        mngr_remove_range(new_range);
+        return err;
+      }
       range->blocks.commitlog.remove(err, fragments_old);
 
       range->blocks.commitlog.commit_finalize();

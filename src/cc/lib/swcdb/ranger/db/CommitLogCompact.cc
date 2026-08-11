@@ -91,7 +91,11 @@ void Compact::Group::_loaded(const Fragment::Ptr& frag) {
   {
     Core::MutexSptd::scope lock(m_mutex);
     frag->load_cells(err, m_cells);
-    m_remove.push_back(frag);
+    if(err) {
+      error.store(err);
+    } else {
+      m_remove.push_back(frag);
+    }
   }
   frag->release();
   Env::Rgr::res().less_mem_future(frag->size_bytes());

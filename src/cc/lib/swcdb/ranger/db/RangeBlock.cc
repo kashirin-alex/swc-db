@@ -206,7 +206,7 @@ void Block::load_final(const DB::Cells::MutableVec& vec_cells) {
 }
 
 SWC_SHOULD_NOT_INLINE
-size_t Block::load_cells(const uint8_t* buf, size_t remain,
+size_t Block::load_cells(int& err, const uint8_t* buf, size_t remain,
                          uint32_t revs, size_t avail,
                          bool& was_splitted, bool synced) {
   size_t count = 0;
@@ -247,9 +247,10 @@ size_t Block::load_cells(const uint8_t* buf, size_t remain,
     }
 
   } } catch(...) {
+    err = Error::SERIALIZATION_INPUT_OVERRUN;
     const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
     SWC_LOG_OUT(LOG_ERROR,
-      SWC_LOG_OSTREAM << "Cell trunclated at count="
+      SWC_LOG_OSTREAM << "Cell truncated at count="
         << count << '/' << avail << " remain=" << remain;
       m_prev_key_end.print(SWC_LOG_OSTREAM << ' ');
       m_key_end.print(SWC_LOG_OSTREAM << " < key <= ");
@@ -340,9 +341,24 @@ void Block::loader_loaded() {
     m_loader->q_req.pop();
   } while(!m_loader->q_req.empty());
 
-  Core::MutexSptd::scope lock(m_mutex_state);
-  delete m_loader;
-  m_loader = nullptr;
+  int err = m_loader->error;
+  {
+    Core::MutexSptd::scope lock(m_mutex_state);
+    delete m_loader;
+    m_loader = nullptr;
+    if(err)
+      m_state.store(State::NONE);
+  }
+  if(err) {
+    size_t released;
+    {
+      Core::ScopedLock lock(m_mutex);
+      released = m_releasable_bytes.exchange(0);
+      m_cells.free();
+    }
+    if(released && DB::Types::SystemColumn::is_data(blocks->range->cfg->cid))
+      Env::Rgr::res().less_mem_releasable(released);
+  }
 }
 
 Block::Ptr Block::split(bool loaded) {

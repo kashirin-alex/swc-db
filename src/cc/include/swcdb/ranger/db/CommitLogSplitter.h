@@ -18,6 +18,7 @@ class Splitter final : private Fragment::LoadCallback {
   Splitter(const DB::Cell::Key& a_key, Fragments::Vec& fragments,
            Fragments::Ptr a_log_left, Fragments::Ptr a_log_right)
           : m_sem(4), m_fragments(fragments), m_splitting(),
+            m_error(Error::OK),
             key(a_key), log_left(a_log_left), log_right(a_log_right) {
   }
 
@@ -29,7 +30,7 @@ class Splitter final : private Fragment::LoadCallback {
 
   ~Splitter() noexcept { }
 
-  void run () {
+  int run () {
     SWC_LOGF(LOG_DEBUG,
       "COMPACT-SPLIT commitlog START "
       "from(" SWC_FMT_LU "/" SWC_FMT_LU ") to(" SWC_FMT_LU "/" SWC_FMT_LU
@@ -76,6 +77,7 @@ class Splitter final : private Fragment::LoadCallback {
       log_right->range->cfg->cid, log_right->range->rid,
       skipped, moved, splitted
     );
+    return m_error;
   }
 
   void loaded(Fragment::Ptr&& frag) override {
@@ -107,7 +109,9 @@ class Splitter final : private Fragment::LoadCallback {
     int err;
     bool more;
     do {
-      m_splitting.front()->split(err, key, log_left, log_right);
+      m_splitting.front()->split(err = Error::OK, key, log_left, log_right);
+      if(err && !m_error)
+        m_error.store(err);
       more = m_splitting.pop_and_more();
       m_sem.release();
     } while(more);
@@ -116,6 +120,7 @@ class Splitter final : private Fragment::LoadCallback {
   Core::Semaphore                m_sem;
   Fragments::Vec&                m_fragments;
   Core::QueueSafe<Fragment::Ptr> m_splitting;
+  Core::Atomic<int>              m_error;
 
   const DB::Cell::Key            key;
   Fragments::Ptr                 log_left;

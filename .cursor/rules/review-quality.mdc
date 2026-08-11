@@ -15,7 +15,7 @@ Full scored report: `evals/QUALITY_EVALUATION_REPORT.md`. Use when touching untr
 
 ## P1 — data integrity when editing ranger / CellStore / CommitLog
 
-- [ ] Truncated/corrupt cell decode: fail-fast (`err`) rather than log-and-continue with partial cells
+- [ ] Truncated/corrupt cell decode: must fail-fast (`err = SERIALIZATION_INPUT_OVERRUN`); do not log-and-continue with partial cells (R-P1-1)
 - [ ] CellStore `blks_count` / `idx_size_*`: sanity-cap against schema/RAM
 - [ ] Compaction `Blocks::apply_new`: avoid CS-live + old-log-remain window if `commitlog.remove` fails after `cellstores.replace`
 - [ ] Do **not** “fix” insistent FS Interface sync retries — intentional outage resilience

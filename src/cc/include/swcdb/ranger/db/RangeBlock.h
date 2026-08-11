@@ -94,7 +94,7 @@ class Block final {
 
   void load_final(const DB::Cells::MutableVec& cells);
 
-  size_t load_cells(const uint8_t* buf, size_t remain,
+  size_t load_cells(int& err, const uint8_t* buf, size_t remain,
                     uint32_t revs, size_t avail,
                     bool& was_splitted, bool synced=false);
 

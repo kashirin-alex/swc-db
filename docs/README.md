@@ -140,7 +140,8 @@ IPv4 and IPv6 with support of multi-homed / multiple interfaces.
 ✔ Managers or Rangers in case of a connection or file-descriptor failure try to reconnect to the DFS. \
 ✔ Communications security, SSL applicable between servers for non-secure networks. \
 ✔ Communication over-heads of resolved-data of column-name, RID-location and Ranger-address are kept on TTL/KA.
-In worst case of outdated data being used with a request the Ranger return an error of a NOT_LOADED_RANGE.
+In worst case of outdated data being used with a request the Ranger return an error of a NOT_LOADED_RANGE. \
+✔ Truncated or corrupt on-disk CellStore / CommitLog cell serialization fails the load, scan, compact, or split with `SERIALIZATION_INPUT_OVERRUN` instead of continuing with partial cells; replace the affected fragment or CellStore file from an FS-level backup.
 
 
 

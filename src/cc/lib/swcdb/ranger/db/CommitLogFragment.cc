@@ -415,14 +415,14 @@ void Fragment::load(Fragment::LoadCallback* cb) {
 }
 
 SWC_CAN_INLINE
-void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
+void Fragment::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   ssize_t remain_hint(0);
   if(!marked_removed()) {
     if(m_buffer.size) {
       bool was_splitted;
       remain_hint = m_cells_remain.sub_rslt(
         cells_block->load_cells(
-          m_buffer.base, m_buffer.size,
+          err, m_buffer.base, m_buffer.size,
           cell_revs, cells_count,
           was_splitted
         )
@@ -440,7 +440,7 @@ void Fragment::load_cells(int&, Ranger::Block::Ptr cells_block) {
 }
 
 SWC_SHOULD_NOT_INLINE
-void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
+void Fragment::load_cells(int& err, DB::Cells::MutableVec& cells) {
   if(!marked_removed()) {
     if(m_buffer.size) {
       size_t count = 0;
@@ -456,9 +456,10 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
           : cells.add_raw(cell, &offset_it, &offset_hint, false);
 
       } } catch(...) {
+        err = Error::SERIALIZATION_INPUT_OVERRUN;
         SWC_LOG_OUT(LOG_ERROR,
           SWC_LOG_OSTREAM
-            << "Cell trunclated at count=" << count << '/' << cells_count
+            << "Cell truncated at count=" << count << '/' << cells_count
             << " remain=" << remain << ' ';
           print(SWC_LOG_OSTREAM);
           SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");
@@ -474,7 +475,7 @@ void Fragment::load_cells(int&, DB::Cells::MutableVec& cells) {
 }
 
 SWC_CAN_INLINE
-void Fragment::split(int&, const DB::Cell::Key& key,
+void Fragment::split(int& err, const DB::Cell::Key& key,
                      Fragments::Ptr log_left, Fragments::Ptr log_right) {
   if(!marked_removed()) {
     if(m_buffer.size) {
@@ -489,9 +490,10 @@ void Fragment::split(int&, const DB::Cell::Key& key,
           : log_left->add(cell);
 
       } } catch(...) {
+        err = Error::SERIALIZATION_INPUT_OVERRUN;
         SWC_LOG_OUT(LOG_ERROR,
           SWC_LOG_OSTREAM
-            << "Cell trunclated at count=" << count << '/' << cells_count
+            << "Cell truncated at count=" << count << '/' << cells_count
             << " remain=" << remain << ' ';
           print(SWC_LOG_OSTREAM);
           SWC_LOG_OSTREAM << ' ' << SWC_CURRENT_EXCEPTION("");

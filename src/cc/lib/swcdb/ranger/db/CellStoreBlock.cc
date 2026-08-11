@@ -137,12 +137,12 @@ void Read::load() {
 }
 
 SWC_CAN_INLINE
-void Read::load_cells(int&, Ranger::Block::Ptr cells_block) {
+void Read::load_cells(int& err, Ranger::Block::Ptr cells_block) {
   bool was_splitted = false;
   ssize_t remain_hint = m_buffer.size
     ? m_cells_remain.sub_rslt(
         cells_block->load_cells(
-          m_buffer.base, m_buffer.size,
+          err, m_buffer.base, m_buffer.size,
           cellstore->cell_revs, header.cells_count,
           was_splitted,
           true
