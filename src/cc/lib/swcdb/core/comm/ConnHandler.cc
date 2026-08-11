@@ -315,17 +315,13 @@ void ConnHandler::Receiver_HeaderPrefix::operator()(
       ev->header.header_len = 0;
     }
 
-    if(!ev->header.header_len) {
-      SWC_LOGF(LOG_WARN,
-        "read, REQUEST HEADER_PREFIX_TRUNCATED: remain=" SWC_FMT_LU,
-        filled);
-      goto _quit;
-    }
-    if(ev->header.header_len > Header::MAX_LENGTH) {
+    if(ev->header.header_len < Header::FIXED_LENGTH ||
+       ev->header.header_len > Header::MAX_LENGTH) {
       SWC_LOGF(LOG_WARN,
         "read, REQUEST HEADER_PREFIX_BAD_LEN: header_len=" SWC_FMT_LU
-        " max=" SWC_FMT_LU,
-        uint64_t(ev->header.header_len), uint64_t(Header::MAX_LENGTH));
+        " min=" SWC_FMT_LU " max=" SWC_FMT_LU,
+        uint64_t(ev->header.header_len), uint64_t(Header::FIXED_LENGTH),
+        uint64_t(Header::MAX_LENGTH));
       goto _quit;
     }
     filled = ev->header.header_len - Header::PREFIX_LENGTH;

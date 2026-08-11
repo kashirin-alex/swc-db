@@ -112,6 +112,21 @@ int main(int argc, char** argv) {
     ++failures;
   }
 
+  // header_len == 1 underflows filled = header_len - PREFIX_LENGTH
+  if(!expect_close_on_bad_header(endpoint, 1)) {
+    SWC_LOG(LOG_ERROR,
+      "server did NOT close on header_len=1 (underflow guard missing)");
+    ++failures;
+  }
+
+  // one byte below the fixed minimum
+  if(!expect_close_on_bad_header(
+        endpoint, uint8_t(Comm::Header::FIXED_LENGTH - 1))) {
+    SWC_LOG(LOG_ERROR,
+      "server did NOT close on header_len=FIXED_LENGTH-1");
+    ++failures;
+  }
+
   Env::Clients::get()->stop();
 
   SWC_ASSERT(!failures);
