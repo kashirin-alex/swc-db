@@ -189,7 +189,7 @@ def swcdb_print_exec(task, c, res=None):
 def swcdb_proc_pids(name, c):
     res = c.run(" | ".join([
         "ps aux",
-        "grep -E \"[0-9]\s" + swcdb_install_path + "/bin/" + name + "\"",
+        "grep -E \"[0-9]\\s" + swcdb_install_path + "/bin/" + name + "\"",
         "tr -s ' '", "cut -f2 -d' '"]),
         hide=True)
     return [pid for pid in res.stdout.strip().split("\n") if pid]
