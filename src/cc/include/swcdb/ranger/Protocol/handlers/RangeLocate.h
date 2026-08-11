@@ -51,10 +51,14 @@ struct RangeLocate {
       params.decode(&ptr, &remain);
 
       range = Env::Rgr::columns()->get_range(err, params.cid, params.rid);
-      if((!err && (!range || !range->is_loaded())) ||
-         (params.flags & Params::RangeLocateReq::HAVE_REVISION &&
-          params.revision != range->get_load_revision()))
+      if(!range) {
+        if(!err)
+          err = Error::RGR_NOT_LOADED_RANGE;
+      } else if((!err && !range->is_loaded()) ||
+                (params.flags & Params::RangeLocateReq::HAVE_REVISION &&
+                 params.revision != range->get_load_revision())) {
         err = Error::RGR_NOT_LOADED_RANGE;
+      }
 
     } catch(...) {
       const Error::Exception& e = SWC_CURRENT_EXCEPTION("");
