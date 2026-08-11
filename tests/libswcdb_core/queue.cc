@@ -8,6 +8,7 @@
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Semaphore.h"
 #include "swcdb/core/QueueSafe.h"
+#include "swcdb/core/QueueSafeStated.h"
 #include "swcdb/core/QueuePointer.h"
 
   const size_t num_threads = 2;
@@ -154,7 +155,56 @@ struct Test {
 
 };
 
+void run_queue_safe_stated() {
+  printf("\n START Core::QueueSafeStated<size_t>\n");
+  Core::QueueSafeStated<size_t> q;
+  SWC_ASSERT(q.empty());
+  SWC_ASSERT(!q.is_active());
+  SWC_ASSERT(!q.activating());
+
+  SWC_ASSERT(q.activating(size_t(1)));
+  SWC_ASSERT(q.is_active());
+  SWC_ASSERT(q.empty());
+
+  SWC_ASSERT(!q.activating(size_t(2)));
+  SWC_ASSERT(!q.activating(size_t(3)));
+  SWC_ASSERT(q.size() == 2);
+
+  size_t item = 0;
+  SWC_ASSERT(!q.deactivating(item));
+  SWC_ASSERT(item == 2);
+  SWC_ASSERT(q.is_active());
+  SWC_ASSERT(q.size() == 1);
+
+  SWC_ASSERT(!q.deactivating(item));
+  SWC_ASSERT(item == 3);
+  SWC_ASSERT(q.empty());
+
+  SWC_ASSERT(q.deactivating(item));
+  SWC_ASSERT(!q.is_active());
+  SWC_ASSERT(q.empty());
+
+  q.push(size_t(10));
+  q.push(size_t(11));
+  SWC_ASSERT(q.activating());
+  SWC_ASSERT(q.is_active());
+  SWC_ASSERT(q.front() == 10);
+  SWC_ASSERT(!q.deactivating());
+  SWC_ASSERT(q.front() == 11);
+  SWC_ASSERT(q.deactivating());
+  SWC_ASSERT(!q.is_active());
+
+  q.push(size_t(20));
+  SWC_ASSERT(q.activating());
+  q.deactivate();
+  SWC_ASSERT(!q.is_active());
+  SWC_ASSERT(q.size() == 1);
+  printf(" QueueSafeStated OK\n");
+}
+
 void run() {
+
+  run_queue_safe_stated();
 
   printf("\n START Test<Core::QueuePointer<std::shared_ptr<A3>>, A3>\n");
   Test<Core::QueuePointer<std::shared_ptr<A3>>, A3> test3;

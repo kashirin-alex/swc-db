@@ -56,3 +56,57 @@ ADD_TEST_TARGET(
   TARGETS   swcdb_core
 )
 
+ADD_TEST_TARGET(
+  NAME      encoder
+  SRCS      encoder.cc
+  TARGETS   swcdb_core
+)
+
+ADD_TEST_TARGET(
+  NAME      buffer
+  SRCS      buffer.cc
+  TARGETS   swcdb_core
+)
+
+ADD_TEST_TARGET(
+  NAME      buffer_stream
+  SRCS      buffer_stream.cc
+  TARGETS   swcdb_core
+)
+
+ADD_TEST_TARGET(
+  NAME      comm-header
+  SRCS      comm_header.cc
+  TARGETS   swcdb_core swcdb_core_comm
+)
+
+ADD_TEST_TARGET(
+  NAME      error-exception
+  SRCS      error_exception.cc
+  TARGETS   swcdb_core
+)
+
+ADD_TEST_TARGET(
+  NAME      array
+  SRCS      array.cc
+  TARGETS   swcdb_core
+)
+
+ADD_TEST_TARGET(
+  NAME      comm-buffer-info
+  SRCS      comm_buffer_info.cc
+  TARGETS   swcdb_core swcdb_core_comm
+)
+
+ADD_TEST_TARGET(
+  NAME      resolver
+  SRCS      resolver.cc
+  TARGETS   swcdb_core swcdb_core_comm
+)
+
+ADD_TEST_TARGET(
+  NAME      properties-api
+  SRCS      properties_api.cc
+  TARGETS   swcdb_core swcdb_core_config
+)
+
