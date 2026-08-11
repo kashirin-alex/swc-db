@@ -976,8 +976,9 @@ void CompactRange::split(rid_t new_rid, uint32_t split_at) {
           " (CellStores already applied; continuing)",
           range->cfg->cid, range->rid, new_rid);
       );
+    } else {
+      range->blocks.commitlog.remove(err, fragments_old);
     }
-    range->blocks.commitlog.remove(err = Error::OK, fragments_old);
 
     range->blocks.commitlog.commit_finalize();
     new_range->blocks.commitlog.commit_finalize();
