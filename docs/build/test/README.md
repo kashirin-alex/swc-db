@@ -11,25 +11,68 @@ sort: 5
 
 ## Test Preparations
 
-**The test uses the swcdb_cluster**
-- swcdb_cluster is required to be set [as by instructions]({{ site.baseurl }}/install/swcdb_cluster/)
+Leave **`SWC_BUILD_PKG` empty** (full tree) so CMake registers tests and examples. Prefer the [CI-like smoke configure]({{ site.baseurl }}/build/configure/#ci-like-smoke--unit-test-build-c-only) for a first local build.
 
-Integration-style coverage via `make test` expects an installed SWC-DB tree and a working cluster setup. Build and install first using the [Build]({{ site.baseurl }}/build/) and [Install]({{ site.baseurl }}/install/) guides.
+**Host tools and environment**
+- `diff` (`diffutils`) — required by golden `tests/testutils/testdiff` (e.g. `properties_parser`)
+- UTF-8 locale for PyPy binding steps (`C.utf8`, or `locale-gen` for `en_US.UTF-8`)
+
+**Integration / full `make test`**
+- Build and [install]({{ site.baseurl }}/build/make/) first
+- Set up [`swcdb_cluster`]({{ site.baseurl }}/install/swcdb_cluster/) (Fabric + passwordless SSH)
 
 
 
-## Running the SWC-DB build Test
-*  while at builds path [as by instructions]({{ site.baseurl }}/build/prerequisites/)
+## Unit vs integration
+
+| Kind | Paths | Needs install + cluster? | Default CI (`TEST=1`) |
+|------|-------|--------------------------|------------------------|
+| Unit (`libswcdb_core`) | `tests/libswcdb_core/` | No | Yes (subset of matrix) |
+| Unit (`libswcdb`) | `tests/libswcdb/` | No | Yes (subset of matrix) |
+| Integration | `tests/integration/{client,comm,fs,manager,ranger,broker,thrift,utils}/` | Yes | No — steps need `TEST=2` |
+
+Prefer unit targets for local C++/core changes. Extend or run integration only when cluster behavior, install layout, or a daemon path is involved.
+
+
+
+## Running tests
+
+* while at builds path [as by instructions]({{ site.baseurl }}/build/prerequisites/)
 
 ```bash
 cd builds/swcdb;   # or your cmake build dir
 ```
 
+**One module / pattern (preferred while developing):**
+
+```bash
+ctest -R libswcdb_core --output-on-failure
+# examples: -R libswcdb , -R ranger , -R thrift
+```
+
+**Full suite:**
+
 ```bash
 make test;
 ```
 
-What runs depends on how the tree was configured and whether a cluster is available. Prefer verifying the specific area you changed (core/db unit targets, ranger/thrift integration, etc.) before relying on a full `make test`.
+What runs depends on configure options and whether a cluster is available.
+
+
+
+## Cluster hygiene before retest
+
+Leftover daemons hold ports and make `swcdb_cluster start` / `wait_ready` hang or look “flaky”. Before another integration run:
+
+```bash
+cd /opt/swcdb   # or your CMAKE_INSTALL_PREFIX
+sbin/swcdb_cluster stop
+sbin/swcdb_cluster kill   # if stop left processes behind
+```
+
+Wipe `/var/opt/swcdb` (or your data dir) only when you intentionally want a clean store — not for every retest.
+
+If `start` reports success but ThriftBroker is down, check [Thrift shared libraries at runtime]({{ site.baseurl }}/install/dependencies/#thrift-shared-libraries-at-runtime) before assuming a test bug.
 
 
 

@@ -11,6 +11,7 @@ C++20 distributed DBMS; version `0.5.13`; GPLv3.
 | Path-scoped conventions (C++, Thrift, build, daemons, tests) | [`.cursor/rules/`](.cursor/rules/) — loaded by globs |
 | Review checklists (standards, quality, docs, CI) | [`.cursor/rules/review-*.mdc`](.cursor/rules/) — requestable / docs-globbed |
 | Human commits, `[TEST COMMIT]`, PRs, local testing | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| Smoke build / unit vs integration / cluster hygiene | [`docs/build/test/`](docs/build/test/), [`.cursor/rules/build-testing.mdc`](.cursor/rules/build-testing.mdc) |
 | Major development phases | [`ROADMAP.md`](ROADMAP.md) |
 | Dated scored audits | [`evals/`](evals/) |
 

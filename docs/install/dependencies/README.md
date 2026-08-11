@@ -5,6 +5,16 @@ sort: 2
 
 # Dependencies Installation
 
+## Thrift shared libraries at runtime
+
+Apache Thrift **0.13.0+** is required for Thrift clients and broker; CI validates with **0.20.0**. Distro packages may ship an older version — build Thrift from source if code generation or linking fails.
+
+Installed SWC-DB binaries use RPATH `${CMAKE_INSTALL_PREFIX}/lib` (for example `/opt/swcdb/lib`). If `libthrift*.so*` lives elsewhere (common when Thrift was built into `/usr/local/lib`), `swcdbThriftBroker` can fail with exit 127 / “library not found” while Manager/Ranger still start. Fixes (pick one):
+
+* Configure with `-DSWC_INSTALL_DEP_LIBS=ON` so CMake installs linked dependency shared libs into the prefix `lib/` on `make install`
+* Copy or symlink `libthrift*.so*` into `${CMAKE_INSTALL_PREFIX}/lib`
+* Add the Thrift lib directory to the dynamic linker config (`ldconfig`) or set `LD_LIBRARY_PATH` for cluster start
+
 
 
 ## on Debian/Ubuntu
@@ -17,8 +27,6 @@ apt-get update;
 ```
 
 _Libraries Versions and Availability might vary between Ubuntu Releases. Package names below are for Ubuntu 22.04+; on older releases use `libtcmalloc-minimal5` and/or `libre2-5` if the packages below are not found._
-
-_Apache Thrift **0.13.0+** is required for Thrift clients and broker; CI validates with **0.20.0**. Distro `libthrift-dev` may ship an older version — build Thrift from source if code generation or linking fails._
 
 ```bash
 apt-get install -y \

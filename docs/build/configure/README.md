@@ -12,6 +12,8 @@ sort: 3
 | CONFIG OPTION | DESCRIPTION | VALUE OPTIONS | DEFAULT VALUE |
 | ---  | --- | --- | --- |
 |O_LEVEL| Level of optimizations: <br/>  0: = -Os <br/>  1: = -O2 <br/>  2: = -O2 plus -floop-interchange -flto=1 -fuse-linker-plugin -ffat-lto-objects (GCC; Clang uses -flto) <br/>  3: = -O3 <br/>  4: += -flto=1 -fuse-linker-plugin -ffat-lto-objects<br/>  5: += BUILD_LINKING=STATIC <br/>  6: += BUILD_LINKING_CORE=STATIC | 0-7 | 3 |
+|BUILD_LINKING| Link major executables against static or shared dependency libraries. Default **SHARED**. Prefer SHARED when the distro ships only shared deps (e.g. Arch `libre2.so` without `libre2.a`). O_LEVEL 5 forces STATIC. After flipping STATIC↔SHARED, wipe the CMake cache and reconfigure. | STATIC / SHARED | SHARED |
+|BUILD_LINKING_CORE| Link core libraries static or shared. O_LEVEL 6 forces STATIC. Same cache note as `BUILD_LINKING`. | STATIC / SHARED | SHARED |
 |SWC_IMPL_SOURCE| when possible implement SWC-DB source-code | ON/OFF | OFF |
 |SWC_IMPL_COMPARATORS_BASIC| use the basic comparator implementation (`-DSWC_IMPL_COMPARATORS_BASIC`) | ON/OFF | OFF |
 |SWC_IO_URING_AS_DEFAULT| enable ASIO io_uring and disable epoll as the default reactor | ON/OFF | OFF |
@@ -24,7 +26,7 @@ sort: 3
 |LOOKUP_LIB_PATHS| additional paths to libraries | posix-dir-path_LIST; | "/opt/local/lib;/usr/local/lib;/usr/lib;/lib" |
 |JAVA_INSTALL_PATH| JAVA_HOME to use, suggested ```$(find /usr/lib/jvm -name jni.h | sed s"/\/include\/jni.h//"g)``` | posix-dir-path | ENV{JAVA_HOME} |
 |ASIO_INCLUDE_PATH| suggested [as by instructions]({{ site.baseurl }}/build/prerequisites/specific/#version-asio) | posix-dir-path | "" |
-|WITHOUT_THRIFT_C| Not to build the libswcdb_thrift_c | ON/OFF | OFF |
+|WITHOUT_THRIFT_C| Not to build the libswcdb_thrift_c. Use **ON** for C++-only / CI-like builds: generated Thrift C-Glib sources are compiled under `-Wall -Werror` and unused locals can fail the build. Separate from `SWC_LANGUAGES`. | ON/OFF | OFF |
 |GLIB_INCLUDE_PATH| suggested ```$(pkg-config --cflags glib-2.0 | tr ' ' ';' | sed 's/-I//g' )``` | posix-dir-path | "" |
 |WITHOUT_PAM| Not to build the libpam_swcdb_max_retries | ON/OFF | OFF |
 |HADOOP_INSTALL_PATH| HADOOP_HOME to use, suggested [as by instructions]({{ site.baseurl }}/build/prerequisites/specific/#hadoop-version) | posix-dir-path| ENV{HADOOP_HOME} |
@@ -91,6 +93,23 @@ cmake ../swc-db [SWC-DB Configuration Options] [Cmake Configuration Options];
 
 
 #### Configuration Examples
+##### CI-like smoke / unit-test build (C++ only)
+Matches default GitHub Actions configure habits: no language bindings, shared linking, install under `/opt/swcdb`. Good first configure before a full `SWC_LANGUAGES=ALL` build. Leave `SWC_BUILD_PKG` unset (empty) so tests and examples are built.
+
+```bash
+    cmake ../swc-db \
+      -DO_LEVEL=3 -DSWC_IMPL_SOURCE=OFF \
+      -DBUILD_LINKING=SHARED \
+      -DSWC_LANGUAGES=NONE \
+      -DWITHOUT_THRIFT_C=ON \
+      -DWITHOUT_PAM=ON \
+      -DASIO_INCLUDE_PATH=${ASIO_INCLUDE_PATH} \
+      -DCMAKE_SKIP_RPATH=OFF \
+      -DCMAKE_INSTALL_PREFIX=/opt/swcdb \
+      -DSWC_DOCUMENTATION=OFF \
+      -DCMAKE_BUILD_TYPE=Debug;
+```
+
 ##### an Optimized Release build
 ```bash
     cmake ../swc-db \

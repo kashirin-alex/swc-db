@@ -78,6 +78,13 @@ Examples:
 ```bash
 sbin/swcdb_cluster start
 sbin/swcdb_cluster stop
+sbin/swcdb_cluster kill
 ```
+
+### Before retest / after a failed start
+
+Leftover daemons hold ports and make the next `start` hang in `wait_ready`. Always `stop` (then `kill` if processes remain) before another integration `make test` or cluster start. Wipe the data directory only when you want a clean store.
+
+If core daemons come up but ThriftBroker exits immediately, see [Thrift shared libraries at runtime]({{ site.baseurl }}/install/dependencies/#thrift-shared-libraries-at-runtime).
 
 Distributed run notes: [Running Distributed]({{ site.baseurl }}/run/distributed/). Property reference: [swcdb_cluster properties]({{ site.baseurl }}/configure/properties/swcdb_cluster.md).

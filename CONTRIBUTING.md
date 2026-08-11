@@ -105,11 +105,18 @@ Do not hand-edit Thrift `thriftgen-*` / `gen-*` trees for behavior or style; cha
 
 
 ### Local Testing
-- Unit / build tests: follow [Building](docs/build/) then [Testing](docs/build/test/) (`make test` from the build directory).
-- Integration-oriented `make test` expects an installed tree and `swcdb_cluster` set up as in [Setting up swcdb_cluster](docs/install/swcdb_cluster/).
+- Prefer a [CI-like smoke configure](docs/build/configure/) (`-DSWC_LANGUAGES=NONE`, `-DBUILD_LINKING=SHARED`, `-DCMAKE_INSTALL_PREFIX=/opt/swcdb`, leave `SWC_BUILD_PKG` empty) before a full language build.
+- Unit targets first: `ctest -R libswcdb_core --output-on-failure` (or `libswcdb`) from the build directory — see [Testing](docs/build/test/).
+- Full / integration `make test` expects an installed tree and `swcdb_cluster` ([setup](docs/install/swcdb_cluster/)). Before retest: `swcdb_cluster stop` (then `kill` if needed).
+- Host tools: `diffutils` for golden `testdiff`; UTF-8 locale for PyPy.
 - Optional: sanitizer builds via CMake (`SWC_ENABLE_SANITIZER` = `address` or `thread`) when debugging memory/concurrency issues.
 
 Document what you ran in the PR.
+
+
+
+### Dual build model (libraries vs daemons)
+Reusable libraries (`core`, `db`, `fs`) compile from `lib/**/*.cc`; headers may also pull `.cc` when `SWC_IMPL_SOURCE` is ON. Daemon logic (manager / ranger / broker / fsbroker) aggregates `.cc` into Env headers unconditionally — there is no separate daemon shared library unless packaging requires it. Agent detail: [`.cursor/rules/build-impl-source.mdc`](.cursor/rules/build-impl-source.mdc).
 
 
 

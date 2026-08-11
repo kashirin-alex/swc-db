@@ -27,6 +27,8 @@ pacman -S \
 ##### REQUIRED VERSIONS:
   * [ASIO]({{ site.baseurl }}/build/prerequisites/specific/#version-asio)
 
+> **Linking note:** Arch packages typically ship shared libraries only (e.g. `libre2.so`). Keep `-DBUILD_LINKING=SHARED` (the default). Do not use `O_LEVEL` 5/6 or `-DBUILD_LINKING=STATIC` unless static archives are installed. After changing STATIC↔SHARED, delete the CMake cache (or the build directory) and reconfigure.
+
 
 ***
 

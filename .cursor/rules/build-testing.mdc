@@ -11,19 +11,42 @@ alwaysApply: false
 - No GTest / Catch2. Tests are custom C++ executables registered with CTest.
 - Register via `ADD_TEST_TARGET` / `ADD_TEST_EXEC` in `cmake/Utils.cmake`.
 - Fail with non-zero exit / clear stderr messages (see `tests/libswcdb_core/`).
+- Tests/examples only when `SWC_BUILD_PKG` is empty.
 
 ## Layout
 
-- `tests/libswcdb_core/` — unit tests for `swcdb_core`
-- `tests/libswcdb/` — unit tests for `libswcdb` (include `SWC_IMPL_SOURCE` variants when relevant)
-- `tests/integration/` — needs installed prefix + `swcdb_cluster` (Fabric/SSH)
-- Golden output: `tests/testutils/testdiff` vs `.golden` files
+| Kind | Paths | Needs install + `swcdb_cluster`? | Default CI (`TEST=1`) |
+|------|-------|----------------------------------|------------------------|
+| Unit | `tests/libswcdb_core/`, `tests/libswcdb/` | No | Yes (matrix subset) |
+| Integration | `tests/integration/{client,comm,fs,manager,ranger,broker,thrift,utils}/` | Yes | No (`TEST=2` only) |
+
+Golden output: `tests/testutils/testdiff` vs `.golden` files (needs host `diff` / `diffutils`).
+
+## Smoke configure (CI-like)
+
+Sibling `builds/swcdb`, prefix `/opt/swcdb`, shared linking, no bindings:
+
+```bash
+cmake ../swc-db \
+  -DO_LEVEL=3 -DSWC_IMPL_SOURCE=OFF \
+  -DBUILD_LINKING=SHARED \
+  -DSWC_LANGUAGES=NONE \
+  -DWITHOUT_THRIFT_C=ON \
+  -DCMAKE_INSTALL_PREFIX=/opt/swcdb
+```
+
+See `docs/build/configure/` for the full example.
 
 ## Running
 
 ```bash
+# Prefer while developing:
+ctest -R libswcdb_core --output-on-failure
+
 make test
 # or: ctest --output-on-failure in the build tree
 ```
 
-Integration prerequisites: `make install`, writable data dirs, passwordless SSH for `swcdb_cluster`. Prefer unit tests under `libswcdb*` for local changes; extend integration only when cluster behavior is involved.
+Integration prerequisites: `make install`, writable data dirs, passwordless SSH for `swcdb_cluster`. Before retest: `swcdb_cluster stop` then `kill` if needed (leftover PIDs hang `wait_ready`). Prefer unit tests under `libswcdb*` for local changes; extend integration only when cluster behavior is involved.
+
+ThriftBroker exit 127 / missing `libthrift*.so*`: RPATH is `${PREFIX}/lib` only — see `docs/install/dependencies/` (runtime Thrift libs) or `-DSWC_INSTALL_DEP_LIBS=ON`.

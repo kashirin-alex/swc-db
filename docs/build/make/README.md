@@ -26,6 +26,8 @@ make -j8;
 make install;
 ```
 
+Installed executables embed RPATH `${CMAKE_INSTALL_PREFIX}/lib`. If Apache Thrift (or other deps) were built outside that prefix, see [Dependencies — Thrift shared libraries at runtime]({{ site.baseurl }}/install/dependencies/#thrift-shared-libraries-at-runtime) before starting `swcdbThriftBroker`.
+
 
 ## Packaging
 _SWCDB_BUILD_VERSION suggested format [**#.#.#.RelaseType.ARCH**]_
