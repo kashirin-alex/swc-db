@@ -423,7 +423,7 @@ void ConnHandler::read() noexcept {
 
 void ConnHandler::recv_buffers(Event::Ptr&& ev) {
   StaticBuffer* buffer;
-  size_t remain;
+  uint32_t remain;
   if(!ev->data.size) {
     buffer = &ev->data;
     remain = ev->header.data.size;
