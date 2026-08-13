@@ -7,6 +7,7 @@
 #include "swcdb/Version.h"
 #include "swcdb/core/config/Settings.h"
 
+#include <algorithm>
 #include <fstream>
 #include <filesystem>
 

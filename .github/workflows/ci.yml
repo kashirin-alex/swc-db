@@ -143,13 +143,14 @@ jobs:
             libthrift-dev
           #
           # THRIFT-C_GLIB-PREREQUISITES
-          # libglib2.0-dev / libffi-dev / libpcre3-dev are not pulled transitively
-          # by libthrift-c-glib-dev on Ubuntu 24.04; static O_LEVEL needs the .a files.
+          # libglib2.0-dev / libffi-dev / libpcre2-dev are not pulled transitively
+          # by libthrift-c-glib-dev on Ubuntu 24.04; static O_LEVEL needs the .a
+          # files (Noble GLib uses PCRE2, not PCRE1).
           sudo apt-get install -y \
             libthrift-c-glib-dev \
             libglib2.0-dev \
             libffi-dev \
-            libpcre3-dev \
+            libpcre2-dev \
             libpam-dev
           #
         fi

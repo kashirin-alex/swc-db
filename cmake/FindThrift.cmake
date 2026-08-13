@@ -103,7 +103,8 @@ if(THRIFT_C_FOUND)
     REQUIRED  TRUE
     LIB_PATHS ""
     INC_PATHS ${GLIB_INCLUDE_PATH}
-    STATIC    libglib-2.0.a libgobject-2.0.a libffi.a libpcre.a
+    # GLib ≥2.73 links PCRE2; older distros still ship PCRE1 (libpcre.a).
+    STATIC    libglib-2.0.a libgobject-2.0.a libffi.a libpcre2-8.a libpcre.a
     SHARED    glib-2.0 gobject-2.0
     INCLUDE   glib.h glib-object.h glibconfig.h
   )

@@ -59,5 +59,11 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wbidi-chars=any")
   endif()
 
+  # GCC 14+ false-positive stringop-overflow on vector insert after reserve
+  # (e.g. Result::take) when inlining through the custom allocator path.
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14.0.0)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=stringop-overflow")
+  endif()
+
 
 endif()
