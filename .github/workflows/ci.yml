@@ -16,12 +16,12 @@ jobs:
   # pull_request events have no github.event.head_commit; inspect the PR head
   # (or push tip) commit message so [TEST COMMIT] works for both event types.
   gate:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha || github.sha }}
         fetch-depth: 1
@@ -46,46 +46,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on:      ['ubuntu-20.04']
-        compiler:     [g++-9, g++-10, g++-11, clang++-10, clang++-11, clang++-12]
+        runs-on:      ['ubuntu-24.04']
+        compiler:     [g++-12, g++-13, g++-14, clang++-16, clang++-17, clang++-18]
         build_type:   ['Release']
         O_LEVEL:      ['0', '1', '2', '3', '4', '5', '6']
         IMPL_SOURCE:  ['OFF', 'ON']
         THRIFT:       ['0.20.0']
         TEST:         [1]
         exclude:
-          - compiler: clang++-10
+          - compiler: clang++-16
             O_LEVEL:  5
-          - compiler: clang++-10
+          - compiler: clang++-16
             O_LEVEL:  6
-          - compiler: clang++-11
+          - compiler: clang++-17
             O_LEVEL:  5
-          - compiler: clang++-11
+          - compiler: clang++-17
             O_LEVEL:  6
-          - compiler: clang++-12
+          - compiler: clang++-18
             O_LEVEL:  5
-          - compiler: clang++-12
+          - compiler: clang++-18
             O_LEVEL:  6
         # Sparse extras: do not multiply the full compiler/O_LEVEL grid.
         include:
           # Integration (TEST=2) on the same O_LEVEL/IMPL pairs that run unit tests
-          - runs-on: ubuntu-20.04
-            compiler: g++-11
+          - runs-on: ubuntu-24.04
+            compiler: g++-13
             build_type: Release
             O_LEVEL: '3'
             IMPL_SOURCE: 'OFF'
             THRIFT: '0.20.0'
             TEST: 2
-          - runs-on: ubuntu-20.04
-            compiler: g++-11
+          - runs-on: ubuntu-24.04
+            compiler: g++-13
             build_type: Release
             O_LEVEL: '6'
             IMPL_SOURCE: 'ON'
             THRIFT: '0.20.0'
             TEST: 2
           # Compile/validate thriftgen-0.23.0 (not covered by default THRIFT matrix)
-          - runs-on: ubuntu-20.04
-            compiler: g++-11
+          - runs-on: ubuntu-24.04
+            compiler: g++-13
             build_type: Release
             O_LEVEL: '3'
             IMPL_SOURCE: 'OFF'
@@ -101,7 +101,7 @@ jobs:
       CXXFLAGS: ''
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v7
 
     - name: Config localhost SSH
       # sudo apt update; sudo apt -y install openssh-server
@@ -120,9 +120,13 @@ jobs:
         if [[ ${{ matrix.runs-on }} =~ ^ubuntu-* ]]; then
           sudo apt-get update -y
           # sudo apt-get upgrade -y
-          # CORE-PREREQUISITES
+          # clang++-N is the compiler binary; apt package is clang-N
+          compiler_pkg='${{ matrix.compiler }}'
+          compiler_pkg="${compiler_pkg/clang++/clang}"
+          # CORE-PREREQUISITES (g++-14 ensures libstdc++ headers for Clang on Noble)
           sudo apt-get install -y \
-            ${{ matrix.compiler }} \
+            "$compiler_pkg" \
+            g++-14 \
             libgoogle-perftools-dev \
             libre2-dev \
             zlib1g-dev \
@@ -132,8 +136,6 @@ jobs:
             libreadline-dev \
             libcephfs-dev
           #
-        fi
-        if [ ${{ matrix.runs-on }} == 'ubuntu-20.04' ]; then
           # THRIFT-PREREQUISITES
           sudo apt-get install -y \
             libboost-math-dev \
@@ -150,9 +152,11 @@ jobs:
         git clone --branch asio-1-30-2 https://github.com/chriskohlhoff/asio.git
 
         # SWCDB_CLUSTER-PREREQUISITES
+        # Prefer pip fabric (distro python3-fabric/paramiko can break swcdb_cluster).
+        # --break-system-packages is required on Ubuntu 24.04+ (PEP 668).
         sudo apt-get install -y \
           python3-pip
-        sudo pip3 install fabric
+        sudo python3 -m pip install --break-system-packages fabric
         #
 
         cmake -E make_directory ${{github.workspace}}/build

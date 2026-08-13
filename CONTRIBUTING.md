@@ -78,12 +78,12 @@ There is no required Conventional Commits format; keep messages readable and acc
 
 
 ### What CI Runs Today
-When triggered with `[TEST COMMIT]`, the workflow builds a matrix on Ubuntu with several compilers, `O_LEVEL` values, and `SWC_IMPL_SOURCE` ON/OFF. Default configure uses `-DSWC_LANGUAGES=NONE` and install prefix `/opt/swcdb`. Default Thrift version in CI is `0.20.0`; a sparse matrix `include` also builds `0.23.0`.
+When triggered with `[TEST COMMIT]`, the workflow builds a matrix on `ubuntu-24.04` with g++-12/13/14 and clang++-16/17/18, `O_LEVEL` values, and `SWC_IMPL_SOURCE` ON/OFF. Default configure uses `-DSWC_LANGUAGES=NONE` and install prefix `/opt/swcdb`. Default Thrift version in CI is `0.20.0`; a sparse matrix `include` also builds `0.23.0`.
 
 | Fact | Behavior |
 |------|----------|
 | Opt-in gate | `gate` job opens only if the head commit message contains `[TEST COMMIT]` (push tip or PR head) |
-| Matrix `TEST` | Default is `1`; sparse `include` adds `TEST=2` on g++-11 with the unit-test O_LEVEL/IMPL pairs |
+| Matrix `TEST` | Default is `1`; sparse `include` adds `TEST=2` on g++-13 with the unit-test O_LEVEL/IMPL pairs |
 | Unit tests | Run only on a subset of the matrix (`O_LEVEL=3`+`IMPL=OFF` or `O_LEVEL=6`+`IMPL=ON`) |
 | Integration | Steps gated on `TEST == '2'` — run on the sparse `TEST=2` includes above |
 | Thrift | Default `0.20.0`; sparse `include` compiles `thriftgen-0.23.0` (`THRIFT=0.23.0`, `TEST=1`) |

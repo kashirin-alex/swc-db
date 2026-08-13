@@ -95,7 +95,7 @@ Client integration expands to **288** query permutations (`2×2×3×3×4×2` in 
 | Fact | Evidence |
 |------|----------|
 | Opt-in gate | `gate` job checks head commit message for `[TEST COMMIT]` (PR head SHA or push tip); `main` needs `gate` |
-| Matrix `TEST` | Default `[1]`; sparse `include` adds `TEST=2` (g++-11, O_LEVEL 3/OFF and 6/ON) |
+| Matrix `TEST` | Default `[1]`; sparse `include` adds `TEST=2` (g++-13, O_LEVEL 3/OFF and 6/ON) |
 | Unit tests | Run only when `TEST` is 1 or 2 **and** (`O_LEVEL=3`+`IMPL=OFF`) or (`O_LEVEL=6`+`IMPL=ON`) |
 | Integration | Steps require `TEST == '2'` → run on the sparse includes above |
 | Thrift | Default `0.20.0`; sparse `include` builds `THRIFT=0.23.0` |
@@ -103,7 +103,8 @@ Client integration expands to **288** query permutations (`2×2×3×3×4×2` in 
 | Languages | `-DSWC_LANGUAGES=NONE` |
 | Ceph FS test | `-DSWC_SKIP_TEST_FS_CEPH=ON` |
 | Sanitizers | Not configured in CI |
-| Checkout action | Deprecated `actions/checkout@v2` |
+| Runner / compilers | `ubuntu-24.04`; g++-12/13/14, clang++-16/17/18 |
+| Checkout action | `actions/checkout@v7` |
 
 ### 3.7 TODO density
 
@@ -269,7 +270,7 @@ See §3.2. Ranger `db/` cluster (~8k LOC across Range/Compact/CommitLog/CellStor
 |-----------|------:|----------|
 | Unit breadth | 2 | ~14 logical unit targets; cells/core only |
 | Integration design | 4 | Rich matrix (288 queries), thrift C++ client, ranger in-process |
-| Integration automation | 3 | Sparse `TEST=2` matrix includes (g++-11 unit-test pairs); not full grid / nightly |
+| Integration automation | 3 | Sparse `TEST=2` matrix includes (g++-13 unit-test pairs); not full grid / nightly |
 | Golden / wire regression | 1 | Single golden file |
 | Sanitizer / coverage | 1 | CMake supports ASan/TSan; unused in CI |
 | Docs for testing/CI | 3 | CONTRIBUTING + `docs/build/test/` document `[TEST COMMIT]` gate and `TEST=2` |
