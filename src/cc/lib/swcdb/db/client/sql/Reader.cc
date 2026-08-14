@@ -6,6 +6,7 @@
 
 #include "swcdb/db/client/sql/Reader.h"
 #include "swcdb/db/client/sql/SQL.h"
+#include <algorithm>
 
 
 namespace SWC { namespace client { namespace SQL {

@@ -6,6 +6,7 @@
 
 #include "swcdb/core/comm/Resolver.h"
 #include "swcdb/core/Serialization.h"
+#include <algorithm>
 
 
 #if defined(__MINGW64__) || defined(_WIN32)

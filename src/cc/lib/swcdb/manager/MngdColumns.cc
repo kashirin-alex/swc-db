@@ -12,6 +12,7 @@
 #include "swcdb/db/client/Query/Update/Committer.h"
 #include "swcdb/db/client/Query/Select/Handlers/Common.h"
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Manager {

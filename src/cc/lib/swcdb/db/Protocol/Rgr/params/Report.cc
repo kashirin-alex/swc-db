@@ -7,6 +7,7 @@
 
 #include "swcdb/db/Protocol/Rgr/params/Report.h"
 #include "swcdb/db/Columns/Schema.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Comm { namespace Protocol {

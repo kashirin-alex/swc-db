@@ -4,6 +4,7 @@
  */
 
 #include "swcdb/ranger/db/CommitLogCompact.h"
+#include <algorithm>
 
 namespace SWC { namespace Ranger { namespace CommitLog {
 

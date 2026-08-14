@@ -6,6 +6,7 @@
 
 
 #include "swcdb/ranger/db/Compaction.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Ranger {

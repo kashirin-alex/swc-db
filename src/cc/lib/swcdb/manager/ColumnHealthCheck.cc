@@ -10,6 +10,7 @@
 #include "swcdb/manager/Protocol/Rgr/req/RangeUnoadForMerge.h"
 #include "swcdb/db/client/Query/Select/Handlers/Common.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Manager {

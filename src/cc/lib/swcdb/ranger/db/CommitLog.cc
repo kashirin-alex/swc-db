@@ -7,6 +7,7 @@
 #include "swcdb/ranger/db/CommitLog.h"
 #include "swcdb/core/Time.h"
 #include "swcdb/core/Semaphore.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Ranger { namespace CommitLog {

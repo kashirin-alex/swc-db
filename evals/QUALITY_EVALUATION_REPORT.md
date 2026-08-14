@@ -98,7 +98,7 @@ Client integration expands to **288** query permutations (`2×2×3×3×4×2` in 
 | Matrix `TEST` | Default `[1]`; sparse `include` adds `TEST=2` (g++-13, O_LEVEL 3/OFF and 6/ON) |
 | Unit tests | Run only when `TEST` is 1 or 2 **and** (`O_LEVEL=3`+`IMPL=OFF`) or (`O_LEVEL=6`+`IMPL=ON`) |
 | Integration | Steps require `TEST == '2'` → run on the sparse includes above |
-| Thrift | Default `0.20.0`; sparse `include` builds `THRIFT=0.23.0` |
+| Thrift | Default `0.20.0`; sparse `include` builds `THRIFT=0.23.0` with `WITHOUT_THRIFT_C=ON` |
 | Broker integration | **No CI step** (CMake/target exists locally) |
 | Languages | `-DSWC_LANGUAGES=NONE` |
 | Ceph FS test | `-DSWC_SKIP_TEST_FS_CEPH=ON` |

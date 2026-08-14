@@ -10,6 +10,7 @@
 #include "swcdb/db/client/Query/Update/Handlers/Common.h"
 #include "swcdb/db/Cells/CellValueSerialFields.h"
 #include "swcdb/db/client/Query/Update/Handlers/Metrics.h"
+#include <algorithm>
 #include <iomanip>
 
 

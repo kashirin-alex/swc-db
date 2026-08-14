@@ -24,6 +24,7 @@
 #include "swcdb/db/Protocol/Bkr/req/ColumnCompact_Sync.h"
 #include "swcdb/db/Protocol/Bkr/req/ColumnGet_Sync.h"
 #include "swcdb/db/Protocol/Bkr/req/ColumnList_Sync.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Utils { namespace shell {

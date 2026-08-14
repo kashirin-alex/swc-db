@@ -10,6 +10,7 @@
 #include "swcdb/utils/cli/Shell_Ranger.h"
 #include "swcdb/utils/cli/Shell_Fs.h"
 #include "swcdb/utils/cli/Shell_Statistics.h"
+#include <algorithm>
 #include <iomanip>
 #include <queue>
 

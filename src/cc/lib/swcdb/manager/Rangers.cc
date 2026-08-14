@@ -16,6 +16,7 @@
 #include "swcdb/db/Protocol/Rgr/req/ColumnCompact.h"
 
 #include "swcdb/db/Protocol/Mngr/params/ColumnMng.h"
+#include <algorithm>
 
 
 

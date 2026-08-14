@@ -5,6 +5,7 @@
 
 
 #include "swcdb/db/client/service/mngr/Groups.h"
+#include <algorithm>
 
 
 namespace SWC { namespace client { namespace Mngr {

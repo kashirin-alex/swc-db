@@ -6,6 +6,7 @@
 
 #include "swcdb/db/Protocol/Mngr/params/Report.h"
 #include "swcdb/core/Serialization.h"
+#include <algorithm>
 
 
 

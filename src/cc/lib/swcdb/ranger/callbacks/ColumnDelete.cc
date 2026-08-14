@@ -4,6 +4,8 @@
  */
 
 
+#include <algorithm>
+
 namespace SWC { namespace Ranger { namespace Callback {
 
 

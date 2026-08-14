@@ -5,6 +5,7 @@
 
 
 #include "swcdb/ranger/db/CellStoreReaders.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Ranger { namespace CellStore {

@@ -8,6 +8,7 @@
 #include "swcdb/db/Protocol/Rgr/req/Report.h"
 #include "swcdb/db/client/sql/Reader.h"
 #include "swcdb/core/StateSynchronization.h"
+#include <algorithm>
 
 
 namespace SWC { namespace Utils { namespace shell {
