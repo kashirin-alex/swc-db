@@ -86,6 +86,7 @@ Automated CI (`.github/workflows/ci.yml`) does **not** run on every push or pull
 | Default matrix | Builds on `ubuntu-24.04` with g++-12/13/14 and clang++-16/17/18 / `O_LEVEL` / `SWC_IMPL_SOURCE` with `THRIFT=0.20.0` and `TEST=1`; unit tests only on a subset |
 | Integration in CI | Sparse matrix `include` entries set `TEST=2` (g++-13, unit-test O_LEVEL/IMPL pairs) so integration steps run |
 | Thrift 0.23.0 | Sparse `include` builds with `THRIFT=0.23.0` and `WITHOUT_THRIFT_C=ON` so `thriftgen-0.23.0` C++ is compiled without C-GLib `-Werror` unused-local noise |
+| Thrift 0.20.0 C++ gen | Staged `thriftgen-0.20.0/gen-cpp` is produced with Thrift ≥0.22 ([THRIFT-5682](https://issues.apache.org/jira/browse/THRIFT-5682)) so Clang C++20 accepts incomplete `vector` element types in generated headers |
 | Languages | Default CI configure uses `-DSWC_LANGUAGES=NONE` |
 
 Contributor rules for commits, pull requests, and when to trigger CI: [CONTRIBUTING.md](https://github.com/kashirin-alex/swc-db/blob/master/CONTRIBUTING.md).

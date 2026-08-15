@@ -4,6 +4,8 @@
 
 
 ## IF .thrift instruction change with version it is prefered .thrift by versions
+## C++ gen for thriftgen-0.20.0 must use Thrift >= 0.22 (THRIFT-5682): older compilers
+## emit inline default ctors/operator== that Clang C++20 rejects (incomplete vector T).
 set(VER_GEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/thriftgen-${THRIFT_VERSION})
 
 

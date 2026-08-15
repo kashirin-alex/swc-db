@@ -86,7 +86,7 @@ When triggered with `[TEST COMMIT]`, the workflow builds a matrix on `ubuntu-24.
 | Matrix `TEST` | Default is `1`; sparse `include` adds `TEST=2` on g++-13 with the unit-test O_LEVEL/IMPL pairs |
 | Unit tests | Run only on a subset of the matrix (`O_LEVEL=3`+`IMPL=OFF` or `O_LEVEL=6`+`IMPL=ON`) |
 | Integration | Steps gated on `TEST == '2'` — run on the sparse `TEST=2` includes above |
-| Thrift | Default `0.20.0`; sparse `include` compiles `thriftgen-0.23.0` (`THRIFT=0.23.0`, `TEST=1`, `WITHOUT_THRIFT_C=ON`) |
+| Thrift | Default `0.20.0`; sparse `include` compiles `thriftgen-0.23.0` (`THRIFT=0.23.0`, `TEST=1`, `WITHOUT_THRIFT_C=ON`). Regenerate `thriftgen-0.20.0/gen-cpp` with Thrift ≥0.22 ([THRIFT-5682](https://issues.apache.org/jira/browse/THRIFT-5682)) so Clang C++20 accepts the headers |
 | Languages / bindings | Not built in default CI (`SWC_LANGUAGES=NONE`) |
 | Sanitizers | Supported by CMake locally; not configured as CI jobs |
 
